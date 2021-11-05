@@ -545,6 +545,10 @@ pre.rouge .mo {
 pre.rouge .m, pre.rouge .mb, pre.rouge .mx {
   color: #009999;
 }
+pre.rouge .sa {
+  color: #000000;
+  font-weight: bold;
+}
 pre.rouge .sb {
   color: #d14;
 }
@@ -578,7 +582,7 @@ pre.rouge .s1 {
 pre.rouge .ss {
   color: #990073;
 }
-pre.rouge .s, pre.rouge .sa, pre.rouge .dl {
+pre.rouge .s, pre.rouge .dl {
   color: #d14;
 }
 pre.rouge .na {
@@ -1708,163 +1712,88 @@ new ClipboardJS('.clipboard', {
 });
 </script>
 <style>
-
 .hidden {
-
     display: none;
-
 }
-
-
 
 .switch {
-
     border-width: 1px 1px 0 1px;
-
     border-style: solid;
-
     border-color: #7a2518;
-
     display: inline-block;
-
 }
-
-
 
 .switch--item {
-
     padding: 10px;
-
     background-color: #ffffff;
-
     color: #7a2518;
-
     display: inline-block;
-
     cursor: pointer;
-
 }
-
-
 
 .switch--item.selected {
-
     background-color: #7a2519;
-
     color: #ffffff;
-
 }
-
-
 
 </style>
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/zepto/1.2.0/zepto.min.js"></script>
-
 <script type="text/javascript">
-
 function addBlockSwitches() {
-
     $('.primary').each(function() {
-
         primary = $(this);
-
         createSwitchItem(primary, createBlockSwitch(primary)).item.addClass("selected");
-
         primary.children('.title').remove();
-
     });
-
     $('.secondary').each(function(idx, node) {
-
         secondary = $(node);
-
         primary = findPrimary(secondary);
-
         switchItem = createSwitchItem(secondary, primary.children('.switch'));
-
         switchItem.content.addClass('hidden');
-
         findPrimary(secondary).append(switchItem.content);
-
         secondary.remove();
-
     });
-
 }
-
-
 
 function createBlockSwitch(primary) {
-
     blockSwitch = $('<div class="switch"></div>');
-
     primary.prepend(blockSwitch);
-
     return blockSwitch;
-
 }
-
-
 
 function findPrimary(secondary) {
-
     candidate = secondary.prev();
-
     while (!candidate.is('.primary')) {
-
         candidate = candidate.prev();
-
     }
-
     return candidate;
-
 }
-
-
 
 function createSwitchItem(block, blockSwitch) {
-
     blockName = block.children('.title').text();
-
     content = block.children('.content').first().append(block.next('.colist'));
-
     item = $('<div class="switch--item">' + blockName + '</div>');
-
     item.on('click', '', content, function(e) {
-
         $(this).addClass('selected');
-
         $(this).siblings().removeClass('selected');
-
         e.data.siblings('.content').addClass('hidden');
-
         e.data.removeClass('hidden');
-
     });
-
     blockSwitch.append(item);
-
     return {'item': item, 'content': content};
-
 }
-
-
 
 $(addBlockSwitches);
 
-
-
 </script>
-
 
 </head>
 <body class="article toc2 toc-left">
 <div id="header">
 <h1>picocli - a mighty tiny command line interface</h1>
 <div class="details">
-<span id="revnumber">version 4.6.1,</span>
-<span id="revdate">2021-01-03</span>
+<span id="revnumber">version 4.6.2,</span>
+<span id="revdate">2021-11-05</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Features</div>
@@ -2003,26 +1932,23 @@ $(addBlockSwitches);
 <li><a href="#_compact_example">14.1. Compact Example</a></li>
 <li><a href="#_command_name">14.2. Command Name</a></li>
 <li><a href="#_parameter_labels">14.3. Parameter Labels</a></li>
-<li><a href="#_unsorted_option_list">14.4. Unsorted Option List</a></li>
-<li><a href="#_reordering_options">14.5. Reordering Options</a></li>
-<li><a href="#_split_synopsis_label">14.6. Split Synopsis Label</a></li>
-<li><a href="#_abbreviated_synopsis">14.7. Abbreviated Synopsis</a></li>
-<li><a href="#_custom_synopsis">14.8. Custom Synopsis</a></li>
-<li><a href="#_synopsis_subcommand_label">14.9. Synopsis Subcommand Label</a></li>
-<li><a href="#_header_and_footer">14.10. Header and Footer</a></li>
-<li><a href="#_exit_code_list">14.11. Exit Code List</a></li>
-<li><a href="#_format_specifiers">14.12. Format Specifiers</a></li>
-<li><a href="#_section_headings">14.13. Section Headings</a></li>
-<li><a href="#_expanded_example">14.14. Expanded Example</a></li>
-<li><a href="#_option_parameter_separators">14.15. Option-Parameter Separators</a></li>
-<li><a href="#_hidden_options_and_parameters">14.16. Hidden Options and Parameters</a></li>
-<li><a href="#_show_at_files">14.17. Show At Files</a></li>
-<li><a href="#_show_end_of_options">14.18. Show End of Options</a></li>
-<li><a href="#_show_default_values">14.19. Show Default Values</a></li>
-<li><a href="#_required_option_marker">14.20. Required-Option Marker</a></li>
-<li><a href="#_usage_width">14.21. Usage Width</a></li>
-<li><a href="#_auto_terminal_width">14.22. Auto (Terminal) Width</a></li>
-<li><a href="#_long_option_column_width">14.23. Long Option Column Width</a></li>
+<li><a href="#_option_list">14.4. Option List</a></li>
+<li><a href="#_usage_width">14.5. Usage Width</a></li>
+<li><a href="#_auto_terminal_width">14.6. Auto (Terminal) Width</a></li>
+<li><a href="#_split_synopsis_label">14.7. Split Synopsis Label</a></li>
+<li><a href="#_abbreviated_synopsis">14.8. Abbreviated Synopsis</a></li>
+<li><a href="#_custom_synopsis">14.9. Custom Synopsis</a></li>
+<li><a href="#_synopsis_subcommand_label">14.10. Synopsis Subcommand Label</a></li>
+<li><a href="#_header_and_footer">14.11. Header and Footer</a></li>
+<li><a href="#_exit_code_list">14.12. Exit Code List</a></li>
+<li><a href="#_format_specifiers">14.13. Format Specifiers</a></li>
+<li><a href="#_section_headings">14.14. Section Headings</a></li>
+<li><a href="#_expanded_example">14.15. Expanded Example</a></li>
+<li><a href="#_option_parameter_separators">14.16. Option-Parameter Separators</a></li>
+<li><a href="#_hidden_options_and_parameters">14.17. Hidden Options and Parameters</a></li>
+<li><a href="#_show_at_files">14.18. Show At Files</a></li>
+<li><a href="#_show_end_of_options">14.19. Show End of Options</a></li>
+<li><a href="#_show_default_values">14.20. Show Default Values</a></li>
 </ul>
 </li>
 <li><a href="#_ansi_colors_and_styles">15. ANSI Colors and Styles</a>
@@ -2062,6 +1988,7 @@ $(addBlockSwitches);
 <li><a href="#_hidden_subcommands">17.15. Hidden Subcommands</a></li>
 <li><a href="#_help_subcommands">17.16. Help Subcommands</a></li>
 <li><a href="#_required_subcommands">17.17. Required Subcommands</a></li>
+<li><a href="#_subcommands_and_default_values">17.18. Subcommands and default values</a></li>
 </ul>
 </li>
 <li><a href="#_reuse">18. Reuse</a>
@@ -2081,6 +2008,7 @@ $(addBlockSwitches);
 <li><a href="#_shared_resource_bundles">19.3. Shared Resource Bundles</a></li>
 <li><a href="#_localizing_the_built_in_help">19.4. Localizing the Built-In Help</a></li>
 <li><a href="#_localizing_default_values">19.5. Localizing Default Values</a></li>
+<li><a href="#_controlling_the_locale">19.6. Controlling the locale</a></li>
 </ul>
 </li>
 <li><a href="#_variable_interpolation">20. Variable Interpolation</a>
@@ -2149,6 +2077,7 @@ $(addBlockSwitches);
 <li><a href="#_jlink_java_9">29.7. jlink (Java 9+)</a></li>
 <li><a href="#_jpackage">29.8. jpackage</a></li>
 <li><a href="#_jbang">29.9. jbang</a></li>
+<li><a href="#_jreleaser">29.10. JReleaser</a></li>
 </ul>
 </li>
 <li><a href="#_picocli_in_other_languages">30. Picocli in Other Languages</a>
@@ -2294,7 +2223,7 @@ Picocli also provides a <a href="#_programmatic_api">programmatic API</a>, separ
 <div id="CheckSum-App-Groovy" class="listingblock secondary">
 <div class="title">Groovy</div>
 <div class="content">
-<pre class="rouge highlight"><code data-lang="groovy"><span class="nd">@Grab</span><span class="o">(</span><span class="s1">'info.picocli:picocli-groovy:4.6.1'</span><span class="o">)</span>
+<pre class="rouge highlight"><code data-lang="groovy"><span class="nd">@Grab</span><span class="o">(</span><span class="s1">'info.picocli:picocli-groovy:4.6.2'</span><span class="o">)</span>
 <span class="kn">import</span> <span class="nn">picocli.CommandLine</span>
 <span class="kn">import</span> <span class="nn">static</span> <span class="n">picocli</span><span class="o">.</span><span class="na">CommandLine</span><span class="o">.*</span>
 
@@ -2325,7 +2254,7 @@ Picocli also provides a <a href="#_programmatic_api">programmatic API</a>, separ
 <div id="CheckSum-App-Groovy-Script" class="listingblock secondary">
 <div class="title">Groovy script</div>
 <div class="content">
-<pre class="rouge highlight"><code data-lang="groovy"><span class="nd">@Grab</span><span class="o">(</span><span class="s1">'info.picocli:picocli-groovy:4.6.1'</span><span class="o">)</span>
+<pre class="rouge highlight"><code data-lang="groovy"><span class="nd">@Grab</span><span class="o">(</span><span class="s1">'info.picocli:picocli-groovy:4.6.2'</span><span class="o">)</span>
 <span class="kn">import</span> <span class="nn">static</span> <span class="n">picocli</span><span class="o">.</span><span class="na">CommandLine</span><span class="o">.*</span>
 <span class="kn">import</span> <span class="nn">groovy.transform.Field</span>
 <span class="kn">import</span> <span class="nn">java.security.MessageDigest</span>
@@ -2396,7 +2325,7 @@ Picocli also provides a <a href="#_programmatic_api">programmatic API</a>, separ
 <span class="k">class</span> <span class="nc">Checksum</span> <span class="k">extends</span> <span class="nc">Callable</span><span class="o">[</span><span class="kt">Int</span><span class="o">]</span> <span class="o">{</span>
 
   <span class="nd">@Parameters</span><span class="o">(</span><span class="n">index</span> <span class="k">=</span> <span class="s">"0"</span><span class="o">,</span> <span class="n">description</span> <span class="k">=</span> <span class="nc">Array</span><span class="o">(</span><span class="s">"The file whose checksum to calculate."</span><span class="o">))</span>
-  <span class="k">private</span> <span class="k">var</span> <span class="nv">file</span><span class="k">:</span> <span class="kt">File</span> <span class="o">=</span> <span class="kc">null</span>
+   <span class="k">private</span> <span class="k">var</span> <span class="n">file</span><span class="k">:</span> <span class="kt">File</span> <span class="o">=</span> <span class="kc">null</span>
 
   <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="k">=</span> <span class="nc">Array</span><span class="o">(</span><span class="s">"-a"</span><span class="o">,</span> <span class="s">"--algorithm"</span><span class="o">),</span> <span class="n">description</span> <span class="k">=</span> <span class="nc">Array</span><span class="o">(</span><span class="s">"MD5, SHA-1, SHA-256, ..."</span><span class="o">))</span>
   <span class="k">private</span> <span class="k">var</span> <span class="n">algorithm</span> <span class="k">=</span> <span class="s">"MD5"</span>
@@ -2470,7 +2399,7 @@ The example <code>main</code> method calls <code>CommandLine.execute</code> to p
 <div class="title">Gradle</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="groovy"><span class="n">dependencies</span> <span class="o">{</span>
-    <span class="n">implementation</span> <span class="s1">'info.picocli:picocli:4.6.1'</span>
+    <span class="n">implementation</span> <span class="s1">'info.picocli:picocli:4.6.2'</span>
 <span class="o">}</span></code></pre>
 </div>
 </div>
@@ -2480,7 +2409,7 @@ The example <code>main</code> method calls <code>CommandLine.execute</code> to p
 <pre class="rouge highlight"><code data-lang="xml"><span class="nt">&lt;dependency&gt;</span>
   <span class="nt">&lt;groupId&gt;</span>info.picocli<span class="nt">&lt;/groupId&gt;</span>
   <span class="nt">&lt;artifactId&gt;</span>picocli<span class="nt">&lt;/artifactId&gt;</span>
-  <span class="nt">&lt;version&gt;</span>4.6.1<span class="nt">&lt;/version&gt;</span>
+  <span class="nt">&lt;version&gt;</span>4.6.2<span class="nt">&lt;/version&gt;</span>
 <span class="nt">&lt;/dependency&gt;</span></code></pre>
 </div>
 </div>
@@ -2536,8 +2465,8 @@ In most cases no further configuration is needed when generating a native image.
 <div class="title">Gradle</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="groovy"><span class="n">dependencies</span> <span class="o">{</span>
-    <span class="n">implementation</span> <span class="s1">'info.picocli:picocli:4.6.1'</span>
-    <span class="n">annotationProcessor</span> <span class="s1">'info.picocli:picocli-codegen:4.6.1'</span>
+    <span class="n">implementation</span> <span class="s1">'info.picocli:picocli:4.6.2'</span>
+    <span class="n">annotationProcessor</span> <span class="s1">'info.picocli:picocli-codegen:4.6.2'</span>
 <span class="o">}</span>
 
 
@@ -2559,7 +2488,7 @@ In most cases no further configuration is needed when generating a native image.
       <span class="nt">&lt;path&gt;</span>
         <span class="nt">&lt;groupId&gt;</span>info.picocli<span class="nt">&lt;/groupId&gt;</span>
         <span class="nt">&lt;artifactId&gt;</span>picocli-codegen<span class="nt">&lt;/artifactId&gt;</span>
-        <span class="nt">&lt;version&gt;</span>4.6.1<span class="nt">&lt;/version&gt;</span>
+        <span class="nt">&lt;version&gt;</span>4.6.2<span class="nt">&lt;/version&gt;</span>
       <span class="nt">&lt;/path&gt;</span>
     <span class="nt">&lt;/annotationProcessorPaths&gt;</span>
     <span class="nt">&lt;compilerArgs&gt;</span>
@@ -2584,7 +2513,7 @@ then replace <code>annotationProcessor</code> with <code>kapt</code>:</p>
 <pre class="rouge highlight"><code>apply plugin: 'kotlin-kapt' // required
 dependencies {
     // ...
-    kapt 'info.picocli:picocli-codegen:4.6.1'
+    kapt 'info.picocli:picocli-codegen:4.6.2'
 }</code></pre>
 </div>
 </div>
@@ -2627,7 +2556,7 @@ dependencies {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="rouge highlight"><code data-lang="bash">java <span class="nt">-cp</span> <span class="s2">"picocli-4.6.1.jar:checksum.jar"</span> CheckSum <span class="nt">--algorithm</span> SHA-1 hello.txt</code></pre>
+<pre class="rouge highlight"><code data-lang="bash">java <span class="nt">-cp</span> <span class="s2">"picocli-4.6.2.jar:checksum.jar"</span> CheckSum <span class="nt">--algorithm</span> SHA-1 hello.txt</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -3003,6 +2932,22 @@ one or more single-character options without option-arguments, followed by at mo
 &lt;<span class="nb">command</span><span class="o">&gt;</span> <span class="nt">-a</span> <span class="nt">-b</span> <span class="nt">-c</span> <span class="nt">-f</span><span class="o">=</span>InputFile.txt
 ...</code></pre>
 </div>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+<div class="title">POSIX short options and usability</div>
+<div class="paragraph">
+<p>Applications can give a subtle hint to end users that an option is common and encouraged by providing both a short and a long name for an option.
+Conversely, the absence of a short option can signal that the option is unusual or perhaps should be used with care.</p>
+</div>
+</td>
+</tr>
+</table>
 </div>
 </div>
 <div class="sect2">
@@ -3850,7 +3795,7 @@ The <code>IParameterConsumer</code> interface can be used to implement a multi-p
 <i class="fa icon-caution" title="Caution"></i>
 </td>
 <td class="content">
-Make sure any nested classes are <code>static</code>, or picocli will not be able to instantiate them without a <a href="#_custom_factory">Custom Factory</a>.
+Make sure any nested classes are <code>static</code>, or picocli will not be able to instantiate them.
 </td>
 </tr>
 </table>
@@ -4005,7 +3950,7 @@ When a <code>TypeConversionException</code> is thrown, picocli will show an erro
 <i class="fa icon-caution" title="Caution"></i>
 </td>
 <td class="content">
-If your type converter is declared as nested class, make sure you mark this class as <code>static</code>, or picocli will not be able to instantiate your nested converter class without a <a href="#_custom_factory">Custom Factory</a>.
+If your type converter is declared as nested class, make sure you mark this class as <code>static</code>, or picocli will not be able to instantiate your nested converter class.
 </td>
 </tr>
 </table>
@@ -4100,7 +4045,7 @@ If a collection is returned from a type converter, the <em>contents</em> of the 
 <div class="paragraph">
 <p>If the field or method parameter is <code>null</code>, picocli will instantiate it when the option or positional parameter is successfully matched.
 If the <code>Collection</code> type is not a concrete class, picocli will make a best effort to instantiate it based on the field type:
-<code>List &#8594; ArrayList</code>, <code>OrderedSet &#8594; TreeSet</code>, <code>Set &#8594; LinkedHashSet</code>, <code>Queue &#8594; LinkedList</code>, otherwise, <code>ArrayList</code>.</p>
+<code>List &#8594; ArrayList</code>, <code>SortedSet &#8594; TreeSet</code>, <code>Set &#8594; LinkedHashSet</code>, <code>Queue &#8594; LinkedList</code>, otherwise, <code>ArrayList</code>.</p>
 </div>
 <div class="paragraph">
 <p>Multi-value options and positional parameters can be defined with a <code>split</code> regular expression to allow end users to specify multiple values in a single parameter.
@@ -5133,7 +5078,7 @@ If <code>-y</code> takes only a single parameter, then user input like <code>-y 
 <tbody>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">boolean</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0..1</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Boolean options by default don&#8217;t require an option parameter. The field is set to the opposite of its default value when the option name is recognized. (This can be <a href="#_toggle_boolean_flags">configured</a>.)</p></td>
 </tr>
 <tr>
@@ -6541,8 +6486,7 @@ Older versions of picocli had some limited exit code support where picocli would
 <div class="paragraph">
 <p>By default, the <code>execute</code> method returns <code>CommandLine.ExitCode.OK</code> (<code>0</code>) on success, <code>CommandLine.ExitCode.SOFTWARE</code> (<code>1</code>) when an exception occurred in the Runnable, Callable or command method, and <code>CommandLine.ExitCode.USAGE</code> (<code>2</code>) for invalid input. (These are common values according to <a href="https://stackoverflow.com/questions/1101957/are-there-any-standard-exit-status-codes-in-linux/40484670#40484670">this StackOverflow answer</a>). This can be customized with the <code>@Command</code> annotation. For example:</p>
 </div>
-<div class="listingblock primary">
-<div class="title">Java / Kotlin</div>
+<div class="listingblock">
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">exitCodeOnInvalidInput</span> <span class="o">=</span> <span class="mi">123</span><span class="o">,</span>
    <span class="n">exitCodeOnExecutionException</span> <span class="o">=</span> <span class="mi">456</span><span class="o">)</span></code></pre>
@@ -8413,7 +8357,7 @@ options for the <code>find</code> command itself, but are interpreted as a separ
 <i class="fa icon-caution" title="Caution"></i>
 </td>
 <td class="content">
-Make sure any nested classes are <code>static</code>, or picocli will not be able to instantiate them without a <a href="#_custom_factory">Custom Factory</a>.
+Make sure any nested classes are <code>static</code>, or picocli will not be able to instantiate them.
 </td>
 </tr>
 </table>
@@ -8534,7 +8478,7 @@ The code below demonstrates this:</p>
 <i class="fa icon-caution" title="Caution"></i>
 </td>
 <td class="content">
-Make sure any nested classes are <code>static</code>, or picocli will not be able to instantiate them without a <a href="#_custom_factory">Custom Factory</a>.
+Make sure any nested classes are <code>static</code>, or picocli will not be able to instantiate them.
 </td>
 </tr>
 </table>
@@ -8796,8 +8740,7 @@ on any application command. It prints usage help for the parent command or sibli
 <div class="paragraph">
 <p>Custom help subcommands should mark themselves as a <a href="#_help_subcommands">help command</a> to tell picocli not to throw a <code>MissingParameterException</code> when required options are missing.</p>
 </div>
-<div class="listingblock primary">
-<div class="title">Java / Kotlin</div>
+<div class="listingblock">
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">helpCommand</span> <span class="o">=</span> <span class="kc">true</span><span class="o">)</span></code></pre>
 </div>
@@ -9305,8 +9248,7 @@ Copyright(c) 2017</pre>
 <div class="paragraph">
 <p>In the above example, the program name is taken from the <code>name</code> attribute of the <code>Command</code> annotation:</p>
 </div>
-<div class="listingblock primary">
-<div class="title">Java / Kotlin</div>
+<div class="listingblock">
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">"cat"</span><span class="o">)</span></code></pre>
 </div>
@@ -9384,19 +9326,20 @@ For demonstration purposes the above example mixes the all-uppercase (e.g., <cod
 </div>
 </div>
 <div class="sect2">
-<h3 id="_unsorted_option_list"><a class="anchor" href="#_unsorted_option_list"></a>14.4. Unsorted Option List</h3>
+<h3 id="_option_list"><a class="anchor" href="#_option_list"></a>14.4. Option List</h3>
+<div class="sect3">
+<h4 id="_unsorted_option_list"><a class="anchor" href="#_unsorted_option_list"></a>14.4.1. Unsorted Option List</h4>
 <div class="paragraph">
 <p>By default the options list displays options in alphabetical order. Use the <code>sortOptions = false</code> attribute to display options in the order they are declared in your class.</p>
 </div>
-<div class="listingblock primary">
-<div class="title">Java / Kotlin</div>
+<div class="listingblock">
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">sortOptions</span> <span class="o">=</span> <span class="kc">false</span><span class="o">)</span></code></pre>
 </div>
 </div>
 </div>
-<div class="sect2">
-<h3 id="_reordering_options"><a class="anchor" href="#_reordering_options"></a>14.5. Reordering Options</h3>
+<div class="sect3">
+<h4 id="_reordering_options"><a class="anchor" href="#_reordering_options"></a>14.4.2. Reordering Options</h4>
 <div class="paragraph">
 <p>When mixing <code>@Option</code> methods and <code>@Option</code> fields, options do not reliably appear in declaration order.</p>
 </div>
@@ -9405,8 +9348,157 @@ For demonstration purposes the above example mixes the all-uppercase (e.g., <cod
 Options with a lower number are shown before options with a higher number.</p>
 </div>
 </div>
+<div class="sect3">
+<h4 id="_required_option_marker"><a class="anchor" href="#_required_option_marker"></a>14.4.3. Required-Option Marker</h4>
+<div class="paragraph">
+<p>Required options can be marked in the option list by the character specified with the <code>requiredOptionMarker</code> attribute. By default options are not marked because the synopsis shows users which options are required and which are optional. This feature may be useful in combination with the <a href="#_abbreviated_synopsis"><code>abbreviateSynopsis</code></a> attribute. For example:</p>
+</div>
+<div class="listingblock primary">
+<div class="title">Java</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">requiredOptionMarker</span> <span class="o">=</span> <span class="sc">'*'</span><span class="o">,</span> <span class="n">abbreviateSynopsis</span> <span class="o">=</span> <span class="kc">true</span><span class="o">)</span>
+<span class="kd">class</span> <span class="nc">Example</span> <span class="o">{</span>
+    <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="o">{</span><span class="s">"-a"</span><span class="o">,</span> <span class="s">"--alpha"</span><span class="o">},</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"optional alpha"</span><span class="o">)</span> <span class="nc">String</span> <span class="n">alpha</span><span class="o">;</span>
+    <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="o">{</span><span class="s">"-b"</span><span class="o">,</span> <span class="s">"--beta"</span><span class="o">},</span> <span class="n">required</span> <span class="o">=</span> <span class="kc">true</span><span class="o">,</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"mandatory beta"</span><span class="o">)</span> <span class="nc">String</span> <span class="n">beta</span><span class="o">;</span>
+<span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Command</span><span class="p">(</span><span class="n">requiredOptionMarker</span> <span class="p">=</span> <span class="sc">'*'</span><span class="p">,</span> <span class="n">abbreviateSynopsis</span> <span class="p">=</span> <span class="k">true</span><span class="p">)</span>
+<span class="kd">class</span> <span class="nc">Example</span> <span class="p">{</span>
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-a"</span><span class="p">,</span> <span class="s">"--alpha"</span><span class="p">],</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"optional alpha"</span><span class="p">])</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">alpha</span><span class="p">:</span> <span class="nc">String</span>
+
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-b"</span><span class="p">,</span> <span class="s">"--beta"</span><span class="p">],</span> <span class="n">required</span> <span class="p">=</span> <span class="k">true</span><span class="p">,</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"mandatory beta"</span><span class="p">])</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">beta</span><span class="p">:</span> <span class="nc">String</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Produces the following usage help message:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>Usage: &lt;main class&gt; [OPTIONS]
+  -a, --alpha=&lt;alpha&gt;   optional alpha
+* -b, --beta=&lt;beta&gt;     mandatory beta</pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_short_and_long_option_columns"><a class="anchor" href="#_short_and_long_option_columns"></a>14.4.4. Short and Long Option Columns</h4>
+<div class="paragraph">
+<p>The default layout shows short options and long options in separate columns, followed by the description column.</p>
+</div>
+<div class="paragraph">
+<p>Only <a href="#_short_posix_options">POSIX short options</a> are shown in the first column, that is, options that start with a single <code>-</code> dash and are one character long.</p>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-warning" title="Warning"></i>
+</td>
+<td class="content">
+Options with two characters are not considered short options and are shown in the long option column.
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>This is a common layout for Unix utilities, and can enhance usability:
+applications can give a subtle hint to end users that an option is common and encouraged by providing both a short and a long name for the option.
+Conversely, the absence of a short option can signal that the option is unusual or perhaps should be used with care.</p>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+It is possible to left-align all options by using a custom layout.
+See <a href="https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/leftalign/LeftAlignOptions.java">LeftAlignOptions.java</a> in the <code>picocli-examples</code> module for an example.
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_long_option_column_width"><a class="anchor" href="#_long_option_column_width"></a>14.4.5. Long Option Column Width</h4>
+<div class="paragraph">
+<p>The default layout shows short options and long options in separate columns, followed by the description column.
+The width of the long options column shrinks automatically if all long options are very short,
+but by default this column does not grow larger than 20 characters.</p>
+</div>
+<div class="paragraph">
+<p>If the long option with its option parameter is longer than 20 characters
+(for example: <code>--output=&lt;outputFolder&gt;</code>), the long option overflows into the description column, and the option description is shown on the next line.</p>
+</div>
+<div class="paragraph">
+<p>This (the default) looks like this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>Usage: myapp [-hV] [-o=&lt;outputFolder&gt;]
+  -h, --help      Show this help message and exit.
+  -o, --output=&lt;outputFolder&gt;
+                  Output location full path.
+  -V, --version   Print version information and exit.</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>As of picocli 4.2, there is programmatic API to change this via the <code>CommandLine::setUsageHelpLongOptionsMaxWidth</code> and <code>UsageMessageSpec::longOptionsMaxWidth</code> methods.</p>
+</div>
+<div class="paragraph">
+<p>In the above example, if we call <code>commandLine.setUsageHelpLongOptionsMaxWidth(23)</code> before printing the usage help, we get this result:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>Usage: myapp [-hV] [-o=&lt;outputFolder&gt;]
+  -h, --help                    Show this help message and exit.
+  -o, --output=&lt;outputFolder&gt;   Output location full path.
+  -V, --version                 Print version information and exit.</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The minimum value that can be specified for <code>longOptionsMaxWidth</code> is 20, the maximum value is the <a href="#_usage_width">usage width</a> minus <code>20</code>.</p>
+</div>
+</div>
+</div>
 <div class="sect2">
-<h3 id="_split_synopsis_label"><a class="anchor" href="#_split_synopsis_label"></a>14.6. Split Synopsis Label</h3>
+<h3 id="_usage_width"><a class="anchor" href="#_usage_width"></a>14.5. Usage Width</h3>
+<div class="paragraph">
+<p>The default width of the usage help message is 80 characters.
+Commands defined with <code>@Command(usageHelpWidth = NUMBER)</code> in the annotations will use the specified width.</p>
+</div>
+<div class="paragraph">
+<p>Picocli 3.0 also introduced programmatic API for this via the <code>CommandLine::setUsageHelpWidth</code> and <code>UsageMessageSpec::width</code> methods.</p>
+</div>
+<div class="paragraph">
+<p>End users can use system property <code>picocli.usage.width</code> to specify a custom width that overrides the programmatically set value.</p>
+</div>
+<div class="paragraph">
+<p>The minimum width that can be configured is 55 characters.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_auto_terminal_width"><a class="anchor" href="#_auto_terminal_width"></a>14.6. Auto (Terminal) Width</h3>
+<div class="paragraph">
+<p>As of picocli 4.0, commands defined with <code>@Command(usageHelpAutoWidth = true)</code> will try to adjust the usage message help layout to the terminal width.
+There is also programmatic API to control this via the <code>CommandLine::setUsageHelpAutoWidth</code> and <code>UsageMessageSpec::autoWidth</code> methods.</p>
+</div>
+<div class="paragraph">
+<p>End users may enable this by setting system property <code>picocli.usage.width</code> to <code>AUTO</code>, and may disable this by setting this system property to a numeric value.</p>
+</div>
+<div class="paragraph">
+<p>This feature requires Java 7.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_split_synopsis_label"><a class="anchor" href="#_split_synopsis_label"></a>14.7. Split Synopsis Label</h3>
 <div class="paragraph">
 <p>Options and parameters may have a <a href="#_split_regex"><code>split</code></a> attribute to split each parameter into smaller substrings.
 Regular expressions may contain literal text, but may also contain <a href="https://www.regular-expressions.info/characters.html">special characters</a>.
@@ -9447,7 +9539,7 @@ We want the usage help message to show this.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_abbreviated_synopsis"><a class="anchor" href="#_abbreviated_synopsis"></a>14.7. Abbreviated Synopsis</h3>
+<h3 id="_abbreviated_synopsis"><a class="anchor" href="#_abbreviated_synopsis"></a>14.8. Abbreviated Synopsis</h3>
 <div class="paragraph">
 <p>If a command is very complex and has many options, it is sometimes desirable to suppress details from the synopsis with the <code>abbreviateSynopsis</code> attribute. For example:</p>
 </div>
@@ -9483,7 +9575,7 @@ We want the usage help message to show this.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_custom_synopsis"><a class="anchor" href="#_custom_synopsis"></a>14.8. Custom Synopsis</h3>
+<h3 id="_custom_synopsis"><a class="anchor" href="#_custom_synopsis"></a>14.9. Custom Synopsis</h3>
 <div class="paragraph">
 <p>For even more control of the synopsis, use the <code>customSynopsis</code> attribute to specify one ore more synopsis lines. For example:</p>
 </div>
@@ -9523,7 +9615,7 @@ Usage: ln [OPTION]... [-T] TARGET LINK_NAME   (1st form)
 </div>
 </div>
 <div class="sect2">
-<h3 id="_synopsis_subcommand_label"><a class="anchor" href="#_synopsis_subcommand_label"></a>14.9. Synopsis Subcommand Label</h3>
+<h3 id="_synopsis_subcommand_label"><a class="anchor" href="#_synopsis_subcommand_label"></a>14.10. Synopsis Subcommand Label</h3>
 <div class="paragraph">
 <p>For commands with <a href="#_usage_help_for_subcommands">subcommands</a>, the string <code>[COMMAND]</code> is appended to the end of the synopsis (whether the synopsis is <a href="#_abbreviated_synopsis">abbreviated</a> or not). This looks something like this:</p>
 </div>
@@ -9538,8 +9630,7 @@ Usage: ln [OPTION]... [-T] TARGET LINK_NAME   (1st form)
 <div class="paragraph">
 <p>For example, to clarify that a <a href="#_required_subcommands">subcommand is mandatory</a>, an application may specify <code>COMMAND</code>, without the <code>[</code> and <code>]</code> brackets:</p>
 </div>
-<div class="listingblock primary">
-<div class="title">Java / Kotlin</div>
+<div class="listingblock">
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">"git"</span><span class="o">,</span> <span class="n">synopsisSubcommandLabel</span> <span class="o">=</span> <span class="s">"COMMAND"</span><span class="o">)</span>
 <span class="kd">class</span> <span class="nc">Git</span> <span class="o">{</span> <span class="cm">/* ... */</span> <span class="o">}</span></code></pre>
@@ -9575,7 +9666,7 @@ Usage: ln [OPTION]... [-T] TARGET LINK_NAME   (1st form)
 </div>
 </div>
 <div class="sect2">
-<h3 id="_header_and_footer"><a class="anchor" href="#_header_and_footer"></a>14.10. Header and Footer</h3>
+<h3 id="_header_and_footer"><a class="anchor" href="#_header_and_footer"></a>14.11. Header and Footer</h3>
 <div class="paragraph">
 <p>The <code>header</code> will be shown at the top of the usage help message (before the synopsis). The first header line is also the line shown in the subcommand list if your command has subcommands (see <a href="#_usage_help_for_subcommands">Usage Help for Subcommands</a>).</p>
 </div>
@@ -9587,7 +9678,7 @@ Usage: ln [OPTION]... [-T] TARGET LINK_NAME   (1st form)
 </div>
 </div>
 <div class="sect2">
-<h3 id="_exit_code_list"><a class="anchor" href="#_exit_code_list"></a>14.11. Exit Code List</h3>
+<h3 id="_exit_code_list"><a class="anchor" href="#_exit_code_list"></a>14.12. Exit Code List</h3>
 <div class="paragraph">
 <p>By default, the usage help message does not display <a href="#_generating_an_exit_code">exit code</a> information.
 Applications that call <code>System.exit</code> need to configure the <code>exitCodeListHeading</code> and <code>exitCodeList</code> annotation attributes.
@@ -9641,7 +9732,7 @@ Exit Codes:
 </div>
 </div>
 <div class="sect2">
-<h3 id="_format_specifiers"><a class="anchor" href="#_format_specifiers"></a>14.12. Format Specifiers</h3>
+<h3 id="_format_specifiers"><a class="anchor" href="#_format_specifiers"></a>14.13. Format Specifiers</h3>
 <div class="paragraph">
 <p>All usage help message elements can have embedded line separator (<code>%n</code>) format specifiers.
 These are converted to the platform-specific line separator when the usage help message is printed.</p>
@@ -9670,7 +9761,7 @@ where each element of the array is displayed on a separate line in the usage hel
 </div>
 </div>
 <div class="sect2">
-<h3 id="_section_headings"><a class="anchor" href="#_section_headings"></a>14.13. Section Headings</h3>
+<h3 id="_section_headings"><a class="anchor" href="#_section_headings"></a>14.14. Section Headings</h3>
 <div class="paragraph">
 <p>Section headers can be used to make usage message layout appear more spacious. The example below demonstrates the use of embedded line separator (<code>%n</code>) format specifiers:</p>
 </div>
@@ -9711,7 +9802,7 @@ where each element of the array is displayed on a separate line in the usage hel
 </div>
 </div>
 <div class="sect2">
-<h3 id="_expanded_example"><a class="anchor" href="#_expanded_example"></a>14.14. Expanded Example</h3>
+<h3 id="_expanded_example"><a class="anchor" href="#_expanded_example"></a>14.15. Expanded Example</h3>
 <div class="paragraph">
 <p>The below example demonstrates what a customized usage message can look like.
 Note how section headings with line separators can create a more spacious usage message,
@@ -9769,13 +9860,12 @@ Options:
 </div>
 </div>
 <div class="sect2">
-<h3 id="_option_parameter_separators"><a class="anchor" href="#_option_parameter_separators"></a>14.15. Option-Parameter Separators</h3>
+<h3 id="_option_parameter_separators"><a class="anchor" href="#_option_parameter_separators"></a>14.16. Option-Parameter Separators</h3>
 <div class="paragraph">
 <p>The separator displayed between options and option parameters (<code>=</code> by default)
 in the synopsis and the option list can be configured with the <code>separator</code> attribute.</p>
 </div>
-<div class="listingblock primary">
-<div class="title">Java / Kotlin</div>
+<div class="listingblock">
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">separator</span> <span class="o">=</span> <span class="s">" "</span><span class="o">)</span></code></pre>
 </div>
@@ -9794,7 +9884,7 @@ The <code>@Command(separator = " ")</code> annotation also affects how picocli p
 </div>
 </div>
 <div class="sect2">
-<h3 id="_hidden_options_and_parameters"><a class="anchor" href="#_hidden_options_and_parameters"></a>14.16. Hidden Options and Parameters</h3>
+<h3 id="_hidden_options_and_parameters"><a class="anchor" href="#_hidden_options_and_parameters"></a>14.17. Hidden Options and Parameters</h3>
 <div class="paragraph">
 <p>Options and Parameters with the <code>hidden</code> attribute set to <code>true</code> will not be shown in the usage help message.
 This is useful for example when a parameter at some index is captured into multiple fields:
@@ -9846,12 +9936,12 @@ by default each of these fields would be shown in the usage message, which would
 </div>
 </div>
 <div class="sect2">
-<h3 id="_show_at_files"><a class="anchor" href="#_show_at_files"></a>14.17. Show At Files</h3>
+<h3 id="_show_at_files"><a class="anchor" href="#_show_at_files"></a>14.18. Show At Files</h3>
 <div class="paragraph">
 <p>As of picocli 4.2, an entry for <code>@&lt;filename&gt;</code> can be shown in the options and parameters list of the usage help message of a command with the <code>@Command(showAtFileInUsageHelp = true)</code> annotation.</p>
 </div>
 <div class="sect3">
-<h4 id="_example_2"><a class="anchor" href="#_example_2"></a>14.17.1. Example</h4>
+<h4 id="_example_2"><a class="anchor" href="#_example_2"></a>14.18.1. Example</h4>
 <div class="paragraph">
 <p>Example command:</p>
 </div>
@@ -9891,7 +9981,7 @@ Example command.
 </div>
 </div>
 <div class="sect3">
-<h4 id="_changing_the_at_file_entry_location"><a class="anchor" href="#_changing_the_at_file_entry_location"></a>14.17.2. Changing the At File Entry Location</h4>
+<h4 id="_changing_the_at_file_entry_location"><a class="anchor" href="#_changing_the_at_file_entry_location"></a>14.18.2. Changing the At File Entry Location</h4>
 <div class="paragraph">
 <p>By default, the <code>@&lt;filename&gt;</code> entry is shown before the positional parameters in the synopsis as well as in the parameters list.</p>
 </div>
@@ -9962,7 +10052,7 @@ Example command.
 </div>
 </div>
 <div class="sect3">
-<h4 id="_changing_the_at_file_entry_text"><a class="anchor" href="#_changing_the_at_file_entry_text"></a>14.17.3. Changing the At File Entry Text</h4>
+<h4 id="_changing_the_at_file_entry_text"><a class="anchor" href="#_changing_the_at_file_entry_text"></a>14.18.3. Changing the At File Entry Text</h4>
 <div class="paragraph">
 <p>Both the label and the description of the <code>@&lt;filename&gt;</code> entry have been defined with <a href="#_custom_variables">custom variables</a>, to allow applications to change the text. The variables are:</p>
 </div>
@@ -9982,8 +10072,7 @@ Example command.
 <div class="paragraph">
 <p>For example, if we define these system properties:</p>
 </div>
-<div class="listingblock primary">
-<div class="title">Java / Kotlin</div>
+<div class="listingblock">
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nc">System</span><span class="o">.</span><span class="na">setProperty</span><span class="o">(</span><span class="s">"picocli.atfile.label"</span><span class="o">,</span> <span class="s">"my@@@@file"</span><span class="o">);</span>
 <span class="nc">System</span><span class="o">.</span><span class="na">setProperty</span><span class="o">(</span><span class="s">"picocli.atfile.description"</span><span class="o">,</span> <span class="s">"@files rock!"</span><span class="o">);</span></code></pre>
@@ -10016,12 +10105,12 @@ The <code>descriptionKey</code> for the <code>@&lt;filename&gt;</code> entry in 
 </div>
 </div>
 <div class="sect2">
-<h3 id="_show_end_of_options"><a class="anchor" href="#_show_end_of_options"></a>14.18. Show End of Options</h3>
+<h3 id="_show_end_of_options"><a class="anchor" href="#_show_end_of_options"></a>14.19. Show End of Options</h3>
 <div class="paragraph">
 <p>As of picocli 4.3, an entry for the <code>--</code> <a href="#_double_dash">End of Options delimiter</a> can be shown in the options list of the usage help message of a command with the <code>@Command(showEndOfOptionsDelimiterInUsageHelp = true)</code> annotation.</p>
 </div>
 <div class="sect3">
-<h4 id="_example_3"><a class="anchor" href="#_example_3"></a>14.18.1. Example</h4>
+<h4 id="_example_3"><a class="anchor" href="#_example_3"></a>14.19.1. Example</h4>
 <div class="paragraph">
 <p>Example command:</p>
 </div>
@@ -10062,7 +10151,7 @@ Example command.
 </div>
 </div>
 <div class="sect3">
-<h4 id="_changing_the_end_of_options_entry_location"><a class="anchor" href="#_changing_the_end_of_options_entry_location"></a>14.18.2. Changing the End of Options Entry Location</h4>
+<h4 id="_changing_the_end_of_options_entry_location"><a class="anchor" href="#_changing_the_end_of_options_entry_location"></a>14.19.2. Changing the End of Options Entry Location</h4>
 <div class="paragraph">
 <p>By default, the <code>--</code> End of Options entry is shown between the options and the positional parameters in the synopsis, and at the end of the options list.</p>
 </div>
@@ -10136,7 +10225,7 @@ Example command.
 </div>
 </div>
 <div class="sect3">
-<h4 id="_changing_the_end_of_options_entry_text"><a class="anchor" href="#_changing_the_end_of_options_entry_text"></a>14.18.3. Changing the End of Options Entry Text</h4>
+<h4 id="_changing_the_end_of_options_entry_text"><a class="anchor" href="#_changing_the_end_of_options_entry_text"></a>14.19.3. Changing the End of Options Entry Text</h4>
 <div class="paragraph">
 <p>The description of the <code>--</code> End of Options delimiter entry has been defined with a <a href="#_custom_variables">custom variable</a>, to allow applications to change the text. The variable is:</p>
 </div>
@@ -10153,8 +10242,7 @@ Example command.
 <div class="paragraph">
 <p>For example, if we define this system property:</p>
 </div>
-<div class="listingblock primary">
-<div class="title">Java / Kotlin</div>
+<div class="listingblock">
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nc">System</span><span class="o">.</span><span class="na">setProperty</span><span class="o">(</span><span class="s">"picocli.endofoptions.description"</span><span class="o">,</span> <span class="s">"End of options. Remainder are positional parameters."</span><span class="o">);</span></code></pre>
 </div>
@@ -10186,9 +10274,9 @@ The <code>descriptionKey</code> for the End of Options delimiter entry in resour
 </div>
 </div>
 <div class="sect2">
-<h3 id="_show_default_values"><a class="anchor" href="#_show_default_values"></a>14.19. Show Default Values</h3>
+<h3 id="_show_default_values"><a class="anchor" href="#_show_default_values"></a>14.20. Show Default Values</h3>
 <div class="sect3">
-<h4 id="_default_value_variable"><a class="anchor" href="#_default_value_variable"></a>14.19.1. <code>${DEFAULT-VALUE}</code> Variable</h4>
+<h4 id="_default_value_variable"><a class="anchor" href="#_default_value_variable"></a>14.20.1. <code>${DEFAULT-VALUE}</code> Variable</h4>
 <div class="paragraph">
 <p>From picocli 3.2, it is possible to embed the <a href="#_default_values">default values</a> in the description for an option or positional parameter by
 specifying the <a href="#_variable_interpolation">variable</a> <code>${DEFAULT-VALUE}</code> in the description text.
@@ -10233,7 +10321,7 @@ and regardless of the <code>@Option(showDefaultValues)</code> or <code>@Paramete
 </div>
 </div>
 <div class="sect3">
-<h4 id="_completion_candidates_variable"><a class="anchor" href="#_completion_candidates_variable"></a>14.19.2. <code>${COMPLETION-CANDIDATES}</code> Variable</h4>
+<h4 id="_completion_candidates_variable"><a class="anchor" href="#_completion_candidates_variable"></a>14.20.2. <code>${COMPLETION-CANDIDATES}</code> Variable</h4>
 <div class="paragraph">
 <p>Similarly, it is possible to embed the completion candidates in the description for an option or positional parameter by
 specifying the <a href="#_variable_interpolation">variable</a> <code>${COMPLETION-CANDIDATES}</code> in the description text.</p>
@@ -10293,7 +10381,7 @@ specifying the <a href="#_variable_interpolation">variable</a> <code>${COMPLETIO
 </div>
 </div>
 <div class="sect3">
-<h4 id="_legacy_configuration_for_displaying_default_values"><a class="anchor" href="#_legacy_configuration_for_displaying_default_values"></a>14.19.3. Legacy Configuration for Displaying Default Values</h4>
+<h4 id="_legacy_configuration_for_displaying_default_values"><a class="anchor" href="#_legacy_configuration_for_displaying_default_values"></a>14.20.3. Legacy Configuration for Displaying Default Values</h4>
 <div class="paragraph">
 <p>Prior to picocli 3.2, you need to use the <code>@Command(showDefaultValues = true)</code> attribute to append the default value of
  all non-<code>null</code> options and positional parameters to the description column.</p>
@@ -10319,115 +10407,6 @@ This attribute accepts three values:</p>
 <div class="paragraph">
 <p>These legacy mechanisms still work but for maximum flexibility use the variables explained above.</p>
 </div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_required_option_marker"><a class="anchor" href="#_required_option_marker"></a>14.20. Required-Option Marker</h3>
-<div class="paragraph">
-<p>Required options can be marked in the option list by the character specified with the <code>requiredOptionMarker</code> attribute. By default options are not marked because the synopsis shows users which options are required and which are optional. This feature may be useful in combination with the <a href="#_abbreviated_synopsis"><code>abbreviateSynopsis</code></a> attribute. For example:</p>
-</div>
-<div class="listingblock primary">
-<div class="title">Java</div>
-<div class="content">
-<pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">requiredOptionMarker</span> <span class="o">=</span> <span class="sc">'*'</span><span class="o">,</span> <span class="n">abbreviateSynopsis</span> <span class="o">=</span> <span class="kc">true</span><span class="o">)</span>
-<span class="kd">class</span> <span class="nc">Example</span> <span class="o">{</span>
-    <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="o">{</span><span class="s">"-a"</span><span class="o">,</span> <span class="s">"--alpha"</span><span class="o">},</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"optional alpha"</span><span class="o">)</span> <span class="nc">String</span> <span class="n">alpha</span><span class="o">;</span>
-    <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="o">{</span><span class="s">"-b"</span><span class="o">,</span> <span class="s">"--beta"</span><span class="o">},</span> <span class="n">required</span> <span class="o">=</span> <span class="kc">true</span><span class="o">,</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"mandatory beta"</span><span class="o">)</span> <span class="nc">String</span> <span class="n">beta</span><span class="o">;</span>
-<span class="o">}</span></code></pre>
-</div>
-</div>
-<div class="listingblock secondary">
-<div class="title">Kotlin</div>
-<div class="content">
-<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Command</span><span class="p">(</span><span class="n">requiredOptionMarker</span> <span class="p">=</span> <span class="sc">'*'</span><span class="p">,</span> <span class="n">abbreviateSynopsis</span> <span class="p">=</span> <span class="k">true</span><span class="p">)</span>
-<span class="kd">class</span> <span class="nc">Example</span> <span class="p">{</span>
-    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-a"</span><span class="p">,</span> <span class="s">"--alpha"</span><span class="p">],</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"optional alpha"</span><span class="p">])</span>
-    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">alpha</span><span class="p">:</span> <span class="nc">String</span>
-
-    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-b"</span><span class="p">,</span> <span class="s">"--beta"</span><span class="p">],</span> <span class="n">required</span> <span class="p">=</span> <span class="k">true</span><span class="p">,</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"mandatory beta"</span><span class="p">])</span>
-    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">beta</span><span class="p">:</span> <span class="nc">String</span>
-<span class="p">}</span></code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Produces the following usage help message:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre>Usage: &lt;main class&gt; [OPTIONS]
-  -a, --alpha=&lt;alpha&gt;   optional alpha
-* -b, --beta=&lt;beta&gt;     mandatory beta</pre>
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_usage_width"><a class="anchor" href="#_usage_width"></a>14.21. Usage Width</h3>
-<div class="paragraph">
-<p>The default width of the usage help message is 80 characters.
-Commands defined with <code>@Command(usageHelpWidth = NUMBER)</code> in the annotations will use the specified width.</p>
-</div>
-<div class="paragraph">
-<p>Picocli 3.0 also introduced programmatic API for this via the <code>CommandLine::setUsageHelpWidth</code> and <code>UsageMessageSpec::width</code> methods.</p>
-</div>
-<div class="paragraph">
-<p>End users can use system property <code>picocli.usage.width</code> to specify a custom width that overrides the programmatically set value.</p>
-</div>
-<div class="paragraph">
-<p>The minimum width that can be configured is 55 characters.</p>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_auto_terminal_width"><a class="anchor" href="#_auto_terminal_width"></a>14.22. Auto (Terminal) Width</h3>
-<div class="paragraph">
-<p>As of picocli 4.0, commands defined with <code>@Command(usageHelpAutoWidth = true)</code> will try to adjust the usage message help layout to the terminal width.
-There is also programmatic API to control this via the <code>CommandLine::setUsageHelpAutoWidth</code> and <code>UsageMessageSpec::autoWidth</code> methods.</p>
-</div>
-<div class="paragraph">
-<p>End users may enable this by setting system property <code>picocli.usage.width</code> to <code>AUTO</code>, and may disable this by setting this system property to a numeric value.</p>
-</div>
-<div class="paragraph">
-<p>This feature requires Java 7.</p>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_long_option_column_width"><a class="anchor" href="#_long_option_column_width"></a>14.23. Long Option Column Width</h3>
-<div class="paragraph">
-<p>The default layout shows short options and long options in separate columns, followed by the description column.
-The width of the long options column shrinks automatically if all long options are very short,
-but by default this column does not grow larger than 20 characters.</p>
-</div>
-<div class="paragraph">
-<p>If the long option with its option parameter is longer than 20 characters
-(for example: <code>--output=&lt;outputFolder&gt;</code>), the long option overflows into the description column, and the option description is shown on the next line.</p>
-</div>
-<div class="paragraph">
-<p>This (the default) looks like this:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre>Usage: myapp [-hV] [-o=&lt;outputFolder&gt;]
-  -h, --help      Show this help message and exit.
-  -o, --output=&lt;outputFolder&gt;
-                  Output location full path.
-  -V, --version   Print version information and exit.</pre>
-</div>
-</div>
-<div class="paragraph">
-<p>As of picocli 4.2, there is programmatic API to change this via the <code>CommandLine::setUsageHelpLongOptionsMaxWidth</code> and <code>UsageMessageSpec::longOptionsMaxWidth</code> methods.</p>
-</div>
-<div class="paragraph">
-<p>In the above example, if we call <code>commandLine.setUsageHelpLongOptionsMaxWidth(23)</code> before printing the usage help, we get this result:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre>Usage: myapp [-hV] [-o=&lt;outputFolder&gt;]
-  -h, --help                    Show this help message and exit.
-  -o, --output=&lt;outputFolder&gt;   Output location full path.
-  -V, --version                 Print version information and exit.</pre>
-</div>
-</div>
-<div class="paragraph">
-<p>The minimum value that can be specified for <code>longOptionsMaxWidth</code> is 20, the maximum value is the <a href="#_usage_width">usage width</a> minus <code>20</code>.</p>
 </div>
 </div>
 </div>
@@ -12930,6 +12909,33 @@ are not validated (similar to <a href="#_help_options">help options</a>).</p>
 To show that the subcommand is mandatory, use the <code>synopsisSubcommandLabel</code> attribute to replace this string with <code>COMMAND</code> (without the <code>[</code> and <code>]</code> brackets).</p>
 </div>
 </div>
+<div class="sect2">
+<h3 id="_subcommands_and_default_values"><a class="anchor" href="#_subcommands_and_default_values"></a>17.18. Subcommands and default values</h3>
+<div class="paragraph">
+<p>There are some scenarios where picocli can not parse an option with a default value which is the same as a subcommand name. To work around this, you can parse the option yourself using <a href="#_custom_parameter_processing"><code>IParameterConsumer</code></a>. A simple implementation is shown below. See <a href="https://github.com/remkop/picocli/issues/1428">this issue</a> for more details.</p>
+</div>
+<div class="listingblock primary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">class</span> <span class="nc">MyParameterConsumer</span> <span class="p">:</span> <span class="nc">CommandLine</span><span class="p">.</span><span class="nc">IParameterConsumer</span> <span class="p">{</span>
+  <span class="k">override</span> <span class="k">fun</span> <span class="nf">consumeParameters</span><span class="p">(</span>
+    <span class="n">args</span><span class="p">:</span> <span class="nc">Stack</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">&gt;,</span>
+    <span class="n">argSpec</span><span class="p">:</span> <span class="nc">CommandLine</span><span class="p">.</span><span class="nc">Model</span><span class="p">.</span><span class="nc">ArgSpec</span><span class="p">,</span>
+    <span class="n">commandSpec</span><span class="p">:</span> <span class="nc">CommandLine</span><span class="p">.</span><span class="nc">Model</span><span class="p">.</span><span class="nc">CommandSpec</span>
+  <span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">args</span><span class="p">.</span><span class="nf">isEmpty</span><span class="p">())</span> <span class="p">{</span>
+      <span class="k">throw</span> <span class="nc">CommandLine</span><span class="p">.</span><span class="nc">ParameterException</span><span class="p">(</span>
+        <span class="n">commandSpec</span><span class="p">.</span><span class="nf">commandLine</span><span class="p">(),</span>
+        <span class="s">"Missing required parameter for option "</span> <span class="p">+</span>
+            <span class="p">(</span><span class="n">argSpec</span> <span class="k">as</span> <span class="nc">CommandLine</span><span class="p">.</span><span class="nc">Model</span><span class="p">.</span><span class="nc">OptionSpec</span><span class="p">).</span><span class="nf">longestName</span><span class="p">()</span>
+      <span class="p">)</span>
+    <span class="p">}</span>
+    <span class="n">argSpec</span><span class="p">.</span><span class="nf">setValue</span><span class="p">(</span><span class="n">args</span><span class="p">.</span><span class="nf">pop</span><span class="p">());</span>
+  <span class="p">}</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
+</div>
 </div>
 </div>
 <div class="sect1">
@@ -13766,8 +13772,7 @@ A resource bundle can be set via annotations and programmatically.</p>
 <div class="paragraph">
 <p>Annotation example:</p>
 </div>
-<div class="listingblock primary">
-<div class="title">Java / Kotlin</div>
+<div class="listingblock">
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">"i18n-demo"</span><span class="o">,</span> <span class="n">resourceBundle</span> <span class="o">=</span> <span class="s">"my.org.I18nDemo_Messages"</span><span class="o">)</span>
 <span class="kd">class</span> <span class="nc">I18nDemo</span> <span class="o">{}</span></code></pre>
@@ -14020,6 +14025,147 @@ helpCommand.command = Shared description of COMMAND parameter of built-in help s
 </div>
 </div>
 </div>
+<div class="sect2">
+<h3 id="_controlling_the_locale"><a class="anchor" href="#_controlling_the_locale"></a>19.6. Controlling the locale</h3>
+<div class="paragraph">
+<p>In your localized application, it may be desirable to specify the locale in order to determine the language of message texts and help output.
+One way of controlling the locale is to give <code>-Duser.language=desiredLocale</code> as VM argument when running the app.
+A more accessible and user-friendly approach is to to implement a command line parameter (e. g. <code>--locale</code>) inside your app which can be used to change the locale.
+The latter technique requires a two-phase approach to parsing in your application in order to get a valid load order.
+The minimal example below demonstrates how to implement this two phase approach:</p>
+</div>
+<div class="listingblock primary">
+<div class="title">Java</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="java"><span class="kd">class</span> <span class="nc">InitLocale</span> <span class="o">{</span>
+    <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="o">{</span> <span class="s">"-l"</span><span class="o">,</span> <span class="s">"--locale"</span> <span class="o">},</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"locale for message texts (phase 1)"</span><span class="o">)</span>
+    <span class="kt">void</span> <span class="nf">setLocale</span><span class="o">(</span><span class="nc">String</span> <span class="n">locale</span><span class="o">)</span> <span class="o">{</span>
+        <span class="nc">Locale</span><span class="o">.</span><span class="na">setDefault</span><span class="o">(</span><span class="k">new</span> <span class="nc">Locale</span><span class="o">(</span><span class="n">locale</span><span class="o">));</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Unmatched</span>
+    <span class="nc">List</span><span class="o">&lt;</span><span class="nc">String</span><span class="o">&gt;</span> <span class="n">remainder</span><span class="o">;</span> <span class="c1">// ignore any other parameters and options in the first parsing phase</span>
+<span class="o">}</span>
+
+<span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">"GreetingApp"</span><span class="o">,</span> <span class="n">resourceBundle</span> <span class="o">=</span> <span class="s">"mybundle"</span><span class="o">,</span> <span class="n">mixinStandardHelpOptions</span> <span class="o">=</span> <span class="kc">true</span><span class="o">)</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">GreetingApp</span> <span class="kd">implements</span> <span class="nc">Runnable</span> <span class="o">{</span>
+    <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="o">{</span> <span class="s">"-l"</span><span class="o">,</span> <span class="s">"--locale"</span> <span class="o">},</span> <span class="n">paramLabel</span> <span class="o">=</span> <span class="s">"&lt;locale&gt;"</span><span class="o">)</span>
+    <span class="kd">private</span> <span class="nc">String</span> <span class="n">ignored</span><span class="o">;</span>
+
+    <span class="nd">@Parameters</span><span class="o">(</span><span class="n">arity</span> <span class="o">=</span> <span class="s">"1.."</span><span class="o">,</span> <span class="n">paramLabel</span> <span class="o">=</span> <span class="s">"&lt;name1&gt; &lt;name2&gt;"</span><span class="o">)</span>
+    <span class="kd">private</span> <span class="nc">String</span><span class="o">[]</span> <span class="n">names</span><span class="o">;</span>
+
+    <span class="nc">ResourceBundle</span> <span class="n">bundle</span> <span class="o">=</span> <span class="nc">ResourceBundle</span><span class="o">.</span><span class="na">getBundle</span><span class="o">(</span><span class="s">"mybundle"</span><span class="o">);</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">()</span> <span class="o">{</span> <span class="c1">// business logic here</span>
+        <span class="k">for</span> <span class="o">(</span><span class="nc">String</span> <span class="n">name</span> <span class="o">:</span> <span class="n">names</span><span class="o">)</span> <span class="o">{</span>
+            <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="nc">MessageFormat</span><span class="o">.</span><span class="na">format</span><span class="o">(</span><span class="n">bundle</span><span class="o">.</span><span class="na">getString</span><span class="o">(</span><span class="s">"Hello"</span><span class="o">),</span> <span class="n">name</span><span class="o">));</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="nc">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
+        <span class="c1">// first phase: configure locale</span>
+        <span class="k">new</span> <span class="nf">CommandLine</span><span class="o">(</span><span class="k">new</span> <span class="nc">InitLocale</span><span class="o">()).</span><span class="na">parseArgs</span><span class="o">(</span><span class="n">args</span><span class="o">);</span>
+
+        <span class="c1">// second phase: parse all args (ignoring --locale) and run the app</span>
+        <span class="k">new</span> <span class="nf">CommandLine</span><span class="o">(</span><span class="k">new</span> <span class="nc">GreetingApp</span><span class="o">()).</span><span class="na">execute</span><span class="o">(</span><span class="n">args</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">class</span> <span class="nc">InitLocale</span> <span class="p">{</span>
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-l"</span><span class="p">,</span> <span class="s">"--locale"</span><span class="p">],</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"locale for message texts (phase 1)"</span><span class="p">])</span>
+    <span class="k">fun</span> <span class="nf">setLocale</span><span class="p">(</span><span class="n">locale</span><span class="p">:</span> <span class="nc">String</span><span class="p">?)</span> <span class="p">{</span>
+        <span class="nc">Locale</span><span class="p">.</span><span class="nf">setDefault</span><span class="p">(</span><span class="nc">Locale</span><span class="p">(</span><span class="n">locale</span><span class="p">))</span>
+    <span class="p">}</span>
+
+    <span class="nd">@Unmatched</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">others</span> <span class="p">:</span> <span class="nc">List</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">&gt;</span> <span class="c1">// ignore other parameters/options in first parsing phase</span>
+<span class="p">}</span>
+
+<span class="nd">@Command</span><span class="p">(</span><span class="n">name</span> <span class="p">=</span> <span class="s">"GreetingApp"</span><span class="p">,</span> <span class="n">resourceBundle</span> <span class="p">=</span> <span class="s">"mybundle"</span><span class="p">,</span> <span class="n">mixinStandardHelpOptions</span> <span class="p">=</span> <span class="k">true</span><span class="p">)</span>
+<span class="kd">class</span> <span class="nc">GreetingApp</span> <span class="p">:</span> <span class="nc">Runnable</span> <span class="p">{</span>
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-l"</span><span class="p">,</span> <span class="s">"--locale"</span><span class="p">],</span> <span class="n">paramLabel</span> <span class="p">=</span> <span class="s">"&lt;locale&gt;"</span><span class="p">)</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">ignored</span><span class="p">:</span> <span class="nc">String</span>
+
+    <span class="nd">@Parameters</span><span class="p">(</span><span class="n">arity</span> <span class="p">=</span> <span class="s">"1.."</span><span class="p">,</span> <span class="n">paramLabel</span> <span class="p">=</span> <span class="s">"&lt;name1&gt; &lt;name2&gt;"</span><span class="p">)</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">names</span><span class="p">:</span> <span class="nc">Array</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">&gt;</span>
+
+    <span class="k">private</span> <span class="kd">var</span> <span class="py">bundle</span> <span class="p">=</span> <span class="nc">ResourceBundle</span><span class="p">.</span><span class="nf">getBundle</span><span class="p">(</span><span class="s">"mybundle"</span><span class="p">)</span>
+
+    <span class="k">override</span> <span class="k">fun</span> <span class="nf">run</span><span class="p">()</span> <span class="p">{</span> <span class="c1">// business logic here</span>
+        <span class="n">names</span><span class="p">.</span><span class="nf">onEach</span> <span class="p">{</span>
+            <span class="nf">println</span><span class="p">(</span><span class="nc">MessageFormat</span><span class="p">.</span><span class="nf">format</span><span class="p">(</span><span class="n">bundle</span><span class="p">.</span><span class="nf">getString</span><span class="p">(</span><span class="s">"Hello"</span><span class="p">),</span> <span class="n">it</span><span class="p">))</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">fun</span> <span class="nf">main</span><span class="p">(</span><span class="n">args</span><span class="p">:</span> <span class="nc">Array</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">&gt;)</span>  <span class="p">{</span>
+    <span class="c1">// first phase: configure locale</span>
+    <span class="nc">CommandLine</span><span class="p">(</span><span class="n">picocli</span><span class="p">.</span><span class="n">examples</span><span class="p">.</span><span class="n">kotlin</span><span class="p">.</span><span class="n">i18n</span><span class="p">.</span><span class="n">localecontrol</span><span class="p">.</span><span class="nc">InitLocale</span><span class="p">()).</span><span class="nf">parseArgs</span><span class="p">(*</span><span class="n">args</span><span class="p">)</span>
+
+    <span class="c1">// second phase: parse all args (ignoring --locale) and run the app</span>
+    <span class="nf">exitProcess</span><span class="p">(</span><span class="nc">CommandLine</span><span class="p">(</span><span class="nc">GreetingApp</span><span class="p">()).</span><span class="nf">execute</span><span class="p">(*</span><span class="n">args</span><span class="p">))</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Now put the default properties file (<code>mybundle.properties</code>, in English) and the Spanish language variant (<code>mybundle_es.properties</code>) in place:</p>
+</div>
+<div class="listingblock">
+<div class="title">mybundle.properties</div>
+<div class="content">
+<pre>Hello = Hello {0}!</pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">mybundle_es.properties</div>
+<div class="content">
+<pre>Hello = ¡Hola {0}!</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Eventually, we are ready to run our application:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="bash">java <span class="nt">-cp</span> <span class="s2">"picocli-4.6.2.jar;myapp.jar"</span> org.myorg.GreetingApp Sarah Lea</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>With no command line parameter <code>--locale</code> given, the message texts are printed in the default language (here: English):</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>Hello Sarah!
+Hello Lea!</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>In order to control the locale choosen for our output, we have to make use of the command line parameter <code>--locale</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="bash">java <span class="nt">-cp</span> <span class="s2">"picocli-4.6.2.jar;myapp.jar"</span> org.myorg.GreetingApp <span class="nt">--locale</span><span class="o">=</span>es Sarah Lea</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Now our message texts are printed in Spanish:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>¡Hola Sarah!
+¡Hola Lea!</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Using the command line parameter <code>--locale</code>, one can also determine the language of the help output of your application.
+The <a href="https://github.com/remkop/picocli/blob/master/picocli-examples"><code>picocli-examples</code></a> module has examples with fully implemented, localized help output, coded both in <a href="https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/i18n/localecontrol/LocaleControl.java">Java</a> and <a href="https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/kotlin/picocli/examples/kotlin/i18n/localecontrol/LocaleControl.kt">Kotlin</a>.</p>
+</div>
+</div>
 </div>
 </div>
 <div class="sect1">
@@ -14074,6 +14220,18 @@ helpCommand.command = Shared description of COMMAND parameter of built-in help s
     <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">directories</span><span class="p">:</span> <span class="nc">Array</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">&gt;</span>
 <span class="p">}</span></code></pre>
 </div>
+</div>
+<div class="admonitionblock caution">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-caution" title="Caution"></i>
+</td>
+<td class="content">
+In Kotlin, the dollar sign ($) has to be escaped with a backslash (\) in order to prevent Kotlin string interpolation to occur: <code>\${DEFAULT-VALUE}</code>.
+</td>
+</tr>
+</table>
 </div>
 </div>
 <div class="sect2">
@@ -14883,7 +15041,7 @@ The <code>@Command</code> annotation now has a <code>modelTransformer</code> att
 <i class="fa icon-caution" title="Caution"></i>
 </td>
 <td class="content">
-If your model transformer is declared as nested class, make sure you mark this class as <code>static</code>, or picocli will not be able to instantiate your transformer class without a <a href="#_custom_factory">Custom Factory</a>.
+If your model transformer is declared as nested class, make sure you mark this class as <code>static</code>, or picocli will not be able to instantiate your transformer class.
 </td>
 </tr>
 </table>
@@ -15561,7 +15719,7 @@ Extract the archive file to a directory of your choice and open a shell or comma
 <pre class="rouge highlight"><code data-lang="xml"><span class="nt">&lt;dependency&gt;</span>
   <span class="nt">&lt;groupId&gt;</span>info.picocli<span class="nt">&lt;/groupId&gt;</span>
   <span class="nt">&lt;artifactId&gt;</span>picocli-spring-boot-starter<span class="nt">&lt;/artifactId&gt;</span>
-  <span class="nt">&lt;version&gt;</span>4.6.1<span class="nt">&lt;/version&gt;</span>
+  <span class="nt">&lt;version&gt;</span>4.6.2<span class="nt">&lt;/version&gt;</span>
 <span class="nt">&lt;/dependency&gt;</span></code></pre>
 </div>
 </div>
@@ -15569,7 +15727,7 @@ Extract the archive file to a directory of your choice and open a shell or comma
 <div class="title">Gradle (Groovy)</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="groovy"><span class="n">dependencies</span> <span class="o">{</span>
-    <span class="n">implementation</span> <span class="s1">'info.picocli:picocli-spring-boot-starter:4.6.1'</span>
+    <span class="n">implementation</span> <span class="s1">'info.picocli:picocli-spring-boot-starter:4.6.2'</span>
 <span class="o">}</span></code></pre>
 </div>
 </div>
@@ -15577,7 +15735,7 @@ Extract the archive file to a directory of your choice and open a shell or comma
 <div class="title">Gradle (Kotlin)</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="kotlin"><span class="nf">dependencies</span> <span class="p">{</span>
-    <span class="nf">implementation</span><span class="p">(</span><span class="s">"info.picocli:picocli-spring-boot-starter:4.6.1"</span><span class="p">)</span>
+    <span class="nf">implementation</span><span class="p">(</span><span class="s">"info.picocli:picocli-spring-boot-starter:4.6.2"</span><span class="p">)</span>
 <span class="p">}</span></code></pre>
 </div>
 </div>
@@ -15894,7 +16052,7 @@ Extract the archive file to a directory of your choice and open a shell or comma
 </table>
 </div>
 <div class="paragraph">
-<p>Finally we have to configure our mail service. This can be done inside a file <code>application properties</code>, which we put in a <code>config</code> subdirectory of your project:</p>
+<p>Finally we have to configure our mail service. This can be done inside a file <code>application.properties</code>, which we put in a <code>config</code> subdirectory of your project:</p>
 </div>
 <div class="listingblock">
 <div class="title">application.properties</div>
@@ -16035,7 +16193,7 @@ Open the auto-generated source file <code>GitStarsCommand.java</code> and alter 
                 <span class="n">defaultValue</span> <span class="o">=</span> <span class="s">"remkop/picocli"</span><span class="o">)</span>
     <span class="nc">String</span> <span class="n">slug</span><span class="o">;</span>
 
-    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="nc">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="kd">throws</span> <span class="nc">Exception</span> <span class="o">{</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="nc">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
         <span class="nc">PicocliRunner</span><span class="o">.</span><span class="na">execute</span><span class="o">(</span><span class="nc">GitStarsCommand</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="n">args</span><span class="o">);</span>
     <span class="o">}</span>
 
@@ -16648,7 +16806,8 @@ The generated AsciiDoc files can be converted to HTML, PDF and unix man pages wi
 <div class="paragraph">
 <p>For example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nc">MyApp</span> <span class="n">app</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">MyApp</span><span class="o">();</span>
 <span class="nc">CommandLine</span> <span class="n">cmd</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">CommandLine</span><span class="o">(</span><span class="n">app</span><span class="o">);</span>
@@ -16666,14 +16825,31 @@ The generated AsciiDoc files can be converted to HTML, PDF and unix man pages wi
 <span class="n">assertEquals</span><span class="o">(</span><span class="s">"expectedValue2"</span><span class="o">,</span> <span class="n">app</span><span class="o">.</span><span class="na">getState2</span><span class="o">());</span></code></pre>
 </div>
 </div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">val</span> <span class="py">app</span> <span class="p">=</span> <span class="nc">MyApp</span><span class="p">()</span>
+<span class="kd">val</span> <span class="py">cmd</span> <span class="p">=</span> <span class="nc">CommandLine</span><span class="p">(</span><span class="n">app</span><span class="p">)</span>
+
+<span class="kd">val</span> <span class="py">sw</span> <span class="p">=</span> <span class="nc">StringWriter</span><span class="p">()</span>
+<span class="n">cmd</span><span class="p">.</span><span class="k">out</span> <span class="p">=</span> <span class="nc">PrintWriter</span><span class="p">(</span><span class="n">sw</span><span class="p">)</span>
+
+<span class="c1">// black box testing</span>
+<span class="kd">val</span> <span class="py">exitCode</span> <span class="p">=</span> <span class="n">cmd</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="s">"-x"</span><span class="p">,</span> <span class="s">"-y=123"</span><span class="p">)</span>
+<span class="nf">assertEquals</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">exitCode</span><span class="p">)</span>
+<span class="nf">assertEquals</span><span class="p">(</span><span class="s">"Your output is abc..."</span><span class="p">,</span> <span class="n">sw</span><span class="p">.</span><span class="nf">toString</span><span class="p">())</span>
+
+<span class="c1">// white box testing</span>
+<span class="nf">assertEquals</span><span class="p">(</span><span class="s">"expectedValue1"</span><span class="p">,</span> <span class="n">app</span><span class="p">.</span><span class="n">state1</span><span class="p">)</span>
+<span class="nf">assertEquals</span><span class="p">(</span><span class="s">"expectedValue2"</span><span class="p">,</span> <span class="n">app</span><span class="p">.</span><span class="n">state2</span><span class="p">)</span></code></pre>
 </div>
-<div class="sect2">
-<h3 id="_testing_the_output"><a class="anchor" href="#_testing_the_output"></a>28.2. Testing the Output</h3>
+</div>
 <div class="paragraph">
 <p>This assumes that the application uses the <code>PrintWriter</code> provided by <a href="https://picocli.info/apidocs/picocli/CommandLine.html#getOut--"><code>CommandLine.getOut</code></a> or  <a href="https://picocli.info/apidocs/picocli/CommandLine.html#getErr--"><code>CommandLine.getErr</code></a>.
 Applications can get these writers via the <a href="#spec-annotation"><code>@Spec</code></a> annotation:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span>
 <span class="kd">class</span> <span class="nc">MyApp</span> <span class="kd">implements</span> <span class="nc">Runnable</span> <span class="o">{</span>
@@ -16686,8 +16862,100 @@ Applications can get these writers via the <a href="#spec-annotation"><code>@Spe
 <span class="o">}</span></code></pre>
 </div>
 </div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Command</span>
+<span class="kd">class</span> <span class="nc">MyApp</span> <span class="p">:</span> <span class="nc">Runnable</span> <span class="p">{</span>
+    <span class="nd">@Spec</span> <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">spec</span><span class="p">:</span> <span class="nc">CommandSpec</span>
+
+    <span class="k">override</span> <span class="k">fun</span> <span class="nf">run</span><span class="p">()</span> <span class="p">{</span>
+        <span class="c1">// make testing easier by printing to the Err and Out streams provided by picocli</span>
+        <span class="n">spec</span><span class="p">.</span><span class="nf">commandLine</span><span class="p">().</span><span class="k">out</span><span class="p">.</span><span class="nf">println</span><span class="p">(</span><span class="s">"Your output is abc..."</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_testing_the_output"><a class="anchor" href="#_testing_the_output"></a>28.2. Testing the Output</h3>
 <div class="paragraph">
-<p>Applications that use a version of picocli older than 4.0, or applications that print to <code>System.out</code> or <code>System.err</code> directly can be tested by capturing the standard output and error streams like this:</p>
+<p>Applications that print to <code>System.out</code> or <code>System.err</code> directly, or use a version of picocli lower than 4.0, can be tested by capturing the standard output and error streams.
+There are various options for doing this, some of which are shown below.</p>
+</div>
+<div class="sect3">
+<h4 id="_java_8_with_system_lambda"><a class="anchor" href="#_java_8_with_system_lambda"></a>28.2.1. Java 8+ with System-Lambda</h4>
+<div class="paragraph">
+<p>Applications that use JUnit 5 or Java 8+ can use Stephan Birkner&#8217;s <a href="https://github.com/stefanbirkner/system-lambda">System-Lambda</a> project for capturing output.
+This library has facilities for capturing the standard output and standard error streams separately or mixed together, and for normalizing line breaks.</p>
+</div>
+<div class="paragraph">
+<p>Example usage:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="java"><span class="kn">import</span> <span class="nn">static</span> <span class="n">com</span><span class="o">.</span><span class="na">github</span><span class="o">.</span><span class="na">stefanbirkner</span><span class="o">.</span><span class="na">systemlambda</span><span class="o">.</span><span class="na">SystemLambda</span><span class="o">.</span><span class="na">tapSystemErr</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">static</span> <span class="n">com</span><span class="o">.</span><span class="na">github</span><span class="o">.</span><span class="na">stefanbirkner</span><span class="o">.</span><span class="na">systemlambda</span><span class="o">.</span><span class="na">SystemLambda</span><span class="o">.</span><span class="na">tapSystemOutNormalized</span><span class="o">;</span>
+<span class="c1">// ...</span>
+
+<span class="kd">class</span> <span class="nc">MyTest</span> <span class="o">{</span>
+    <span class="nd">@Test</span>
+    <span class="kt">void</span> <span class="nf">testMyApp</span><span class="o">()</span> <span class="kd">throws</span> <span class="nc">Exception</span> <span class="o">{</span>
+        <span class="nc">String</span> <span class="n">errText</span> <span class="o">=</span> <span class="n">tapSystemErr</span><span class="o">(()</span> <span class="o">-&gt;</span> <span class="o">{</span>
+            <span class="nc">String</span> <span class="n">outText</span> <span class="o">=</span> <span class="n">tapSystemOutNormalized</span><span class="o">(()</span> <span class="o">-&gt;</span> <span class="o">{</span>
+                <span class="k">new</span> <span class="nf">CommandLine</span><span class="o">(</span><span class="k">new</span> <span class="nc">MyApp</span><span class="o">()).</span><span class="na">execute</span><span class="o">(</span><span class="s">"--option=value"</span><span class="o">,</span> <span class="s">"arg0"</span><span class="o">,</span> <span class="s">"arg1"</span><span class="o">);</span>
+            <span class="o">});</span>
+            <span class="n">assertEquals</span><span class="o">(</span><span class="s">"--option='value'\n"</span> <span class="o">+</span>
+                         <span class="s">"position[0]='arg0'\n"</span> <span class="o">+</span>
+                         <span class="s">"position[1]='arg1'\n"</span><span class="o">,</span> <span class="n">outText</span><span class="o">);</span>
+        <span class="o">});</span>
+        <span class="n">assertEquals</span><span class="o">(</span><span class="s">""</span><span class="o">,</span> <span class="n">errText</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_junit_4_with_system_rules"><a class="anchor" href="#_junit_4_with_system_rules"></a>28.2.2. JUnit 4 with System-Rules</h4>
+<div class="paragraph">
+<p>Applications that use JUnit 4 can use Stephan Birkner&#8217;s <a href="https://stefanbirkner.github.io/system-rules">System-Rules</a> project for capturing output.</p>
+</div>
+<div class="paragraph">
+<p>Example usage:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="java"><span class="kn">import</span> <span class="nn">org.junit.contrib.java.lang.system.SystemErrRule</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.junit.contrib.java.lang.system.SystemOutRule</span><span class="o">;</span>
+<span class="c1">// ...</span>
+
+<span class="kd">class</span> <span class="nc">MyTest</span> <span class="o">{</span>
+    <span class="nd">@Rule</span>
+    <span class="nc">SystemErrRule</span> <span class="n">systemErrRule</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">SystemErrRule</span><span class="o">().</span><span class="na">enableLog</span><span class="o">().</span><span class="na">muteForSuccessfulTests</span><span class="o">();</span>
+
+    <span class="nd">@Rule</span>
+    <span class="nc">SystemOutRule</span> <span class="n">systemOutRule</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">SystemOutRule</span><span class="o">().</span><span class="na">enableLog</span><span class="o">().</span><span class="na">muteForSuccessfulTests</span><span class="o">();</span>
+
+    <span class="nd">@Test</span>
+    <span class="kt">void</span> <span class="nf">testMyApp</span><span class="o">()</span> <span class="kd">throws</span> <span class="nc">Exception</span> <span class="o">{</span>
+        <span class="k">new</span> <span class="nf">CommandLine</span><span class="o">(</span><span class="k">new</span> <span class="nc">MyApp</span><span class="o">()).</span><span class="na">execute</span><span class="o">(</span><span class="s">"--option=value"</span><span class="o">,</span> <span class="s">"arg0"</span><span class="o">,</span> <span class="s">"arg1"</span><span class="o">);</span>
+        <span class="nc">String</span> <span class="n">expected</span> <span class="o">=</span> <span class="nc">String</span><span class="o">.</span><span class="na">format</span><span class="o">(</span><span class="s">"--option='value'%n"</span> <span class="o">+</span>
+                                        <span class="s">"position[0]='arg0'%n"</span> <span class="o">+</span>
+                                        <span class="s">"position[1]='arg1'%n"</span><span class="o">);</span>
+        <span class="n">assertEquals</span><span class="o">(</span><span class="n">expected</span><span class="o">,</span> <span class="n">systemOutRule</span><span class="o">.</span><span class="na">getLog</span><span class="o">());</span>
+        <span class="n">assertEquals</span><span class="o">(</span><span class="s">""</span><span class="o">,</span> <span class="n">systemErrRule</span><span class="o">.</span><span class="na">getLog</span><span class="o">());</span>
+    <span class="o">}</span>
+<span class="o">}</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_diy_output_capturing"><a class="anchor" href="#_diy_output_capturing"></a>28.2.3. DIY Output Capturing</h4>
+<div class="paragraph">
+<p>It is also possible to capture output in the tests yourself without using a library.</p>
+</div>
+<div class="paragraph">
+<p>For example:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -16709,7 +16977,10 @@ Applications can get these writers via the <a href="#spec-annotation"><code>@Spe
 </div>
 </div>
 <div class="paragraph">
-<p>If you&#8217;re testing with JUnit 4, you can do the setup in a <code>@org.junit.Before</code>-annotated method and teardown in an <code>@org.junit.After</code>-annotated method.
+<p>This looks verbose, but can be simplified a lot by letting the test framework do the setup and cleanup.</p>
+</div>
+<div class="paragraph">
+<p>JUnit 4 lets you do setup in a <code>@org.junit.Before</code>-annotated method and teardown in an <code>@org.junit.After</code>-annotated method.
 The JUnit 5 equivalent annotations are <code>@org.junit.jupiter.api.BeforeEach</code> and <code>@org.junit.jupiter.api.AfterEach</code>, respectively.
 For example:</p>
 </div>
@@ -16753,17 +17024,90 @@ For example:</p>
 </div>
 </div>
 </div>
+</div>
 <div class="sect2">
 <h3 id="_testing_the_exit_code"><a class="anchor" href="#_testing_the_exit_code"></a>28.3. Testing the Exit Code</h3>
 <div class="paragraph">
-<p>Testing the exit code of applications that call <code>System.exit</code> can be tricky but is not impossible.</p>
+<p>Testing the exit code of applications that call <code>System.exit</code> can be tricky but is not impossible.
+Depending on your programming language, your environment and your testing framework, you have several options:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Java 8</strong>: You can use Stephan Birkner&#8217;s <a href="https://github.com/stefanbirkner/system-lambda">System-Lambda</a> project for testing the <a href="https://github.com/stefanbirkner/system-lambda#systemexit">exit code</a></p>
+</li>
+<li>
+<p><strong>Java/Kotlin + Junit 5</strong>: You can use Todd Ginsberg&#8217;s <a href="https://github.com/tginsberg/junit5-system-exit">System.exit()</a> extension for Junit 5. The project README mentions common <a href="https://github.com/tginsberg/junit5-system-exit#use-cases">use cases</a>.</p>
+</li>
+<li>
+<p><strong>Java + Junit 4</strong>: You can use Stephan Birkner&#8217;s <a href="https://stefanbirkner.github.io/system-rules">System-Rules</a> project for testing the <a href="https://stefanbirkner.github.io/system-rules/#ExpectedSystemExit">exit code</a>.</p>
+</li>
+<li>
+<p><strong>Kotlin + Kotest</strong>: Kotlin coders you may use the <a href="https://kotest.io/">Kotest</a> test framework which comes with <a href="https://kotest.io/docs/extensions/system_extensions.html#system-exit-extensions">System Exit extensions</a> that allow you to test the exit code.</p>
+</li>
+</ul>
 </div>
 <div class="paragraph">
-<p>Applications that use JUnit 4 can use Stephan Birkner&#8217;s  <a href="https://stefanbirkner.github.io/system-rules">System-Rules</a> project for testing the  <a href="https://stefanbirkner.github.io/system-rules/#ExpectedSystemExit">exit code</a>.
-(This library has many other nice features, including capturing the standard output and standard error <a href="https://stefanbirkner.github.io/system-rules/#SystemErrAndOutRule">streams</a>, and more.)
-For example:</p>
+<p>The listing below provides code samples for all of the four options mentioned above:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java 8</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="java"><span class="kn">import</span> <span class="nn">static</span> <span class="n">com</span><span class="o">.</span><span class="na">github</span><span class="o">.</span><span class="na">stefanbirkner</span><span class="o">.</span><span class="na">systemlambda</span><span class="o">.</span><span class="na">SystemLambda</span><span class="o">.</span><span class="na">catchSystemExit</span><span class="o">;</span>
+<span class="c1">// ...</span>
+
+<span class="kd">class</span> <span class="nc">MyTest</span> <span class="o">{</span>
+    <span class="nd">@Command</span>
+    <span class="kd">static</span> <span class="kd">class</span> <span class="nc">MyApp</span> <span class="kd">implements</span> <span class="nc">Callable</span><span class="o">&lt;</span><span class="nc">Integer</span><span class="o">&gt;</span> <span class="o">{</span>
+        <span class="kd">public</span> <span class="nc">Integer</span> <span class="nf">call</span><span class="o">()</span> <span class="o">{</span>
+            <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">"Hi"</span><span class="o">);</span>
+            <span class="k">return</span> <span class="mi">42</span><span class="o">;</span>
+        <span class="o">}</span>
+        <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="nc">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
+            <span class="nc">System</span><span class="o">.</span><span class="na">exit</span><span class="o">(</span><span class="k">new</span> <span class="nc">CommandLine</span><span class="o">(</span><span class="k">new</span> <span class="nc">MyApp</span><span class="o">()).</span><span class="na">execute</span><span class="o">(</span><span class="n">args</span><span class="o">));</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Test</span>
+    <span class="kt">void</span> <span class="nf">testMyAppExit</span><span class="o">()</span> <span class="kd">throws</span> <span class="nc">Exception</span> <span class="o">{</span>
+        <span class="kt">int</span> <span class="n">exitCode</span> <span class="o">=</span> <span class="n">catchSystemExit</span><span class="o">(()</span> <span class="o">-&gt;</span> <span class="o">{</span>
+            <span class="nc">MyApp</span><span class="o">.</span><span class="na">main</span><span class="o">();</span>
+        <span class="o">});</span>
+        <span class="n">assertEquals</span><span class="o">(</span><span class="mi">42</span><span class="o">,</span> <span class="n">exitCode</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Java/Junit 5</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="java"><span class="kn">import</span> <span class="nn">com.ginsberg.junit.exit.ExpectSystemExitWithStatus</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.junit.jupiter.api.Test</span><span class="o">;</span>
+<span class="c1">// ...</span>
+
+<span class="kd">class</span> <span class="nc">MyTest</span> <span class="o">{</span>
+    <span class="nd">@Command</span>
+    <span class="kd">static</span> <span class="kd">class</span> <span class="nc">MyApp</span> <span class="kd">implements</span> <span class="nc">Callable</span><span class="o">&lt;</span><span class="nc">Integer</span><span class="o">&gt;</span> <span class="o">{</span>
+        <span class="nd">@Override</span>
+        <span class="kd">public</span> <span class="nc">Integer</span> <span class="nf">call</span><span class="o">()</span> <span class="kd">throws</span> <span class="nc">Exception</span> <span class="o">{</span>
+            <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">"Hi"</span><span class="o">);</span>
+            <span class="k">return</span> <span class="mi">42</span><span class="o">;</span>
+        <span class="o">}</span>
+        <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span> <span class="o">(</span><span class="nc">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
+            <span class="nc">System</span><span class="o">.</span><span class="na">exit</span><span class="o">(</span><span class="k">new</span> <span class="nc">CommandLine</span><span class="o">(</span><span class="k">new</span> <span class="nc">MyApp</span><span class="o">()).</span><span class="na">execute</span><span class="o">(</span><span class="n">args</span><span class="o">));</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Test</span>
+    <span class="nd">@ExpectSystemExitWithStatus</span><span class="o">(</span><span class="mi">42</span><span class="o">)</span>
+    <span class="kt">void</span> <span class="nf">testMyAppExit</span><span class="o">()</span> <span class="o">{</span>
+        <span class="nc">MyApp</span><span class="o">.</span><span class="na">main</span><span class="o">(</span><span class="k">new</span> <span class="nc">String</span><span class="o">[]</span> <span class="o">{});</span>
+    <span class="o">}</span>
+<span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Java/Junit 4</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kn">import</span> <span class="nn">org.junit.Rule</span><span class="o">;</span>
 <span class="kn">import</span> <span class="nn">org.junit.Test</span><span class="o">;</span>
@@ -16772,79 +17116,177 @@ For example:</p>
 <span class="kd">class</span> <span class="nc">MyTest</span> <span class="o">{</span>
     <span class="nd">@Rule</span> <span class="kd">public</span> <span class="kd">final</span> <span class="nc">ExpectedSystemExit</span> <span class="n">exit</span> <span class="o">=</span> <span class="nc">ExpectedSystemExit</span><span class="o">.</span><span class="na">none</span><span class="o">();</span>
 
+    <span class="nd">@Command</span>
+    <span class="kd">static</span> <span class="kd">class</span> <span class="nc">MyApp</span> <span class="kd">implements</span> <span class="nc">Callable</span><span class="o">&lt;</span><span class="nc">Integer</span><span class="o">&gt;</span> <span class="o">{</span>
+        <span class="kd">public</span> <span class="nc">Integer</span> <span class="nf">call</span><span class="o">()</span> <span class="o">{</span>
+            <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">"Hi"</span><span class="o">);</span>
+            <span class="k">return</span> <span class="mi">42</span><span class="o">;</span>
+        <span class="o">}</span>
+        <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="nc">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
+            <span class="nc">System</span><span class="o">.</span><span class="na">exit</span><span class="o">(</span><span class="k">new</span> <span class="nc">CommandLine</span><span class="o">(</span><span class="k">new</span> <span class="nc">MyApp</span><span class="o">()).</span><span class="na">execute</span><span class="o">(</span><span class="n">args</span><span class="o">));</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+
     <span class="nd">@Test</span>
     <span class="kd">public</span> <span class="kt">void</span> <span class="nf">testExitCode</span><span class="o">()</span> <span class="o">{</span>
-        <span class="nd">@Command</span> <span class="kd">class</span> <span class="nc">App</span> <span class="kd">implements</span> <span class="nc">Runnable</span> <span class="o">{</span>
-            <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">()</span> <span class="o">{</span>
-                <span class="nc">System</span><span class="o">.</span><span class="na">exit</span><span class="o">(</span><span class="mi">23</span><span class="o">);</span>
-            <span class="o">}</span>
-        <span class="o">}</span>
-        <span class="n">exit</span><span class="o">.</span><span class="na">expectSystemExitWithStatus</span><span class="o">(</span><span class="mi">23</span><span class="o">);</span>
-        <span class="k">new</span> <span class="nf">CommandLine</span><span class="o">(</span><span class="k">new</span> <span class="nc">App</span><span class="o">()).</span><span class="na">execute</span><span class="o">();</span>
+        <span class="n">exit</span><span class="o">.</span><span class="na">expectSystemExitWithStatus</span><span class="o">(</span><span class="mi">42</span><span class="o">);</span>
+        <span class="nc">MyApp</span><span class="o">.</span><span class="na">main</span><span class="o">();</span>
     <span class="o">}</span>
 <span class="o">}</span></code></pre>
 </div>
 </div>
-<div class="paragraph">
-<p>JUnit 5 users may be interested in Todd Ginsberg&#8217;s blog post <a href="https://todd.ginsberg.com/post/testing-system-exit/">Testing System.exit() with JUnit5</a>.</p>
+<div class="listingblock secondary">
+<div class="title">Kotlin/Kotest</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="k">import</span> <span class="nn">io.kotest.assertions.throwables.shouldThrow</span>
+<span class="k">import</span> <span class="nn">io.kotest.core.spec.style.StringSpec</span>
+<span class="k">import</span> <span class="nn">io.kotest.extensions.system.*</span>
+<span class="k">import</span> <span class="nn">io.kotest.matchers.shouldBe</span>
+<span class="c1">// ...</span>
+
+<span class="kd">class</span> <span class="nc">SystemExitTest</span> <span class="p">:</span> <span class="nc">StringSpec</span><span class="p">()</span> <span class="p">{</span>
+
+    <span class="k">override</span> <span class="k">fun</span> <span class="nf">listeners</span><span class="p">()</span> <span class="p">=</span> <span class="nf">listOf</span><span class="p">(</span><span class="nc">SpecSystemExitListener</span><span class="p">)</span>
+
+    <span class="nf">init</span> <span class="p">{</span>
+        <span class="s">"Picocli app should exit process with return code 42"</span> <span class="p">{</span>
+            <span class="n">shouldThrow</span><span class="p">&lt;</span><span class="nc">SystemExitException</span><span class="p">&gt;</span> <span class="p">{</span>
+                <span class="nf">main</span><span class="p">(</span><span class="nf">arrayOf</span><span class="p">())</span>
+            <span class="p">}.</span><span class="n">exitCode</span> <span class="n">shouldBe</span> <span class="mi">42</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="nd">@Command</span>
+<span class="kd">class</span> <span class="nc">PicocliApp</span> <span class="p">:</span> <span class="nc">Callable</span><span class="p">&lt;</span><span class="nc">Int</span><span class="p">&gt;</span> <span class="p">{</span>
+    <span class="k">override</span> <span class="k">fun</span> <span class="nf">call</span><span class="p">():</span> <span class="nc">Int</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="mi">42</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">fun</span> <span class="nf">main</span><span class="p">(</span><span class="n">args</span><span class="p">:</span> <span class="nc">Array</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">&gt;)</span> <span class="p">:</span> <span class="nc">Unit</span> <span class="p">=</span> <span class="nf">exitProcess</span><span class="p">(</span><span class="nc">CommandLine</span><span class="p">(</span><span class="nc">PicocliApp</span><span class="p">()).</span><span class="nf">execute</span><span class="p">(*</span><span class="n">args</span><span class="p">))</span></code></pre>
+</div>
 </div>
 </div>
 <div class="sect2">
 <h3 id="_testing_environment_variables"><a class="anchor" href="#_testing_environment_variables"></a>28.4. Testing Environment Variables</h3>
 <div class="paragraph">
-<p>Since picocli offers support for using <a href="#_variable_interpolation">environment variables</a> in the annotations, you may want to test this.</p>
-</div>
-<div class="paragraph">
-<p>Applications that use JUnit 4 can use Stephan Birkner&#8217;s  <a href="https://stefanbirkner.github.io/system-rules">System-Rules</a> project for <a href="https://stefanbirkner.github.io/system-rules/#EnvironmentVariables">testing environment variables</a>.</p>
-</div>
-<div class="paragraph">
-<p>JUnit 5 does not appear to provide an equivalent extension for testing environment variables.
-JUnit 5 users can use Stephan Birkner&#8217;s <code>@Rule EnvironmentVariables &#8230;&#8203;</code> for testing environment variables, but there are some things to be aware of.</p>
+<p>Since picocli offers support for using <a href="#_variable_interpolation">environment variables</a> in the annotations, you may want to test this.
+Depending on your programming language, your environment and your testing framework, you have several options:</p>
 </div>
 <div class="ulist">
 <ul>
 <li>
-<p>Use <code>com.github.stefanbirkner:system-rules</code> version 1.17.2: the latest version, 1.18, has an <a href="https://github.com/stefanbirkner/system-rules/issues/70">issue</a> that means the Environment Variables rule will not work in JUnit 5.</p>
+<p><strong>Java 8</strong>: You can use Stephan Birkner&#8217;s <a href="https://github.com/stefanbirkner/system-lambda">System-Lambda</a> project for testing <a href="https://github.com/stefanbirkner/system-lambda#environment-variables">environment variables</a></p>
 </li>
 <li>
-<p><a href="https://github.com/remkop/picocli/issues/976#issuecomment-601200999">Apparently</a> the JUnit 5 <a href="https://junit.org/junit5/docs/current/user-guide/#migrating-from-junit4-rule-support"><code>@EnableRuleMigrationSupport</code> annotation</a> is not sufficient to reliably use <code>@Rule EnvironmentVariables</code> in a JUnit 5 test.</p>
+<p><strong>Java + Junit 4</strong>: You can use Stephan Birkner&#8217;s <a href="https://stefanbirkner.github.io/system-rules">System-Rules</a> project for testing the <a href="https://stefanbirkner.github.io/system-rules/#EnvironmentVariables">environment variables</a>.</p>
 </li>
 <li>
-<p>Instead, I recommend creating a separate JUnit 4 test class for the environment variable tests.</p>
+<p><strong>Kotlin + Kotest</strong>: Kotlin coders you may use the <a href="https://kotest.io/">Kotest</a> test framework which comes with <a href="https://kotest.io/docs/extensions/system_extensions.html#system-environment">System Environment</a> extension that allow you to test environment variables.</p>
 </li>
 </ul>
 </div>
 <div class="paragraph">
-<p>In Gradle, use the following dependencies:</p>
+<p>The listing below provides code samples for the three options mentioned above:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java 8</div>
 <div class="content">
-<pre class="rouge highlight"><code>dependencies {
-    implementation      "info.picocli:picocli:${picocliVersion}"
-    annotationProcessor "info.picocli:picocli-codegen:${picocliVersion}"
+<pre class="rouge highlight"><code data-lang="java"><span class="kn">import</span> <span class="nn">static</span> <span class="n">com</span><span class="o">.</span><span class="na">github</span><span class="o">.</span><span class="na">stefanbirkner</span><span class="o">.</span><span class="na">systemlambda</span><span class="o">.</span><span class="na">SystemLambda</span><span class="o">.</span><span class="na">withEnvironmentVariable</span><span class="o">;</span>
+<span class="c1">// ...</span>
 
-    testImplementation("com.github.stefanbirkner:system-rules:1.17.2") {
-        exclude group:"junit"
-    }
-    testImplementation "junit:junit:${junit4Version}"
-    testImplementation "org.junit.jupiter:junit-jupiter-api:${junit5Version}"
+<span class="nd">@Test</span>
+<span class="kt">void</span> <span class="nf">testEnvVar</span><span class="o">()</span> <span class="kd">throws</span> <span class="nc">Exception</span> <span class="o">{</span>
+    <span class="kd">class</span> <span class="nc">MyApp</span> <span class="o">{</span>
+        <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"--option"</span><span class="o">,</span> <span class="n">defaultValue</span> <span class="o">=</span> <span class="s">"${env:MYVAR}"</span><span class="o">,</span>
+                <span class="n">description</span> <span class="o">=</span> <span class="s">"Some option. Default: ${DEFAULT-VALUE}"</span><span class="o">)</span>
+        <span class="nc">String</span> <span class="n">option</span><span class="o">;</span>
+    <span class="o">}</span>
+    <span class="nc">String</span> <span class="n">actual</span> <span class="o">=</span> <span class="n">withEnvironmentVariable</span><span class="o">(</span><span class="s">"MYVAR"</span><span class="o">,</span> <span class="s">"some-value"</span><span class="o">)</span>
+            <span class="o">.</span><span class="na">and</span><span class="o">(</span><span class="s">"OTHER_VAR"</span><span class="o">,</span> <span class="s">"second value"</span><span class="o">)</span>
+            <span class="o">.</span><span class="na">execute</span><span class="o">(()</span> <span class="o">-&gt;</span> <span class="k">new</span> <span class="nc">CommandLine</span><span class="o">(</span><span class="k">new</span> <span class="nc">MyApp</span><span class="o">())</span>
+                            <span class="o">.</span><span class="na">getUsageMessage</span><span class="o">(</span><span class="nc">CommandLine</span><span class="o">.</span><span class="na">Help</span><span class="o">.</span><span class="na">Ansi</span><span class="o">.</span><span class="na">OFF</span><span class="o">));</span>
 
-    testRuntimeOnly "org.junit.platform:junit-platform-launcher:1.6.0"
-    testRuntimeOnly "org.junit.vintage:junit-vintage-engine:${junit5Version}"
-    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${junit5Version}"
-
-    // ...
-}
-
-test {
-    useJUnitPlatform {
-        includeEngines 'junit-jupiter', 'junit-vintage'
-    }
-}</code></pre>
+    <span class="nc">String</span> <span class="n">expected</span> <span class="o">=</span> <span class="nc">String</span><span class="o">.</span><span class="na">format</span><span class="o">(</span><span class="s">""</span> <span class="o">+</span>
+            <span class="s">"Usage: &lt;main class&gt; [--option=&lt;option&gt;]%n"</span> <span class="o">+</span>
+            <span class="s">"      --option=&lt;option&gt;   Some option. Default: some-value%n"</span><span class="o">);</span>
+    <span class="n">assertEquals</span><span class="o">(</span><span class="n">expected</span><span class="o">,</span> <span class="n">actual</span><span class="o">);</span>
+<span class="o">}</span></code></pre>
 </div>
 </div>
-<div class="paragraph">
-<p>For more details, see the <a href="https://github.com/remkop/picocli/files/4359943/bulk-scripts-public.zip">sample project</a> provided by David M. Carr.</p>
+<div class="listingblock secondary">
+<div class="title">Java/JUnit 4</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="java"><span class="kn">import</span> <span class="nn">org.junit.contrib.java.lang.system.EnvironmentVariables</span><span class="o">;</span>
+<span class="c1">// ...</span>
+
+<span class="kd">class</span> <span class="nc">MyTest</span> <span class="o">{</span>
+    <span class="nd">@Rule</span>
+    <span class="kd">public</span> <span class="kd">final</span> <span class="nc">EnvironmentVariables</span> <span class="n">environmentVariables</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">EnvironmentVariables</span><span class="o">();</span>
+
+    <span class="nd">@Test</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">testEnvVar</span><span class="o">()</span> <span class="o">{</span>
+        <span class="kd">class</span> <span class="nc">MyApp</span> <span class="o">{</span>
+            <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"--option"</span><span class="o">,</span> <span class="n">defaultValue</span> <span class="o">=</span> <span class="s">"${env:MYVAR}"</span><span class="o">,</span>
+                    <span class="n">description</span> <span class="o">=</span> <span class="s">"Some option. Default: ${DEFAULT-VALUE}"</span><span class="o">)</span>
+            <span class="nc">String</span> <span class="n">option</span><span class="o">;</span>
+        <span class="o">}</span>
+        <span class="n">environmentVariables</span><span class="o">.</span><span class="na">clear</span><span class="o">(</span><span class="s">"MYVAR"</span><span class="o">,</span> <span class="s">"OTHER_VAR"</span><span class="o">,</span> <span class="s">"THIRD_VAR"</span><span class="o">);</span>
+        <span class="n">environmentVariables</span><span class="o">.</span><span class="na">set</span><span class="o">(</span><span class="s">"MYVAR"</span><span class="o">,</span> <span class="s">"some-value"</span><span class="o">);</span>
+        <span class="n">environmentVariables</span><span class="o">.</span><span class="na">set</span><span class="o">(</span><span class="s">"OTHER_VAR"</span><span class="o">,</span> <span class="s">"second value"</span><span class="o">);</span>
+
+        <span class="nc">String</span> <span class="n">actual</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">CommandLine</span><span class="o">(</span><span class="k">new</span> <span class="nc">MyApp</span><span class="o">())</span>
+                <span class="o">.</span><span class="na">getUsageMessage</span><span class="o">(</span><span class="nc">CommandLine</span><span class="o">.</span><span class="na">Help</span><span class="o">.</span><span class="na">Ansi</span><span class="o">.</span><span class="na">OFF</span><span class="o">);</span>
+
+        <span class="nc">String</span> <span class="n">expected</span> <span class="o">=</span> <span class="nc">String</span><span class="o">.</span><span class="na">format</span><span class="o">(</span><span class="s">""</span> <span class="o">+</span>
+                <span class="s">"Usage: &lt;main class&gt; [--option=&lt;option&gt;]%n"</span> <span class="o">+</span>
+                <span class="s">"      --option=&lt;option&gt;   Some option. Default: some-value%n"</span><span class="o">);</span>
+        <span class="n">assertEquals</span><span class="o">(</span><span class="n">expected</span><span class="o">,</span> <span class="n">actual</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin/Kotest</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="k">import</span> <span class="nn">io.kotest.core.spec.style.StringSpec</span>
+<span class="k">import</span> <span class="nn">io.kotest.extensions.system.withEnvironment</span>
+<span class="k">import</span> <span class="nn">io.kotest.matchers.shouldBe</span>
+<span class="k">import</span> <span class="nn">picocli.CommandLine</span>
+<span class="k">import</span> <span class="nn">picocli.CommandLine.Command</span>
+
+<span class="kd">class</span> <span class="nc">EnvironmentVarTest</span> <span class="p">:</span> <span class="nc">StringSpec</span><span class="p">()</span> <span class="p">{</span>
+    <span class="nf">init</span> <span class="p">{</span>
+        <span class="s">"env var"</span> <span class="p">{</span>
+            <span class="nf">withEnvironment</span><span class="p">(</span><span class="nf">mapOf</span><span class="p">(</span><span class="s">"MYVAR"</span> <span class="n">to</span> <span class="s">"some-value"</span><span class="p">,</span> <span class="s">"OTHER_VAR"</span> <span class="n">to</span> <span class="s">"second value"</span><span class="p">))</span> <span class="p">{</span>
+                <span class="nc">CommandLine</span><span class="p">(</span><span class="nc">MyApp</span><span class="p">()).</span><span class="nf">getUsageMessage</span><span class="p">(</span><span class="nc">CommandLine</span><span class="p">.</span><span class="nc">Help</span><span class="p">.</span><span class="nc">Ansi</span><span class="p">.</span><span class="nc">OFF</span><span class="p">)</span> <span class="n">shouldBe</span>
+                <span class="s">"Usage: &lt;main class&gt; [--option=&lt;option&gt;]"</span> <span class="p">+</span> <span class="nc">System</span><span class="p">.</span><span class="nf">lineSeparator</span><span class="p">()</span> <span class="p">+</span>
+                <span class="s">"      --option=&lt;option&gt;   Some option. Default: some-value"</span> <span class="p">+</span> <span class="nc">System</span><span class="p">.</span><span class="nf">lineSeparator</span><span class="p">()</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="nd">@Command</span>
+<span class="kd">class</span> <span class="nc">MyApp</span> <span class="p">{</span>
+    <span class="nd">@CommandLine</span><span class="p">.</span><span class="nc">Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"--option"</span><span class="p">],</span> <span class="n">defaultValue</span> <span class="p">=</span> <span class="s">"\${env:MYVAR}"</span><span class="p">,</span>
+        <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"Some option. Default: \${DEFAULT-VALUE}"</span><span class="p">])</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">option</span><span class="p">:</span> <span class="nc">String</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="admonitionblock caution">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-caution" title="Caution"></i>
+</td>
+<td class="content">
+The latest versions of <code>com.github.stefanbirkner:system-rules</code>, 1.18 and 1.19, have an <a href="https://github.com/stefanbirkner/system-rules/issues/70">issue</a> that means the Environment Variables rule will not work in JUnit 5. Use System Rules version 1.17.2 instead when combining with JUnit 5.
+</td>
+</tr>
+</table>
 </div>
 </div>
 <div class="sect2">
@@ -16903,7 +17345,7 @@ To mock commands with subcommands you will need to use <code>mock()</code> inste
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="rouge highlight"><code data-lang="bash">java <span class="nt">-cp</span> <span class="s2">"picocli-4.6.1.jar;myapp.jar"</span> org.myorg.MyMainClass <span class="nt">--option</span><span class="o">=</span>value arg0 arg1</code></pre>
+<pre class="rouge highlight"><code data-lang="bash">java <span class="nt">-cp</span> <span class="s2">"picocli-4.6.2.jar;myapp.jar"</span> org.myorg.MyMainClass <span class="nt">--option</span><span class="o">=</span>value arg0 arg1</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -16927,7 +17369,7 @@ To mock commands with subcommands you will need to use <code>mock()</code> inste
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="rouge highlight"><code data-lang="bash"><span class="nb">alias </span><span class="nv">mycommand</span><span class="o">=</span><span class="s1">'java -cp "/path/to/picocli-4.6.1.jar:/path/to/myapp.jar" org.myorg.MainClass'</span></code></pre>
+<pre class="rouge highlight"><code data-lang="bash"><span class="nb">alias </span><span class="nv">mycommand</span><span class="o">=</span><span class="s1">'java -cp "/path/to/picocli-4.6.2.jar:/path/to/myapp.jar" org.myorg.MainClass'</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -17004,7 +17446,7 @@ you can then create a native image by invoking the <code>native-image</code> com
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>path/to/native-image -cp picocli-4.6.1.jar --static -jar myapp.jar</pre>
+<pre>path/to/native-image -cp picocli-4.6.2.jar --static -jar myapp.jar</pre>
 </div>
 </div>
 <div class="admonitionblock caution">
@@ -17104,6 +17546,17 @@ You use it with a <code>//DEPS</code> comment, similar to the <a href="http://gr
 This <a href="https://asciinema.org/a/AVwA19yijKRNKEO0bJENN2ME3?autoplay=true&amp;speed=2">asciinema presentation</a> shows what is possible.</p>
 </div>
 </div>
+<div class="sect2">
+<h3 id="_jreleaser"><a class="anchor" href="#_jreleaser"></a>29.10. JReleaser</h3>
+<div class="paragraph">
+<p><a href="https://jreleaser.org">JReleaser</a> enables several packaging options such as <a href="https://brew.sh/">Homebrew</a>, <a href="https://chocolatey.org/">Chocolatey</a>,
+<a href="https://snapcraft.io/">Snapcraft</a>, <a href="https://scoop.sh/">Scoop</a>, <a href="https://www.jbang.dev/">jbang</a>, <a href="https://www.docker.com/">Docker</a>, among others.
+Currently two different distribution  types are supported: jlink, and standard zip/tar distributions. The latter can be generated with a
+combination of the <a href="https://www.mojohaus.org/appassembler/appassembler-maven-plugin/">appassembler-maven-plugin</a> and
+<a href="http://maven.apache.org/plugins/maven-assembly-plugin/">maven-assembly-plugin</a> plugins if using Maven, or the
+<a href="https://docs.gradle.org/current/userguide/application_plugin.html">application</a> plugin if using Gradle.</p>
+</div>
+</div>
 </div>
 </div>
 <div class="sect1">
@@ -17171,7 +17624,7 @@ The script body is executed if the user input was valid and did not request usag
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="rouge highlight"><code data-lang="groovy"><span class="nd">@Grab</span><span class="o">(</span><span class="s1">'info.picocli:picocli-groovy:4.6.1'</span><span class="o">)</span>
+<pre class="rouge highlight"><code data-lang="groovy"><span class="nd">@Grab</span><span class="o">(</span><span class="s1">'info.picocli:picocli-groovy:4.6.2'</span><span class="o">)</span>
 <span class="nd">@GrabConfig</span><span class="o">(</span><span class="n">systemClassLoader</span><span class="o">=</span><span class="kc">true</span><span class="o">)</span>
 <span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s2">"myScript"</span><span class="o">,</span>
         <span class="n">mixinStandardHelpOptions</span> <span class="o">=</span> <span class="kc">true</span><span class="o">,</span> <span class="c1">// add --help and --version options</span>
@@ -17257,7 +17710,7 @@ The table below compares these two base classes.</p>
 </td>
 <td class="content">
 When upgrading scripts from picocli versions older than 4.0, just changing the version number is not enough!
-Scripts should use <code>@Grab('info.picocli:picocli-groovy:4.6.1')</code>. The old artifact id <code>@Grab('info.picocli:picocli:4.6.1')</code> will not work,
+Scripts should use <code>@Grab('info.picocli:picocli-groovy:4.6.2')</code>. The old artifact id <code>@Grab('info.picocli:picocli:4.6.2')</code> will not work,
 because the <code>@picocli.groovy.PicocliScript</code> annotation class and supporting classes have been moved into a separate module, <code>picocli-groovy</code>.
 </td>
 </tr>
@@ -17352,7 +17805,7 @@ When using a Groovy version older than 2.4.7, use this workaround for the <a hre
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="rouge highlight"><code data-lang="groovy"><span class="nd">@Grab</span><span class="o">(</span><span class="s1">'info.picocli:picocli-groovy:4.6.1'</span><span class="o">)</span>
+<pre class="rouge highlight"><code data-lang="groovy"><span class="nd">@Grab</span><span class="o">(</span><span class="s1">'info.picocli:picocli-groovy:4.6.2'</span><span class="o">)</span>
 <span class="nd">@GrabExclude</span><span class="o">(</span><span class="s1">'org.codehaus.groovy:groovy-all'</span><span class="o">)</span> <span class="c1">// work around GROOVY-7613</span>
 <span class="o">...</span></code></pre>
 </div>
@@ -17543,14 +17996,14 @@ so be aware that you will have to write <code>Array(&#8230;&#8203;)</code> for t
 <div class="listingblock primary">
 <div class="title">Gradle</div>
 <div class="content">
-<pre class="rouge highlight"><code data-lang="groovy"><span class="n">implementation</span> <span class="s1">'info.picocli:picocli:4.6.1'</span></code></pre>
+<pre class="rouge highlight"><code data-lang="groovy"><span class="n">implementation</span> <span class="s1">'info.picocli:picocli:4.6.2'</span></code></pre>
 </div>
 </div>
 <div class="listingblock secondary">
 <div class="title">Gradle (Kotlin)</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="kotlin"><span class="nf">dependencies</span> <span class="p">{</span>
-    <span class="nf">implementation</span><span class="p">(</span><span class="s">"info.picocli:picocli:4.6.1"</span><span class="p">)</span>
+    <span class="nf">implementation</span><span class="p">(</span><span class="s">"info.picocli:picocli:4.6.2"</span><span class="p">)</span>
 <span class="p">}</span></code></pre>
 </div>
 </div>
@@ -17560,46 +18013,46 @@ so be aware that you will have to write <code>Array(&#8230;&#8203;)</code> for t
 <pre class="rouge highlight"><code data-lang="xml"><span class="nt">&lt;dependency&gt;</span>
   <span class="nt">&lt;groupId&gt;</span>info.picocli<span class="nt">&lt;/groupId&gt;</span>
   <span class="nt">&lt;artifactId&gt;</span>picocli<span class="nt">&lt;/artifactId&gt;</span>
-  <span class="nt">&lt;version&gt;</span>4.6.1<span class="nt">&lt;/version&gt;</span>
+  <span class="nt">&lt;version&gt;</span>4.6.2<span class="nt">&lt;/version&gt;</span>
 <span class="nt">&lt;/dependency&gt;</span></code></pre>
 </div>
 </div>
 <div class="listingblock secondary">
 <div class="title">Scala SBT</div>
 <div class="content">
-<pre class="rouge highlight"><code>libraryDependencies += "info.picocli" % "picocli" % "4.6.1"</code></pre>
+<pre class="rouge highlight"><code>libraryDependencies += "info.picocli" % "picocli" % "4.6.2"</code></pre>
 </div>
 </div>
 <div class="listingblock secondary">
 <div class="title">Ivy</div>
 <div class="content">
-<pre class="rouge highlight"><code>&lt;dependency org="info.picocli" name="picocli" rev="4.6.1" /&gt;</code></pre>
+<pre class="rouge highlight"><code>&lt;dependency org="info.picocli" name="picocli" rev="4.6.2" /&gt;</code></pre>
 </div>
 </div>
 <div class="listingblock secondary">
 <div class="title">Grape</div>
 <div class="content">
 <pre class="rouge highlight"><code>@Grapes(
-    @Grab(group='info.picocli', module='picocli', version='4.6.1')
+    @Grab(group='info.picocli', module='picocli', version='4.6.2')
 )</code></pre>
 </div>
 </div>
 <div class="listingblock secondary">
 <div class="title">Leiningen</div>
 <div class="content">
-<pre class="rouge highlight"><code>[info.picocli/picocli "4.6.1"]</code></pre>
+<pre class="rouge highlight"><code>[info.picocli/picocli "4.6.2"]</code></pre>
 </div>
 </div>
 <div class="listingblock secondary">
 <div class="title">Buildr</div>
 <div class="content">
-<pre class="rouge highlight"><code>'info.picocli:picocli:jar:4.6.1'</code></pre>
+<pre class="rouge highlight"><code>'info.picocli:picocli:jar:4.6.2'</code></pre>
 </div>
 </div>
 <div class="listingblock secondary">
 <div class="title">JBang</div>
 <div class="content">
-<pre class="rouge highlight"><code>//DEPS info.picocli:picocli:4.6.1</code></pre>
+<pre class="rouge highlight"><code>//DEPS info.picocli:picocli:4.6.2</code></pre>
 </div>
 </div>
 </div>
@@ -17616,8 +18069,8 @@ This facilitates including picocli in your project: simply copy and paste the co
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 4.6.1<br>
-Last updated 2021-01-12 08:25:02 +0900
+Version 4.6.2<br>
+Last updated 2021-11-05 19:59:03 +0900
 </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/tocbot/3.0.7/tocbot.min.js"></script>

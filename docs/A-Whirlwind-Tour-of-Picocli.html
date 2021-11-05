@@ -1648,7 +1648,7 @@ $(addBlockSwitches);
 <h1>A Whirlwind Tour of Picocli</h1>
 <div class="details">
 <span id="author" class="author">Remko Popma</span><br>
-<span id="revnumber">version 4.6.1</span>
+<span id="revnumber">version 4.6.2</span>
 </div>
 </div>
 <div id="content">
@@ -1722,7 +1722,7 @@ Its source code lives in a single file, so you have the option to include it in 
     <span class="annotation">@Option</span>(names = {<span class="string"><span class="delimiter">&quot;</span><span class="content">-a</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--algorithm</span><span class="delimiter">&quot;</span></span>}, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">MD5, SHA-1, SHA-256, ...</span><span class="delimiter">&quot;</span></span>)
     <span class="directive">private</span> <span class="predefined-type">String</span> algorithm = <span class="string"><span class="delimiter">&quot;</span><span class="content">MD5</span><span class="delimiter">&quot;</span></span>;
 
-    <span class="directive">public</span> <span class="directive">static</span> <span class="type">void</span> main(<span class="predefined-type">String</span><span class="type">[]</span> args) <span class="directive">throws</span> <span class="exception">Exception</span> {
+    <span class="directive">public</span> <span class="directive">static</span> <span class="type">void</span> main(<span class="predefined-type">String</span><span class="type">[]</span> args) {
         <span class="comment">// CheckSum implements Callable, so parsing, error handling and handling user</span>
         <span class="comment">// requests for usage help or version help can be done with one line of code.</span>
         CommandLine.call(<span class="keyword">new</span> CheckSum(), args);
@@ -2928,7 +2928,7 @@ files.each {
     <span class="annotation">@Option</span>(names = {<span class="string"><span class="delimiter">&quot;</span><span class="content">-x</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--option</span><span class="delimiter">&quot;</span></span>}, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">example option</span><span class="delimiter">&quot;</span></span>)
     <span class="type">boolean</span> flag;
 
-    <span class="directive">public</span> <span class="directive">static</span> <span class="type">void</span> main(<span class="predefined-type">String</span><span class="type">[]</span> args) <span class="directive">throws</span> <span class="exception">Exception</span> {
+    <span class="directive">public</span> <span class="directive">static</span> <span class="type">void</span> main(<span class="predefined-type">String</span><span class="type">[]</span> args) {
         <span class="comment">// let Micronaut instantiate and inject services</span>
         PicocliRunner.run(MyMicronautApp.class, args);
     }
@@ -3086,8 +3086,8 @@ sys     0m0.002s</code></pre>
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 4.6.1<br>
-Last updated 2020-11-21 19:22:42 +0900
+Version 4.6.2<br>
+Last updated 2021-09-28 10:52:49 +0900
 </div>
 </div>
 </body>

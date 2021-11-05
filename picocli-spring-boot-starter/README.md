@@ -22,14 +22,14 @@ Maven:
 <dependency>
   <groupId>info.picocli</groupId>
   <artifactId>picocli-spring-boot-starter</artifactId>
-  <version>4.6.1</version>
+  <version>4.6.2</version>
 </dependency>
 ```
 
 Gradle:
 ```
 dependencies {
-    implementation "info.picocli:picocli-spring-boot-starter:4.6.1"
+    implementation "info.picocli:picocli-spring-boot-starter:4.6.2"
 }
 ```
 

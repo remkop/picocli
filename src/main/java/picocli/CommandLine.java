@@ -145,7 +145,7 @@ import static picocli.CommandLine.Help.Column.Overflow.WRAP;
 public class CommandLine {
 
     /** This is picocli version {@value}. */
-    public static final String VERSION = "4.6.2-SNAPSHOT";
+    public static final String VERSION = "4.6.2";
 
     private final Tracer tracer = new Tracer();
     private CommandSpec commandSpec;
@@ -8787,7 +8787,7 @@ public class CommandLine {
             /** Returns the root option or positional parameter (on the parent command), if this option or positional parameter was inherited;
              * or {@code null} if it was not.
              * @see Option#scope()
-             * @since 4.6.2-SNAPSHOT */
+             * @since 4.6.2 */
             public ArgSpec root() { return root; }
 
             /** Returns the type to convert the option or positional parameter to before {@linkplain #setValue(Object) setting} the value.
@@ -9425,7 +9425,7 @@ public class CommandLine {
                 /** Returns the root option or positional parameter (on the parent command), if this option or positional parameter was inherited;
                  * or {@code null} if it was not.
                  * @see Option#scope()
-                 * @since 4.6.2-SNAPSHOT */
+                 * @since 4.6.2 */
                 public ArgSpec root() { return root; }
 
                 /** Returns the type to convert the option or positional parameter to before {@linkplain #setValue(Object) setting} the value.
@@ -9568,7 +9568,7 @@ public class CommandLine {
 
                 /**
                  * Sets the root object for this inherited option, and returns this builder.
-                 * @since 4.6.2-SNAPSHOT */
+                 * @since 4.6.2 */
                 public T root(ArgSpec root)                  { this.root = root ; return self(); }
 
                 /** Sets the type to convert the option or positional parameter to before {@linkplain #setValue(Object) setting} the value, and returns this builder.

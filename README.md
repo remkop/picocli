@@ -76,7 +76,7 @@ The user manual has examples of integrating with [Guice](https://picocli.info/#_
 
 ### Releases
 * [All Releases](https://github.com/remkop/picocli/releases)
-* Latest: 4.6.1 [Release Notes](https://github.com/remkop/picocli/releases/tag/v4.6.1)
+* Latest: 4.6.2 [Release Notes](https://github.com/remkop/picocli/releases/tag/v4.6.2)
 * Older: Picocli 4.0 [Release Notes](https://github.com/remkop/picocli/releases/tag/v4.0.0)
 * Older: Picocli 3.0 [Release Notes](https://github.com/remkop/picocli/releases/tag/v3.0.0)
 * Older: Picocli 2.0 [Release Notes](https://github.com/remkop/picocli/releases/tag/v2.0.0)
@@ -246,9 +246,9 @@ If you like picocli, there are a few things you can do to help:
 * Upvote my [Quora answer](https://www.quora.com/What-is-the-best-way-to-parse-command-line-arguments-with-Java/answer/Remko-Popma) to "What is the best way to parse command-line arguments with Java?"
 * Upvote my [StackOverflow answer](https://stackoverflow.com/a/43780433/1446916) to "How do I parse command line arguments in Java?"
 
-If you like picocli and your project is on GitHub, consider adding this badge to your README.md: [![picocli](https://img.shields.io/badge/picocli-4.6.1-green.svg)](https://github.com/remkop/picocli)
+If you like picocli and your project is on GitHub, consider adding this badge to your README.md: [![picocli](https://img.shields.io/badge/picocli-4.6.2-green.svg)](https://github.com/remkop/picocli)
 ```
-[![picocli](https://img.shields.io/badge/picocli-4.6.1-green.svg)](https://github.com/remkop/picocli)
+[![picocli](https://img.shields.io/badge/picocli-4.6.2-green.svg)](https://github.com/remkop/picocli)
 ```
 
 
@@ -336,41 +336,41 @@ See the [source code](https://github.com/remkop/picocli/blob/master/src/main/jav
 
 ### Gradle
 ```
-implementation 'info.picocli:picocli:4.6.1'
+implementation 'info.picocli:picocli:4.6.2'
 ```
 ### Maven
 ```
 <dependency>
   <groupId>info.picocli</groupId>
   <artifactId>picocli</artifactId>
-  <version>4.6.1</version>
+  <version>4.6.2</version>
 </dependency>
 ```
 ### Scala SBT
 ```
-libraryDependencies += "info.picocli" % "picocli" % "4.6.1"
+libraryDependencies += "info.picocli" % "picocli" % "4.6.2"
 ```
 ### Ivy
 ```
-<dependency org="info.picocli" name="picocli" rev="4.6.1" />
+<dependency org="info.picocli" name="picocli" rev="4.6.2" />
 ```
 ### Grape
 ```groovy
 @Grapes(
-    @Grab(group='info.picocli', module='picocli', version='4.6.1')
+    @Grab(group='info.picocli', module='picocli', version='4.6.2')
 )
 ```
 ### Leiningen
 ```
-[info.picocli/picocli "4.6.1"]
+[info.picocli/picocli "4.6.2"]
 ```
 ### Buildr
 ```
-'info.picocli:picocli:jar:4.6.1'
+'info.picocli:picocli:jar:4.6.2'
 ```
 
 ### JBang
 ```
-//DEPS info.picocli:picocli:4.6.1
+//DEPS info.picocli:picocli:4.6.2
 ```
 

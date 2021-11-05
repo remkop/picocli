@@ -112,19 +112,19 @@ task copyDocs(type: Copy) {
 /*
 Release procedure:
 1. edit version numbers: remove -SNAPSHOT classifier; edit releaseDate
-2. gradlew bumpVersion
+2. ./gradlew bumpVersion
 3. check modified files
-4. gradlew clean build
-5. gradlew copyDocs
+4. ./gradlew clean build
+5. ./gradlew copyDocs
 6. update RELEASE-NOTES.md
-7. gradlew bumpReadmeVersion
+7. ./gradlew bumpReadmeVersion
 7a update README.md (latest version, release notes)
 8. commit -m "Release picocli version ..."
 9. tag v$version
-10. gradlew bintrayUpload - to publish to bintray.com
+10. ./gradlew publishReleasePublicationToSonatypeRepository - creates staging repository, and uploads artifacts
 
 11. edit version numbers: increase minor version and add -SNAPSHOT classifier
-12. gradlew bumpVersion
+12. ./gradlew bumpVersion
 13. check modified files
 14. commit -m "Prepare for next development cycle"
 15. push (make sure that Push Tags is checked)
@@ -133,12 +133,8 @@ Release procedure:
 17. Click the new tag, click Edit button, update title and release notes (copy from RELEASE-NOTES.md)
 18. Upload picocli-$version.jar and picocli-all$version.zip to GitHub
 
-19. Log in to Bintray
-20. Navigate to the page for the new version
-21. Edit version: Publication Date, Description, VCS tag, GitHub release notes file (RELEASE-NOTES.md)
-22. On the version page, Release Notes tab, select GitHub File
-23. Publish artifacts to JCenter
-24. On the version page, Maven Central tab, sync to Maven (takes several minutes)
+19. Log in to https://oss.sonatype.org/ . In the menu on the left, select Staging repositories.
+
 
 (When releasing from branch)
 25. Switch to master

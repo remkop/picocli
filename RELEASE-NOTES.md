@@ -3,7 +3,9 @@
 # <a name="4.6.2"></a> Picocli 4.6.2
 The picocli community is pleased to announce picocli 4.6.2.
 
-This release includes bugfixes and enhancements.
+This release includes bugfixes and enhancements. Many improvements in the documentation.
+
+Thanks to the many people in the picocli community for raising issues and contributing pull requests to fix issues!
 
 From this release, picocli uses system properties `sun.stdout.encoding` and `sun.stderr.encoding` when creating the `PrintWriters` returned by  `CommandLine::getOut` and `CommandLine::getErr`.
 When these system properties do not exist, picocli falls back to the default charset (determined by `file.encoding`).

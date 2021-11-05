@@ -545,6 +545,10 @@ pre.rouge .mo {
 pre.rouge .m, pre.rouge .mb, pre.rouge .mx {
   color: #009999;
 }
+pre.rouge .sa {
+  color: #000000;
+  font-weight: bold;
+}
 pre.rouge .sb {
   color: #d14;
 }
@@ -578,7 +582,7 @@ pre.rouge .s1 {
 pre.rouge .ss {
   color: #990073;
 }
-pre.rouge .s, pre.rouge .sa, pre.rouge .dl {
+pre.rouge .s, pre.rouge .dl {
   color: #d14;
 }
 pre.rouge .na {
@@ -1788,8 +1792,8 @@ $(addBlockSwitches);
 <div id="header">
 <h1>Quick Guide</h1>
 <div class="details">
-<span id="revnumber">version 4.6.1,</span>
-<span id="revdate">2021-01-03</span>
+<span id="revnumber">version 4.6.2,</span>
+<span id="revdate">2021-11-05</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Features</div>
@@ -1873,7 +1877,7 @@ The programmatic API is not covered in this Quick Guide.</p>
 <div class="listingblock">
 <div class="title">Invoking the command</div>
 <div class="content">
-<pre>$ java -cp "myapp.jar;picocli-4.6.1.jar" ASCIIArt --font-size=9 Hello picocli
+<pre>$ java -cp "myapp.jar;picocli-4.6.2.jar" ASCIIArt --font-size=9 Hello picocli
        #   #       #  #                 #                  #  #
        #   #       #  #                                    #
        #   #  ***  #  #  ****     #***  #  **#  ****  **#  #  #
@@ -2048,7 +2052,7 @@ The application can be used as follows:</p>
 <div class="listingblock">
 <div class="title">Resolving two letter language codes</div>
 <div class="content">
-<pre>$ java -cp "myapp.jar;picocli-4.6.1.jar" ISOCodeResolver language de cs en sd se
+<pre>$ java -cp "myapp.jar;picocli-4.6.2.jar" ISOCodeResolver language de cs en sd se
 de: German
 cs: Czech
 en: English
@@ -2059,7 +2063,7 @@ se: Northern Sami</pre>
 <div class="listingblock">
 <div class="title">Resolving two letter country codes</div>
 <div class="content">
-<pre>$ java -cp "myapp.jar;picocli-4.6.1.jar" ISOCodeResolver country cn fr th ro no
+<pre>$ java -cp "myapp.jar;picocli-4.6.2.jar" ISOCodeResolver country cn fr th ro no
 CN: China
 FR: France
 TH: Thailand
@@ -3797,8 +3801,8 @@ Your stars keep me going! :-)</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 4.6.1<br>
-Last updated 2021-01-03 11:47:21 +0900
+Version 4.6.2<br>
+Last updated 2021-11-05 19:59:03 +0900
 </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/tocbot/3.0.7/tocbot.min.js"></script>
