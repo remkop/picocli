@@ -122,6 +122,7 @@ Release procedure:
 8. commit -m "Release picocli version ..."
 9. tag v$version
 10. ./gradlew publishReleasePublicationToSonatypeRepository - creates staging repository, and uploads artifacts
+// for automation: stagingProfileId = '5db36034f05d47'
 
 11. edit version numbers: increase minor version and add -SNAPSHOT classifier
 12. ./gradlew bumpVersion
