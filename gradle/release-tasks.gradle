@@ -108,7 +108,6 @@ task copyDocs(type: Copy) {
     into 'docs'
 }
 
-
 /*
 Release procedure:
 1. edit version numbers: remove -SNAPSHOT classifier; edit releaseDate
@@ -121,20 +120,22 @@ Release procedure:
 7a update README.md (latest version, release notes)
 8. commit -m "Release picocli version ..."
 9. tag v$version
-10. ./gradlew publishReleasePublicationToSonatypeRepository - creates staging repository, and uploads artifacts
-// for automation: stagingProfileId = '5db36034f05d47'
+10 ./gradlew publishReleasePublicationToSonatypeRepository - creates a Sonatype staging repository, and uploads artifacts
+11. Close the Sonatype info/picocli staging repo:
+  a. Manually: Log in to https://oss.sonatype.org/ and in the menu on the left, select Staging repositories.
+     Click the close button in the GUI and watch progress in the
+  b. Automatically with the codearte.nexus-staging plugin:
+     ./gradlew closeAndReleaseRepository
 
-11. edit version numbers: increase minor version and add -SNAPSHOT classifier
-12. ./gradlew bumpVersion
-13. check modified files
-14. commit -m "Prepare for next development cycle"
-15. push (make sure that Push Tags is checked)
+12. edit version numbers: increase minor version and add -SNAPSHOT classifier
+13. ./gradlew bumpVersion
+14. check modified files
+15. commit -m "Prepare for next development cycle"
+16. push (make sure that Push Tags is checked)
 
-16. Log in to GitHub, go to https://github.com/remkop/picocli/releases
-17. Click the new tag, click Edit button, update title and release notes (copy from RELEASE-NOTES.md)
-18. Upload picocli-$version.jar and picocli-all$version.zip to GitHub
-
-19. Log in to https://oss.sonatype.org/ . In the menu on the left, select Staging repositories.
+17. Log in to GitHub, go to https://github.com/remkop/picocli/releases
+18. Click the new tag, click Edit button, update title and release notes (copy from RELEASE-NOTES.md)
+19. Upload picocli-$version.jar and picocli-all$version.zip to GitHub
 
 
 (When releasing from branch)

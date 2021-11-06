@@ -1,7 +1,10 @@
+// This build file is based on/inspired by https://autsoft.net/publishing-an-android-library-to-mavencentral-in-2019/
+
 apply plugin: 'java'
 apply plugin: 'distribution'
 apply plugin: 'maven-publish'
 apply plugin: 'signing'
+apply plugin: 'io.codearte.nexus-staging'
 
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
@@ -129,4 +132,11 @@ publishing {
 
 signing {
     sign publishing.publications
+}
+
+nexusStaging {
+    packageGroup = PUBLISH_GROUP_ID
+    stagingProfileId = '5db36034f05d47' // Log in to https://oss.sonatype.org/, go to Staging profiles, select your profile, and look at the ID in the URL
+    username = ossrhUsername
+    password = ossrhPassword
 }
