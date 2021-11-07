@@ -4045,4 +4045,29 @@ public class ArgGroupTest {
         System.setErr(err);
         assertEquals("", baos.toString());
     }
+
+    @Ignore
+    @Command(name = "CLI Test 2", mixinStandardHelpOptions = true)
+    static class Issue1384 {
+        static class MyArgGroup {
+            @Parameters(index = "0", arity = "1", description = "parameter 0")
+            String param0;
+            @Parameters(index = "1", arity = "0..1", description = "parameter 1")
+            String param1;
+            @Parameters(index = "2", arity = "0..1", description = "parameter 2")
+            String param2;
+        }
+
+        @ArgGroup(order = 0, exclusive = false, multiplicity = "1")
+        MyArgGroup argGroup;
+    }
+
+    @Test
+    public void testIssue1384() {
+        Issue1384 obj = new Issue1384();
+        new CommandLine(obj).parseArgs("1", "a", "b");
+        assertEquals(obj.argGroup.param0, "1");
+        assertEquals(obj.argGroup.param1, "a");
+        assertEquals(obj.argGroup.param2, "b");
+    }
 }
