@@ -4070,4 +4070,60 @@ public class ArgGroupTest {
         assertEquals(obj.argGroup.param1, "a");
         assertEquals(obj.argGroup.param2, "b");
     }
+
+    @Command(name = "Issue-1409")
+    static class Issue1409 {
+
+        @ArgGroup(exclusive = false, heading = "%nOptions to be used with group 1 OR group 2 options.%n")
+        OptXAndGroupOneOrGroupTwo optXAndGroupOneOrGroupTwo = new OptXAndGroupOneOrGroupTwo();
+
+        static class OptXAndGroupOneOrGroupTwo {
+            @Option(names = { "-x", "--option-x" }, required = true, defaultValue = "Default X", description = "option X")
+            String x;
+
+            @ArgGroup(exclusive = true)
+            OneOrTwo oneORtwo = new OneOrTwo();
+        }
+
+        static class OneOrTwo {
+            public OneOrTwo() {
+                new Exception().printStackTrace();
+            }
+            @ArgGroup(exclusive = false, heading = "%nGroup 1%n%n")
+            GroupOne one = new GroupOne();
+
+            @ArgGroup(exclusive = false, heading = "%nGroup 2%n%n")
+            GroupTwo two = new GroupTwo();
+        }
+
+        static class GroupOne {
+            @Option(names = { "-1a", "--option-1a" },required=true,description = "option A of group 1")
+            String _1a;
+
+            @Option(names = { "-1b", "--option-1b" },required=true,description = "option B of group 1")
+            String _1b;
+        }
+
+        static class GroupTwo {
+            @Option(names = { "-2a", "--option-2a" },required=true, defaultValue = "Default 2A", description = "option A of group 2")
+            private String _2a;
+
+            @Option(names = { "-2b", "--option-2b" },required=true, defaultValue = "Default 2B", description = "option B of group 2")
+            private String _2b;
+        }
+    }
+
+    @Ignore
+    @Test
+    public void testIssue1409() {
+        Issue1409 obj = new Issue1409();
+//        new CommandLine(obj).parseArgs("-x", "ANOTHER_VALUE", "-2a=x", "-2b=z");
+        new CommandLine(obj).parseArgs("-x", "ANOTHER_VALUE");
+        assertEquals("ANOTHER_VALUE", obj.optXAndGroupOneOrGroupTwo.x);
+        assertEquals(null, obj.optXAndGroupOneOrGroupTwo.oneORtwo.one._1a);
+        assertEquals(null, obj.optXAndGroupOneOrGroupTwo.oneORtwo.one._1b);
+        assertEquals("Default 2A", obj.optXAndGroupOneOrGroupTwo.oneORtwo.two._2a);
+        assertEquals("Default 2B", obj.optXAndGroupOneOrGroupTwo.oneORtwo.two._2b);
+
+    }
 }
