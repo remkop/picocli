@@ -23,6 +23,7 @@ buildscript {
 }
 
 apply plugin: "org.beryx.jar"
+apply plugin: 'io.codearte.nexus-staging'
 
 if (System.getenv('MAVEN_OSS_USER')) { // on home system
     apply plugin: 'biz.aQute.bnd.builder'

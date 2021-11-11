@@ -1,5 +1,33 @@
 # picocli Release Notes
 
+
+# <a name="4.6.3"></a> Picocli 4.6.3
+The picocli community is pleased to announce picocli 4.6.3.
+
+This release includes bugfixes and enhancements.
+
+This is the seventy-eighth public release.
+Picocli follows [semantic versioning](http://semver.org/).
+
+## <a name="4.6.3-toc"></a> Table of Contents
+* [New and noteworthy](#4.6.3-new)
+* [Fixed issues](#4.6.3-fixes)
+* [Deprecations](#4.6.3-deprecated)
+* [Potential breaking changes](#4.6.3-breaking-changes)
+
+## <a name="4.6.3-new"></a> New and Noteworthy
+
+
+## <a name="4.6.3-fixes"></a> Fixed issues
+* [#1459] BUILD: The nexus-staging Gradle plugin must be applied to the root project, not to subprojects. Thanks to [Andreas Deininger](https://github.com/deining) for pointing this out.
+
+## <a name="4.6.3-deprecated"></a> Deprecations
+No features were deprecated in this release.
+
+## <a name="4.6.3-breaking-changes"></a> Potential breaking changes
+This release has no breaking changes.
+
+
 # <a name="4.6.2"></a> Picocli 4.6.2
 The picocli community is pleased to announce picocli 4.6.2.
 
