@@ -1021,6 +1021,10 @@ For example, it is possible to have a path with a space,
 such as `c:\Program Files` that can be specified as either `"c:\\Program Files"` or,
 to avoid an escape, `c:\Program" "Files`.
 
+CAUTION: Argument files do have a limitation: parameter or option values enclosed in quotes must not be preceded by an equal sign.
+Something like `myoption="foo bar"` does *not* work inside an argument file.
+To work around this, either omit the equal sign (`myoption "foo bar"`) or enclose the whole expression in quotes (`"myoption=\"foo bar\""`).
+
 Lines starting with `#` are comments and are ignored.
 The comment character can be configured with `CommandLine.setAtFileCommentChar(Character)`,
 and comments can be switched off by setting the comment character to `null`.
@@ -1046,6 +1050,19 @@ java MyCommand @/home/foo/args
 The above will be expanded to the contents of the file:
 [source,bash]
 ----
+java MyCommand ABC -option=123 "X Y Z"
+----
+
+CAUTION: Handling of UTF-8 encoded argument files is tricky on Windows OS.
+Either use `-DFile.encoding=UTF8` as VM argument or set the environment variable `JAVA_TOOL_OPTIONS`.
+So both command calls given below will work on a Windows command line:
+[source,cmd]
+----
+java -DFile.encoding=UTF8 MyCommand ABC -option=123 "X Y Z"
+----
+[source,cmd]
+----
+SET JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8
 java MyCommand ABC -option=123 "X Y Z"
 ----
 
