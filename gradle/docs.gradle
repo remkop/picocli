@@ -43,7 +43,7 @@ javadoc {
 javadoc.dependsOn(jar)
 javadoc.dependsOn('asciidoctor')
 asciidoctorj {
-    version = '2.4.3'
+    version = '2.5.2'
 }
 asciidoctor {
     sourceDir = file('docs')
