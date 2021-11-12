@@ -17,7 +17,7 @@ dependencies {
 }
 
 //task generateGraalReflectionConfig(type: JavaExec) {
-//    main = 'picocli.codegen.aot.graalvm.ReflectionConfigGenerator'
+//    mainClass = 'picocli.codegen.aot.graalvm.ReflectionConfigGenerator'
 //    classpath = sourceSets.main.runtimeClasspath
 //    def outputFile = "${rootProject.projectDir}/src/main/resources/META-INF/native-image/info.picocli/picocli/reflect-config.json"
 //    args = ["--output=$outputFile", 'picocli.AutoComplete$App']
@@ -47,7 +47,7 @@ task generateManpageAsciiDoc(type: JavaExec) {
     group = "Documentation"
     description = "Generate AsciiDoc manpage"
     classpath(configurations.compileClasspath, configurations.annotationProcessor, sourceSets.main.runtimeClasspath)
-    main 'picocli.codegen.docgen.manpage.ManPageGenerator'
+    mainClass = 'picocli.codegen.docgen.manpage.ManPageGenerator'
     args 'picocli.codegen.docgen.manpage.ManPageGenerator$App',
             'picocli.codegen.aot.graalvm.DynamicProxyConfigGenerator$App',
             'picocli.codegen.aot.graalvm.ReflectionConfigGenerator$App',
