@@ -20,7 +20,7 @@ public class JniConfigGenerator {
                     "accessed reflectively from native code.",
                     "The generated JSON file can be passed to the `-H:JNIConfigurationFiles=/path/to/jni-config.json` " +
                     "option of the `native-image` GraalVM utility.",
-                    "See https://github.com/oracle/graal/blob/master/substratevm/JNI.md"},
+                    "See https://www.graalvm.org/reference-manual/native-image/JNI/"},
             exitCodeListHeading = "%nExit Codes (if enabled with `--exit`)%n",
             exitCodeList = {
                     "0:Successful program execution.",
