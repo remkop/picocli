@@ -4046,7 +4046,6 @@ public class ArgGroupTest {
         assertEquals("", baos.toString());
     }
 
-    @Ignore
     @Command(name = "CLI Test 2", mixinStandardHelpOptions = true)
     static class Issue1384 {
         static class MyArgGroup {
@@ -4062,6 +4061,7 @@ public class ArgGroupTest {
         MyArgGroup argGroup;
     }
 
+    @Ignore
     @Test
     public void testIssue1384() {
         Issue1384 obj = new Issue1384();
