@@ -19,7 +19,9 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 
 ## <a name="4.6.3-fixes"></a> Fixed issues
-* [#1459] BUILD: The nexus-staging Gradle plugin must be applied to the root project, not to subprojects. Thanks to [Andreas Deininger](https://github.com/deining) for pointing this out.
+* [#1462] DOC, BUILD, DEP: Extend documentation on argument files, fix broken/outdated links, update dependencies. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+* [#1457] DOC: add caution about arguments in @files with quoted option parameters. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+* [#1459] BUILD: The nexus-staging Gradle plugin must be applied to the root project, not to subprojects. Thanks to [Andreas Deininger](https://github.com/deining) for raising tihs.
 
 ## <a name="4.6.3-deprecated"></a> Deprecations
 No features were deprecated in this release.
