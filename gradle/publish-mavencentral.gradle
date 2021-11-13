@@ -129,7 +129,10 @@ publishing {
     }
 }
 
+ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
+
 signing {
+    required { isReleaseVersion && gradle.taskGraph.hasTask("publish") }
     sign publishing.publications
 }
 
