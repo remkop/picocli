@@ -4081,10 +4081,6 @@ public class ArgGroupTest {
      * The test verifies that x, 1A, 1B, 2A, and 2B values are correct after
      * building the command using CommandLine.java and parsing the arguments.
      * @author remkop, madfoal
-     * @version 1
-     * @params null
-     * @returns null
-     *
      */
     @Command(name = "Issue-1409")
     static class Issue1409 {
@@ -4101,7 +4097,6 @@ public class ArgGroupTest {
         }
 
         static class OneOrTwo {
-
             @ArgGroup(exclusive = false, heading = "%nGroup 1%n%n")
             GroupOne one = new GroupOne();
 
@@ -4134,10 +4129,6 @@ public class ArgGroupTest {
      * The test verifies that x, 1A, 1B, 2A, and 2B values are correct after
      * building the command using CommandLine.java and parsing the arguments.
      * @author remkop, madfoal
-     * @version 1
-     * @params null
-     * @returns null
-     *
      */
     @Test
     public void testIssue1409() {
@@ -4148,7 +4139,6 @@ public class ArgGroupTest {
         assertEquals("Default value for _1b incorrect",null, obj.optXAndGroupOneOrGroupTwo.oneORtwo.one._1b);
         assertEquals("Default value for _2a incorrect","Default 2A", obj.optXAndGroupOneOrGroupTwo.oneORtwo.two._2a);
         assertEquals("Default value for _2b incorrect","Default 2B", obj.optXAndGroupOneOrGroupTwo.oneORtwo.two._2b);
-
     }
 
     /**
@@ -4159,22 +4149,16 @@ public class ArgGroupTest {
      * The test verifies that x, 1A, 1B, 2A, and 2B values are correct after
      * building the command using CommandLine.java and parsing the arguments.
      * @author madfoal
-     * @version 1
-     * @params null
-     * @returns null
-     *
      */
     @Test
     public void testIssue1409InitializeGroup1() {
         final Issue1409 obj = new Issue1409();
         new CommandLine(obj).parseArgs("-x", "ANOTHER_VALUE", "-1a=x", "-1b=z");
-
         assertEquals("Default value for X incorrect","ANOTHER_VALUE", obj.optXAndGroupOneOrGroupTwo.x);
         assertEquals("Default value for _1a incorrect","x", obj.optXAndGroupOneOrGroupTwo.oneORtwo.one._1a);
         assertEquals("Default value for _1b incorrect","z", obj.optXAndGroupOneOrGroupTwo.oneORtwo.one._1b);
         assertEquals("Default value for _2a incorrect","Default 2A", obj.optXAndGroupOneOrGroupTwo.oneORtwo.two._2a);
         assertEquals("Default value for _2b incorrect","Default 2B", obj.optXAndGroupOneOrGroupTwo.oneORtwo.two._2b);
-
     }
 
     /**
@@ -4185,21 +4169,15 @@ public class ArgGroupTest {
      * The test verifies that x, 1A, 1B, 2A, and 2B values are correct after
      * building the command using CommandLine.java and parsing the arguments.
      * @author madfoal
-     * @version 1
-     * @params null
-     * @returns null
-     *
      */
     @Test
     public void testIssue1409InitializeGroup2() {
         final Issue1409 obj = new Issue1409();
         new CommandLine(obj).parseArgs("-x", "ANOTHER_VALUE", "-2a=x", "-2b=z");
-
         assertEquals("Default value for X incorrect","ANOTHER_VALUE", obj.optXAndGroupOneOrGroupTwo.x);
         assertEquals("Default value for _1a incorrect",null, obj.optXAndGroupOneOrGroupTwo.oneORtwo.one._1a);
         assertEquals("Default value for _1b incorrect",null, obj.optXAndGroupOneOrGroupTwo.oneORtwo.one._1b);
         assertEquals("Default value for _2a incorrect","x", obj.optXAndGroupOneOrGroupTwo.oneORtwo.two._2a);
         assertEquals("Default value for _2b incorrect","z", obj.optXAndGroupOneOrGroupTwo.oneORtwo.two._2b);
-
     }
 }
