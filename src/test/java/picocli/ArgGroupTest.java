@@ -4143,7 +4143,7 @@ public class ArgGroupTest {
      * the group two values uninitialized.
      * <p>
      * The test verifies that x, 1A, 1B, 2A, and 2B values are correct after
-     * building the command using CommandLine.java and parsing the arguments.
+     * building the command using CommandLine.java and executing the arguments.
      * @author remkop, madfoal
      */
     @Test
@@ -4163,7 +4163,7 @@ public class ArgGroupTest {
      * the group two values uninitialized.
      * <p>
      * The test verifies that x, 1A, 1B, 2A, and 2B values are correct after
-     * building the command using CommandLine.java and parsing the arguments.
+     * building the command using CommandLine.java and executing the arguments.
      * @author madfoal
      */
     @Test
@@ -4183,7 +4183,7 @@ public class ArgGroupTest {
      * the group one values uninitialized.
      * <p>
      * The test verifies that x, 1A, 1B, 2A, and 2B values are correct after
-     * building the command using CommandLine.java and parsing the arguments.
+     * building the command using CommandLine.java and executing the arguments.
      * @author madfoal
      */
     @Test
