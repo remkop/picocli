@@ -3139,36 +3139,77 @@ usage help shows the wrong default value
 ====
 
 ==== Using Default Values in Argument Groups
-When an argument group is defined with default values in the annotated fields, but during usage does not reference any of the arguments within the group, picocli will instantiate those objects to their declared values.  However, picocli will instantiate the other objects to their default annotated values if a single argument within the argument group is defined.
+For picocli, there are two recommendations for successfully employing default values. First, using default values requires setting the default value within the annotation and declaratively within your code.  The second is deciding how to instantiate your objects.
+
+[source,role="primary"]
+----
+@Option(names= {"-x"}, defaultValue = "X") String X = "X";
+----
+Matching the annotation and declaration ensures that picocli sets the default values regardless of the user supplies the arguments.
+
+Next, identify your preferred default behavior. For `+@ArgGroup+`'s there are two distinct ways of instantiating an object.
+
+The first is to instantiate the object declaratively.  This behavior is best when you desire no ambiguity in whether or not an `+@ArgGroup+` is instantiated.
+
+.Java
+[source,java,role="primary"]
+----
+@ArgGroup MyGroup myGroup = new MyGroup();
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@ArgGroup var myGroup = MyGroup();
+----
+
+The second way is to initialize the objects using business logic, such as `+run+` or `+call+` methods.  This way is better if the desired behavior is to allow the application to determine whether the user specified a value for the `+@ArgGroup+`. It is recommended that the program called using `+execute+` instead of `+parseArgs+`
 
 .Java
 [source,java,role="primary"]
 ----
 @Command(name = "test", description = "demonstrates Default Value declaration")
 class MyApp {
-    @ArgGroup Outer outer = new Outer();
+    @ArgGroup Outer outer;
 
     static class Outer {
-        @Options(names = "-x", defaultValue = "XX") String x;
-        @ArgGroup(exclusive = "true") Inner inner = new Inner();
+        @Options(names = "-x", defaultValue = "XX") String x = "XX";
+        @ArgGroup(exclusive = "true") Inner inner;
     }
 
     static class Inner {
         @Options(names = "-a", defaultValue = "AA") String a = "AA";
         @Options(names = "-b", defaultValue = "BB") String b = "BB";
     }
+
+    public void run() {
+        if (outer  ==  null) { // no options specified on command line; apply default values
+            outer = new Outer;
+        }
+        if (outer.inner  ==  null) { // handle nested sub-groups; apply default for inner group
+            outer.inner = new Inner;
+        }
+
+        // remaining business logic...
+    }
+}
+
+public static void main() {
+        final MyApp obj = new MyApp();
+        new CommandLine(obj).execute("-x", "ANOTHER_VALUE");
 }
 ----
 
 .Kotlin
 [source,kotlin,role="secondary"]
 ----
-@Command(name = "test", description =["demonstrates Default Value declaration"])
+
+ import sun.tools.jar.CommandLine@Command(name = "test", description =["demonstrates Default Value declaration"])
 class MyApp {
     @ArgGroup lateinit var outer: Outer
 
     class Outer {
-        @Options(names = "-x", defaultValue = "XX") lateinit var x: String()
+        @Options(names = "-x", defaultValue = "XX") var x = "XX";
         @ArgGroup lateinit var inner: Inner
     }
 
@@ -3176,9 +3217,25 @@ class MyApp {
         @Options(names = "-a", defaultValue = "AA") var a : "AA"
         @Options(names = "-b", defaultValue = "BB") var b : "BB"
     }
+
+    override fun run() {
+        if (outer  ==  null) { // no options specified on command line; apply default values
+            outer = Outer();
+        }
+        if (outer.inner  ==  null) { // handle nested sub-groups; apply default for inner group
+            outer.inner = Inner();
+        }
+
+        // remaining business logic...
+    }
+}
+
+fun main(args: Array<String>) {
+    var obj = MyApp();
+    var commandLine = CommandLine(obj);
+    commandLine.execute(args);
 }
 ----
-In this example above, there are two cases why we need to write our class with both annotated and declared values. The first reason is that if we do not supply any arguments, the annotated "defaultValues" field will provide the instantiated value. The second reason is if we provide an "x" value but no "a" or "b" value, the variables use their declared value instead of the annotated value. Thus, in our example, by setting the annotated "defaultValue" and the declared value to the same default value, we ensure that we always have the correct default value for different combinations of arguments.
 
 
 === Positional Parameters

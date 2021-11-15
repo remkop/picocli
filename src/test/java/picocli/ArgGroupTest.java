@@ -4106,18 +4106,18 @@ public class ArgGroupTest {
 
         static class GroupOne {
             @Option(names = { "-1a", "--option-1a" },required=true,description = "option A of group 1")
-            String _1a;
+            String a1;
 
             @Option(names = { "-1b", "--option-1b" },required=true,description = "option B of group 1")
-            String _1b;
+            String b1;
         }
 
         static class GroupTwo {
             @Option(names = { "-2a", "--option-2a" },required=true, defaultValue = "Default 2A", description = "option A of group 2")
-            private String _2a = "Default 2A";
+            private String a2 = "Default 2A";
 
             @Option(names = { "-2b", "--option-2b" },required=true, defaultValue = "Default 2B", description = "option B of group 2")
-            private String _2b = "Default 2B";
+            private String b2 = "Default 2B";
         }
         public void run() {
             if (optXAndGroupOneOrGroupTwo == null) {
@@ -4133,9 +4133,17 @@ public class ArgGroupTest {
                 optXAndGroupOneOrGroupTwo.oneORtwo.two = new GroupTwo();
             }
 
-            // something something ham sandviche
         }
     }
+    
+    
+    // String literals for Issue 1409
+    final String sampleX = "ANOTHER VALUE";
+    final String errorX = "Default value for X incorrect";
+    final String errorA1 = "Default value for a1 incorrect";
+    final String errorB1 = "Default value for b1 incorrect";
+    final String errorA2 = "Default value for a2 incorrect";
+    final String errorB2 = "Default value for b2 incorrect";
 
     /**
      * Tests issue 1409 https://github.com/remkop/picocli/issues/1409
@@ -4149,12 +4157,12 @@ public class ArgGroupTest {
     @Test
     public void testIssue1409() {
         final Issue1409 obj = new Issue1409();
-        new CommandLine(obj).execute("-x", "ANOTHER_VALUE");
-        assertEquals("Default value for X incorrect","ANOTHER_VALUE", obj.optXAndGroupOneOrGroupTwo.x);
-        assertEquals("Default value for _1a incorrect",null, obj.optXAndGroupOneOrGroupTwo.oneORtwo.one._1a);
-        assertEquals("Default value for _1b incorrect",null, obj.optXAndGroupOneOrGroupTwo.oneORtwo.one._1b);
-        assertEquals("Default value for _2a incorrect","Default 2A", obj.optXAndGroupOneOrGroupTwo.oneORtwo.two._2a);
-        assertEquals("Default value for _2b incorrect","Default 2B", obj.optXAndGroupOneOrGroupTwo.oneORtwo.two._2b);
+        new CommandLine(obj).execute("-x", sampleX);
+        assertEquals(errorX,sampleX, obj.optXAndGroupOneOrGroupTwo.x);
+        assertEquals(errorA1,null, obj.optXAndGroupOneOrGroupTwo.oneORtwo.one.a1);
+        assertEquals(errorB1,null, obj.optXAndGroupOneOrGroupTwo.oneORtwo.one.b1);
+        assertEquals(errorA2,"Default 2A", obj.optXAndGroupOneOrGroupTwo.oneORtwo.two.a2);
+        assertEquals(errorB2,"Default 2B", obj.optXAndGroupOneOrGroupTwo.oneORtwo.two.b2);
     }
 
     /**
@@ -4169,12 +4177,12 @@ public class ArgGroupTest {
     @Test
     public void testIssue1409InitializeGroup1() {
         final Issue1409 obj = new Issue1409();
-        new CommandLine(obj).execute("-x", "ANOTHER_VALUE", "-1a=x", "-1b=z");
-        assertEquals("Default value for X incorrect","ANOTHER_VALUE", obj.optXAndGroupOneOrGroupTwo.x);
-        assertEquals("Default value for _1a incorrect","x", obj.optXAndGroupOneOrGroupTwo.oneORtwo.one._1a);
-        assertEquals("Default value for _1b incorrect","z", obj.optXAndGroupOneOrGroupTwo.oneORtwo.one._1b);
-        assertEquals("Default value for _2a incorrect","Default 2A", obj.optXAndGroupOneOrGroupTwo.oneORtwo.two._2a);
-        assertEquals("Default value for _2b incorrect","Default 2B", obj.optXAndGroupOneOrGroupTwo.oneORtwo.two._2b);
+        new CommandLine(obj).execute("-x", sampleX, "-1a=x", "-1b=z");
+        assertEquals(errorX,sampleX, obj.optXAndGroupOneOrGroupTwo.x);
+        assertEquals(errorA1,"x", obj.optXAndGroupOneOrGroupTwo.oneORtwo.one.a1);
+        assertEquals(errorB1,"z", obj.optXAndGroupOneOrGroupTwo.oneORtwo.one.b1);
+        assertEquals(errorA2,"Default 2A", obj.optXAndGroupOneOrGroupTwo.oneORtwo.two.a2);
+        assertEquals(errorB2,"Default 2B", obj.optXAndGroupOneOrGroupTwo.oneORtwo.two.b2);
     }
 
     /**
@@ -4189,12 +4197,12 @@ public class ArgGroupTest {
     @Test
     public void testIssue1409InitializeGroup2() {
         final Issue1409 obj = new Issue1409();
-        new CommandLine(obj).execute("-x", "ANOTHER_VALUE", "-2a=x", "-2b=z");
-        assertEquals("Default value for X incorrect","ANOTHER_VALUE", obj.optXAndGroupOneOrGroupTwo.x);
-        assertEquals("Default value for _1a incorrect",null, obj.optXAndGroupOneOrGroupTwo.oneORtwo.one._1a);
-        assertEquals("Default value for _1b incorrect",null, obj.optXAndGroupOneOrGroupTwo.oneORtwo.one._1b);
-        assertEquals("Default value for _2a incorrect","x", obj.optXAndGroupOneOrGroupTwo.oneORtwo.two._2a);
-        assertEquals("Default value for _2b incorrect","z", obj.optXAndGroupOneOrGroupTwo.oneORtwo.two._2b);
+        new CommandLine(obj).execute("-x", sampleX, "-2a=x", "-2b=z");
+        assertEquals(errorX,sampleX, obj.optXAndGroupOneOrGroupTwo.x);
+        assertEquals(errorA1,null, obj.optXAndGroupOneOrGroupTwo.oneORtwo.one.a1);
+        assertEquals(errorB1,null, obj.optXAndGroupOneOrGroupTwo.oneORtwo.one.b1);
+        assertEquals(errorA2,"x", obj.optXAndGroupOneOrGroupTwo.oneORtwo.two.a2);
+        assertEquals(errorB2,"z", obj.optXAndGroupOneOrGroupTwo.oneORtwo.two.b2);
     }
 
     /**
@@ -4230,18 +4238,18 @@ public class ArgGroupTest {
 
         static class GroupOne {
             @Option(names = { "-1a", "--option-1a" },required=true,description = "option A of group 1")
-            String _1a;
+            String a1;
 
             @Option(names = { "-1b", "--option-1b" },required=true,description = "option B of group 1")
-            String _1b;
+            String b1;
         }
 
         static class GroupTwo {
             @Option(names = { "-2a", "--option-2a" },required=true, defaultValue = "Default 2A", description = "option A of group 2")
-            private String _2a = "Default 2A";
+            private String a2 = "Default 2A"; // default value declared
 
             @Option(names = { "-2b", "--option-2b" },required=true, defaultValue = "Default 2B", description = "option B of group 2")
-            private String _2b = "Default 2B";
+            private String b2 = "Default 2B"; // default value declared
         }
 
     }
@@ -4258,12 +4266,12 @@ public class ArgGroupTest {
     @Test
     public void testIssue1409Mod() {
         final Issue1409Mod obj = new Issue1409Mod();
-        new CommandLine(obj).parseArgs("-x", "ANOTHER_VALUE");
-        assertEquals("Default value for X incorrect","ANOTHER_VALUE", obj.optXAndGroupOneOrGroupTwo.x);
-        assertEquals("Default value for _1a incorrect",null, obj.optXAndGroupOneOrGroupTwo.oneORtwo.one._1a);
-        assertEquals("Default value for _1b incorrect",null, obj.optXAndGroupOneOrGroupTwo.oneORtwo.one._1b);
-        assertEquals("Default value for _2a incorrect","Default 2A", obj.optXAndGroupOneOrGroupTwo.oneORtwo.two._2a);
-        assertEquals("Default value for _2b incorrect","Default 2B", obj.optXAndGroupOneOrGroupTwo.oneORtwo.two._2b);
+        new CommandLine(obj).parseArgs("-x", sampleX);
+        assertEquals(errorX,sampleX, obj.optXAndGroupOneOrGroupTwo.x);
+        assertEquals(errorA1,null, obj.optXAndGroupOneOrGroupTwo.oneORtwo.one.a1);
+        assertEquals(errorB1,null, obj.optXAndGroupOneOrGroupTwo.oneORtwo.one.b1);
+        assertEquals(errorA2,"Default 2A", obj.optXAndGroupOneOrGroupTwo.oneORtwo.two.a2);
+        assertEquals(errorB2,"Default 2B", obj.optXAndGroupOneOrGroupTwo.oneORtwo.two.b2);
     }
 
     /**
@@ -4278,12 +4286,12 @@ public class ArgGroupTest {
     @Test
     public void testIssue1409ModInitializeGroup1() {
         final Issue1409Mod obj = new Issue1409Mod();
-        new CommandLine(obj).parseArgs("-x", "ANOTHER_VALUE", "-1a=x", "-1b=z");
-        assertEquals("Default value for X incorrect","ANOTHER_VALUE", obj.optXAndGroupOneOrGroupTwo.x);
-        assertEquals("Default value for _1a incorrect","x", obj.optXAndGroupOneOrGroupTwo.oneORtwo.one._1a);
-        assertEquals("Default value for _1b incorrect","z", obj.optXAndGroupOneOrGroupTwo.oneORtwo.one._1b);
-        assertEquals("Default value for _2a incorrect","Default 2A", obj.optXAndGroupOneOrGroupTwo.oneORtwo.two._2a);
-        assertEquals("Default value for _2b incorrect","Default 2B", obj.optXAndGroupOneOrGroupTwo.oneORtwo.two._2b);
+        new CommandLine(obj).parseArgs("-x", sampleX, "-1a=x", "-1b=z");
+        assertEquals(errorX,sampleX, obj.optXAndGroupOneOrGroupTwo.x);
+        assertEquals(errorA1,"x", obj.optXAndGroupOneOrGroupTwo.oneORtwo.one.a1);
+        assertEquals(errorB1,"z", obj.optXAndGroupOneOrGroupTwo.oneORtwo.one.b1);
+        assertEquals(errorA2,"Default 2A", obj.optXAndGroupOneOrGroupTwo.oneORtwo.two.a2);
+        assertEquals(errorB2,"Default 2B", obj.optXAndGroupOneOrGroupTwo.oneORtwo.two.b2);
     }
 
     /**
@@ -4298,12 +4306,12 @@ public class ArgGroupTest {
     @Test
     public void testIssue1409ModInitializeGroup2() {
         final Issue1409Mod obj = new Issue1409Mod();
-        new CommandLine(obj).parseArgs("-x", "ANOTHER_VALUE", "-2a=x", "-2b=z");
-        assertEquals("Default value for X incorrect","ANOTHER_VALUE", obj.optXAndGroupOneOrGroupTwo.x);
-        assertEquals("Default value for _1a incorrect",null, obj.optXAndGroupOneOrGroupTwo.oneORtwo.one._1a);
-        assertEquals("Default value for _1b incorrect",null, obj.optXAndGroupOneOrGroupTwo.oneORtwo.one._1b);
-        assertEquals("Default value for _2a incorrect","x", obj.optXAndGroupOneOrGroupTwo.oneORtwo.two._2a);
-        assertEquals("Default value for _2b incorrect","z", obj.optXAndGroupOneOrGroupTwo.oneORtwo.two._2b);
+        new CommandLine(obj).parseArgs("-x", sampleX, "-2a=x", "-2b=z");
+        assertEquals(errorX,sampleX, obj.optXAndGroupOneOrGroupTwo.x);
+        assertEquals(errorA1,null, obj.optXAndGroupOneOrGroupTwo.oneORtwo.one.a1);
+        assertEquals(errorB1,null, obj.optXAndGroupOneOrGroupTwo.oneORtwo.one.b1);
+        assertEquals(errorA2,"x", obj.optXAndGroupOneOrGroupTwo.oneORtwo.two.a2);
+        assertEquals(errorB2,"z", obj.optXAndGroupOneOrGroupTwo.oneORtwo.two.b2);
     }
 
 }
