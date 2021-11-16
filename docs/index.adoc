@@ -3052,9 +3052,9 @@ Picocli will not initialize the `@ArgGroup`-annotated field (and so no default v
 
 ==== Showing Default Values in Group Usage Help
 
-When options are used in argument groups, they can only define default values via the `@Option(defaultValue = "...")` annotation (not in the field declaration).
+When options are used in argument groups, they should define default values via the `@Option(defaultValue = "...")` annotation (initial values in the field declaration cannot be shown in the usage help).
 
-When defined this way, the `${DEFAULT-VALUE}` variable can be used to <<Show Default Values,show the default value>> in the description of options in an argument group. For example:
+When default values are defined in the annotation, the `${DEFAULT-VALUE}` variable can be used to <<Show Default Values,show the default value>> in the description of options in an argument group. For example:
 
 .This works correctly: usage help will show the default value.
 
@@ -3156,42 +3156,69 @@ usage help shows the wrong default value
 ====
 
 ==== Using Default Values in Argument Groups
-For picocli, there are two recommendations for successfully employing default values. First, using default values requires setting the default value within the annotation and declaratively within your code.  The second is deciding how to instantiate your objects.
+Applications need to do extra work for argument group options with default values.
+Picocli does not instantiate the group if none of the options in the group is specified on the command line, so applications need to do this manually.
 
-[source,role="primary"]
-----
-@Option(names= {"-x"}, defaultValue = "X") String X = "X";
-----
-Matching the annotation and declaration ensures that picocli sets the default values regardless of the user supplies the arguments.
+Below are some recommendations for using default values in argument group options and positional parameters:
 
-Next, identify your preferred default behavior. For `+@ArgGroup+`'s there are two distinct ways of instantiating an object.
+* specify default values in both the `@Option` annotation, and in the initial value of the `@Option`-annotated field. Yes, that means some duplication. (The same recommendation holds for positional `@Parameters`.)
+* the application needs to manually instantiate the `@ArgGroup`-annotated field. More details follow below.
 
-The first is to instantiate the object declaratively.  This behavior is best when you desire no ambiguity in whether or not an `+@ArgGroup+` is instantiated.
+The default value in the annotation means that picocli can <<Showing Default Values in Group Usage Help,show the default value>> in the usage help, and the initial value means that any new instance of the group that contains the option will already have the default value assigned to that option.
+
+The example below shows an option that defines the default value in the annotation as well as in the initial value of the field:
 
 .Java
 [source,java,role="primary"]
 ----
+class MyGroup {
+    // (group options):
+    // specify default values both in the annotation and in the initial value
+    @Option(names = "-x", defaultValue = "XX") String x = "XX"; // yes, some duplication :-(
+}
+----
+
+
+Next, the application needs to manually instantiate the `@ArgGroup`-annotated field.
+There is a trade-off:
+
+* instantiating the `@ArgGroup`-annotated field in the declaration is simple and short but applications cannot easily detect whether a group option was specified on the command line or not
+* leaving the `@ArgGroup`-annotated field `null` in the declaration allows applications to easily detect whether a group option was specified on the command line, but is a bit more code
+
+The example below shows the first idea: instantiating the group object in the declaration.
+This way, the group object is never `null` and (if you followed the previous recommendation) all options in this group object will have the default value as their initial value.
+
+.Java
+[source,java,role="primary"]
+----
+// instantiating the group in the declaration:
+// all options in this group now also have their initial (default) value
 @ArgGroup MyGroup myGroup = new MyGroup();
 ----
 
 .Kotlin
 [source,kotlin,role="secondary"]
 ----
+// instantiating the group in the declaration:
+// all options in this group now also have their initial (default) value
 @ArgGroup var myGroup = MyGroup();
 ----
 
-The second way is to initialize the objects using business logic, such as `+run+` or `+call+` methods.  This way is better if the desired behavior is to allow the application to determine whether the user specified a value for the `+@ArgGroup+`. It is recommended that the program called using `+execute+` instead of `+parseArgs+`
+Alternatively, applications can initialize the group objects in the business logic: in the `run` or `call` method.
+This allows the application to determine whether the user specified a value for any of the options in the group.
+
+The example below demonstrates initializing the group objects in the business logic:
 
 .Java
 [source,java,role="primary"]
 ----
-@Command(name = "test", description = "demonstrates Default Value declaration")
-class MyApp {
-    @ArgGroup Outer outer;
+@Command(name = "group-default-demo")
+class MyApp implements Runnable {
+    @ArgGroup Outer outer; // no initial value
 
     static class Outer {
         @Options(names = "-x", defaultValue = "XX") String x = "XX";
-        @ArgGroup(exclusive = "true") Inner inner;
+        @ArgGroup(exclusive = "true") Inner inner; // no initial value
     }
 
     static class Inner {
@@ -3200,20 +3227,17 @@ class MyApp {
     }
 
     public void run() {
-        if (outer  ==  null) { // no options specified on command line; apply default values
-            outer = new Outer;
+        if (outer == null) {
+            // -x option was not specified on command line; apply default values
+            outer = new Outer();
         }
-        if (outer.inner  ==  null) { // handle nested sub-groups; apply default for inner group
-            outer.inner = new Inner;
+        if (outer.inner == null) {
+            // neither -a nor -b was specified; apply default for inner group
+            outer.inner = new Inner();
         }
 
         // remaining business logic...
     }
-}
-
-public static void main() {
-        final MyApp obj = new MyApp();
-        new CommandLine(obj).execute("-x", "ANOTHER_VALUE");
 }
 ----
 
@@ -3221,36 +3245,32 @@ public static void main() {
 [source,kotlin,role="secondary"]
 ----
 
- import sun.tools.jar.CommandLine@Command(name = "test", description =["demonstrates Default Value declaration"])
-class MyApp {
-    @ArgGroup lateinit var outer: Outer
+@Command(name = "group-default-demo")
+class MyApp : Runnable {
+    @ArgGroup lateinit var outer: Outer // no initial value
 
     class Outer {
         @Options(names = "-x", defaultValue = "XX") var x = "XX";
-        @ArgGroup lateinit var inner: Inner
+        @ArgGroup lateinit var inner: Inner // no initial value
     }
 
     class Inner {
-        @Options(names = "-a", defaultValue = "AA") var a : "AA"
-        @Options(names = "-b", defaultValue = "BB") var b : "BB"
+        @Options(names = "-a", defaultValue = "AA") var a = "AA";
+        @Options(names = "-b", defaultValue = "BB") var b = "BB";
     }
 
     override fun run() {
-        if (outer  ==  null) { // no options specified on command line; apply default values
+        if (outer == null) {
+            // -x option was not specified on command line; apply default values
             outer = Outer();
         }
-        if (outer.inner  ==  null) { // handle nested sub-groups; apply default for inner group
+        if (outer.inner == null) {
+            // neither -a nor -b was specified; apply default for inner group
             outer.inner = Inner();
         }
 
         // remaining business logic...
     }
-}
-
-fun main(args: Array<String>) {
-    var obj = MyApp();
-    var commandLine = CommandLine(obj);
-    commandLine.execute(args);
 }
 ----
 
