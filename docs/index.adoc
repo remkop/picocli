@@ -3228,15 +3228,15 @@ class MyApp implements Runnable {
     @ArgGroup Outer outer; // no initial value
 
     static class Outer {
-        @Options(names = "-x", defaultValue = "XX") String x = "XX";
+        @Option(names = "-x", defaultValue = "XX") String x = "XX";
         
         @ArgGroup(exclusive = "true")
         Inner inner; // no initial value
     }
 
     static class Inner {
-        @Options(names = "-a", defaultValue = "AA") String a = "AA";
-        @Options(names = "-b", defaultValue = "BB") String b = "BB";
+        @Option(names = "-a", defaultValue = "AA") String a = "AA";
+        @Option(names = "-b", defaultValue = "BB") String b = "BB";
     }
 
     public void run() {
@@ -3263,15 +3263,15 @@ class MyApp : Runnable {
     @ArgGroup lateinit var outer: Outer // no initial value
 
     class Outer {
-        @Options(names = "-x", defaultValue = "XX") var x = "XX";
+        @Option(names = "-x", defaultValue = "XX") var x = "XX";
         
         @ArgGroup(exclusive = "true")
         lateinit var inner: Inner // no initial value
     }
 
     class Inner {
-        @Options(names = "-a", defaultValue = "AA") var a = "AA";
-        @Options(names = "-b", defaultValue = "BB") var b = "BB";
+        @Option(names = "-a", defaultValue = "AA") var a = "AA";
+        @Option(names = "-b", defaultValue = "BB") var b = "BB";
     }
 
     override fun run() {
