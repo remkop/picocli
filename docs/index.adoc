@@ -3155,16 +3155,16 @@ usage help shows the wrong default value
 ----
 ====
 
-==== Using Default Values in Argument Groups
+==== Assigning Default Values in Argument Groups
 Applications need to do extra work for argument group options with default values.
 Picocli does not instantiate the group if none of the options in the group is specified on the command line, so applications need to do this manually.
 
 Below are some recommendations for using default values in argument group options and positional parameters:
 
-* specify default values in both the `@Option` annotation, and in the initial value of the `@Option`-annotated field. Yes, that means some duplication. (The same recommendation holds for positional `@Parameters`.)
+* specify default values in both the `@Option` annotation, and in the initial value of the `@Option`-annotated field. Yes, that means some duplication. This recommendation holds for positional `@Parameters`.
 * the application needs to manually instantiate the `@ArgGroup`-annotated field. More details follow below.
 
-The default value in the annotation means that picocli can <<Showing Default Values in Group Usage Help,show the default value>> in the usage help, and the initial value means that any new instance of the group that contains the option will already have the default value assigned to that option.
+The default value in the `@Option` or `@Parameters` annotation means that picocli can <<Showing Default Values in Group Usage Help,show the default value>> in the usage help, and the initial value means that any new instance of the group that contains the option will already have the default value assigned to that option field.
 
 The example below shows an option that defines the default value in the annotation as well as in the initial value of the field:
 
@@ -3174,10 +3174,21 @@ The example below shows an option that defines the default value in the annotati
 class MyGroup {
     // (group options):
     // specify default values both in the annotation and in the initial value
-    @Option(names = "-x", defaultValue = "XX") String x = "XX"; // yes, some duplication :-(
+    @Option(names = "-x", defaultValue = "XX")
+    String x = "XX"; // yes, some duplication :-(
 }
 ----
 
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+class MyGroup {
+    // (group options):
+    // specify default values both in the annotation and in the initial value
+    @Option(names = "-x", defaultValue = "XX")
+    var x = "XX"; // yes, some duplication :-(
+}
+----
 
 Next, the application needs to manually instantiate the `@ArgGroup`-annotated field.
 There is a trade-off:
@@ -3218,7 +3229,9 @@ class MyApp implements Runnable {
 
     static class Outer {
         @Options(names = "-x", defaultValue = "XX") String x = "XX";
-        @ArgGroup(exclusive = "true") Inner inner; // no initial value
+        
+        @ArgGroup(exclusive = "true")
+        Inner inner; // no initial value
     }
 
     static class Inner {
@@ -3227,13 +3240,13 @@ class MyApp implements Runnable {
     }
 
     public void run() {
-        if (outer == null) {
-            // -x option was not specified on command line; apply default values
-            outer = new Outer();
+        if (outer == null) { // -x option was not specified on command line
+            // perform any logic that needs to happen if -x is missing
+            outer = new Outer(); // apply default values
         }
-        if (outer.inner == null) {
-            // neither -a nor -b was specified; apply default for inner group
-            outer.inner = new Inner();
+        if (outer.inner == null) { // neither -a nor -b was specified
+            // perform any logic that needs to happen if -a or -b is missing
+            outer.inner = new Inner(); // apply defaults for inner group
         }
 
         // remaining business logic...
@@ -3251,7 +3264,9 @@ class MyApp : Runnable {
 
     class Outer {
         @Options(names = "-x", defaultValue = "XX") var x = "XX";
-        @ArgGroup lateinit var inner: Inner // no initial value
+        
+        @ArgGroup(exclusive = "true")
+        lateinit var inner: Inner // no initial value
     }
 
     class Inner {
@@ -3260,13 +3275,13 @@ class MyApp : Runnable {
     }
 
     override fun run() {
-        if (outer == null) {
-            // -x option was not specified on command line; apply default values
-            outer = Outer();
+        if (outer == null) { // -x option was not specified on command line
+            // perform any logic that needs to happen if -x is missing
+            outer = Outer(); // apply default values
         }
-        if (outer.inner == null) {
-            // neither -a nor -b was specified; apply default for inner group
-            outer.inner = Inner();
+        if (outer.inner == null) { // neither -a nor -b was specified
+            // perform any logic that needs to happen if -a or -b is missing
+            outer.inner = Inner(); // apply defaults for inner group
         }
 
         // remaining business logic...
