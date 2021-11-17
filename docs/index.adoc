@@ -3197,7 +3197,7 @@ There is a trade-off:
 * leaving the `@ArgGroup`-annotated field `null` in the declaration allows applications to easily detect whether a group option was specified on the command line, but is a bit more code
 
 The example below shows the first idea: instantiating the group object in the declaration.
-This way, the group object is never `null` and (if you followed the previous recommendation) all options in this group object will have the default value as their initial value.
+This way, the group object is never `null` and (if you followed the previous recommendation) all option fields in this group object will have the default value as their initial value.
 
 .Java
 [source,java,role="primary"]
@@ -3242,11 +3242,11 @@ class MyApp implements Runnable {
     public void run() {
         if (outer == null) { // -x option was not specified on command line
             // perform any logic that needs to happen if -x is missing
-            outer = new Outer(); // apply default values
+            outer = new Outer(); // assign default values
         }
         if (outer.inner == null) { // neither -a nor -b was specified
             // perform any logic that needs to happen if -a or -b is missing
-            outer.inner = new Inner(); // apply defaults for inner group
+            outer.inner = new Inner(); // assign defaults for inner group
         }
 
         // remaining business logic...
@@ -3277,11 +3277,11 @@ class MyApp : Runnable {
     override fun run() {
         if (outer == null) { // -x option was not specified on command line
             // perform any logic that needs to happen if -x is missing
-            outer = Outer(); // apply default values
+            outer = Outer(); // assign default values
         }
         if (outer.inner == null) { // neither -a nor -b was specified
             // perform any logic that needs to happen if -a or -b is missing
-            outer.inner = Inner(); // apply defaults for inner group
+            outer.inner = Inner(); // assign defaults for inner group
         }
 
         // remaining business logic...
