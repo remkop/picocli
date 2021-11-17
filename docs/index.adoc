@@ -3052,7 +3052,8 @@ Picocli will not initialize the `@ArgGroup`-annotated field (and so no default v
 
 ==== Showing Default Values in Group Usage Help
 
-When options are used in argument groups, they should define default values via the `@Option(defaultValue = "...")` annotation (initial values in the field declaration cannot be shown in the usage help).
+When options are used in argument groups, they should define default values via the `@Option(defaultValue = "...")` annotation.
+Picocli cannot get the initial values from the option field declaration because the group has not been instantiated yet.
 
 When default values are defined in the annotation, the `${DEFAULT-VALUE}` variable can be used to <<Show Default Values,show the default value>> in the description of options in an argument group. For example:
 
