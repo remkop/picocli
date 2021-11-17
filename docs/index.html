@@ -6102,7 +6102,7 @@ If the application assigned a non-<code>null</code> Collection in the field decl
 <div class="sect3">
 <h4 id="_showing_default_values_in_group_usage_help"><a class="anchor" href="#_showing_default_values_in_group_usage_help"></a>8.5.1. Showing Default Values in Group Usage Help</h4>
 <div class="paragraph">
-<p>When options are used in argument groups, they should define default values via the <code>@Option(defaultValue = "&#8230;&#8203;")</code> annotation (initial values in the field declaration cannot be shown in the usage help).</p>
+<p>Options used in argument groups should define default values via the <code>@Option(defaultValue = "&#8230;&#8203;")</code> annotation.</p>
 </div>
 <div class="paragraph">
 <p>When default values are defined in the annotation, the <code>${DEFAULT-VALUE}</code> variable can be used to <a href="#_show_default_values">show the default value</a> in the description of options in an argument group. For example:</p>
@@ -6217,7 +6217,7 @@ usage help shows the wrong default value
 </div>
 </div>
 <div class="sect3">
-<h4 id="_using_default_values_in_argument_groups"><a class="anchor" href="#_using_default_values_in_argument_groups"></a>8.5.2. Using Default Values in Argument Groups</h4>
+<h4 id="_assigning_default_values_in_argument_groups"><a class="anchor" href="#_assigning_default_values_in_argument_groups"></a>8.5.2. Assigning Default Values in Argument Groups</h4>
 <div class="paragraph">
 <p>Applications need to do extra work for argument group options with default values.
 Picocli does not instantiate the group if none of the options in the group is specified on the command line, so applications need to do this manually.</p>
@@ -6228,7 +6228,7 @@ Picocli does not instantiate the group if none of the options in the group is sp
 <div class="ulist">
 <ul>
 <li>
-<p>specify default values in both the <code>@Option</code> annotation, and in the initial value of the <code>@Option</code>-annotated field. Yes, that means some duplication. (The same recommendation holds for positional <code>@Parameters</code>.)</p>
+<p>specify default values in both the <code>@Option</code> annotation, and in the initial value of the <code>@Option</code>-annotated field. Yes, that means some duplication. This recommendation also holds for positional <code>@Parameters</code>.</p>
 </li>
 <li>
 <p>the application needs to manually instantiate the <code>@ArgGroup</code>-annotated field. More details follow below.</p>
@@ -6236,7 +6236,7 @@ Picocli does not instantiate the group if none of the options in the group is sp
 </ul>
 </div>
 <div class="paragraph">
-<p>The default value in the annotation means that picocli can <a href="#_showing_default_values_in_group_usage_help">show the default value</a> in the usage help, and the initial value means that any new instance of the group that contains the option will already have the default value assigned to that option.</p>
+<p>The default value in the <code>@Option</code> or <code>@Parameters</code> annotation means that picocli can <a href="#_showing_default_values_in_group_usage_help">show the default value</a> in the usage help, and the initial value means that any new instance of the group that contains the option will already have the default value assigned to that option field.</p>
 </div>
 <div class="paragraph">
 <p>The example below shows an option that defines the default value in the annotation as well as in the initial value of the field:</p>
@@ -6247,8 +6247,20 @@ Picocli does not instantiate the group if none of the options in the group is sp
 <pre class="rouge highlight"><code data-lang="java"><span class="kd">class</span> <span class="nc">MyGroup</span> <span class="o">{</span>
     <span class="c1">// (group options):</span>
     <span class="c1">// specify default values both in the annotation and in the initial value</span>
-    <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-x"</span><span class="o">,</span> <span class="n">defaultValue</span> <span class="o">=</span> <span class="s">"XX"</span><span class="o">)</span> <span class="nc">String</span> <span class="n">x</span> <span class="o">=</span> <span class="s">"XX"</span><span class="o">;</span> <span class="c1">// yes, some duplication :-(</span>
+    <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-x"</span><span class="o">,</span> <span class="n">defaultValue</span> <span class="o">=</span> <span class="s">"XX"</span><span class="o">)</span>
+    <span class="nc">String</span> <span class="n">x</span> <span class="o">=</span> <span class="s">"XX"</span><span class="o">;</span> <span class="c1">// yes, some duplication :-(</span>
 <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">class</span> <span class="nc">MyGroup</span> <span class="p">{</span>
+    <span class="c1">// (group options):</span>
+    <span class="c1">// specify default values both in the annotation and in the initial value</span>
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="s">"-x"</span><span class="p">,</span> <span class="n">defaultValue</span> <span class="p">=</span> <span class="s">"XX"</span><span class="p">)</span>
+    <span class="kd">var</span> <span class="py">x</span> <span class="p">=</span> <span class="s">"XX"</span><span class="p">;</span> <span class="c1">// yes, some duplication :-(</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -6267,7 +6279,7 @@ There is a trade-off:</p>
 </div>
 <div class="paragraph">
 <p>The example below shows the first idea: instantiating the group object in the declaration.
-This way, the group object is never <code>null</code> and (if you followed the previous recommendation) all options in this group object will have the default value as their initial value.</p>
+This way, the group object is never <code>null</code> and (if you followed the previous recommendation) all option fields in this group object will have the default value as their initial value.</p>
 </div>
 <div class="listingblock primary">
 <div class="title">Java</div>
@@ -6300,23 +6312,25 @@ This allows the application to determine whether the user specified a value for 
     <span class="nd">@ArgGroup</span> <span class="nc">Outer</span> <span class="n">outer</span><span class="o">;</span> <span class="c1">// no initial value</span>
 
     <span class="kd">static</span> <span class="kd">class</span> <span class="nc">Outer</span> <span class="o">{</span>
-        <span class="nd">@Options</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-x"</span><span class="o">,</span> <span class="n">defaultValue</span> <span class="o">=</span> <span class="s">"XX"</span><span class="o">)</span> <span class="nc">String</span> <span class="n">x</span> <span class="o">=</span> <span class="s">"XX"</span><span class="o">;</span>
-        <span class="nd">@ArgGroup</span><span class="o">(</span><span class="n">exclusive</span> <span class="o">=</span> <span class="s">"true"</span><span class="o">)</span> <span class="nc">Inner</span> <span class="n">inner</span><span class="o">;</span> <span class="c1">// no initial value</span>
+        <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-x"</span><span class="o">,</span> <span class="n">defaultValue</span> <span class="o">=</span> <span class="s">"XX"</span><span class="o">)</span> <span class="nc">String</span> <span class="n">x</span> <span class="o">=</span> <span class="s">"XX"</span><span class="o">;</span>
+
+        <span class="nd">@ArgGroup</span><span class="o">(</span><span class="n">exclusive</span> <span class="o">=</span> <span class="s">"true"</span><span class="o">)</span>
+        <span class="nc">Inner</span> <span class="n">inner</span><span class="o">;</span> <span class="c1">// no initial value</span>
     <span class="o">}</span>
 
     <span class="kd">static</span> <span class="kd">class</span> <span class="nc">Inner</span> <span class="o">{</span>
-        <span class="nd">@Options</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-a"</span><span class="o">,</span> <span class="n">defaultValue</span> <span class="o">=</span> <span class="s">"AA"</span><span class="o">)</span> <span class="nc">String</span> <span class="n">a</span> <span class="o">=</span> <span class="s">"AA"</span><span class="o">;</span>
-        <span class="nd">@Options</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-b"</span><span class="o">,</span> <span class="n">defaultValue</span> <span class="o">=</span> <span class="s">"BB"</span><span class="o">)</span> <span class="nc">String</span> <span class="n">b</span> <span class="o">=</span> <span class="s">"BB"</span><span class="o">;</span>
+        <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-a"</span><span class="o">,</span> <span class="n">defaultValue</span> <span class="o">=</span> <span class="s">"AA"</span><span class="o">)</span> <span class="nc">String</span> <span class="n">a</span> <span class="o">=</span> <span class="s">"AA"</span><span class="o">;</span>
+        <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-b"</span><span class="o">,</span> <span class="n">defaultValue</span> <span class="o">=</span> <span class="s">"BB"</span><span class="o">)</span> <span class="nc">String</span> <span class="n">b</span> <span class="o">=</span> <span class="s">"BB"</span><span class="o">;</span>
     <span class="o">}</span>
 
     <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">()</span> <span class="o">{</span>
-        <span class="k">if</span> <span class="o">(</span><span class="n">outer</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
-            <span class="c1">// -x option was not specified on command line; apply default values</span>
-            <span class="n">outer</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Outer</span><span class="o">();</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">outer</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span> <span class="c1">// -x option was not specified on command line</span>
+            <span class="c1">// perform any logic that needs to happen if -x is missing</span>
+            <span class="n">outer</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Outer</span><span class="o">();</span> <span class="c1">// assign default values</span>
         <span class="o">}</span>
-        <span class="k">if</span> <span class="o">(</span><span class="n">outer</span><span class="o">.</span><span class="na">inner</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
-            <span class="c1">// neither -a nor -b was specified; apply default for inner group</span>
-            <span class="n">outer</span><span class="o">.</span><span class="na">inner</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Inner</span><span class="o">();</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">outer</span><span class="o">.</span><span class="na">inner</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span> <span class="c1">// neither -a nor -b was specified</span>
+            <span class="c1">// perform any logic that needs to happen if -a or -b is missing</span>
+            <span class="n">outer</span><span class="o">.</span><span class="na">inner</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Inner</span><span class="o">();</span> <span class="c1">// assign defaults for inner group</span>
         <span class="o">}</span>
 
         <span class="c1">// remaining business logic...</span>
@@ -6332,23 +6346,25 @@ This allows the application to determine whether the user specified a value for 
     <span class="nd">@ArgGroup</span> <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">outer</span><span class="p">:</span> <span class="nc">Outer</span> <span class="c1">// no initial value</span>
 
     <span class="kd">class</span> <span class="nc">Outer</span> <span class="p">{</span>
-        <span class="nd">@Options</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="s">"-x"</span><span class="p">,</span> <span class="n">defaultValue</span> <span class="p">=</span> <span class="s">"XX"</span><span class="p">)</span> <span class="kd">var</span> <span class="py">x</span> <span class="p">=</span> <span class="s">"XX"</span><span class="p">;</span>
-        <span class="nd">@ArgGroup</span> <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">inner</span><span class="p">:</span> <span class="nc">Inner</span> <span class="c1">// no initial value</span>
+        <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="s">"-x"</span><span class="p">,</span> <span class="n">defaultValue</span> <span class="p">=</span> <span class="s">"XX"</span><span class="p">)</span> <span class="kd">var</span> <span class="py">x</span> <span class="p">=</span> <span class="s">"XX"</span><span class="p">;</span>
+
+        <span class="nd">@ArgGroup</span><span class="p">(</span><span class="n">exclusive</span> <span class="p">=</span> <span class="s">"true"</span><span class="p">)</span>
+        <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">inner</span><span class="p">:</span> <span class="nc">Inner</span> <span class="c1">// no initial value</span>
     <span class="p">}</span>
 
     <span class="kd">class</span> <span class="nc">Inner</span> <span class="p">{</span>
-        <span class="nd">@Options</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="s">"-a"</span><span class="p">,</span> <span class="n">defaultValue</span> <span class="p">=</span> <span class="s">"AA"</span><span class="p">)</span> <span class="kd">var</span> <span class="py">a</span> <span class="p">=</span> <span class="s">"AA"</span><span class="p">;</span>
-        <span class="nd">@Options</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="s">"-b"</span><span class="p">,</span> <span class="n">defaultValue</span> <span class="p">=</span> <span class="s">"BB"</span><span class="p">)</span> <span class="kd">var</span> <span class="py">b</span> <span class="p">=</span> <span class="s">"BB"</span><span class="p">;</span>
+        <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="s">"-a"</span><span class="p">,</span> <span class="n">defaultValue</span> <span class="p">=</span> <span class="s">"AA"</span><span class="p">)</span> <span class="kd">var</span> <span class="py">a</span> <span class="p">=</span> <span class="s">"AA"</span><span class="p">;</span>
+        <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="s">"-b"</span><span class="p">,</span> <span class="n">defaultValue</span> <span class="p">=</span> <span class="s">"BB"</span><span class="p">)</span> <span class="kd">var</span> <span class="py">b</span> <span class="p">=</span> <span class="s">"BB"</span><span class="p">;</span>
     <span class="p">}</span>
 
     <span class="k">override</span> <span class="k">fun</span> <span class="nf">run</span><span class="p">()</span> <span class="p">{</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">outer</span> <span class="p">==</span> <span class="k">null</span><span class="p">)</span> <span class="p">{</span>
-            <span class="c1">// -x option was not specified on command line; apply default values</span>
-            <span class="n">outer</span> <span class="p">=</span> <span class="nc">Outer</span><span class="p">();</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">outer</span> <span class="p">==</span> <span class="k">null</span><span class="p">)</span> <span class="p">{</span> <span class="c1">// -x option was not specified on command line</span>
+            <span class="c1">// perform any logic that needs to happen if -x is missing</span>
+            <span class="n">outer</span> <span class="p">=</span> <span class="nc">Outer</span><span class="p">();</span> <span class="c1">// assign default values</span>
         <span class="p">}</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">outer</span><span class="p">.</span><span class="k">inner</span> <span class="p">==</span> <span class="k">null</span><span class="p">)</span> <span class="p">{</span>
-            <span class="c1">// neither -a nor -b was specified; apply default for inner group</span>
-            <span class="n">outer</span><span class="p">.</span><span class="k">inner</span> <span class="p">=</span> <span class="nc">Inner</span><span class="p">();</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">outer</span><span class="p">.</span><span class="k">inner</span> <span class="p">==</span> <span class="k">null</span><span class="p">)</span> <span class="p">{</span> <span class="c1">// neither -a nor -b was specified</span>
+            <span class="c1">// perform any logic that needs to happen if -a or -b is missing</span>
+            <span class="n">outer</span><span class="p">.</span><span class="k">inner</span> <span class="p">=</span> <span class="nc">Inner</span><span class="p">();</span> <span class="c1">// assign defaults for inner group</span>
         <span class="p">}</span>
 
         <span class="c1">// remaining business logic...</span>
@@ -18324,7 +18340,7 @@ This facilitates including picocli in your project: simply copy and paste the co
 <div id="footer">
 <div id="footer-text">
 Version 4.6.2<br>
-Last updated 2021-11-17 08:20:47 +0900
+Last updated 2021-11-18 05:00:24 +0900
 </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/tocbot/3.0.7/tocbot.min.js"></script>
