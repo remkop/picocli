@@ -17,15 +17,21 @@ class RequiredMarkerDisplayedIncorrectly {
     @ArgGroup(exclusive = true, multiplicity = "0..1")
     public RequiredMarkerDisplayedIncorrectly.ExclusiveOptions exclusive;
     public static class ExclusiveOptions {
-        @Option(names = "--silent",
+        @Option(names = {"-s", "--silent"},
                 description = "Silent mode",
-                required = false
+                required = true
         )
         public boolean silent;
+
         @Option(names = {"-v", "--verbose"},
                 description = "Verbose mode",
                 required = false)
         public boolean verbose;
+
+        @Option(names = {"-h", "--help"},
+                description = "Printing help",
+                required = false)
+        public boolean help;
     }
 }
 
@@ -39,9 +45,10 @@ public class Issue1380Test {
         new CommandLine(new RequiredMarkerDisplayedIncorrectly()).usage(printStream);
 
         String returnedText = tempOut.toString();
-        String expectedText = "Usage: <main class> [--silent | -v]\n" +
-                "      --silent    Silent mode\n" +
-                "  -v, --verbose   Verbose mode\n";
+        String expectedText = "Usage: <main class> [-s | -v | -h]\n" +
+                "  -h, --help      Printing help\n" +
+                "* -s, --silent    Silent mode\n" +
+                "  -v, --verbose   Verbose mode\n\n";
 
         assertEquals(expectedText, returnedText);
 
