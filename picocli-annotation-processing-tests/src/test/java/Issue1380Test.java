@@ -10,45 +10,73 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.ArgGroup;
 
-//Testing Command
+
 @Command(requiredOptionMarker = '*')
-class RequiredMarkerDisplayedIncorrectly {
+class TestingClassExclusiveTrue {
 
     @ArgGroup(exclusive = true, multiplicity = "0..1")
-    public RequiredMarkerDisplayedIncorrectly.ExclusiveOptions exclusive;
+    public TestingClassExclusiveTrue.ExclusiveOptions exclusive;
     public static class ExclusiveOptions {
-        @Option(names = {"-s", "--silent"},
-                description = "Silent mode",
-                required = true
-        )
+        @Option(names = {"-s", "--silent"}, description = "Silent mode", required = false)
         public boolean silent;
 
-        @Option(names = {"-v", "--verbose"},
-                description = "Verbose mode",
-                required = false)
+        @Option(names = {"-v", "--verbose"}, description = "Verbose mode", required = false)
         public boolean verbose;
 
-        @Option(names = {"-h", "--help"},
-                description = "Printing help",
-                required = false)
+        @Option(names = {"-j", "--json"}, description = "JSON printing", required = true)
+        public boolean help;
+    }
+}
+
+@Command(requiredOptionMarker = '*')
+class TestingClassExclusiveFalse {
+
+    @ArgGroup(exclusive = false, multiplicity = "0..1")
+    public TestingClassExclusiveTrue.ExclusiveOptions exclusive;
+    public static class ExclusiveOptions {
+        @Option(names = {"-s", "--silent"}, description = "Silent mode", required = false)
+        public boolean silent;
+
+        @Option(names = {"-v", "--verbose"}, description = "Verbose mode", required = false)
+        public boolean verbose;
+
+        @Option(names = {"-j", "--json"}, description = "JSON printing", required = true)
         public boolean help;
     }
 }
 
 public class Issue1380Test {
     @Test
-    public void testingRequiredOptionMark() {
+    public void testingWithExclusiveTrue() {
 
         ByteArrayOutputStream tempOut = new ByteArrayOutputStream();
         PrintStream printStream = new PrintStream(tempOut);
         //Create the testing command
-        new CommandLine(new RequiredMarkerDisplayedIncorrectly()).usage(printStream);
+        new CommandLine(new TestingClassExclusiveTrue()).usage(printStream);
 
         String returnedText = tempOut.toString();
-        String expectedText = "Usage: <main class> [-s | -v | -h]\n" +
-                "  -h, --help      Printing help\n" +
-                "* -s, --silent    Silent mode\n" +
-                "  -v, --verbose   Verbose mode\n\n";
+        String expectedText = "Usage: <main class> [-s | -v | -j]\n" +
+                "* -j, --json      JSON printing\n" +
+                " -s, --silent    Silent mode\n" +
+                " -v, --verbose   Verbose mode\n";
+
+        assertEquals(expectedText, returnedText);
+
+    }
+
+    @Test
+    public void testingWithExclusiveFalse() {
+
+        ByteArrayOutputStream tempOut = new ByteArrayOutputStream();
+        PrintStream printStream = new PrintStream(tempOut);
+        //Create the testing command
+        new CommandLine(new TestingClassExclusiveFalse()).usage(printStream);
+
+        String returnedText = tempOut.toString();
+        String expectedText = "Usage: <main class> [[-s] [-v] -j]\n" +
+                "* -j, --json      JSON printing\n" +
+                "  -s, --silent    Silent mode\n" +
+                "  -v, --verbose   Verbose mode\n";
 
         assertEquals(expectedText, returnedText);
 
