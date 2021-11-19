@@ -1,14 +1,13 @@
 import org.junit.Test;
 import picocli.CommandLine;
+import picocli.CommandLine.ArgGroup;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
 import static org.junit.Assert.assertEquals;
-import picocli.CommandLine;
-import picocli.CommandLine.Command;
-import picocli.CommandLine.Option;
-import picocli.CommandLine.ArgGroup;
 
 
 @Command(requiredOptionMarker = '*')
@@ -16,6 +15,7 @@ class TestingClassExclusiveTrue {
 
     @ArgGroup(exclusive = true, multiplicity = "0..1")
     public TestingClassExclusiveTrue.ExclusiveOptions exclusive;
+
     public static class ExclusiveOptions {
         @Option(names = {"-s", "--silent"}, description = "Silent mode", required = false)
         public boolean silent;
@@ -32,7 +32,8 @@ class TestingClassExclusiveTrue {
 class TestingClassExclusiveFalse {
 
     @ArgGroup(exclusive = false, multiplicity = "0..1")
-    public TestingClassExclusiveTrue.ExclusiveOptions exclusive;
+    public TestingClassExclusiveFalse.ExclusiveOptions exclusive;
+
     public static class ExclusiveOptions {
         @Option(names = {"-s", "--silent"}, description = "Silent mode", required = false)
         public boolean silent;
@@ -40,7 +41,7 @@ class TestingClassExclusiveFalse {
         @Option(names = {"-v", "--verbose"}, description = "Verbose mode", required = false)
         public boolean verbose;
 
-        @Option(names = {"-j", "--json"}, description = "JSON printing", required = true)
+        @Option(names = {"-j", "--json"}, description = "JSON printing", required = false)
         public boolean help;
     }
 }
@@ -48,17 +49,15 @@ class TestingClassExclusiveFalse {
 public class Issue1380Test {
     @Test
     public void testingWithExclusiveTrue() {
-
         ByteArrayOutputStream tempOut = new ByteArrayOutputStream();
         PrintStream printStream = new PrintStream(tempOut);
-        //Create the testing command
         new CommandLine(new TestingClassExclusiveTrue()).usage(printStream);
 
         String returnedText = tempOut.toString();
-        String expectedText = "Usage: <main class> [-s | -v | -j]\n" +
+        String expectedText = "Usage: <main class> [[-s] | [-v] | -j]\n" +
                 "* -j, --json      JSON printing\n" +
-                " -s, --silent    Silent mode\n" +
-                " -v, --verbose   Verbose mode\n";
+                "  -s, --silent    Silent mode\n" +
+                "  -v, --verbose   Verbose mode\n";
 
         assertEquals(expectedText, returnedText);
 
@@ -66,15 +65,13 @@ public class Issue1380Test {
 
     @Test
     public void testingWithExclusiveFalse() {
-
         ByteArrayOutputStream tempOut = new ByteArrayOutputStream();
         PrintStream printStream = new PrintStream(tempOut);
-        //Create the testing command
         new CommandLine(new TestingClassExclusiveFalse()).usage(printStream);
 
         String returnedText = tempOut.toString();
-        String expectedText = "Usage: <main class> [[-s] [-v] -j]\n" +
-                "* -j, --json      JSON printing\n" +
+        String expectedText = "Usage: <main class> [[-s] [-v] [-j]]\n" +
+                "  -j, --json      JSON printing\n" +
                 "  -s, --silent    Silent mode\n" +
                 "  -v, --verbose   Verbose mode\n";
 

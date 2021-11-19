@@ -10118,10 +10118,11 @@ public class CommandLine {
                 if (exclusive) {
                     String modifiedArgs = ""; String sep = "";
                     for (ArgSpec arg : args) {
+                        boolean reserved = arg.required();
                         if (!arg.required()) {
                             modifiedArgs += sep + (arg.isOption() ? ((OptionSpec) arg).longestName() : (arg.paramLabel() + "[" + ((PositionalParamSpec) arg).index() + "]"));
                             sep = ",";
-                            arg.required = true;
+                            arg.required = reserved;
                         }
                     }
                     if (modifiedArgs.length() > 0) {
