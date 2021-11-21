@@ -9,7 +9,9 @@ import java.io.PrintStream;
 
 import static org.junit.Assert.assertEquals;
 
-
+/**
+ * Testing class for creating a commandline with ArgGroup exclusive tree
+ */
 @Command(requiredOptionMarker = '*')
 class TestingClassExclusiveTrue {
 
@@ -28,6 +30,9 @@ class TestingClassExclusiveTrue {
     }
 }
 
+/**
+ * Testing class for creating a commandline with ArgGroup exclusive false
+ */
 @Command(requiredOptionMarker = '*')
 class TestingClassExclusiveFalse {
 
@@ -46,7 +51,14 @@ class TestingClassExclusiveFalse {
     }
 }
 
+/**
+ * JUnit testing class for issue 1380
+ */
 public class Issue1380Test {
+
+    /**
+     * JUnit test class for issue 1380 with exclusive set to true
+     */
     @Test
     public void testingWithExclusiveTrue() {
         ByteArrayOutputStream tempOut = new ByteArrayOutputStream();
@@ -63,6 +75,9 @@ public class Issue1380Test {
 
     }
 
+    /**
+     * JUnit test class for issue 1380 with exclusive set to false
+     */
     @Test
     public void testingWithExclusiveFalse() {
         ByteArrayOutputStream tempOut = new ByteArrayOutputStream();
