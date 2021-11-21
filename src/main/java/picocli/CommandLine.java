@@ -10117,13 +10117,26 @@ public class CommandLine {
                 }
                 if (exclusive) {
                     String modifiedArgs = ""; String sep = "";
+                    /**
+                     * preserved stores arg required status on map
+                     */
+                    Map<ArgSpec, Boolean> preserved = new HashMap<ArgSpec, Boolean>();
                     for (ArgSpec arg : args) {
-                        boolean reserved = arg.required();
+                        preserved.put(arg, arg.required());
                         if (!arg.required()) {
                             modifiedArgs += sep + (arg.isOption() ? ((OptionSpec) arg).longestName() : (arg.paramLabel() + "[" + ((PositionalParamSpec) arg).index() + "]"));
                             sep = ",";
-                            arg.required = reserved;
+                            arg.required = true;
                         }
+                    }
+                    /**
+                     * Only reseting back args with required true on map rest will go for false
+                     */
+                    for (ArgSpec arg : args) {
+                        if (preserved.get(arg) != null && preserved.get(arg))
+                            arg.required = true;
+                        else
+                            arg.required = false;
                     }
                     if (modifiedArgs.length() > 0) {
                         new Tracer().info("Made %s required in the group because %s is an exclusive group.%n", modifiedArgs, synopsisUnit());
