@@ -1,5 +1,6 @@
+package picocli;
+
 import org.junit.Test;
-import picocli.CommandLine;
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -16,17 +17,46 @@ import static org.junit.Assert.assertEquals;
 class TestingClassExclusiveTrue {
 
     @ArgGroup(exclusive = true, multiplicity = "0..1")
-    public TestingClassExclusiveTrue.ExclusiveOptions exclusive;
+    private TestingClassExclusiveTrue.ExclusiveOptions exclusive;
 
-    public static class ExclusiveOptions {
+    /**
+     * Added getters to satisfy PMF and findBug requirements
+     */
+    public ExclusiveOptions getExclusive() {
+        return this.exclusive;
+    }
+
+    private static class ExclusiveOptions {
         @Option(names = {"-s", "--silent"}, description = "Silent mode", required = false)
-        public boolean silent;
+        private boolean silent;
+
+        /**
+         * Added getters to satisfy PMF and findBug requirements
+         */
+        public boolean getSilent() {
+            return this.silent;
+        }
 
         @Option(names = {"-v", "--verbose"}, description = "Verbose mode", required = false)
-        public boolean verbose;
+        private boolean verbose;
+
+        /**
+         * Added getters to satisfy PMF and findBug requirements
+         */
+        public boolean getVerbose() {
+            return this.verbose;
+        }
 
         @Option(names = {"-j", "--json"}, description = "JSON printing", required = true)
-        public boolean help;
+        private boolean json;
+
+        /**
+         * Added getters to satisfy PMF and findBug requirements
+         */
+        public boolean getJson(){
+            return this.json;
+        }
+
     }
 }
 
@@ -37,17 +67,45 @@ class TestingClassExclusiveTrue {
 class TestingClassExclusiveFalse {
 
     @ArgGroup(exclusive = false, multiplicity = "0..1")
-    public TestingClassExclusiveFalse.ExclusiveOptions exclusive;
+    private TestingClassExclusiveFalse.ExclusiveOptions exclusive;
 
-    public static class ExclusiveOptions {
+    /**
+     * Added getters to satisfy PMF and findBug requirements
+     */
+    public ExclusiveOptions getExclusive() {
+        return this.exclusive;
+    }
+
+    private static class ExclusiveOptions {
         @Option(names = {"-s", "--silent"}, description = "Silent mode", required = false)
-        public boolean silent;
+        private boolean silent;
+
+        /**
+         * Added getters to satisfy PMF and findBug requirements
+         */
+        public boolean getSilent() {
+            return this.silent;
+        }
 
         @Option(names = {"-v", "--verbose"}, description = "Verbose mode", required = false)
-        public boolean verbose;
+        private boolean verbose;
+
+        /**
+         * Added getters to satisfy PMF and findBug requirements
+         */
+        public boolean getVerbose() {
+            return this.verbose;
+        }
 
         @Option(names = {"-j", "--json"}, description = "JSON printing", required = false)
-        public boolean help;
+        private boolean json;
+
+        /**
+         * Added getters to satisfy PMF and findBug requirements
+         */
+        public boolean getJson(){
+            return this.json;
+        }
     }
 }
 
