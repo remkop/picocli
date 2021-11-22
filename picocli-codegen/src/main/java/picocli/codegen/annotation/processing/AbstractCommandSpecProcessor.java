@@ -556,7 +556,7 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
         } else if (element.getKind() == ElementKind.METHOD) {
             return new TypedMember((ExecutableElement) element, AbstractCommandSpecProcessor.this);
         }
-        error(element, "Cannot only process %s annotations on fields, " +
+        error(element, "Can only process %s annotations on fields, " +
                 "methods and method parameters, not on %s", annotation, element.getKind());
         return null;
     }
