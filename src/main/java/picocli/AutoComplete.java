@@ -21,15 +21,10 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.Callable;
 
+import picocli.AutoComplete.TypeCompletionRegistry.CompletionKind;
 import picocli.CommandLine.*;
 import picocli.CommandLine.Model.PositionalParamSpec;
 import picocli.CommandLine.Model.ArgSpec;
@@ -149,6 +144,14 @@ public class AutoComplete {
                         "as the completion script.")
         boolean writeCommandScript;
 
+        @Option(names = {"--pathCompletionTypes"}, split=",", description = "Comma-separated list of fully "
+                + "qualified custom types for which to delegate to built-in path name completion.")
+        List<String> pathCompletionTypes = new ArrayList<String>();
+
+        @Option(names = {"--hostCompletionTypes"}, split=",", description = "Comma-separated list of fully "
+                + "qualified custom types for which to delegate to built-in host name completion.")
+        List<String> hostCompletionTypes = new ArrayList<String>();
+
         @Option(names = {"-f", "--force"}, description = "Overwrite existing script files.")
         boolean overwriteIfExists;
 
@@ -162,7 +165,7 @@ public class AutoComplete {
             Class<?> cls = Class.forName(commandLineFQCN);
             Object instance = factory.create(cls);
             CommandLine commandLine = new CommandLine(instance, factory);
-
+            TypeCompletionRegistry registry = typeCompletionRegistry(pathCompletionTypes, hostCompletionTypes);
             if (commandName == null) {
                 commandName = commandLine.getCommandName(); //new CommandLine.Help(commandLine.commandDescriptor).commandName;
                 if (CommandLine.Help.DEFAULT_COMMAND_NAME.equals(commandName)) {
@@ -183,8 +186,25 @@ public class AutoComplete {
                 return EXIT_CODE_COMPLETION_SCRIPT_EXISTS;
             }
 
-            AutoComplete.bash(commandName, autoCompleteScript, commandScript, commandLine);
+            AutoComplete.bash(commandName, autoCompleteScript, commandScript, commandLine, registry);
             return EXIT_CODE_SUCCESS;
+        }
+
+        private static TypeCompletionRegistry typeCompletionRegistry(List<String> pathCompletionTypes, List<String> hostCompletionTypes)
+                throws ClassNotFoundException {
+            TypeCompletionRegistry registry = new TypeCompletionRegistry();
+            addToRegistry(registry, pathCompletionTypes, CompletionKind.FILE);
+            addToRegistry(registry, hostCompletionTypes, CompletionKind.HOST);
+            return registry;
+        }
+
+        private static void addToRegistry(TypeCompletionRegistry registry, List<String> types,
+                CompletionKind kind) throws ClassNotFoundException {
+            for (String type : types) {
+                // TODO implement error handling if the class is not on the classpath
+                Class<?> cls = Class.forName(type);
+                registry.registerType(cls, kind);
+            }
         }
 
         private boolean checkExists(final File file) {
@@ -195,6 +215,90 @@ public class AutoComplete {
                 return true;
             }
             return false;
+        }
+    }
+
+    /**
+     * Meta-information about FQCN to {@link CompletionKind} mappings.
+     */
+    public static class TypeCompletionRegistry {
+
+        /**
+         * The different kinds of supported auto completion mechanisms.
+         */
+        public enum CompletionKind {
+            /**
+             * Auto completion resolved against paths on the file system.
+             */
+            FILE,
+            /**
+             * Auto completion resolved against known hosts.
+             */
+            HOST,
+            /**
+             * No auto-completion.
+             */
+            NONE
+        }
+
+        private final Map<String, CompletionKind> registry = new HashMap<String, CompletionKind>();
+
+        public TypeCompletionRegistry() {
+            registerDefaultPathCompletionTypes();
+            registerDefaultHostCompletionTypes();
+        }
+
+        private void registerDefaultPathCompletionTypes() {
+            registry.put(File.class.getName(), CompletionKind.FILE);
+            registry.put("java.nio.file.Path", CompletionKind.FILE);
+        }
+
+        private void registerDefaultHostCompletionTypes() {
+            registry.put(InetAddress.class.getName(), CompletionKind.HOST);
+        }
+
+        /**
+         * <p>Register the type {@code type} to the given {@link CompletionKind}.</p>
+         * <p>Built-in supported types to {@link CompletionKind} mappings are:
+         * <ul>
+         *     <li>{@link CompletionKind#FILE}:
+         *         <ul>
+         *             <li>{@link java.io.File}</li>
+         *             <li>{@link java.nio.file.Path}</li>
+         *         </ul>
+         *     </li>
+         *     <li>{@link CompletionKind#HOST}:
+         *         <ul>
+         *             <li>{@link java.net.InetAddress}</li>
+         *         </ul>
+         *     </li>
+         * </ul>
+         * </p>
+         *
+         * @param type the type to register
+         * @param kind the kind of completion to apply for this type
+         * @return this {@link TypeCompletionRegistry} object, to allow method chaining
+         * @see #forType(Class)
+         */
+        public <K> TypeCompletionRegistry registerType(Class<K> type, CompletionKind kind) {
+            registry.put(type.getName(), kind);
+            return this;
+        }
+
+        /**
+         * Returns the {@link CompletionKind} for the requested {@code type} or {@link CompletionKind#NONE} if no
+         * mapping exists.
+         * @param type the type to retrieve the {@link CompletionKind} for.
+         * @return the {@link CompletionKind} for the requested {@code type} or {@link CompletionKind#NONE} if no
+         * mapping exists.
+         * @see #registerType(Class, CompletionKind)
+         */
+        public CompletionKind forType(Class<?> type) {
+            CompletionKind kind = registry.get(type.getName());
+            if (kind == null) {
+                return CompletionKind.NONE;
+            }
+            return kind;
         }
     }
 
@@ -288,7 +392,7 @@ public class AutoComplete {
         final String commandName;
         final CommandLine commandLine;
         final CommandLine parent;
-        
+
         CommandDescriptor(String functionName, String commandName, CommandLine commandLine, CommandLine parent) {
             this.functionName = functionName;
             this.commandName = commandName;
@@ -433,7 +537,23 @@ public class AutoComplete {
      * @throws IOException if a problem occurred writing to the specified files
      */
     public static void bash(String scriptName, File out, File command, CommandLine commandLine) throws IOException {
-        String autoCompleteScript = bash(scriptName, commandLine);
+        bash(scriptName, out, command, commandLine, new TypeCompletionRegistry());
+    }
+
+    /**
+     * Generates source code for an autocompletion bash script for the specified picocli-based application,
+     * and writes this script to the specified {@code out} file, and optionally writes an invocation script
+     * to the specified {@code command} file.
+     * @param scriptName the name of the command to generate a bash autocompletion script for
+     * @param commandLine the {@code CommandLine} instance for the command line application
+     * @param out the file to write the autocompletion bash script source code to
+     * @param command the file to write a helper script to that invokes the command, or {@code null} if no helper script file should be written
+     * @param registry the custom types to completions kind registry
+     * @throws IOException if a problem occurred writing to the specified files
+     */
+    public static void bash(String scriptName, File out, File command, CommandLine commandLine,
+            TypeCompletionRegistry registry) throws IOException {
+        String autoCompleteScript = bash(scriptName, commandLine, registry);
         Writer completionWriter = null;
         Writer scriptWriter = null;
         try {
@@ -462,6 +582,17 @@ public class AutoComplete {
      * @return source code for an autocompletion bash script
      */
     public static String bash(String scriptName, CommandLine commandLine) {
+        return bash(scriptName, commandLine, new TypeCompletionRegistry());
+    }
+
+    /**
+     * Generates and returns the source code for an autocompletion bash script for the specified picocli-based application.
+     * @param scriptName the name of the command to generate a bash autocompletion script for
+     * @param commandLine the {@code CommandLine} instance for the command line application
+     * @param registry the custom types to completions kind registry
+     * @return source code for an autocompletion bash script
+     */
+    public static String bash(String scriptName, CommandLine commandLine, TypeCompletionRegistry registry) {
         if (scriptName == null)  { throw new NullPointerException("scriptName"); }
         if (commandLine == null) { throw new NullPointerException("commandLine"); }
         StringBuilder result = new StringBuilder();
@@ -472,7 +603,8 @@ public class AutoComplete {
 
         for (CommandDescriptor descriptor : hierarchy) {
             if (descriptor.commandLine.getCommandSpec().usageMessage().hidden()) { continue; } // #887 skip hidden subcommands
-            result.append(generateFunctionForCommand(descriptor.functionName, descriptor.commandName, descriptor.commandLine));
+            result.append(generateFunctionForCommand(descriptor.functionName, descriptor.commandName,
+                    descriptor.commandLine, registry));
         }
         result.append(format(SCRIPT_FOOTER, scriptName));
         return result.toString();
@@ -584,7 +716,8 @@ public class AutoComplete {
         return sb.append(normalize.apply(lastValue)).toString();
     }
 
-    private static String generateFunctionForCommand(String functionName, String commandName, CommandLine commandLine) {
+    private static String generateFunctionForCommand(String functionName, String commandName, CommandLine commandLine,
+            TypeCompletionRegistry registry) {
         String FUNCTION_HEADER = "" +
                 "\n" +
                 "# Generates completions for the options and subcommands of the `%s` %scommand.\n" +
@@ -652,7 +785,7 @@ public class AutoComplete {
         // sql.Types?
 
         // Now generate the "case" switches for the options whose arguments we can generate completions for
-        buff.append(generateOptionsSwitch(argOptionFields));
+        buff.append(generateOptionsSwitch(registry, argOptionFields));
 
         // Generate completion lists for positional params with a known set of valid values (including java enums)
         for (PositionalParamSpec f : commandSpec.positionalParameters()) {
@@ -661,7 +794,7 @@ public class AutoComplete {
             }
         }
 
-        String paramsCases = generatePositionalParamsCases(commandSpec.positionalParameters(), "", "${curr_word}");
+        String paramsCases = generatePositionalParamsCases(registry, commandSpec.positionalParameters(), "", "${curr_word}");
         String posParamsFooter = "";
         if (paramsCases.length() > 0) {
             String POSITIONAL_PARAMS_FOOTER = "" +
@@ -697,7 +830,8 @@ public class AutoComplete {
         return result;
     }
 
-    private static String generatePositionalParamsCases(List<PositionalParamSpec> posParams, String indent, String currWord) {
+    private static String generatePositionalParamsCases(
+            TypeCompletionRegistry registry, List<PositionalParamSpec> posParams, String indent, String currWord) {
         StringBuilder buff = new StringBuilder(1024);
         for (PositionalParamSpec param : posParams) {
             if (param.hidden()) { continue; } // #887 skip hidden params
@@ -712,11 +846,11 @@ public class AutoComplete {
             if (param.completionCandidates() != null) {
                 buff.append(format("%s    %s (( currIndex >= %d && currIndex <= %d )); then\n", indent, ifOrElif, min, max));
                 buff.append(format("%s      positionals=$( compgen -W \"$%s_pos_param_args\" -- \"%s\" )\n", indent, paramName, currWord));
-            } else if (type.equals(File.class) || "java.nio.file.Path".equals(type.getName())) {
+            } else if (registry.forType(type) == CompletionKind.FILE) {
                 buff.append(format("%s    %s (( currIndex >= %d && currIndex <= %d )); then\n", indent, ifOrElif, min, max));
                 buff.append(format("%s      compopt -o filenames\n", indent));
                 buff.append(format("%s      positionals=$( compgen -f -- \"%s\" ) # files\n", indent, currWord));
-            } else if (type.equals(InetAddress.class)) {
+            } else if (registry.forType(type) == CompletionKind.HOST) {
                 buff.append(format("%s    %s (( currIndex >= %d && currIndex <= %d )); then\n", indent, ifOrElif, min, max));
                 buff.append(format("%s      compopt -o filenames\n", indent));
                 buff.append(format("%s      positionals=$( compgen -A hostname -- \"%s\" )\n", indent, currWord));
@@ -728,8 +862,8 @@ public class AutoComplete {
         return buff.toString();
     }
 
-    private static String generateOptionsSwitch(List<OptionSpec> argOptions) {
-        String optionsCases = generateOptionsCases(argOptions, "", "${curr_word}");
+    private static String generateOptionsSwitch(TypeCompletionRegistry registry, List<OptionSpec> argOptions) {
+        String optionsCases = generateOptionsCases(registry, argOptions, "", "${curr_word}");
 
         if (optionsCases.length() == 0) {
             return "";
@@ -743,7 +877,8 @@ public class AutoComplete {
                 + "  esac\n";
     }
 
-    private static String generateOptionsCases(List<OptionSpec> argOptionFields, String indent, String currWord) {
+    private static String generateOptionsCases(
+            TypeCompletionRegistry registry, List<OptionSpec> argOptionFields, String indent, String currWord) {
         StringBuilder buff = new StringBuilder(1024);
         for (OptionSpec option : argOptionFields) {
             if (option.hidden()) { continue; } // #887 skip hidden options
@@ -756,19 +891,19 @@ public class AutoComplete {
                 buff.append(format("%s      COMPREPLY=( $( compgen -W \"${%s_option_args}\" -- \"%s\" ) )\n", indent, bashify(option.paramLabel()), currWord));
                 buff.append(format("%s      return $?\n", indent));
                 buff.append(format("%s      ;;\n", indent));
-            } else if (type.equals(File.class) || "java.nio.file.Path".equals(type.getName())) {
+            } else if (registry.forType(type) == CompletionKind.FILE) {
                 buff.append(format("%s    %s)\n", indent, concat("|", option.names()))); // "    -f|--file)\n"
                 buff.append(format("%s      compopt -o filenames\n", indent));
                 buff.append(format("%s      COMPREPLY=( $( compgen -f -- \"%s\" ) ) # files\n", indent, currWord));
                 buff.append(format("%s      return $?\n", indent));
                 buff.append(format("%s      ;;\n", indent));
-            } else if (type.equals(InetAddress.class)) {
+            } else if (registry.forType(type) == CompletionKind.HOST) {
                 buff.append(format("%s    %s)\n", indent, concat("|", option.names()))); // "    -h|--host)\n"
                 buff.append(format("%s      compopt -o filenames\n", indent));
                 buff.append(format("%s      COMPREPLY=( $( compgen -A hostname -- \"%s\" ) )\n", indent, currWord));
                 buff.append(format("%s      return $?\n", indent));
                 buff.append(format("%s      ;;\n", indent));
-            } else {
+            } else if (registry.forType(type) == CompletionKind.NONE) {
                 buff.append(format("%s    %s)\n", indent, concat("|", option.names()))); // no completions available
                 buff.append(format("%s      return\n", indent));
                 buff.append(format("%s      ;;\n", indent));
