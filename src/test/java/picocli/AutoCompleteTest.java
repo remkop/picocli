@@ -1257,6 +1257,18 @@ public class AutoCompleteTest {
     }
 
     @Test
+    public void testBashifyWithExtras() {
+        CommandSpec cmd = CommandSpec.create().addOption(
+                OptionSpec.builder("-x")
+                        .type(String.class)
+                        .paramLabel("_A\tB C")
+                        .completionCandidates(Arrays.asList("1")).build());
+        String actual = AutoComplete.bash("./bashify.sh", new CommandLine(cmd));
+        String expected = format(loadTextFromClasspath("/bashify_completion.bash"), CommandLine.VERSION);
+        assertEquals(expected, actual);
+    }
+
+    @Test
     public void testBooleanArgFilter() {
         @Command(name = "booltest")
         class App {
