@@ -422,6 +422,13 @@ public class AutoComplete {
             "# default Bash completions and the Readline default filename completions are performed.\n" +
             "complete -F _complete_%1$s -o default %1$s %1$s.sh %1$s.bash\n";
 
+    private static String sanitizeScriptName(String scriptName) {
+        return scriptName
+                .replaceAll("\\.sh", "")
+                .replaceAll("\\.bash", "")
+                .replaceAll("\\.\\/", "");
+    }
+
     /**
      * Generates source code for an autocompletion bash script for the specified picocli-based application,
      * and writes this script to the specified {@code out} file, and optionally writes an invocation script
@@ -464,6 +471,7 @@ public class AutoComplete {
     public static String bash(String scriptName, CommandLine commandLine) {
         if (scriptName == null)  { throw new NullPointerException("scriptName"); }
         if (commandLine == null) { throw new NullPointerException("commandLine"); }
+        scriptName = sanitizeScriptName(scriptName);
         StringBuilder result = new StringBuilder();
         result.append(format(SCRIPT_HEADER, scriptName, CommandLine.VERSION));
 
