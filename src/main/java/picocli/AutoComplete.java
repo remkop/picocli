@@ -26,6 +26,7 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -903,7 +904,7 @@ public class AutoComplete {
     }
 
     private static void filterAndTrimMatchingPrefix(String prefix, List<CharSequence> candidates) {
-        List<CharSequence> replace = new ArrayList<CharSequence>();
+        Set<CharSequence> replace = new HashSet<CharSequence>();
         for (CharSequence seq : candidates) {
             if (seq.toString().startsWith(prefix)) {
                 replace.add(seq.subSequence(prefix.length(), seq.length()));
