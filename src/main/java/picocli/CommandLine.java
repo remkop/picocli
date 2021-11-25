@@ -32,6 +32,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.ByteOrder;
 import java.nio.charset.Charset;
+import java.nio.charset.UnsupportedCharsetException;
 import java.text.BreakIterator;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -14523,12 +14524,17 @@ public class CommandLine {
         }
     }
     static Charset getStdoutEncoding() {
-        String encoding = System.getProperty("sun.stdout.encoding");
-        return encoding != null ? Charset.forName(encoding) : Charset.defaultCharset();
+        return charsetForName(System.getProperty("sun.stdout.encoding"));
     }
     static Charset getStderrEncoding() {
-        String encoding = System.getProperty("sun.stderr.encoding");
-        return encoding != null ? Charset.forName(encoding) : Charset.defaultCharset();
+        return charsetForName(System.getProperty("sun.stderr.encoding"));
+    }
+    static Charset charsetForName(String encoding) {
+        if (encoding != null) {
+            if ("cp65001".equalsIgnoreCase(encoding)) { encoding = "UTF-8"; } // #1474 MS Windows uses code page 65001 for UTF8
+            return Charset.forName(encoding);
+        }
+        return Charset.defaultCharset();
     }
     static PrintWriter newPrintWriter(OutputStream stream, Charset charset) {
         return new PrintWriter(new BufferedWriter(new OutputStreamWriter(stream, charset)), true);

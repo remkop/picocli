@@ -15,6 +15,8 @@
  */
 package picocli;
 
+import static java.lang.String.format;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -24,19 +26,25 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
-import picocli.CommandLine.*;
-import picocli.CommandLine.Model.PositionalParamSpec;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.HelpCommand;
+import picocli.CommandLine.IExecutionExceptionHandler;
+import picocli.CommandLine.IFactory;
 import picocli.CommandLine.Model.ArgSpec;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Model.OptionSpec;
-
-import static java.lang.String.*;
+import picocli.CommandLine.Model.PositionalParamSpec;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
+import picocli.CommandLine.ParseResult;
+import picocli.CommandLine.Spec;
 
 /**
  * Stand-alone tool that generates bash auto-complete scripts for picocli-based command line applications.
@@ -285,15 +293,15 @@ public class AutoComplete {
     }
     private static class CommandDescriptor {
         final String functionName;
+        final String parentWithoutTopLevelCommand;
         final String commandName;
         final CommandLine commandLine;
-        final CommandLine parent;
 
-        CommandDescriptor(String functionName, String commandName, CommandLine commandLine, CommandLine parent) {
+        CommandDescriptor(String functionName, String parentWithoutTopLevelCommand, String commandName, CommandLine commandLine) {
             this.functionName = functionName;
+            this.parentWithoutTopLevelCommand = parentWithoutTopLevelCommand;
             this.commandName = commandName;
             this.commandLine = commandLine;
-            this.parent = parent;
         }
     }
 
@@ -480,30 +488,30 @@ public class AutoComplete {
 
     private static List<CommandDescriptor> createHierarchy(String scriptName, CommandLine commandLine) {
         List<CommandDescriptor> result = new ArrayList<CommandDescriptor>();
-        result.add(new CommandDescriptor("_picocli_" + scriptName, scriptName, commandLine, null));
-        createSubHierarchy(scriptName, commandLine, result);
+        result.add(new CommandDescriptor("_picocli_" + scriptName, "", scriptName, commandLine));
+        createSubHierarchy(scriptName, "", commandLine, result);
         return result;
     }
 
-    private static void createSubHierarchy(String scriptName, CommandLine commandLine, List<CommandDescriptor> out) {
+    private static void createSubHierarchy(String scriptName, String parentWithoutTopLevelCommand, CommandLine commandLine, List<CommandDescriptor> out) {
         // breadth-first: generate command lists and function calls for predecessors + each subcommand
         for (Map.Entry<String, CommandLine> entry : commandLine.getSubcommands().entrySet()) {
             CommandSpec spec = entry.getValue().getCommandSpec();
             if (spec.usageMessage().hidden()) { continue; } // #887 skip hidden subcommands
             String commandName = entry.getKey(); // may be an alias
-            String full = spec.qualifiedName("_");
-            String withoutTopLevelCommand = full.substring(full.indexOf('_') + 1);
-            String withoutCommand = withoutTopLevelCommand.substring(0, withoutTopLevelCommand.lastIndexOf('_') + 1);
-            String functionName = "_picocli_" + scriptName + "_" + bashify(withoutCommand + commandName);
+            String functionNameWithoutPrefix = bashify(concat("_", parentWithoutTopLevelCommand.replace(' ', '_'), commandName));
+            String functionName = concat("_", "_picocli", scriptName, functionNameWithoutPrefix);
 
             // remember the function name and associated subcommand so we can easily generate a function later
-            out.add(new CommandDescriptor(functionName, commandName, entry.getValue(), commandLine));
+            out.add(new CommandDescriptor(functionName, parentWithoutTopLevelCommand, commandName, entry.getValue()));
         }
 
         // then recursively do the same for all nested subcommands
         for (Map.Entry<String, CommandLine> entry : commandLine.getSubcommands().entrySet()) {
             if (entry.getValue().getCommandSpec().usageMessage().hidden()) { continue; } // #887 skip hidden subcommands
-            createSubHierarchy(scriptName, entry.getValue(), out);
+            String commandName = entry.getKey();
+            String newParent = concat(" ", parentWithoutTopLevelCommand, commandName);
+            createSubHierarchy(scriptName, newParent, entry.getValue(), out);
         }
     }
 
@@ -558,10 +566,7 @@ public class AutoComplete {
 
         for (CommandDescriptor descriptor : hierarchy.subList(1, hierarchy.size())) { // skip top-level command
             int count = functionCalls.size();
-            CommandSpec spec = descriptor.commandLine.getCommandSpec();
-            String full = spec.qualifiedName(" ");
-            String withoutTopLevelCommand = full.substring(spec.root().name().length() + 1,
-                    full.length() - spec.name().length()) + descriptor.commandName;
+            String withoutTopLevelCommand = concat(" ", descriptor.parentWithoutTopLevelCommand, descriptor.commandName);
 
             functionCalls.add(format("  if CompWordsContainsArray \"${cmds%2$d[@]}\"; then %1$s; return $?; fi\n", descriptor.functionName, count));
             buff.append(      format("  local cmds%2$d=(%1$s)\n", withoutTopLevelCommand, count));
@@ -901,7 +906,7 @@ public class AutoComplete {
     }
 
     private static void filterAndTrimMatchingPrefix(String prefix, List<CharSequence> candidates) {
-        List<CharSequence> replace = new ArrayList<CharSequence>();
+        Set<CharSequence> replace = new HashSet<CharSequence>();
         for (CharSequence seq : candidates) {
             if (seq.toString().startsWith(prefix)) {
                 replace.add(seq.subSequence(prefix.length(), seq.length()));
