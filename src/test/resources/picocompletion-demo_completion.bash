@@ -293,6 +293,7 @@ function _picocli_picocompletion-demo_sub2alias() {
       return
       ;;
     --directory|-d)
+      local IFS=$'\n'
       compopt -o filenames
       COMPREPLY=( $( compgen -f -- "${curr_word}" ) ) # files
       return $?
@@ -492,6 +493,7 @@ function _picocli_picocompletion-demo_sub2_sub2child3alias() {
     if (( currIndex >= 0 && currIndex <= 0 )); then
       positionals=$( compgen -W "$cands_pos_param_args" -- "${curr_word}" )
     elif (( currIndex >= 1 && currIndex <= 2 )); then
+      local IFS=$'\n'
       compopt -o filenames
       positionals=$( compgen -f -- "${curr_word}" ) # files
     elif (( currIndex >= 3 && currIndex <= 2147483647 )); then
@@ -651,6 +653,7 @@ function _picocli_picocompletion-demo_sub2alias_subsub3() {
     if (( currIndex >= 0 && currIndex <= 0 )); then
       positionals=$( compgen -W "$cands_pos_param_args" -- "${curr_word}" )
     elif (( currIndex >= 1 && currIndex <= 2 )); then
+      local IFS=$'\n'
       compopt -o filenames
       positionals=$( compgen -f -- "${curr_word}" ) # files
     elif (( currIndex >= 3 && currIndex <= 2147483647 )); then
@@ -680,6 +683,7 @@ function _picocli_picocompletion-demo_sub2alias_sub2child3alias() {
     if (( currIndex >= 0 && currIndex <= 0 )); then
       positionals=$( compgen -W "$cands_pos_param_args" -- "${curr_word}" )
     elif (( currIndex >= 1 && currIndex <= 2 )); then
+      local IFS=$'\n'
       compopt -o filenames
       positionals=$( compgen -f -- "${curr_word}" ) # files
     elif (( currIndex >= 3 && currIndex <= 2147483647 )); then
