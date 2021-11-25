@@ -296,7 +296,7 @@ public class AutoComplete {
         final String parentWithoutTopLevelCommand;
         final String commandName;
         final CommandLine commandLine;
-        
+
         CommandDescriptor(String functionName, String parentWithoutTopLevelCommand, String commandName, CommandLine commandLine) {
             this.functionName = functionName;
             this.parentWithoutTopLevelCommand = parentWithoutTopLevelCommand;
@@ -719,6 +719,7 @@ public class AutoComplete {
                 buff.append(format("%s      positionals=$( compgen -W \"$%s_pos_param_args\" -- \"%s\" )\n", indent, paramName, currWord));
             } else if (type.equals(File.class) || "java.nio.file.Path".equals(type.getName())) {
                 buff.append(format("%s    %s (( currIndex >= %d && currIndex <= %d )); then\n", indent, ifOrElif, min, max));
+                buff.append(format("%s      local IFS=$'\\n'\n", indent));
                 buff.append(format("%s      compopt -o filenames\n", indent));
                 buff.append(format("%s      positionals=$( compgen -f -- \"%s\" ) # files\n", indent, currWord));
             } else if (type.equals(InetAddress.class)) {
@@ -763,6 +764,7 @@ public class AutoComplete {
                 buff.append(format("%s      ;;\n", indent));
             } else if (type.equals(File.class) || "java.nio.file.Path".equals(type.getName())) {
                 buff.append(format("%s    %s)\n", indent, concat("|", option.names()))); // "    -f|--file)\n"
+                buff.append(format("%s      local IFS=$'\\n'\n", indent));
                 buff.append(format("%s      compopt -o filenames\n", indent));
                 buff.append(format("%s      COMPREPLY=( $( compgen -f -- \"%s\" ) ) # files\n", indent, currWord));
                 buff.append(format("%s      return $?\n", indent));

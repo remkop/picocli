@@ -779,6 +779,7 @@ public class AutoCompleteTest {
                 "      return\n" +
                 "      ;;\n" +
                 "    -o|--completionScript)\n" +
+                "      local IFS=$'\\n'\n" +
                 "      compopt -o filenames\n" +
                 "      COMPREPLY=( $( compgen -f -- \"${curr_word}\" ) ) # files\n" +
                 "      return $?\n" +
