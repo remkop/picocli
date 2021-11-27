@@ -23,6 +23,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#1466][#1467] Bugfix/Enhancement: Autocomplete now shows subcommand aliases in the completion candidates. Thanks to [Ruud Senden](https://github.com/rsenden) for the pull request.
 * [#1458][#1473] Enhancement: autocompletion now supports file names containing spaces. Thanks to [zpater345](https://github.com/zpater345) for raising this and thanks to [NewbieOrange](https://github.com/NewbieOrange) for the pull request.
 * [#1477] Enhancement: Remove file name extension and local dir prefix from the command name in generated autocomplete scripts. Thanks to [Andrea Peruffo](https://github.com/andreaTP) for the pull request.
+* [#1476] Enhancement: improve error message in `AbstractCommandSpecProcessor#extractTypedMember`. Thanks to [Ross Goldberg](https://github.com/rgoldberg) for raising this.
 * [#1475] Enhancement: Fix typo in annotation target-type error message. Thanks to [Ross Goldberg](https://github.com/rgoldberg) for the pull request.
 * [#1409][#1463] DOC: add documentation section on using default values in argument groups. Thanks to [Ben Kedo](https://github.com/MadFoal) for the pull request.
 * [#1462] DOC, BUILD, DEP: Extend documentation on argument files, fix broken/outdated links, update dependencies. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.

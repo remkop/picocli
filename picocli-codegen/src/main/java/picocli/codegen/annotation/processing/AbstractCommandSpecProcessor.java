@@ -557,7 +557,7 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
             return new TypedMember((ExecutableElement) element, AbstractCommandSpecProcessor.this);
         }
         error(element, "Can only process %s annotations on fields, " +
-                "methods and method parameters, not on %s", annotation, element.getKind());
+                "methods and @Command-annotated method parameters, not on %s", annotation, element.getKind());
         return null;
     }
 
