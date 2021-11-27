@@ -19,9 +19,6 @@ class TestingClass {
     @ArgGroup(exclusive = true, multiplicity = "0..1")
     private TestingClass.ExclusiveOptions exclusive;
 
-    /**
-     * Added getters to satisfy PMF and findBug requirements
-     */
     public TestingClass.ExclusiveOptions getExclusive() {
         return this.exclusive;
     }
@@ -36,6 +33,10 @@ class TestingClass {
          * Added getters to satisfy PMF and findBug requirements
          */
         public boolean getshowHelp(){ return this.showHelp; }
+
+        /**
+         * Added getters to satisfy PMF and findBug requirements
+         */
         public boolean getJson(){ return this.isJson; }
 
     }
@@ -53,24 +54,6 @@ public class Issue1420Test {
      */
     @Test
     public void testingWithResourceBundle1() {
-        ByteArrayOutputStream tempOut = new ByteArrayOutputStream();
-        PrintStream printStream = new PrintStream(tempOut);
-        new CommandLine(new TestingClass()).usage(printStream);
-
-        String returnedText = tempOut.toString();
-        String expectedText = "Usage: TestingCommand [[-h] | [-j]]\n" +
-                "  -h, --help   Show help options\n" +
-                "  -j, --json   Set json export-on\n";
-
-        assertEquals(expectedText, returnedText);
-
-    }
-
-    /**
-     * JUnit test class for issue 1420 with resourceBundle
-     */
-    @Test
-    public void testingWithResourceBundle2() {
         ByteArrayOutputStream tempOut = new ByteArrayOutputStream();
         PrintStream printStream = new PrintStream(tempOut);
         new CommandLine(new TestingClass()).usage(printStream);
