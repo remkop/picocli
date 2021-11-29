@@ -300,10 +300,8 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
 
     private boolean isSubcommand(ExecutableElement method, RoundEnvironment roundEnv) {
         Element typeElement = method.getEnclosingElement();
-        if (typeElement.getAnnotation(Command.class) != null && typeElement.getAnnotation(Command.class).addMethodSubcommands()) {
-            return true;
-        }
-        if (typeElement.getAnnotation(Command.class) == null) {
+        Command cmd = typeElement.getAnnotation(Command.class);
+        if (cmd == null) {
             Set<Element> elements = new HashSet<Element>(typeElement.getEnclosedElements());
 
             // The class is a Command if it has any fields or methods annotated with the below:
@@ -314,7 +312,7 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
                     || roundEnv.getElementsAnnotatedWith(Unmatched.class).removeAll(elements)
                     || roundEnv.getElementsAnnotatedWith(Spec.class).removeAll(elements);
         }
-        return false;
+        return cmd.addMethodSubcommands();
     }
 
     private Stack<TypeElement> buildTypeHierarchy(TypeElement typeElement) {
