@@ -59,6 +59,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static java.lang.String.format;
+import static java.util.Collections.disjoint;
 import static javax.lang.model.element.ElementKind.ENUM;
 
 /**
@@ -301,18 +302,20 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
     private boolean isSubcommand(ExecutableElement method, RoundEnvironment roundEnv) {
         Element typeElement = method.getEnclosingElement();
         Command cmd = typeElement.getAnnotation(Command.class);
-        if (cmd == null) {
-            Set<Element> elements = new HashSet<Element>(typeElement.getEnclosedElements());
 
-            // The class is a Command if it has any fields or methods annotated with the below:
-            return roundEnv.getElementsAnnotatedWith(Option.class).removeAll(elements)
-                    || roundEnv.getElementsAnnotatedWith(Parameters.class).removeAll(elements)
-                    || roundEnv.getElementsAnnotatedWith(Mixin.class).removeAll(elements)
-                    || roundEnv.getElementsAnnotatedWith(ArgGroup.class).removeAll(elements)
-                    || roundEnv.getElementsAnnotatedWith(Unmatched.class).removeAll(elements)
-                    || roundEnv.getElementsAnnotatedWith(Spec.class).removeAll(elements);
+        if (cmd != null) {
+            return cmd.addMethodSubcommands();
         }
-        return cmd.addMethodSubcommands();
+
+        List<? extends Element> elements = typeElement.getEnclosedElements();
+
+        // The class is a Command if it has any fields or methods annotated with the below:
+        return !disjoint(roundEnv.getElementsAnnotatedWith(Option.class), elements)
+                || !disjoint(roundEnv.getElementsAnnotatedWith(Parameters.class), elements)
+                || !disjoint(roundEnv.getElementsAnnotatedWith(Mixin.class), elements)
+                || !disjoint(roundEnv.getElementsAnnotatedWith(ArgGroup.class), elements)
+                || !disjoint(roundEnv.getElementsAnnotatedWith(Unmatched.class), elements)
+                || !disjoint(roundEnv.getElementsAnnotatedWith(Spec.class), elements);
     }
 
     private Stack<TypeElement> buildTypeHierarchy(TypeElement typeElement) {
