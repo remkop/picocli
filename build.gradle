@@ -7,9 +7,7 @@ ext.moduleName = 'info.picocli'
 
 buildscript {
     repositories {
-        maven {
-            url "https://plugins.gradle.org/m2/"
-        }
+        gradlePluginPortal()
         mavenCentral()
     }
 
@@ -62,10 +60,10 @@ allprojects {
     apply plugin: 'java'
     apply plugin: 'java-library' // to avoid https://github.com/gradle/gradle/issues/1118
 
-    sourceCompatibility = !org.gradle.api.JavaVersion.current().isJava9Compatible() ?
-            1.5 : org.gradle.api.JavaVersion.current().isJava11Compatible() ? 1.7 : 1.6
-    targetCompatibility = !org.gradle.api.JavaVersion.current().isJava9Compatible() ?
-            1.5 : org.gradle.api.JavaVersion.current().isJava11Compatible() ? 1.7 : 1.6
+    sourceCompatibility = !JavaVersion.current().isJava9Compatible() ?
+            1.5 : JavaVersion.current().isJava11Compatible() ? 1.7 : 1.6
+    targetCompatibility = !JavaVersion.current().isJava9Compatible() ?
+            1.5 : JavaVersion.current().isJava11Compatible() ? 1.7 : 1.6
 
     compileJava.options.encoding = "UTF-8"
     compileTestJava.options.encoding = "UTF-8"
@@ -109,7 +107,7 @@ sourceSets.main.java.srcDirs = ['src/main/java', 'src/main/java9']
 compileJava {
     inputs.property("moduleName", moduleName)
     doFirst {
-        if (org.gradle.api.JavaVersion.current().isJava9Compatible()) {
+        if (JavaVersion.current().isJava9Compatible()) {
             options.compilerArgs = [
                     '--module-path', classpath.asPath,
             ]
@@ -133,10 +131,10 @@ jar {
 }
 
 // jacoco 0.8.2 does not work with Java 13; gradle 4.x has no JavaVersion enum value for Java 12
-if (org.gradle.api.JavaVersion.current().isJava11Compatible()) {
-    project.logger.lifecycle("skipping jacoco test for Java version ${org.gradle.api.JavaVersion.current()}")
+if (JavaVersion.current().isJava11Compatible()) {
+    project.logger.lifecycle("skipping jacoco test for Java version ${JavaVersion.current()}")
 } else {
-    project.logger.lifecycle("applying jacoco build file for Java version ${org.gradle.api.JavaVersion.current()}")
+    project.logger.lifecycle("applying jacoco build file for Java version ${JavaVersion.current()}")
     apply from: "gradle/jacoco.gradle"
 }
 
