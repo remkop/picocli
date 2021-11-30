@@ -11,7 +11,9 @@ import java.util.regex.Pattern;
 
 import static com.google.testing.compile.Compiler.javac;
 import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public final class YamlAssert {
     private YamlAssert() {
