@@ -5505,12 +5505,10 @@ public class CommandLine {
                     return cls.cast(new LinkedHashMap<Object, Object>());
                 }
             }
+            Constructor<T> constructor = cls.getDeclaredConstructor();
             try {
-                @SuppressWarnings("deprecation") // Class.newInstance is deprecated in Java 9
-                T result = cls.newInstance();
-                return result;
-            } catch (Exception ex) {
-                Constructor<T> constructor = cls.getDeclaredConstructor();
+                return constructor.newInstance();
+            } catch (IllegalAccessException ex) {
                 constructor.setAccessible(true);
                 return constructor.newInstance();
             }
