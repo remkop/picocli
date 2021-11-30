@@ -32,7 +32,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.ByteOrder;
 import java.nio.charset.Charset;
-import java.nio.charset.UnsupportedCharsetException;
 import java.text.BreakIterator;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -5484,25 +5483,27 @@ public class CommandLine {
                 Callable<?> callable = Callable.class.cast(cls.getConstructor(Object.class, Object.class).newInstance(null, null));
                 try { return (T) callable.call(); }
                 catch (Exception ex) { throw new InitializationException("Error in Groovy closure: " + ex); }
-
             }
-            if (cls.isInterface() && Collection.class.isAssignableFrom(cls)) {
-                if (List.class.isAssignableFrom(cls)) {
-                    return cls.cast(new ArrayList<Object>());
-                } else if (SortedSet.class.isAssignableFrom(cls)) {
-                    return cls.cast(new TreeSet<Object>());
-                } else if (Set.class.isAssignableFrom(cls)) {
-                    return cls.cast(new LinkedHashSet<Object>());
-                } else if (Queue.class.isAssignableFrom(cls)) {
-                    return cls.cast(new LinkedList<Object>()); // ArrayDeque is only available since 1.6
+            if (cls.isInterface()) {
+                if (Collection.class.isAssignableFrom(cls)) {
+                    if (List.class.isAssignableFrom(cls)) {
+                        return cls.cast(new ArrayList<Object>());
+                    } else if (SortedSet.class.isAssignableFrom(cls)) {
+                        return cls.cast(new TreeSet<Object>());
+                    } else if (Set.class.isAssignableFrom(cls)) {
+                        return cls.cast(new LinkedHashSet<Object>());
+                    } else if (Queue.class.isAssignableFrom(cls)) {
+                        return cls.cast(new LinkedList<Object>()); // ArrayDeque is only available since 1.6
+                    } else {
+                        return cls.cast(new ArrayList<Object>());
+                    }
                 }
-                return cls.cast(new ArrayList<Object>());
-            }
-            if (Map.class.isAssignableFrom(cls)) {
-                try { // if it is an implementation class, instantiate it
-                    return cls.cast(cls.getDeclaredConstructor().newInstance());
-                } catch (Exception ignored) { }
-                return cls.cast(new LinkedHashMap<Object, Object>());
+                if (SortedMap.class.isAssignableFrom(cls)) {
+                    return cls.cast(new TreeMap<Object, Object>());
+                }
+                if (Map.class.isAssignableFrom(cls)) {
+                    return cls.cast(new LinkedHashMap<Object, Object>());
+                }
             }
             try {
                 @SuppressWarnings("deprecation") // Class.newInstance is deprecated in Java 9
