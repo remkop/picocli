@@ -8744,7 +8744,8 @@ public class CommandLine {
             public Range arity()           { return arity; }
 
             /** Returns the name of the option or positional parameter used in the usage help message.
-             * @see Option#paramLabel() {@link Parameters#paramLabel()} */
+             * @see Option#paramLabel()
+             * @see Parameters#paramLabel() */
             public String paramLabel()     { return interpolate(paramLabel); }
 
             /** Returns whether usage syntax decorations around the {@linkplain #paramLabel() paramLabel} should be suppressed.
@@ -9385,7 +9386,8 @@ public class CommandLine {
                 public Range arity()           { return arity; }
 
                 /** Returns the name of the option or positional parameter used in the usage help message.
-                 * @see Option#paramLabel() {@link Parameters#paramLabel()} */
+                 * @see Option#paramLabel()
+                 * @see Parameters#paramLabel() */
                 public String paramLabel()     { return paramLabel; }
 
                 /** Returns whether usage syntax decorations around the {@linkplain #paramLabel() paramLabel} should be suppressed.
