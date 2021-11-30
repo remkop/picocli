@@ -1,8 +1,7 @@
 package picocli.examples.kotlin.optional
 
-import picocli.CommandLine
 import picocli.CommandLine.Option
-import java.lang.Boolean
+import picocli.CommandLine.Parameters
 import java.util.*
 
 class SingleOptions {
@@ -13,9 +12,9 @@ class SingleOptions {
     var y: Optional<Int> = Optional.empty()
 
     @Option(names = ["-z", "--long"], negatable = true)
-    var z = Optional.of(Boolean.FALSE)
+    var z = Optional.of(false)
 
-    @CommandLine.Parameters(arity = "0..*")
+    @Parameters(arity = "0..*")
     var positional = Optional.empty<String>()
 
     @Option(names = ["-D"], mapFallbackValue = "_NULL_")
