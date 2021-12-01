@@ -31,11 +31,11 @@ dependencies {
                    "org.apache.ivy:ivy:$ivyVersion", // for Intelli/J
                    // for the Logging example
                    "org.apache.logging.log4j:log4j-api:2.14.1",
-                   "org.apache.logging.log4j:log4j-core:2.13.0",
+                   "org.apache.logging.log4j:log4j-core:2.14.1",
                    // for the JSR-380 BeanValidation example
                    "javax.validation:validation-api:2.0.0.Final",
                    "org.hibernate.validator:hibernate-validator:6.1.2.Final",
-                   "org.hibernate.validator:hibernate-validator-annotation-processor:6.1.2.Final",
+                   "org.hibernate.validator:hibernate-validator-annotation-processor:7.0.1.Final",
                    "javax.el:javax.el-api:3.0.0",
                    "org.glassfish.web:javax.el:2.2.6"
     implementation "org.jetbrains.kotlin:kotlin-script-runtime:1.6.0"
