@@ -10230,7 +10230,7 @@ public class CommandLine {
                 int result = 0;
                 for (ArgSpec arg : args) {
                     if (arg.isPositional()) {
-                        result += ((PositionalParamSpec) arg).capacity().min();
+                        result += ((PositionalParamSpec) arg).capacity().max();
                     }
                 }
                 return result;
