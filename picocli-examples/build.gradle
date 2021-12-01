@@ -33,7 +33,7 @@ dependencies {
                    "org.apache.logging.log4j:log4j-api:2.14.1",
                    "org.apache.logging.log4j:log4j-core:2.14.1",
                    // for the JSR-380 BeanValidation example
-                   "javax.validation:validation-api:2.0.0.Final",
+                   "javax.validation:validation-api:2.0.1.Final",
                    "org.hibernate.validator:hibernate-validator:7.0.1.Final",
                    "org.hibernate.validator:hibernate-validator-annotation-processor:7.0.1.Final",
                    "javax.el:javax.el-api:3.0.0",
