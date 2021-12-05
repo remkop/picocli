@@ -22,17 +22,39 @@ import static picocli.ArgGroupTest.CommandMethodsWithGroupsAndMixins.InvokedSub.
 
 
 //Bad Error Message
-public class Issue1383 {
+public class Issue1383 implements Runnable{
 
     // Case 1
 
     @CommandLine.Option(names="-t",
-            split="\\s",
-            converter = MyType.MyConverter.class
+            split="\\s"
+            ,converter = TestLowerCaseConverter.class
     )
-    public List<MyType> args;
+
+    //@CommandLine.ArgGroup(exclusive = false, heading = "%nGroup 1%n%n")
+    //TestStringList lst = new TestStringList();
+    List<String> args;
+
+    //public List<MyType> args;
+
+    static class TestStringList {
+        @CommandLine.Option(names = "-t", split = "\\s", converter = MyType.MyConverter.class, description = "List of Strings")
+        ArrayList<MyType> args;
 
 
+    }
+
+    public static class TestLowerCaseConverter implements CommandLine.ITypeConverter<String> {
+
+        @Override
+        public String convert(String arg) throws Exception {
+            if (!arg.toLowerCase().equals(arg))
+                throw new CommandLine.TypeConversionException("Text must be lower case");
+
+            return new String(arg);
+        }
+
+    }
     // Case 2
     /*
 	@CommandLine.Option(names="-t",
@@ -65,11 +87,16 @@ public class Issue1383 {
         public String toString() {return lowCaseStr;}
     }
 
+    public void run() {
+        int a = 0;
+    }
+
+
     public static void main(String[] args) {
         Issue1383 msgs = new Issue1383();
         // Case 1 - list
 
-        new CommandLine(msgs).execute("-t","some txt", "Bad input");
+        new CommandLine(msgs).execute("-t","some txt", "-t","Bad input");
         //		Results in message: Unmatched argument at index 2: 'Bad input'
 
 
@@ -83,3 +110,53 @@ public class Issue1383 {
     }
 
 }
+/*
+// Fixed example use case
+public class Issue1383 implements Runnable{
+
+    @CommandLine.Option(names="-t",
+            split="\\s"
+            ,converter = TestLowerCaseConverter.class
+    )
+
+    List<String> args;
+
+    static class TestStringList {
+        @CommandLine.Option(names = "-t", split = "\\s", converter = MyType.MyConverter.class, description = "List of Strings")
+        ArrayList<MyType> args;
+    }
+
+    public static class TestLowerCaseConverter implements CommandLine.ITypeConverter<String> {
+
+        @Override
+        public String convert(String arg) throws Exception {
+            if (!arg.toLowerCase().equals(arg))
+                throw new CommandLine.TypeConversionException("Text must be lower case");
+
+            return new String(arg);
+        }
+
+    }
+
+    public void run() {
+        int a = 0;
+    }
+
+
+    public static void main(String[] args) {
+        Issue1383 msgs = new Issue1383();
+
+        new CommandLine(msgs).execute("-t","some txt", "-t","Bad input");
+	/*
+	/ Invalid value for option '-t' (<args>): Text must be lower case
+	/ Usage: <main class> [-t=<args>[\s<args>...]]...
+ 	/ -t=<args>[\s<args>...]
+	*/
+	/*
+            }
+
+            }
+
+
+
+            */
