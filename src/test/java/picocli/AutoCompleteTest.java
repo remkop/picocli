@@ -16,6 +16,7 @@
 package picocli;
 
 import org.hamcrest.CoreMatchers;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.Assertion;
@@ -66,6 +67,12 @@ import static org.junit.Assert.*;
 // http://hayne.net/MacDev/Notes/unixFAQ.html#shellStartup
 // https://apple.stackexchange.com/a/13019
 public class AutoCompleteTest {
+    @BeforeClass
+    static void beforeClass() {
+        // https://github.com/remkop/picocli/issues/1503
+        System.setProperty("java.security.manager", "allow");
+    }
+
     @Rule
     public final ProvideSystemProperty ansiOFF = new ProvideSystemProperty("picocli.ansi", "false");
     // allows tests to set any kind of properties they like, without having to individually roll them back

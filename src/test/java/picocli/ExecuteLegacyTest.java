@@ -15,6 +15,7 @@
  */
 package picocli;
 
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.*;
@@ -36,6 +37,11 @@ import static picocli.CommandLine.*;
 
 @SuppressWarnings("deprecation")
 public class ExecuteLegacyTest {
+    @BeforeClass
+    static void beforeClass() {
+        // https://github.com/remkop/picocli/issues/1503
+        System.setProperty("java.security.manager", "allow");
+    }
 
     // allows tests to set any kind of properties they like, without having to individually roll them back
     @Rule
@@ -43,7 +49,7 @@ public class ExecuteLegacyTest {
 
     @Rule
     public final ProvideSystemProperty ansiOFF = new ProvideSystemProperty("picocli.ansi", "false");
-    
+
     @Rule
     public final SystemErrRule systemErrRule = new SystemErrRule().enableLog().muteForSuccessfulTests();
 
