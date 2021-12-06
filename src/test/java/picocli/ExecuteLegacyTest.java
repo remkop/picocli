@@ -25,7 +25,6 @@ import picocli.CommandLine.Model.CommandSpec;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -37,11 +36,9 @@ import static picocli.CommandLine.*;
 
 @SuppressWarnings("deprecation")
 public class ExecuteLegacyTest {
-    @BeforeClass
-    public static void beforeClass() {
-        // https://github.com/remkop/picocli/issues/1503
-        System.setProperty("java.security.manager", "allow");
-    }
+    @Rule
+    // https://github.com/remkop/picocli/issues/1503
+    public final ProvideSystemProperty allowSecurityManager = new ProvideSystemProperty("java.security.manager", "allow");
 
     // allows tests to set any kind of properties they like, without having to individually roll them back
     @Rule

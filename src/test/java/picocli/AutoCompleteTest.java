@@ -67,11 +67,10 @@ import static org.junit.Assert.*;
 // http://hayne.net/MacDev/Notes/unixFAQ.html#shellStartup
 // https://apple.stackexchange.com/a/13019
 public class AutoCompleteTest {
-    @BeforeClass
-    public static void beforeClass() {
-        // https://github.com/remkop/picocli/issues/1503
-        System.setProperty("java.security.manager", "allow");
-    }
+
+    @Rule
+    // https://github.com/remkop/picocli/issues/1503
+    public final ProvideSystemProperty allowSecurityManager = new ProvideSystemProperty("java.security.manager", "allow");
 
     @Rule
     public final ProvideSystemProperty ansiOFF = new ProvideSystemProperty("picocli.ansi", "false");
