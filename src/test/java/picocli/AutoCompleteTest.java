@@ -68,7 +68,7 @@ import static org.junit.Assert.*;
 // https://apple.stackexchange.com/a/13019
 public class AutoCompleteTest {
     @BeforeClass
-    static void beforeClass() {
+    public static void beforeClass() {
         // https://github.com/remkop/picocli/issues/1503
         System.setProperty("java.security.manager", "allow");
     }

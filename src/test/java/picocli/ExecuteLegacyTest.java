@@ -38,7 +38,7 @@ import static picocli.CommandLine.*;
 @SuppressWarnings("deprecation")
 public class ExecuteLegacyTest {
     @BeforeClass
-    static void beforeClass() {
+    public static void beforeClass() {
         // https://github.com/remkop/picocli/issues/1503
         System.setProperty("java.security.manager", "allow");
     }
