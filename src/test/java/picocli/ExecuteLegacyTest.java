@@ -19,6 +19,7 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.*;
+import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
 import picocli.CommandLine.Model.CommandSpec;
 
@@ -36,9 +37,15 @@ import static picocli.CommandLine.*;
 
 @SuppressWarnings("deprecation")
 public class ExecuteLegacyTest {
-    @Rule
+    //@Rule
     // https://github.com/remkop/picocli/issues/1503
     public final ProvideSystemProperty allowSecurityManager = new ProvideSystemProperty("java.security.manager", "allow");
+
+    //@Rule
+    public final ExpectedSystemExit exit = ExpectedSystemExit.none();
+
+    @Rule
+    public RuleChain chain = RuleChain.outerRule(allowSecurityManager).around(exit);
 
     // allows tests to set any kind of properties they like, without having to individually roll them back
     @Rule
@@ -53,8 +60,6 @@ public class ExecuteLegacyTest {
     @Rule
     public final SystemOutRule systemOutRule = new SystemOutRule().enableLog().muteForSuccessfulTests();
 
-    @Rule
-    public final ExpectedSystemExit exit = ExpectedSystemExit.none();
 
     interface Factory { Object create(); }
     @Test

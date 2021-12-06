@@ -25,6 +25,7 @@ import org.junit.contrib.java.lang.system.ProvideSystemProperty;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.contrib.java.lang.system.SystemErrRule;
 import org.junit.contrib.java.lang.system.SystemOutRule;
+import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Model.CommandSpec;
@@ -68,9 +69,15 @@ import static org.junit.Assert.*;
 // https://apple.stackexchange.com/a/13019
 public class AutoCompleteTest {
 
-    @Rule
+    //@Rule
     // https://github.com/remkop/picocli/issues/1503
     public final ProvideSystemProperty allowSecurityManager = new ProvideSystemProperty("java.security.manager", "allow");
+
+    //@Rule
+    public final ExpectedSystemExit exit = ExpectedSystemExit.none();
+
+    @Rule
+    public RuleChain chain = RuleChain.outerRule(allowSecurityManager).around(exit);
 
     @Rule
     public final ProvideSystemProperty ansiOFF = new ProvideSystemProperty("picocli.ansi", "false");
@@ -83,9 +90,6 @@ public class AutoCompleteTest {
 
     @Rule
     public final SystemOutRule systemOutRule = new SystemOutRule().enableLog().muteForSuccessfulTests();
-
-    @Rule
-    public final ExpectedSystemExit exit = ExpectedSystemExit.none();
 
     public static class BasicExample implements Runnable {
         @Option(names = {"-u", "--timeUnit"}) private TimeUnit timeUnit;
