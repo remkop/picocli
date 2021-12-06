@@ -15,8 +15,6 @@
  */
 package picocli;
 
-import org.hamcrest.CoreMatchers;
-import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.Assertion;
@@ -25,7 +23,6 @@ import org.junit.contrib.java.lang.system.ProvideSystemProperty;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.contrib.java.lang.system.SystemErrRule;
 import org.junit.contrib.java.lang.system.SystemOutRule;
-import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Model.CommandSpec;
@@ -52,8 +49,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.ListResourceBundle;
-import java.util.PropertyResourceBundle;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
@@ -69,15 +64,8 @@ import static org.junit.Assert.*;
 // https://apple.stackexchange.com/a/13019
 public class AutoCompleteTest {
 
-    //@Rule
-    // https://github.com/remkop/picocli/issues/1503
-    public final ProvideSystemProperty allowSecurityManager = new ProvideSystemProperty("java.security.manager", "allow");
-
-    //@Rule
-    public final ExpectedSystemExit exit = ExpectedSystemExit.none();
-
     @Rule
-    public RuleChain chain = RuleChain.outerRule(allowSecurityManager).around(exit);
+    public final ExpectedSystemExit exit = ExpectedSystemExit.none();
 
     @Rule
     public final ProvideSystemProperty ansiOFF = new ProvideSystemProperty("picocli.ansi", "false");

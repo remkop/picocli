@@ -138,6 +138,10 @@ if (JavaVersion.current().isJava11Compatible()) {
     apply from: "gradle/jacoco.gradle"
 }
 
+test { // https://github.com/remkop/picocli/issues/1503
+    systemProperty "java.security.manager", "allow"
+}
+
 // javadoc and asciidoc customization
 apply from: "${rootProject.projectDir}/gradle/docs.gradle"
 

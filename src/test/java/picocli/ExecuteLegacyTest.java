@@ -15,11 +15,14 @@
  */
 package picocli;
 
-import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.contrib.java.lang.system.*;
-import org.junit.rules.RuleChain;
+import org.junit.contrib.java.lang.system.Assertion;
+import org.junit.contrib.java.lang.system.ExpectedSystemExit;
+import org.junit.contrib.java.lang.system.ProvideSystemProperty;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
+import org.junit.contrib.java.lang.system.SystemErrRule;
+import org.junit.contrib.java.lang.system.SystemOutRule;
 import org.junit.rules.TestRule;
 import picocli.CommandLine.Model.CommandSpec;
 
@@ -33,19 +36,27 @@ import java.util.concurrent.Callable;
 
 import static java.lang.String.format;
 import static org.junit.Assert.*;
-import static picocli.CommandLine.*;
+import static picocli.CommandLine.Command;
+import static picocli.CommandLine.DefaultExceptionHandler;
+import static picocli.CommandLine.ExecutionException;
+import static picocli.CommandLine.Help;
+import static picocli.CommandLine.IExceptionHandler2;
+import static picocli.CommandLine.IParseResultHandler;
+import static picocli.CommandLine.IParseResultHandler2;
+import static picocli.CommandLine.InitializationException;
+import static picocli.CommandLine.Option;
+import static picocli.CommandLine.ParameterException;
+import static picocli.CommandLine.Parameters;
+import static picocli.CommandLine.ParseResult;
+import static picocli.CommandLine.RunAll;
+import static picocli.CommandLine.RunFirst;
+import static picocli.CommandLine.RunLast;
+import static picocli.CommandLine.Spec;
 
 @SuppressWarnings("deprecation")
 public class ExecuteLegacyTest {
-    //@Rule
-    // https://github.com/remkop/picocli/issues/1503
-    public final ProvideSystemProperty allowSecurityManager = new ProvideSystemProperty("java.security.manager", "allow");
-
-    //@Rule
-    public final ExpectedSystemExit exit = ExpectedSystemExit.none();
-
     @Rule
-    public RuleChain chain = RuleChain.outerRule(allowSecurityManager).around(exit);
+    public final ExpectedSystemExit exit = ExpectedSystemExit.none();
 
     // allows tests to set any kind of properties they like, without having to individually roll them back
     @Rule
