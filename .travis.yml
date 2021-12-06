@@ -28,6 +28,10 @@ matrix:
     jdk: openjdk9
   - os: macos
     jdk: openjdk10
+  - os: macos
+    jdk: openjdk17
+  - os: macos
+    jdk: openjdk-ea
   allow_failures:
   - jdk: openjdk-ea
     #  - openjdk7 # Disabled to avoid error java.security.NoSuchProviderException: no such provider: SunEC...
