@@ -24,7 +24,6 @@ jobs:
           cache: gradle
 
       - name: Build
-        continue-on-error: true
         run: ./gradlew build --no-daemon
 
   build-java-5-6-7:
@@ -61,7 +60,6 @@ jobs:
           cache: gradle
 
       - name: Build
-        continue-on-error: true
         uses: gradle/gradle-build-action@v2
         with:
           gradle-version: 1.12
