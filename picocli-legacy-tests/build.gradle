@@ -1,0 +1,51 @@
+group 'info.picocli'
+description 'Compile and test the picocli project in legacy Java environments.'
+version "$projectVersion"
+
+apply plugin: 'java'
+
+repositories {
+    // do not use mavenCentral(): it uses HTTP in this old version of Gradle
+    // mavenCentral()
+    maven { url "https://repo.maven.apache.org/maven2/" }
+    maven { url 'https://repo.spring.io/libs-snapshot' }
+}
+
+configurations.all {
+    resolutionStrategy {
+        // avoid "Could not resolve junit:junit-dep:[4.9,)" caused by stefanbirkner:system-rules when building offline
+        force "junit:junit-dep:$junitDepVersion"
+    }
+}
+dependencies {
+    testCompile "junit:junit:$junitVersion",
+        "org.hamcrest:hamcrest-core:$hamcrestCoreVersion",
+        "org.fusesource.jansi:jansi:$jansiVersion",
+        "com.github.stefanbirkner:system-rules:$systemRulesVersion",
+        "pl.pragmatists:JUnitParams:1.1.1"
+}
+
+sourceCompatibility = 1.5
+targetCompatibility = 1.5
+
+compileJava.options.encoding = "UTF-8"
+compileTestJava.options.encoding = "UTF-8"
+
+sourceSets.main.java.srcDirs = ['../src/main/java']
+sourceSets.test.java.srcDirs = ['../src/test/java']
+sourceSets.test.resources.srcDirs = ['../src/test/resources']
+sourceSets {
+    test {
+        java {
+            exclude 'some/unwanted/package/**'
+        }
+    }
+}
+
+tasks.withType(JavaCompile) {
+    options.compilerArgs << '-Xlint:unchecked' << '-Xlint:deprecation'
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '1.12'
+}
