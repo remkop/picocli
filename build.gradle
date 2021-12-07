@@ -139,7 +139,9 @@ if (JavaVersion.current().isJava11Compatible()) {
 }
 
 test { // https://github.com/remkop/picocli/issues/1503
-    systemProperty "java.security.manager", "allow"
+    if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_18)()) {
+        systemProperty "java.security.manager", "allow"
+    }
 }
 
 // javadoc and asciidoc customization
