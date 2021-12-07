@@ -7,7 +7,7 @@ jobs:
 
     strategy:
       matrix:
-        java-version: [ 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18-ea ]
+        java-version: [ 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18-ea ]
 
     steps:
       - name: Checkout
@@ -21,6 +21,7 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: ${{ matrix.java-version }}
+          cache: gradle
 
       - name: Build
-        run: ./gradlew build
+        run: ./gradlew build --no-daemon
