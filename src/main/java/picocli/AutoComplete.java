@@ -462,7 +462,7 @@ public class AutoComplete {
                         "\n" +
                         "LIBS=path/to/libs\n" +
                         "CP=\"${LIBS}/myApp.jar\"\n" +
-                        "java -cp \"${CP}\" '" + commandLine.getCommand().getClass().getName() + "' $@");
+                        "java -cp \"${CP}\" '" + ((Object) commandLine.getCommand()).getClass().getName() + "' $@");
             }
         } finally {
             if (completionWriter != null) { completionWriter.close(); }
@@ -635,7 +635,7 @@ public class AutoComplete {
             }
         }
         // If the command is a HelpCommand, append parent subcommands to the autocompletion list.
-        if (commandLine.getParent() != null && commandLine.getCommand() instanceof HelpCommand) {
+        if (commandLine.getParent() != null && ((Object) commandLine.getCommand()) instanceof HelpCommand) {
             subCommands = new LinkedHashSet<String>(subCommands);
             for (CommandLine subCommandLine : commandLine.getParent().getSubcommands().values()) {
                 if (commandLine == subCommandLine) { continue; }  // Skip the HelpCommand itself

@@ -1434,7 +1434,7 @@ public class CommandLine {
     public static <T> T populateSpec(Class<T> spec, String... args) {
         CommandLine cli = toCommandLine(spec, new DefaultFactory());
         cli.parse(args);
-        return cli.getCommand();
+        return cli.<T>getCommand();
     }
 
     /** Expands any {@linkplain CommandLine#isExpandAtFiles() @-files} in the specified command line arguments, then
@@ -1922,9 +1922,9 @@ public class CommandLine {
                 return parsed.getCommandSpec().exitCodeOnVersionHelp();
             } else if (parsed.getCommandSpec().helpCommand()) {
                 PrintWriter err = parsed.getErr();
-                if (parsed.getCommand() instanceof IHelpCommandInitializable2) {
+                if (((Object) parsed.getCommand()) instanceof IHelpCommandInitializable2) {
                     ((IHelpCommandInitializable2) parsed.getCommand()).init(parsed, colorScheme, out, err);
-                } else if (parsed.getCommand() instanceof IHelpCommandInitializable) {
+                } else if (((Object) parsed.getCommand()) instanceof IHelpCommandInitializable) {
                     ((IHelpCommandInitializable) parsed.getCommand()).init(parsed, colorScheme.ansi, System.out, System.err);
                 }
                 executeUserObject(parsed, new ArrayList<Object>());
@@ -2769,7 +2769,7 @@ public class CommandLine {
     @Deprecated public static <C extends Callable<T>, T> T call(C callable, String... args) {
         CommandLine cmd = new CommandLine(callable);
         List<Object> results = cmd.parseWithHandler(new RunLast(), args);
-        return firstElement(results);
+        return CommandLine.<T>firstElement(results);
     }
 
     /**
@@ -2838,7 +2838,7 @@ public class CommandLine {
     @Deprecated public static <C extends Callable<T>, T> T call(C callable, PrintStream out, PrintStream err, Help.Ansi ansi, String... args) {
         CommandLine cmd = new CommandLine(callable);
         List<Object> results = cmd.parseWithHandlers(new RunLast().useOut(out).useAnsi(ansi), new DefaultExceptionHandler<List<Object>>().useErr(err).useAnsi(ansi), args);
-        return firstElement(results);
+        return CommandLine.<T>firstElement(results);
     }
     /**
      * Equivalent to {@code new CommandLine(callableClass, factory).execute(args)}, except for the return value.
@@ -2857,7 +2857,7 @@ public class CommandLine {
     @Deprecated public static <C extends Callable<T>, T> T call(Class<C> callableClass, IFactory factory, String... args) {
         CommandLine cmd = new CommandLine(callableClass, factory);
         List<Object> results = cmd.parseWithHandler(new RunLast(), args);
-        return firstElement(results);
+        return CommandLine.<T>firstElement(results);
     }
     /**
      * Delegates to {@link #call(Class, IFactory, PrintStream, PrintStream, Help.Ansi, String...)} with
@@ -2933,7 +2933,7 @@ public class CommandLine {
     @Deprecated public static <C extends Callable<T>, T> T call(Class<C> callableClass, IFactory factory, PrintStream out, PrintStream err, Help.Ansi ansi, String... args) {
         CommandLine cmd = new CommandLine(callableClass, factory);
         List<Object> results = cmd.parseWithHandlers(new RunLast().useOut(out).useAnsi(ansi), new DefaultExceptionHandler<List<Object>>().useErr(err).useAnsi(ansi), args);
-        return firstElement(results);
+        return CommandLine.<T>firstElement(results);
     }
 
     @SuppressWarnings("unchecked") private static <T> T firstElement(List<Object> results) {
@@ -8930,7 +8930,7 @@ public class CommandLine {
             /** Returns the current value of this argument. Delegates to the current {@link #getter()}. */
             public <T> T getValue() throws PicocliException {
                 try {
-                    return getter.get();
+                    return getter.<T>get();
                 } catch (PicocliException ex) { throw ex;
                 } catch (Exception ex) {        throw new PicocliException("Could not get value for " + this + ": " + ex, ex);
                 }
@@ -11771,7 +11771,7 @@ public class CommandLine {
                 ProxyBinding(Method method) { this.method = Assert.notNull(method, "method"); }
                 @SuppressWarnings("unchecked") public <T> T get() { return (T) map.get(method.getName()); }
                 public <T> T set(T value) {
-                    T result = get();
+                    T result = this.<T>get();
                     map.put(method.getName(), value);
                     return result;
                 }
