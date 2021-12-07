@@ -1,7 +1,8 @@
 <p align="center"><img src="docs/images/logo/horizontal-400x150.png" alt="picocli" height="150px"></p>
 
 [![GitHub Release](https://img.shields.io/github/release/remkop/picocli.svg)](https://github.com/remkop/picocli/releases)
-[![Build Status](https://travis-ci.com/remkop/picocli.svg?branch=master)](https://travis-ci.com/remkop/picocli)
+[![GitHub Actions Build Status](https://github.com/remkop/picocli/actions/workflows/ci.yml/badge.svg)](https://github.com/remkop/picocli/actions/workflows/ci.yml)
+[![Travis Build Status](https://travis-ci.com/remkop/picocli.svg?branch=master)](https://travis-ci.com/remkop/picocli)
 [![codecov](https://codecov.io/gh/remkop/picocli/branch/master/graph/badge.svg)](https://codecov.io/gh/remkop/picocli)
 [![Follow @remkopopma](https://img.shields.io/twitter/follow/remkopopma.svg?style=social)](https://twitter.com/intent/follow?screen_name=remkopopma)
 [![Follow @picocli](https://img.shields.io/twitter/follow/picocli.svg?style=social)](https://twitter.com/intent/follow?screen_name=picocli)
