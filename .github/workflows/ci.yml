@@ -5,6 +5,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        java-version: [ 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18-ea ]
+
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -12,11 +16,11 @@ jobs:
       - name: Validate Gradle Wrapper
         uses: gradle/wrapper-validation-action@v1
 
-      - name: Configure JDK
+      - name: Configure JDK ${{ matrix.java-version }}
         uses: actions/setup-java@v2
         with:
           distribution: 'zulu'
-          java-version: 8
+          java-version: ${{ matrix.java-version }}
 
       - name: Build
         run: ./gradlew build
