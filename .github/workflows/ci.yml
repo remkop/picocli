@@ -24,4 +24,5 @@ jobs:
           cache: gradle
 
       - name: Build
+        continue-on-error: true
         run: ./gradlew build --no-daemon
