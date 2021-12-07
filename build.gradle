@@ -138,8 +138,9 @@ if (JavaVersion.current().isJava11Compatible()) {
     apply from: "gradle/jacoco.gradle"
 }
 
-test { // https://github.com/remkop/picocli/issues/1503
-    if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_18)()) {
+if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_18)()) {
+    // https://github.com/remkop/picocli/issues/1503
+    test { // explicitly enable security manager on Java 18 for System.exit tests
         systemProperty "java.security.manager", "allow"
     }
 }
