@@ -35,6 +35,10 @@ public class Issue1351 {
                 return this.a[i];
             }
         }
+
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
     }
 
     static class MyIterable implements Iterable<String> {
