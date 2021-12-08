@@ -8640,7 +8640,7 @@ public class CommandLine {
 
             /** Returns whether this is a required option or positional parameter without a default value.
              * If this argument is part of a {@linkplain ArgGroup group}, this method returns whether this argument is required <em>within the group</em> (so it is not necessarily a required argument for the command).
-             * @see Option#required() */
+             * @see Option#optionIsNotRequired() */
             public boolean optionIsNotRequired(){
                 return optionIsNotRequired;
             }
