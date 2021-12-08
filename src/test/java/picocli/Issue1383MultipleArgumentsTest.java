@@ -2,8 +2,11 @@ package picocli;
 
 import org.junit.Test;
 import picocli.CommandLine.Command;
+import picocli.CommandLine.PicocliException;
+
 import java.util.Locale;
-import static org.junit.Assert.assertEquals;
+
+import static org.junit.Assert.*;
 
 /**
  * Multiple Arguments Testing based on https://picocli.info/#_multiple_values
@@ -14,14 +17,15 @@ import static org.junit.Assert.assertEquals;
  * multiple argument with split, flags, and type conversion
  * @author @madfoal, @lind6
  */
-public class MultipleArgumentsTest {
+public class Issue1383MultipleArgumentsTest {
 
-/** default */static final String FLAG_STRING = "-t";  // String literal for the argument flag
-/** default */static final String GOOD_STRING = "good test"; // String literal for the good test
-/** default */static final String BAD_STRING = "Bad Test"; // String literal for the bad test
-/** default */static final String errorMessage = "Invalid value for option '-t' (<args>): "
+    static final String FLAG_STRING = "-t";  // String literal for the argument flag
+    static final String GOOD_STRING = "good test"; // String literal for the good test
+    static final String BAD_STRING = "Bad Test"; // String literal for the bad test
+    static final String ERROR_MESSAGE = "Invalid value for option '-t' (<args>): "
             +"Type Conversion Failure\n" +
             "Argument: \"Bad Test\" must be lower case.\n";
+
     @Command(name = "Issue-1383")
     /**
      * Tests issue 1383 https://github.com/remkop/picocli/issues/1383
@@ -32,11 +36,11 @@ public class MultipleArgumentsTest {
      * @author @madfoal, @lind6
      */
      static class Issue1383{
-        @CommandLine.Option(names = FLAG_STRING,split=",", converter = TestType.TestConverter.class)
+        @CommandLine.Option(names = FLAG_STRING, split=",", converter = TestType.TestConverter.class)
         TestType[] args;
 
         static class TestType {
-            String str; // only data field for this test type
+            final String str; // only data field for this test type
 
             private TestType(final String txt) {
                 str = txt;
@@ -49,9 +53,9 @@ public class MultipleArgumentsTest {
             public static class TestConverter implements
                     CommandLine.ITypeConverter<Issue1383.TestType> {
 
-                @Override
+                //@Override
                 public Issue1383.TestType convert(final String arg) throws Exception {
-                    if (!arg.toLowerCase(Locale.ROOT).equals(arg)) {
+                    if (!arg.toLowerCase(Locale.ENGLISH).equals(arg)) {
                         throw new CommandLine.TypeConversionException(
                                 "Type Conversion Failure\nArgument: \""
                                 + arg + "\" must be lower case.\n");
@@ -77,8 +81,8 @@ public class MultipleArgumentsTest {
         final Issue1383 obj = new Issue1383();
         try {
             new CommandLine(obj).parseArgs(args);
-        } catch ( CommandLine.PicocliException e) {
-            assertEquals("Multiple Arguments with Type Converter Failure",errorMessage,e.getMessage());
+        } catch (PicocliException e) {
+            assertEquals("Multiple Arguments with Type Converter Failure", ERROR_MESSAGE, e.getMessage());
         }
     }
 
@@ -96,8 +100,8 @@ public class MultipleArgumentsTest {
         final Issue1383 obj = new Issue1383();
         try {
             new CommandLine(obj).parseArgs(args);
-        } catch ( CommandLine.PicocliException e) {
-            assertEquals("Multiple Arguments with Type Converter Failure",errorMessage,e.getMessage());
+        } catch (PicocliException e) {
+            assertEquals("Multiple Arguments with Type Converter Failure", ERROR_MESSAGE, e.getMessage());
         }
     }
 }

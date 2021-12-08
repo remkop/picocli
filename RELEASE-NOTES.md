@@ -35,6 +35,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#1476] Enhancement: improve error message in `AbstractCommandSpecProcessor#extractTypedMember`. Thanks to [Ross Goldberg](https://github.com/rgoldberg) for raising this.
 * [#1475] Enhancement: Fix typo in annotation target-type error message. Thanks to [Ross Goldberg](https://github.com/rgoldberg) for the pull request.
 * [#1409][#1463] DOC: add documentation section on using default values in argument groups. Thanks to [Ben Kedo](https://github.com/MadFoal) for the pull request.
+* [#1383][#1502] DOC: add tests demonstrating usage of multiple arguments. Thanks to [Ben Kedo](https://github.com/MadFoal) and [lind6](https://github.com/lind6) for the pull request.
 * [#1462] DOC, BUILD, DEP: Extend documentation on argument files, fix broken/outdated links, update dependencies. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1457] DOC: add caution about arguments in @files with quoted option parameters. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1461] BUILD: Allow publishing without signing for non-release versions. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
