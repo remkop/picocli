@@ -343,8 +343,8 @@ public class SubcommandTests {
 
         Map<String, CommandLine> commandMap = commandLine.getSubcommands();
         assertEquals(2, commandMap.size());
-        assertTrue("cmd1", commandMap.get("cmd1").getCommand() instanceof ChildCommand1);
-        assertTrue("cmd2", commandMap.get("cmd2").getCommand() instanceof ChildCommand2);
+        assertTrue("cmd1", ((Object) commandMap.get("cmd1").getCommand()) instanceof ChildCommand1);
+        assertTrue("cmd2", ((Object) commandMap.get("cmd2").getCommand()) instanceof ChildCommand2);
     }
 
     @Test
@@ -354,18 +354,18 @@ public class SubcommandTests {
         Map<String, CommandLine> commandMap = commandLine.getSubcommands();
         assertEquals(6, commandMap.size());
         assertEquals(setOf("cmd1", "cmd1alias1", "cmd1alias2", "cmd2", "cmd2alias1", "cmd2alias2"), commandMap.keySet());
-        assertTrue("cmd1", commandMap.get("cmd1").getCommand() instanceof ChildCommand1);
+        assertTrue("cmd1", ((Object) commandMap.get("cmd1").getCommand()) instanceof ChildCommand1);
         assertSame(commandMap.get("cmd1"), commandMap.get("cmd1alias1"));
         assertSame(commandMap.get("cmd1"), commandMap.get("cmd1alias2"));
 
-        assertTrue("cmd2", commandMap.get("cmd2").getCommand() instanceof ChildCommand2);
+        assertTrue("cmd2", ((Object) commandMap.get("cmd2").getCommand()) instanceof ChildCommand2);
         assertSame(commandMap.get("cmd2"), commandMap.get("cmd2alias1"));
         assertSame(commandMap.get("cmd2"), commandMap.get("cmd2alias2"));
 
         CommandLine cmd2 = commandMap.get("cmd2");
         Map<String, CommandLine> subMap = cmd2.getSubcommands();
 
-        assertTrue("cmd2", subMap.get("sub21").getCommand() instanceof GrandChild2Command1);
+        assertTrue("cmd2", ((Object) subMap.get("sub21").getCommand()) instanceof GrandChild2Command1);
         assertSame(subMap.get("sub21"), subMap.get("sub21alias1"));
         assertSame(subMap.get("sub21"), subMap.get("sub21alias2"));
     }
@@ -627,11 +627,11 @@ public class SubcommandTests {
         assertEquals(1, main.getSubcommands().size());
 
         CommandLine sub1 = main.getSubcommands().get("sub1");
-        assertEquals(Sub1_testDeclarativelyAddSubcommands.class, sub1.getCommand().getClass());
+        assertEquals(Sub1_testDeclarativelyAddSubcommands.class, ((Object) sub1.getCommand()).getClass());
 
         assertEquals(1, sub1.getSubcommands().size());
         CommandLine subsub1 = sub1.getSubcommands().get("subsub1");
-        assertEquals(SubSub1_testDeclarativelyAddSubcommands.class, subsub1.getCommand().getClass());
+        assertEquals(SubSub1_testDeclarativelyAddSubcommands.class, ((Object) subsub1.getCommand()).getClass());
     }
     @Test
     public void testGetParentForDeclarativelyAddedSubcommands() {
@@ -640,12 +640,12 @@ public class SubcommandTests {
 
         CommandLine sub1 = main.getSubcommands().get("sub1");
         assertSame(main, sub1.getParent());
-        assertEquals(Sub1_testDeclarativelyAddSubcommands.class, sub1.getCommand().getClass());
+        assertEquals(Sub1_testDeclarativelyAddSubcommands.class, ((Object) sub1.getCommand()).getClass());
 
         assertEquals(1, sub1.getSubcommands().size());
         CommandLine subsub1 = sub1.getSubcommands().get("subsub1");
         assertSame(sub1, subsub1.getParent());
-        assertEquals(SubSub1_testDeclarativelyAddSubcommands.class, subsub1.getCommand().getClass());
+        assertEquals(SubSub1_testDeclarativelyAddSubcommands.class, ((Object) subsub1.getCommand()).getClass());
     }
     @Test
     public void testGetParentForProgrammaticallyAddedSubcommands() {
@@ -668,7 +668,7 @@ public class SubcommandTests {
     public void testDeclarativelyAddSubcommandsSucceedsWithDefaultConstructorForDefaultFactory() {
         @Command(subcommands = {SubSub1_testDeclarativelyAddSubcommands.class}) class MainCommand {}
         CommandLine cmdLine = new CommandLine(new MainCommand());
-        assertEquals(SubSub1_testDeclarativelyAddSubcommands.class.getName(), cmdLine.getSubcommands().get("subsub1").getCommand().getClass().getName());
+        assertEquals(SubSub1_testDeclarativelyAddSubcommands.class.getName(), ((Object) cmdLine.getSubcommands().get("subsub1").getCommand()).getClass().getName());
     }
     @Test
     public void testDeclarativelyAddSubcommandsFailsWithoutNoArgConstructor() {
@@ -691,7 +691,7 @@ public class SubcommandTests {
         @Command(name = "sub1") class ABCD {}
         @Command(subcommands = {ABCD.class}) class MainCommand {}
         CommandLine cmdLine = new CommandLine(new MainCommand(), new InnerClassFactory(this));
-        assertEquals("picocli.SubcommandTests$1ABCD", cmdLine.getSubcommands().get("sub1").getCommand().getClass().getName());
+        assertEquals("picocli.SubcommandTests$1ABCD", ((Object) cmdLine.getSubcommands().get("sub1").getCommand()).getClass().getName());
     }
     @Test
     public void testDeclarativelyAddSubcommandsFailsWithoutAnnotation() {
@@ -746,7 +746,7 @@ public class SubcommandTests {
         commandLine.registerConverter(CustomType.class, new CustomType(null));
         List<CommandLine> parsed = commandLine.parse("main", "cmd1", "sub12", "-e", "TXT");
         assertEquals(4, parsed.size());
-        assertEquals(TopLevel.class, parsed.get(0).getCommand().getClass());
+        assertEquals(TopLevel.class, ((Object) parsed.get(0).getCommand()).getClass());
         assertFalse(((MainCommand)   parsed.get(1).getCommand()).a);
         assertFalse(((ChildCommand1) parsed.get(2).getCommand()).b);
         assertEquals("TXT", ((GrandChild1Command2) parsed.get(3).getCommand()).e.val);
@@ -2273,7 +2273,7 @@ public class SubcommandTests {
         class TopLevel {}
         CommandLine commandLine = new CommandLine(new TopLevel());
         commandLine.addSubcommand("main", createNestedCommand());
-        
+
         final List<String> DEFAULT_LIST = Arrays.asList("headerHeading", "header", "synopsisHeading", "synopsis",
                 "descriptionHeading", "description", "parameterListHeading", "atFileParameterList", "parameterList", "optionListHeading",
                 "optionList", "endOfOptionsList", "commandListHeading", "commandList", "exitCodeListHeading", "exitCodeList", "footerHeading", "footer");
@@ -2383,7 +2383,7 @@ public class SubcommandTests {
     public void testMandatorySubcommand625() {
         int exitCode = new CommandLine(new MandatorySubcommand625.Top()).execute();
         assertEquals(CommandLine.ExitCode.USAGE, exitCode);
-        
+
         String expected = String.format("" +
                 "Missing required subcommand%n" +
                 "Usage: top COMMAND%n" +
@@ -2518,7 +2518,7 @@ public class SubcommandTests {
         }
 
     }
-    
+
     @Command(name = "playpico",
             description = "play picocli", mixinStandardHelpOptions = true,
             subcommands = Foo.class )
@@ -2526,7 +2526,7 @@ public class SubcommandTests {
         @Spec CommandSpec spec;
         @Option(names = "-x", defaultValue = "123", description = "X; default=${DEFAULT-VALUE}")
         int x;
-    
+
         public static void main(String[] args) {
             new CommandLine(new Launcher())
                     .execute(args);
@@ -2548,7 +2548,7 @@ public class SubcommandTests {
                 .setOut(new PrintWriter(out))
                 .execute();
         assertEquals("", err.toString());
-        
+
         assertEquals(String.format("" +
                 "Usage: playpico [-hV] [-x=<x>] [COMMAND]%n" +
                 "play picocli%n" +

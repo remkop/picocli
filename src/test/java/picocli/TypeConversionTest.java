@@ -601,7 +601,7 @@ public class TypeConversionTest {
         String[] args = {"a*glob*pattern"};
         List<CommandLine> parsed = commandLine.parse(args);
         assertEquals("not empty", 1, parsed.size());
-        assertTrue(parsed.get(0).getCommand() instanceof App);
+        assertTrue(((Object) parsed.get(0).getCommand()) instanceof App);
         App app = (App) parsed.get(0).getCommand();
         assertEquals(args[0], app.globField.glob);
     }
@@ -625,7 +625,7 @@ public class TypeConversionTest {
         String[] args = {"a*glob*pattern"};
         List<CommandLine> parsed = commandLine.parse(args);
         assertEquals("not empty", 1, parsed.size());
-        assertTrue(parsed.get(0).getCommand() instanceof App);
+        assertTrue(((Object) parsed.get(0).getCommand()) instanceof App);
         App app = (App) parsed.get(0).getCommand();
         assertEquals(args[0], app.globField.glob);
     }

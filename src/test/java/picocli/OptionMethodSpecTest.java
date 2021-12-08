@@ -77,7 +77,7 @@ public class OptionMethodSpecTest {
     @Test
     public void testInterfaceIsInstantiated() {
         CommandLine cmd = new CommandLine(Primitives.class);
-        assertTrue(cmd.getCommand() instanceof Primitives);
+        assertTrue(((Object) cmd.getCommand()) instanceof Primitives);
     }
 
     @Test

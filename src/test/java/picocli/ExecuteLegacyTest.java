@@ -412,6 +412,7 @@ public class ExecuteLegacyTest {
                 "<main command>"), systemErrRule.getLog());
     }
 
+    @SuppressWarnings("deprecation")
     private DefaultExceptionHandler<List<Object>> defaultExceptionHandler() {
         return new DefaultExceptionHandler<List<Object>>();
     }
@@ -431,6 +432,7 @@ public class ExecuteLegacyTest {
         assertEquals(25, handler.exitCode);
     }
 
+    @SuppressWarnings("deprecation")
     static class CustomExceptionHandler<R> extends DefaultExceptionHandler<R> {
         int exitCode;
 
@@ -454,6 +456,8 @@ public class ExecuteLegacyTest {
                 "Usage: <main class>%n"), systemErrRule.getLog());
         assertEquals(25, handler.exitCode);
     }
+
+    @SuppressWarnings("deprecation")
     static class CustomNoThrowExceptionHandler<R> extends DefaultExceptionHandler<R> {
         int exitCode;
         ExecutionException caught;
@@ -591,7 +595,7 @@ public class ExecuteLegacyTest {
             CommandLine.call(new MyCallable(), "-x abc");
             fail("Expected exception");
         } catch (ExecutionException ex) {
-            String cmd = ex.getCommandLine().getCommand().toString();
+            String cmd = ((Object) ex.getCommandLine().getCommand()).toString();
             String msg = "Error while calling command (" + cmd + "): java.lang.IllegalStateException: this is a test";
             assertEquals(msg, ex.getMessage());
         }

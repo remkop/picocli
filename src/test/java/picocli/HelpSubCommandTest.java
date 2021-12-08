@@ -111,7 +111,7 @@ public class HelpSubCommandTest {
                 new Help.ColorScheme.Builder(CommandLine.Help.defaultColorScheme(Help.Ansi.ON))
                         .commands(Help.Ansi.Style.underline)
                         .build()); // add underline
-        
+
         String expected = Help.Ansi.ON.new Text(String.format("" +
                 "Usage: @|bold,underline top|@ [COMMAND]%n" +
                 "top level command%n" +
@@ -139,8 +139,8 @@ public class HelpSubCommandTest {
         assertEquals(expected, baos.toString());
     }
 
-    @SuppressWarnings("deprecation")
     @Command(name = "customHelp", helpCommand = true)
+    @SuppressWarnings("deprecation")
     static class LegacyCustomHelpCommand implements IHelpCommandInitializable, Runnable {
         private CommandLine helpCommandLine;
         private Help.Ansi ansi;
