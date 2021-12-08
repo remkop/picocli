@@ -45,7 +45,7 @@ class TestingClass {
 
 
 /**
- * JUnit testing class for issue 1380
+ * JUnit testing class for issue 1420
  */
 public class Issue1420Test {
 
