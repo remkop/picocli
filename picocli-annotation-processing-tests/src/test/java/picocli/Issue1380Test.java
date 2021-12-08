@@ -47,7 +47,7 @@ class TestingClassExclusiveTrue {
             return this.verbose;
         }
 
-        @Option(names = {"-j", "--json"}, description = "JSON printing", required = true)
+        @Option(names = {"-j", "--json"}, description = "JSON printing", required = false)
         private boolean json;
 
         /**
@@ -124,9 +124,10 @@ public class Issue1380Test {
         new CommandLine(new TestingClassExclusiveTrue()).usage(printStream);
 
         String returnedText = tempOut.toString();
-        String expectedText = "Usage: <main class> [[-s] | [-v] | -j]\n" +
-                "* -j, --json      JSON printing\n" +
-                "  -s, --silent    Silent mode\n" +
+        String expectedText =
+        "Usage: <main class> [-s | -v | -j]\n"+
+                "  -j, --json      JSON printing\n"+
+                "  -s, --silent    Silent mode\n"+
                 "  -v, --verbose   Verbose mode\n";
 
         assertEquals(expectedText, returnedText);

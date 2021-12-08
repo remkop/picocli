@@ -1,5 +1,6 @@
 package picocli;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
@@ -43,7 +44,7 @@ class TestingClass {
 }
 
 
-
+@Ignore
 /**
  * JUnit testing class for issue 1420
  */

@@ -8528,6 +8528,7 @@ public class CommandLine {
 
             // parser fields
             private boolean required;
+            private boolean optionIsNotRequired;
             private final boolean interactive;
             private final boolean echo;
             private final String prompt;
@@ -8580,6 +8581,7 @@ public class CommandLine {
                 annotatedElement = builder.annotatedElement;
                 defaultValue = NO_DEFAULT_VALUE.equals(builder.defaultValue) ? null : builder.defaultValue;
                 required = builder.required;
+                optionIsNotRequired = builder.optionIsNotRequired;
                 toString = builder.toString;
                 getter = builder.getter;
                 setter = builder.setter;
@@ -8634,6 +8636,13 @@ public class CommandLine {
                 } else {
                     tracer.debug("Initial value not available for %s%n", this);
                 }
+            }
+
+            /** Returns whether this is a required option or positional parameter without a default value.
+             * If this argument is part of a {@linkplain ArgGroup group}, this method returns whether this argument is required <em>within the group</em> (so it is not necessarily a required argument for the command).
+             * @see Option#required() */
+            public boolean optionIsNotRequired(){
+                return optionIsNotRequired;
             }
 
             /** Returns whether this is a required option or positional parameter without a default value.
@@ -9187,6 +9196,7 @@ public class CommandLine {
                 private String[] description;
                 private String descriptionKey;
                 private boolean required;
+                private boolean optionIsNotRequired;
                 private boolean interactive;
                 private boolean echo;
                 private String prompt;
@@ -9224,6 +9234,7 @@ public class CommandLine {
                     description = original.description;
                     descriptionKey = original.descriptionKey;
                     required = original.required;
+                    optionIsNotRequired = original.optionIsNotRequired;
                     interactive = original.interactive;
                     echo = original.echo;
                     prompt = original.prompt;
@@ -10117,26 +10128,14 @@ public class CommandLine {
                 }
                 if (exclusive) {
                     String modifiedArgs = ""; String sep = "";
-                    /**
-                     * preserved stores arg required status on map
-                     */
-                    Map<ArgSpec, Boolean> preserved = new HashMap<ArgSpec, Boolean>();
                     for (ArgSpec arg : args) {
-                        preserved.put(arg, arg.required());
                         if (!arg.required()) {
                             modifiedArgs += sep + (arg.isOption() ? ((OptionSpec) arg).longestName() : (arg.paramLabel() + "[" + ((PositionalParamSpec) arg).index() + "]"));
                             sep = ",";
+                            //Keep initial required as optionIsNotRequired for Issue#1380 https://github.com/remkop/picocli/issues/1380
+                            arg.optionIsNotRequired = true;
                             arg.required = true;
                         }
-                    }
-                    /**
-                     * Only reseting back args with required true on map rest will go for false
-                     */
-                    for (ArgSpec arg : args) {
-                        if (preserved.get(arg) != null && preserved.get(arg))
-                            arg.required = true;
-                        else
-                            arg.required = false;
                     }
                     if (modifiedArgs.length() > 0) {
                         new Tracer().info("Made %s required in the group because %s is an exclusive group.%n", modifiedArgs, synopsisUnit());
@@ -16129,7 +16128,7 @@ public class CommandLine {
                 String longOption = join(names, shortOptionCount, names.length - shortOptionCount, ", ");
                 Text longOptionText = createLongOptionText(option, paramLabelRenderer, scheme, longOption);
 
-                String requiredOption = option.required() ? requiredMarker : "";
+                String requiredOption = !option.optionIsNotRequired() && option.required() ? requiredMarker : "";
                 return renderDescriptionLines(option, scheme, requiredOption, shortOption, longOptionText);
             }
 
