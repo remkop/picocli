@@ -3229,7 +3229,7 @@ class MyApp implements Runnable {
 
     static class Outer {
         @Option(names = "-x", defaultValue = "XX") String x = "XX";
-        
+
         @ArgGroup(exclusive = "true")
         Inner inner; // no initial value
     }
@@ -3264,7 +3264,7 @@ class MyApp : Runnable {
 
     class Outer {
         @Option(names = "-x", defaultValue = "XX") var x = "XX";
-        
+
         @ArgGroup(exclusive = "true")
         lateinit var inner: Inner // no initial value
     }
@@ -9828,7 +9828,7 @@ class GreetingApp : Runnable {
     lateinit var names: Array<String>
 
     private var bundle = ResourceBundle.getBundle("mybundle")
-    
+
     override fun run() { // business logic here
         names.onEach {
             println(MessageFormat.format(bundle.getString("Hello"), it))
@@ -11479,7 +11479,7 @@ Alternatively, you can define an <<unmatched-annotation,unmatched>> field to cap
 The https://github.com/remkop/picocli/tree/master/picocli-spring-boot-starter[picocli-spring-boot-starter README] has another example of a picocli app integrated into Spring Boot.
 
 === Micronaut Example
-image:https://micronaut.io/images/micronaut_mini_copy_tm.svg[Micronaut Logo,width=350]
+image:https://avatars.githubusercontent.com/u/36880643?s=200&v=4[Micronaut Logo]
 
 The Micronaut microservices framework provides https://docs.micronaut.io/latest/guide/index.html#picocli[built-in support] for picocli with its `PicocliRunner` class.
 
@@ -12045,7 +12045,7 @@ class MyApp implements Runnable {
 @Command
 class MyApp : Runnable {
     @Spec lateinit var spec: CommandSpec
-    
+
     override fun run() {
         // make testing easier by printing to the Err and Out streams provided by picocli
         spec.commandLine().out.println("Your output is abc...")
@@ -12186,7 +12186,7 @@ class TestOutput {
 
 === Testing the Exit Code
 Testing the exit code of applications that call `System.exit` can be tricky but is not impossible.
-Depending on your programming language, your environment and your testing framework, you have several options: 
+Depending on your programming language, your environment and your testing framework, you have several options:
 
 * **Java 8**: You can use Stephan Birkner's https://github.com/stefanbirkner/system-lambda[System-Lambda] project for testing the https://github.com/stefanbirkner/system-lambda#systemexit[exit code]
 * **Java/Kotlin + Junit 5**: You can use Todd Ginsberg's https://github.com/tginsberg/junit5-system-exit[System.exit()] extension for Junit 5. The project README mentions common https://github.com/tginsberg/junit5-system-exit#use-cases[use cases].
@@ -12315,7 +12315,7 @@ fun main(args: Array<String>) : Unit = exitProcess(CommandLine(PicocliApp()).exe
 === Testing Environment Variables
 
 Since picocli offers support for using <<Variable Interpolation,environment variables>> in the annotations, you may want to test this.
-Depending on your programming language, your environment and your testing framework, you have several options: 
+Depending on your programming language, your environment and your testing framework, you have several options:
 
 * **Java 8**: You can use Stephan Birkner's https://github.com/stefanbirkner/system-lambda[System-Lambda] project for testing https://github.com/stefanbirkner/system-lambda#environment-variables[environment variables]
 
@@ -12581,11 +12581,11 @@ This https://asciinema.org/a/AVwA19yijKRNKEO0bJENN2ME3?autoplay=true&speed=2[asc
 
 === JReleaser
 
-https://jreleaser.org[JReleaser] enables several packaging options such as https://brew.sh/[Homebrew], https://chocolatey.org/[Chocolatey], 
-https://snapcraft.io/[Snapcraft], https://scoop.sh/[Scoop], https://www.jbang.dev/[jbang], https://www.docker.com/[Docker], among others. 
-Currently two different distribution  types are supported: jlink, and standard zip/tar distributions. The latter can be generated with a 
+https://jreleaser.org[JReleaser] enables several packaging options such as https://brew.sh/[Homebrew], https://chocolatey.org/[Chocolatey],
+https://snapcraft.io/[Snapcraft], https://scoop.sh/[Scoop], https://www.jbang.dev/[jbang], https://www.docker.com/[Docker], among others.
+Currently two different distribution  types are supported: jlink, and standard zip/tar distributions. The latter can be generated with a
 combination of the https://www.mojohaus.org/appassembler/appassembler-maven-plugin/[appassembler-maven-plugin] and
-http://maven.apache.org/plugins/maven-assembly-plugin/[maven-assembly-plugin] plugins if using Maven, or the 
+http://maven.apache.org/plugins/maven-assembly-plugin/[maven-assembly-plugin] plugins if using Maven, or the
 https://docs.gradle.org/current/userguide/application_plugin.html[application] plugin if using Gradle.
 
 == Picocli in Other Languages
@@ -12938,5 +12938,5 @@ libraryDependencies += "info.picocli" % "picocli" % "4.6.3-SNAPSHOT"
 === Source
 
 By using picocli in source form, you can avoid having an external dependency on picocli.
-Picocli has only one source file: link:https://github.com/remkop/picocli/blob/master/src/main/java/picocli/CommandLine.java[CommandLine.java].
+Picocli has only one source file: link:https://github.com/remkop/picocli/blob/v4.6.3-SNAPSHOT/src/main/java/picocli/CommandLine.java[CommandLine.java].
 This facilitates including picocli in your project: simply copy and paste the code of this file into a file called `CommandLine.java`, add it to your project, and enjoy!
