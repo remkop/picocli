@@ -110,12 +110,12 @@ class TestingClassExclusiveFalse {
 }
 
 /**
- * JUnit testing class for issue 1380
+ * JUnit testing class for issue 1380 // CS427 https://github.com/remkop/picocli/issues/1380
  */
 public class Issue1380Test {
 
     /**
-     * JUnit test class for issue 1380 with exclusive set to true
+     * JUnit test class for issue 1380 with exclusive set to true // CS427 https://github.com/remkop/picocli/issues/1380
      */
     @Test
     public void testingWithExclusiveTrue() {
@@ -135,7 +135,7 @@ public class Issue1380Test {
     }
 
     /**
-     * JUnit test class for issue 1380 with exclusive set to false
+     * JUnit test class for issue 1380 with exclusive set to false // CS427 https://github.com/remkop/picocli/issues/1380
      */
     @Test
     public void testingWithExclusiveFalse() {

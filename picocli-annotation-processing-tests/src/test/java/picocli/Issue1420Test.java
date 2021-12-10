@@ -46,12 +46,12 @@ class TestingClass {
 
 @Ignore
 /**
- * JUnit testing class for issue 1420
+ * JUnit testing class for issue 1420 // CS427 https://github.com/remkop/picocli/issues/1420
  */
 public class Issue1420Test {
 
     /**
-     * JUnit test class for issue 1420 with resourceBundle
+     * JUnit test class for issue 1420 with resourceBundle // CS427 https://github.com/remkop/picocli/issues/1420
      */
     @Test
     public void testingWithResourceBundle1() {
