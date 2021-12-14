@@ -38,7 +38,7 @@ dependencies {
                    "org.hibernate.validator:hibernate-validator-annotation-processor:7.0.1.Final",
                    "javax.el:javax.el-api:3.0.0",
                    "org.glassfish.web:javax.el:2.2.6"
-    implementation "org.jetbrains.kotlin:kotlin-script-runtime:1.6.0"
+    implementation "org.jetbrains.kotlin:kotlin-script-runtime:1.6.10"
 }
 tasks.withType(GroovyCompile) {
     // this, and the `configurations {ivy}` section, are a workaround for the dreaded
