@@ -27,6 +27,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#1484] Enhancement: Fixed `org.junit.Assert.assertThat` deprecation warning; Thanks to [Ross Goldberg](https://github.com/rgoldberg) for the pull request.
 * [#1485] Enhancement: Fix build warnings; build doc enhancements; Thanks to [Ross Goldberg](https://github.com/rgoldberg) for the pull request.
 * [#1483] Enhancement: Improved `AbstractCommandSpecProcessor#isSubcommand`; Thanks to [Ross Goldberg](https://github.com/rgoldberg) for the pull request.
+* [#1499] Enhancement: Improved `DefaultFactory#create(Class<T>)`. Thanks to [Ross Goldberg](https://github.com/rgoldberg) for the pull request.
 * [#1481] DOC: Removed repeated "whether" typo in JavaDoc; Thanks to [Ross Goldberg](https://github.com/rgoldberg) for the pull request.
 * [#1474] Bugfix: Avoid `UnsupportedCharsetException: cp65001` on Microsoft Windows console when code page is set to UTF-8. Thanks to [epuni](https://github.com/epuni) for raising this.
 * [#1466][#1467] Bugfix/Enhancement: Autocomplete now shows subcommand aliases in the completion candidates. Thanks to [Ruud Senden](https://github.com/rsenden) for the pull request.
