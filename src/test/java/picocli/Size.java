@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Size {
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         String device = args.length > 0 ? args[0] : "/dev/tty";
         tput_cols(device);
         stty_size(device);

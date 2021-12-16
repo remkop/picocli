@@ -18,14 +18,14 @@ public class Issue1351 {
             this.a = a;
         }
 
-        @Override
+        //@Override
         public boolean hasNext() {
             // Do something in the iterator, maybe talking to a server as was mentioned in issue 1351.
             testUsed = true;
             return this.cursor < this.a.length;
         }
 
-        @Override
+        //@Override
         public String next() {
             int i = this.cursor;
             if (i >= this.a.length) {
@@ -35,10 +35,15 @@ public class Issue1351 {
                 return this.a[i];
             }
         }
+
+        //@Override
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
     }
 
     static class MyIterable implements Iterable<String> {
-        @Override
+        //@Override
         public Iterator<String> iterator() {
             return new MyIterator(new String[]{"A", "B", "C"});
         }

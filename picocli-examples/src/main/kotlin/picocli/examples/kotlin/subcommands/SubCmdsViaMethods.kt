@@ -17,7 +17,7 @@ class SubCmdsViaMethods : Runnable  {
         description = ["country code(s) to be resolved"] ) vararg countryCodes : String)
     {
         for (code in countryCodes) {
-            println("${code.toUpperCase()}: " + Locale("", code).displayCountry)
+            println("${code.uppercase()}: " + Locale("", code).displayCountry)
         }
     }
 
@@ -26,7 +26,7 @@ class SubCmdsViaMethods : Runnable  {
         description = ["language code(s) to be resolved"] ) vararg languageCodes : String)
     {
         for (code in languageCodes) {
-            println("${code.toUpperCase()}: " + Locale(code).displayLanguage)
+            println("${code.uppercase()}: " + Locale(code).displayLanguage)
         }
     }
 

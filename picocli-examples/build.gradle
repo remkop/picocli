@@ -6,7 +6,7 @@ buildscript {
     }
 
     dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.4.31"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.6.10"
     }
 }
 
@@ -25,20 +25,20 @@ dependencies {
     api rootProject
     api project(':picocli-groovy')
     api "org.jetbrains.kotlin:kotlin-stdlib"
-    api 'org.scala-lang:scala-library:2.13.3'
+    api 'org.scala-lang:scala-library:2.13.7'
     ivy            "org.apache.ivy:ivy:$ivyVersion" // for Intelli/J
     implementation "org.codehaus.groovy:groovy-all:$groovyVersion",
                    "org.apache.ivy:ivy:$ivyVersion", // for Intelli/J
                    // for the Logging example
-                   "org.apache.logging.log4j:log4j-api:2.13.0",
-                   "org.apache.logging.log4j:log4j-core:2.13.0",
+                   "org.apache.logging.log4j:log4j-api:2.16.0",
+                   "org.apache.logging.log4j:log4j-core:2.16.0",
                    // for the JSR-380 BeanValidation example
-                   "javax.validation:validation-api:2.0.0.Final",
-                   "org.hibernate.validator:hibernate-validator:6.1.2.Final",
-                   "org.hibernate.validator:hibernate-validator-annotation-processor:6.1.2.Final",
+                   "javax.validation:validation-api:2.0.1.Final",
+                   "org.hibernate.validator:hibernate-validator:7.0.1.Final",
+                   "org.hibernate.validator:hibernate-validator-annotation-processor:7.0.1.Final",
                    "javax.el:javax.el-api:3.0.0",
                    "org.glassfish.web:javax.el:2.2.6"
-    implementation "org.jetbrains.kotlin:kotlin-script-runtime:1.4.31"
+    implementation "org.jetbrains.kotlin:kotlin-script-runtime:1.6.10"
 }
 tasks.withType(GroovyCompile) {
     // this, and the `configurations {ivy}` section, are a workaround for the dreaded

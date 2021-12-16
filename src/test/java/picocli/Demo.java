@@ -55,7 +55,7 @@ import java.util.jar.Manifest;
         //descriptionHeading = "@|bold %nDescription|@:%n",
         description = {
                 "",
-                "Demonstrates picocli subcommands parsing and usage help.", },
+                "Demonstrates picocli subcommands parsing and usage help." },
         versionProvider = Demo.ManifestVersionProvider.class,
         optionListHeading = "@|bold %nOptions|@:%n",
         footer = {
@@ -430,8 +430,8 @@ public class Demo implements Runnable {
         List<CommandLine> parsed = commandLine.parse(args);
         assert parsed.size() == 2 : "found 2 commands";
 
-        assert parsed.get(0).getCommand().getClass() == Git.class;
-        assert parsed.get(1).getCommand().getClass() == GitStatus.class;
+        assert ((Object) parsed.get(0).getCommand()).getClass() == Git.class;
+        assert ((Object) parsed.get(1).getCommand()).getClass() == GitStatus.class;
 
         Git git = (Git) parsed.get(0).getCommand();
         assert git.gitDir.equals(new File("/home/rpopma/picocli"));

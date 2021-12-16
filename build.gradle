@@ -1,7 +1,4 @@
-import java.nio.file.Files
-import java.nio.file.Paths
 import aQute.bnd.gradle.Bundle
-import aQute.bnd.gradle.Baseline
 
 group 'info.picocli'
 description 'Java command line parser with both an annotations API and a programmatic API. Usage help with ANSI styles and colors. Autocomplete. Nested subcommands. Easily included as source to avoid adding a dependency.'
@@ -10,29 +7,23 @@ ext.moduleName = 'info.picocli'
 
 buildscript {
     repositories {
-        jcenter()
-        maven {
-            url "https://plugins.gradle.org/m2/"
-        }
+        gradlePluginPortal()
         mavenCentral()
     }
 
     dependencies {
         classpath "org.asciidoctor:asciidoctor-gradle-jvm:$asciidoctorGradlePluginVersion"
-        classpath 'org.asciidoctor:asciidoctorj-pdf:1.5.4'
-        classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:$gradleBintrayPluginVersion"
-        classpath "gradle.plugin.org.beryx:badass-jar:1.1.3"
-        classpath 'biz.aQute.bnd:biz.aQute.bnd.gradle:5.1.2'
+        classpath 'org.asciidoctor:asciidoctorj-pdf:1.6.0'
+        classpath "gradle.plugin.org.beryx:badass-jar:1.2.0"
+        classpath 'biz.aQute.bnd:biz.aQute.bnd.gradle:6.1.0'
+        classpath "io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.30.0"
     }
 }
 
-apply plugin: 'org.asciidoctor.jvm.convert' // version '3.3.2'
-apply plugin: 'distribution'
-apply plugin: 'maven-publish'
-apply plugin: 'com.jfrog.bintray'
 apply plugin: "org.beryx.jar"
+apply plugin: 'io.codearte.nexus-staging'
 
-if (System.getenv('BINTRAY_USER')) { // on home system
+if (System.getenv('MAVEN_OSS_USER')) { // on home system
     apply plugin: 'biz.aQute.bnd.builder'
 } else {
     try { // otherwise, only apply if available
@@ -64,28 +55,22 @@ pluginManager.withPlugin('biz.aQute.bnd.builder') { // if plugin applied, execut
     }
 }
 
-pluginManager.withPlugin('org.asciidoctor.jvm.convert') { // if plugin applied, execute this action
-    configurations {
-        tabbedCodeExt
-    }
-    dependencies {
-        tabbedCodeExt "com.bmuschko:asciidoctorj-tabbed-code-extension:0.3"
-    }
-}
 
 allprojects {
     apply plugin: 'java'
     apply plugin: 'java-library' // to avoid https://github.com/gradle/gradle/issues/1118
-    sourceCompatibility = !org.gradle.api.JavaVersion.current().isJava9Compatible() ?
-            1.5 : org.gradle.api.JavaVersion.current().isJava11Compatible() ? 1.7 : 1.6
-    targetCompatibility = !org.gradle.api.JavaVersion.current().isJava9Compatible() ?
-            1.5 : org.gradle.api.JavaVersion.current().isJava11Compatible() ? 1.7 : 1.6
+
+    sourceCompatibility = !JavaVersion.current().isJava9Compatible() ?
+            1.5 : JavaVersion.current().isJava11Compatible() ? 1.7 : 1.6
+    targetCompatibility = !JavaVersion.current().isJava9Compatible() ?
+            1.5 : JavaVersion.current().isJava11Compatible() ? 1.7 : 1.6
 
     compileJava.options.encoding = "UTF-8"
     compileTestJava.options.encoding = "UTF-8"
 
     repositories {
-        jcenter()
+        maven { url 'https://repo.spring.io/libs-snapshot' }
+        mavenCentral()
     }
 
     configurations.all {
@@ -106,9 +91,7 @@ allprojects {
         options.compilerArgs << '-Xlint:unchecked' << '-Xlint:deprecation'
     }
 
-    javadoc {
-        destinationDir   = file("build/docs/apidocs")
-    }
+    javadoc.destinationDir = file("build/docs/apidocs")
     javadoc.options.addStringOption('Xdoclint:none', '-quiet')
 
     // work around https://github.com/gradle/gradle/issues/4046
@@ -118,84 +101,13 @@ allprojects {
         into 'build/docs/apidocs'
         include '**/doc-files/*.*'
     }
-
-    task javadocJar(type: Jar, dependsOn: javadoc) {
-        classifier = 'javadoc'
-        from javadoc.destinationDir
-    }
-    task testJar(type: Jar, dependsOn: compileTestJava) {
-        from sourceSets.test.output
-        classifier = 'tests'
-    }
-    task sourcesJar(type: Jar) {
-        from sourceSets.main.java.srcDirs
-        classifier = 'sources'
-    }
-    task testSourcesJar(type: Jar) {
-        from sourceSets.test.java.srcDirs
-        classifier = 'test-sources'
-    }
-    artifacts {
-        archives javadocJar
-        archives sourcesJar
-        archives testSourcesJar
-        archives testJar
-        archives jar
-    }
-    tasks.withType(GenerateModuleMetadata) {
-        enabled = false // fix for https://github.com/remkop/picocli/issues/1152
-    }
-    distributions {
-        main {
-            distributionBaseName = "$archivesBaseName-all"
-            contents {
-                from jar
-                from sourcesJar
-                from testJar
-                from testSourcesJar
-                from javadocJar
-                from ('LICENSE')
-                from ("$rootDir/RELEASE-NOTES.md")
-            }
-        }
-    }
-
-    ext {
-        bintrayUsername   = System.getenv('BINTRAY_USER')
-        bintrayApiKey     = System.getenv('BINTRAY_KEY')
-        mavenOssUser      = System.getenv('MAVEN_OSS_USER')
-        mavenOssPassword  = System.getenv('MAVEN_OSS_PASSWORD')
-        
-        // pom configuration for MavenPublication, as per https://docs.gradle.org/current/userguide/publishing_maven.html#sec:modifying_the_generated_pom
-        pomConfig = {
-            licenses {
-                license {
-                    name = "The Apache Software License, version 2.0"
-                    url = "http://www.apache.org/licenses/LICENSE-2.0.txt"
-                    distribution = "repo"
-                }
-            }
-            developers {
-                developer {
-                    id = "rpopma"
-                    name = "Remko Popma"
-                    email = "rpopma@apache.org"
-                }
-            }
-            scm {
-                url = "https://github.com/remkop/picocli/tree/master"
-                connection = 'scm:git:https://github.com/remkop/picocli.git'
-                developerConnection = 'scm:git:ssh://github.com:remkop/picocli.git'
-            }
-        }
-    }
 }
 
 sourceSets.main.java.srcDirs = ['src/main/java', 'src/main/java9']
 compileJava {
     inputs.property("moduleName", moduleName)
     doFirst {
-        if (org.gradle.api.JavaVersion.current().isJava9Compatible()) {
+        if (JavaVersion.current().isJava9Compatible()) {
             options.compilerArgs = [
                     '--module-path', classpath.asPath,
             ]
@@ -218,277 +130,31 @@ jar {
     multiRelease = true
 }
 
-Map<org.gradle.api.JavaVersion, String> linkMap = org.gradle.api.JavaVersion.values().collectEntries { version -> 
-        [(version) : 'https://docs.oracle.com/javase/8/docs/api/']
-}
-linkMap.remove(org.gradle.api.JavaVersion.VERSION_HIGHER)
-for (int i = 12; i < 20; i++) { try { linkMap.remove(org.gradle.api.JavaVersion.valueOf("VERSION_$i")); } catch (Exception ignored) {} }
-linkMap << [(org.gradle.api.JavaVersion.VERSION_1_9)  : 'https://docs.oracle.com/javase/9/docs/api/']
-linkMap << [(org.gradle.api.JavaVersion.VERSION_1_10) : 'https://docs.oracle.com/javase/10/docs/api/']
-linkMap << [(org.gradle.api.JavaVersion.VERSION_11)   : 'https://docs.oracle.com/en/java/javase/11/docs/api/']
-
-javadoc.options.overview = "src/main/java/overview.html"
-javadoc.options.links += [
-        linkMap.get(org.gradle.api.JavaVersion.current(), 'https://docs.oracle.com/en/java/javase/12/docs/api/'),
-]
-//javadoc.options.linksOffline linkMap.get(org.gradle.api.JavaVersion.current(), 'https://docs.oracle.com/en/java/javase/12/docs/api/'), 'gradle/javadocs/jdk/9/'
-
-javadoc {
-    options.encoding = 'UTF-8'
-    //logger.warn(sourceSets.main.allJava.sourceDirectories.files.toString())
-    File javadocExe = new File((String) System.getenv("JAVA_11_HOME@@@"), "bin/javadoc.exe")
-    if (javadocExe.exists()) {
-        executable = javadocExe
-        javadoc.options.links = [ 'https://docs.oracle.com/en/java/javase/11/docs/api/' ]
-        inputs.property("moduleName", moduleName)
-        options.addStringOption('-module', moduleName)
-        //source(sourceSets.main.java)
-        source = sourceSets.main.allJava
-        options.addStringsOption("-module-source-path", ";").setValue(["C:\\Users\\remko\\IdeaProjects\\picocli3\\src\\main\\java", "C:\\Users\\remko\\IdeaProjects\\picocli3\\src\\main\\java9"])
-        options.addStringOption('-module-path', classpath.asPath)
-        options.addBooleanOption('-frames')
-    }
-}
-javadoc.dependsOn(jar)
-javadoc.dependsOn('asciidoctor')
-asciidoctorj {
-    version = '2.4.3'
-}
-asciidoctor {
-    sourceDir = file('docs')
-    outputDir = file('build/docs')
-    logDocuments = true
-    configurations 'tabbedCodeExt'
-    baseDirFollowsSourceDir()
-//    backends 'pdf', 'html'
-//    attributes 'sourcedir': file('docs') //project.sourceSets.main.java.srcDirs[0]
-////    attributes 'pdf-stylesdir': 'theme',
-////               'pdf-style': 'custom',
-////               'sourcedir': file('docs') //project.sourceSets.main.java.srcDirs[0]
-}
 // jacoco 0.8.2 does not work with Java 13; gradle 4.x has no JavaVersion enum value for Java 12
-if (org.gradle.api.JavaVersion.current().isJava11Compatible()) {
-    project.logger.lifecycle("skipping jacoco test for Java version ${org.gradle.api.JavaVersion.current()}")
+if (JavaVersion.current().isJava11Compatible()) {
+    project.logger.lifecycle("skipping jacoco test for Java version ${JavaVersion.current()}")
 } else {
-    project.logger.lifecycle("applying jacoco build file for Java version ${org.gradle.api.JavaVersion.current()}")
+    project.logger.lifecycle("applying jacoco build file for Java version ${JavaVersion.current()}")
     apply from: "gradle/jacoco.gradle"
 }
-task bumpReadmeVersion {
-    doLast {
-        // README.md
-        ant.replaceregexp(match: "$projectPreviousReleaseVersion", replace: "$version", flags: 'g', byline: true, encoding: 'UTF8') {
-            fileset(dir: '.',                              includes: 'README.md')
-            fileset(dir: './picocli-codegen/',             includes: 'README.adoc')
-            fileset(dir: './picocli-groovy/',              includes: 'README.md')
-            fileset(dir: './picocli-shell-jline2/',        includes: 'README.md')
-            fileset(dir: './picocli-shell-jline3/',        includes: 'README.md')
-            fileset(dir: './picocli-spring-boot-starter/', includes: 'README.md')
-            fileset(dir: './picocli-examples/annotation-processing/') {
-                include(name: '**/pom.xml')
-                include(name: '**/build.gradle')
-            }
-            fileset(dir: './picocli-examples/generate-man-pages/') {
-                include(name: '**/pom.xml')
-                include(name: '**/build.gradle')
-            }
-            //fileset(dir: './picocli-examples/src/main/groovy/', includes: '**/*.groovy')
-        }
+
+if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_18)) {
+    // https://github.com/remkop/picocli/issues/1503
+    test { // explicitly enable security manager on Java 18 for System.exit tests
+        systemProperty "java.security.manager", "allow"
     }
-}
-task bumpVersion {
-    doLast {
-        ant.replaceregexp(match: "$projectPreviousVersionRegex", replace: "$version", flags: 'g', byline: true, encoding: 'UTF8') {
-            fileset(dir: 'src/main/java/picocli', includes: 'CommandLine.java')
-            fileset(dir: 'src/test/java/picocli', includes: 'CommandLineTest.java')
-            fileset(dir: 'src/main/java/picocli', includes: 'AutoComplete.java')
-            fileset(dir: 'src/test/java/picocli', includes: 'AutoCompleteTest.java')
-            fileset(dir: 'picocli-codegen/src/main/java/picocli/codegen/aot/graalvm', includes: 'DynamicProxyConfigGenerator.java')
-            fileset(dir: 'picocli-codegen/src/main/java/picocli/codegen/aot/graalvm', includes: 'JniConfigGenerator.java')
-            fileset(dir: 'picocli-codegen/src/main/java/picocli/codegen/aot/graalvm', includes: 'ReflectionConfigGenerator.java')
-            fileset(dir: 'picocli-codegen/src/main/java/picocli/codegen/aot/graalvm', includes: 'ResourceConfigGenerator.java')
-            fileset(dir: 'picocli-codegen/src/main/java/picocli/codegen/docgen/manpage', includes: 'ManPageGenerator.java')
-        }
-        ant.replaceregexp(match: "version $projectPreviousVersionRegex", replace: "version $version", flags: 'g', byline: true, encoding: 'UTF8') {
-            fileset(dir: 'src/test/java/picocli', includes: 'AutoCompleteTest.java')
-        }
-        // Doc header
-        ant.replaceregexp(match: ":revnumber: $projectPreviousVersionRegex", replace: ":revnumber: $version", flags: 'g', byline: true, encoding: 'UTF8') {
-            fileset(dir: 'docs', includes: 'index.adoc')
-            fileset(dir: 'docs', includes: 'quick-guide.adoc')
-            fileset(dir: 'docs', includes: 'autocomplete.adoc')
-            fileset(dir: 'docs', includes: 'picocli-programmatic-api.adoc')
-        }
-        // Annotation Processor section
-        ant.replaceregexp(match: ":picocli-codegen:$projectPreviousVersionRegex", replace: ":picocli-codegen:$version", flags: 'g', byline: true, encoding: 'UTF8') {
-            fileset(dir: 'docs', includes: 'index.adoc')
-        }
-        // Groovy section
-        ant.replaceregexp(match: ":picocli-groovy:$projectPreviousVersionRegex", replace: ":picocli-groovy:$version", flags: 'g', byline: true, encoding: 'UTF8') {
-            fileset(dir: 'docs', includes: 'index.adoc')
-        }
-        // Spring Boot section
-        ant.replaceregexp(match: ":picocli-spring-boot-starter:$projectPreviousVersionRegex", replace: ":picocli-spring-boot-starter:$version", flags: 'g', byline: true, encoding: 'UTF8') {
-            fileset(dir: 'docs', includes: 'index.adoc')
-        }
-        // Downloads section, Gradle
-        ant.replaceregexp(match: ":picocli:$projectPreviousVersionRegex", replace: ":picocli:$version", flags: 'g', byline: true, encoding: 'UTF8') {
-            fileset(dir: 'docs', includes: 'index.adoc')
-        }
-        // Downloads section, Maven
-        ant.replaceregexp(match: "<version>$projectPreviousVersionRegex</version>", replace: "<version>$version</version>", flags: 'g', byline: true, encoding: 'UTF8') {
-            fileset(dir: 'docs', includes: 'index.adoc')
-        }
-        // Downloads section, SBT
-        ant.replaceregexp(match: "\"picocli\" % \"$projectPreviousVersionRegex\"", replace: "\\\"picocli\\\" % \\\"$version\\\"", flags: 'g', byline: true, encoding: 'UTF8') {
-            fileset(dir: 'docs', includes: 'index.adoc')
-        }
-        // Downloads section, Ivy
-        ant.replaceregexp(match: "rev=\"$projectPreviousVersionRegex\"", replace: "rev=\\\"$version\\\"", flags: 'g', byline: true, encoding: 'UTF8') {
-            fileset(dir: 'docs', includes: 'index.adoc')
-        }
-        // Downloads section, Grape
-        ant.replaceregexp(match: "module='picocli', version=\'$projectPreviousVersionRegex\'\\)", replace: "module='picocli', version=\'$version\')", flags: 'g', byline: true, encoding: 'UTF8') {
-            fileset(dir: 'docs', includes: 'index.adoc')
-        }
-        // Downloads section, Leiningen
-        ant.replaceregexp(match: "info.picocli/picocli \"$projectPreviousVersionRegex\"", replace: "info.picocli/picocli \"$version\"", flags: 'g', byline: true, encoding: 'UTF8') {
-            fileset(dir: 'docs', includes: 'index.adoc')
-        }
-        // Downloads section, Buildr
-        ant.replaceregexp(match: "info.picocli:picocli:jar:$projectPreviousVersionRegex", replace: "info.picocli:picocli:jar:$version", flags: 'g', byline: true, encoding: 'UTF8') {
-            fileset(dir: 'docs', includes: 'index.adoc')
-        }
-        // Running the Application and Packaging sections
-        ant.replaceregexp(match: "picocli-${projectPreviousVersionRegex}.jar", replace: "picocli-${version}.jar", flags: 'g', byline: true, encoding: 'UTF8') {
-            fileset(dir: 'docs', includes: 'index.adoc')
-            fileset(dir: 'docs', includes: 'quick-guide.adoc')
-        }
-        ant.replaceregexp(match: releaseDatePreviousRegex, replace: releaseDate, flags: 'g', byline: true, encoding: 'UTF8') {
-            fileset(dir: 'docs', includes: 'index.adoc')
-            fileset(dir: 'docs', includes: 'quick-guide.adoc')
-            fileset(dir: 'docs', includes: 'autocomplete.adoc')
-            fileset(dir: 'docs', includes: 'picocli-programmatic-api.adoc')
-            fileset(dir: 'picocli-codegen', includes: 'README.adoc')
-        }
-    }
-}
-task copyCodeGenDocs(type: Copy) {
-    from('build/docs/man/') { include 'index.html' }
-    from('picocli-codegen/build/docs/html5/') { include '*.html' }
-    into 'docs/man'
-}
-task copyDocs(type: Copy) {
-    dependsOn(copyCodeGenDocs)
-    from('build/docs/')
-    into 'docs'
 }
 
-allprojects {
-    ext {
-        bintrayDryRun     = false //[Default: false] Whether to run this as dry-run, without deploying
-        bintrayPublish    = true //[Default: false] Whether version should be auto published after an upload 
-        bintrayOverride   = false //[Default: false] Whether to override version artifacts already published   
-        mavenOssSync      = true //[Default: true] Determines whether to sync the version to Maven Central.
-    }
-}
+// javadoc and asciidoc customization
+apply from: "${rootProject.projectDir}/gradle/docs.gradle"
+
+// publishing-related
 ext {
-    bintrayPackage    = 'picocli'
-    bintrayWebsiteUrl = 'http://picocli.info'
-    bintrayLabels     = ['cli', 'cli framework', 'java', 'command line', 'ergonomic', 'library', 'parser', 'ansi', 'colors', 'annotations', 'reflection', 'usage', 'help', 'customizable', 'stand-alone application', 'main method', 'picocli']
+    PUBLISH_GROUP_ID = group
+    PUBLISH_ARTIFACT_ID = project.name
+    PUBLISH_VERSION = "$projectVersion"
 }
-bintray {
-    user = bintrayUsername
-    key  = bintrayApiKey
-    publications = ['MyPublication']
-    dryRun   = bintrayDryRun //[Default: false] Whether to run this as dry-run, without deploying
-    publish  = bintrayPublish //[Default: false] Whether version should be auto published after an upload    
-    override = bintrayOverride //[Default: false] Whether to override version artifacts already published    
-    //Package configuration. The plugin will use the repo and name properties to check if the package already exists. In that case, there's no need to configure the other package properties (like userOrg, desc, etc).
-    pkg {
-        repo     = 'picocli'
-        name     = bintrayPackage
-        userOrg  = 'remkop'
-        licenses = ['Apache-2.0']
-        desc = description
-        websiteUrl = bintrayWebsiteUrl
-        issueTrackerUrl = 'https://github.com/remkop/picocli/issues'
-        vcsUrl   = 'https://github.com/remkop/picocli.git'
-        labels = bintrayLabels
-        publicDownloadNumbers = false
-        githubRepo = 'remkop/picocli' //Optional Github repository
-        githubReleaseNotesFile = 'RELEASE-NOTES.md' //Optional Github readme file
-        version {
-            name     = "$projectVersion"
-            desc     = description
-            released = new Date()
-            vcsTag   = "v$projectVersion"
-            mavenCentralSync {
-                sync = mavenOssSync //[Default: true] Determines whether to sync the version to Maven Central.
-                user = mavenOssUser //OSS user token: mandatory
-                password = mavenOssPassword //OSS user password: mandatory
-                close = '1' //Optional property. By default the staging repository is closed and artifacts are released to Maven Central. You can optionally turn this behaviour off (by puting 0 as value) and release the version manually.
-            }
-        }
-    }
-}
-publishing {
-    publications {
-        MyPublication(MavenPublication) {
-            from components.java
-            artifact sourcesJar
-            artifact testJar
-            artifact testSourcesJar
-            artifact javadocJar
-            groupId 'info.picocli'
-            artifactId bintrayPackage
-            version "$projectVersion"
-            pom {
-                packaging = 'jar'
-                name = 'picocli - a mighty tiny Command Line Interface'
-                description = project.description
-                url = 'http://picocli.info'
-                inceptionYear = '2017'
-            }
-            pom pomConfig
-        }
-    }
-}
+apply from: "${rootProject.projectDir}/gradle/publish-mavencentral.gradle"
 
-/*
-Release procedure:
-1. edit version numbers: remove -SNAPSHOT classifier; edit releaseDate
-2. gradlew bumpVersion
-3. check modified files
-4. gradlew clean build
-5. gradlew copyDocs
-6. update RELEASE-NOTES.md
-7. gradlew bumpReadmeVersion
-7a update README.md (latest version, release notes)
-8. commit -m "Release picocli version ..."
-9. tag v$version
-10. gradlew bintrayUpload - to publish to bintray.com
-
-11. edit version numbers: increase minor version and add -SNAPSHOT classifier
-12. gradlew bumpVersion
-13. check modified files
-14. commit -m "Prepare for next development cycle"
-15. push (make sure that Push Tags is checked)
-
-16. Log in to GitHub, go to https://github.com/remkop/picocli/releases
-17. Click the new tag, click Edit button, update title and release notes (copy from RELEASE-NOTES.md)
-18. Upload picocli-$version.jar and picocli-all$version.zip to GitHub
-
-19. Log in to Bintray
-20. Navigate to the page for the new version
-21. Edit version: Publication Date, Description, VCS tag, GitHub release notes file (RELEASE-NOTES.md)
-22. On the version page, Release Notes tab, select GitHub File
-23. Publish artifacts to JCenter
-24. On the version page, Maven Central tab, sync to Maven (takes several minutes)
-
-(When releasing from branch)
-25. Switch to master
-26. cherry-pick the "Release picocli version ..." commit
-27. gradlew bumpVersion
-28. check modified files
-29. commit -m "Update master for next development cycle after release x.x (from branch x.x)"
-*/
+// release-related custom gradle tasks and release procedure steps
+apply from: "${rootProject.projectDir}/gradle/release-tasks.gradle"

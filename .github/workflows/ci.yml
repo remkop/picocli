@@ -1,0 +1,52 @@
+name: Build
+on: [ push, pull_request ]
+
+jobs:
+  build-java-8-plus:
+    strategy:
+      matrix:
+        java-version: [ 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18-ea ]
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Validate Gradle Wrapper
+        uses: gradle/wrapper-validation-action@v1
+
+      - name: Configure JDK ${{ matrix.java-version }}
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'zulu'
+          java-version: ${{ matrix.java-version }}
+          cache: gradle
+
+      - name: Build
+        run: ./gradlew build --no-daemon
+
+  build-java-6-7:
+    strategy:
+      matrix:
+        java-version: [ 6, 7 ]
+        os: [ubuntu-latest, windows-latest]
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Configure JDK ${{ matrix.java-version }}
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'zulu'
+          java-version: ${{ matrix.java-version }}
+          cache: gradle
+
+      - name: Build
+        uses: gradle/gradle-build-action@v2
+        with:
+          gradle-version: 1.12
+          build-root-directory: picocli-legacy-tests/
+          arguments: clean build --no-daemon

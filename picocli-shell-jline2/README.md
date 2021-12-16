@@ -37,7 +37,7 @@ get command line TAB auto-completion for a picocli-based application running in 
 <dependency>
     <groupId>info.picocli</groupId>
     <artifactId>picocli-shell-jline2</artifactId>
-    <version>4.6.1</version>
+    <version>4.6.2</version>
 </dependency>
 ```
 
@@ -223,7 +223,7 @@ public class InteractiveParameterConsumer implements IParameterConsumer {
                         .format("Enter %s: ", argSpec.paramLabel()), '\0'));
         } catch (IOException e) {
             throw new CommandLine.ParameterException(commandSpec.commandLine()
-                    , "Error while reading interactivly", e, argSpec, "");
+                    , "Error while reading interactively", e, argSpec, "");
         }
     }
 }

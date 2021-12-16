@@ -799,4 +799,18 @@ public class AtFileTest {
 
         assertEquals(Arrays.asList("1111", "-v", "2222", ";3333"), parseResult.expandedArgs());
     }
+
+    @Ignore
+    @Test
+    public void testIssue1457() {
+        class Issue1457 {
+            @Option(names = { "-p" })
+            String prefix = "";
+        }
+        File atFile = findFile("/argfile-issue1457.txt");
+        Issue1457 obj = new Issue1457();
+        CommandLine cmd = new CommandLine(obj);
+        cmd.parseArgs("@" + atFile.getAbsolutePath());
+        assertEquals("PREFIX", obj.prefix);
+    }
 }

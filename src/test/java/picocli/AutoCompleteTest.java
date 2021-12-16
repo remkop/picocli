@@ -15,7 +15,6 @@
  */
 package picocli;
 
-import org.hamcrest.CoreMatchers;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.Assertion;
@@ -50,8 +49,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.ListResourceBundle;
-import java.util.PropertyResourceBundle;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
@@ -66,6 +63,10 @@ import static org.junit.Assert.*;
 // http://hayne.net/MacDev/Notes/unixFAQ.html#shellStartup
 // https://apple.stackexchange.com/a/13019
 public class AutoCompleteTest {
+
+    @Rule
+    public final ExpectedSystemExit exit = ExpectedSystemExit.none();
+
     @Rule
     public final ProvideSystemProperty ansiOFF = new ProvideSystemProperty("picocli.ansi", "false");
     // allows tests to set any kind of properties they like, without having to individually roll them back
@@ -77,9 +78,6 @@ public class AutoCompleteTest {
 
     @Rule
     public final SystemOutRule systemOutRule = new SystemOutRule().enableLog().muteForSuccessfulTests();
-
-    @Rule
-    public final ExpectedSystemExit exit = ExpectedSystemExit.none();
 
     public static class BasicExample implements Runnable {
         @Option(names = {"-u", "--timeUnit"}) private TimeUnit timeUnit;
@@ -120,30 +118,30 @@ public class AutoCompleteTest {
     static class Candidates extends ArrayList<String> {
         Candidates() {super(Arrays.asList("aaa", "bbb", "ccc"));}
     }
-    @Command(description = "First level subcommand 1")
+    @Command(description = "First level subcommand 1", aliases = {"sub1-alias"})
     public static class Sub1 {
         @Option(names = "--num", description = "a number") double number;
         @Option(names = "--str", description = "a String") String str;
         @Option(names = "--candidates", completionCandidates = Candidates.class, description = "with candidates") String[] str2;
     }
-    @Command(description = "First level subcommand 2")
+    @Command(description = "First level subcommand 2", aliases = {"sub2-alias"})
     public static class Sub2 {
         @Option(names = "--num2", description = "another number") int number2;
         @Option(names = {"--directory", "-d"}, description = "a directory") File[] directory;
         @Parameters(arity = "0..1") Possibilities possibilities;
     }
-    @Command(description = "Second level sub-subcommand 1")
+    @Command(description = "Second level sub-subcommand 1", aliases = {"sub2child1-alias"})
     public static class Sub2Child1 {
         @Option(names = {"-h", "--host"}, description = "a host") List<InetAddress> host;
     }
-    @Command(description = "Second level sub-subcommand 2")
+    @Command(description = "Second level sub-subcommand 2", aliases = {"sub2child2-alias"})
     public static class Sub2Child2 {
         @Option(names = {"-u", "--timeUnit"}) private TimeUnit timeUnit;
         @Option(names = {"-t", "--timeout"}) private long timeout;
         @Parameters(completionCandidates = Candidates.class, description = "with candidates") String str2;
     }
 
-    @Command(description = "Second level sub-subcommand 3")
+    @Command(description = "Second level sub-subcommand 3", aliases = {"sub2child3-alias"})
     public static class Sub2Child3 {
         @Parameters(index = "1..2") File[] files;
         @Parameters(index = "3..*") List<InetAddress> other;
@@ -303,7 +301,7 @@ public class AutoCompleteTest {
             "%n" +
             "Example%n" +
             "-------%n" +
-            "  java -cp \"myapp.jar;picocli-4.6.2-SNAPSHOT.jar\" \\%n" +
+            "  java -cp \"myapp.jar;picocli-4.6.3-SNAPSHOT.jar\" \\%n" +
             "              picocli.AutoComplete my.pkg.MyClass%n");
 
     @Test
@@ -779,6 +777,7 @@ public class AutoCompleteTest {
                 "      return\n" +
                 "      ;;\n" +
                 "    -o|--completionScript)\n" +
+                "      local IFS=$'\\n'\n" +
                 "      compopt -o filenames\n" +
                 "      COMPREPLY=( $( compgen -f -- \"${curr_word}\" ) ) # files\n" +
                 "      return $?\n" +
@@ -1082,13 +1081,13 @@ public class AutoCompleteTest {
         spec.parser().collectErrors(true);
         int cur = 500;
 
-        test(spec, a(),                                       0, 0, cur, l("--help", "--version", "-V", "-h", "sub1", "sub2"));
-        test(spec, a("-"),                                    0, 0, cur, l("--help", "--version", "-V", "-h", "sub1", "sub2"));
+        test(spec, a(),                                       0, 0, cur, l("--help", "--version", "-V", "-h", "sub1", "sub1-alias", "sub2", "sub2-alias"));
+        test(spec, a("-"),                                    0, 0, cur, l("--help", "--version", "-V", "-h", "sub1", "sub1-alias", "sub2", "sub2-alias"));
         test(spec, a("-"),                                    0, 1, cur, l("-help", "-version", "V", "h"));
         test(spec, a("-h"),                                   0, 1, cur, l("-help", "-version", "V", "h"));
         test(spec, a("-h"),                                   0, 2, cur, l(""));
-        test(spec, a("s"),                                    0, 1, cur, l("ub1", "ub2"));
-        test(spec, a("sub1"),                                 0, 0, cur, l("--help", "--version", "-V", "-h", "sub1", "sub2"));
+        test(spec, a("s"),                                    0, 1, cur, l("ub1", "ub1-alias", "ub2", "ub2-alias"));
+        test(spec, a("sub1"),                                 0, 0, cur, l("--help", "--version", "-V", "-h", "sub1", "sub1-alias", "sub2", "sub2-alias"));
         test(spec, a("sub1"),                                 1, 0, cur, l("--candidates", "--num", "--str"));
         test(spec, a("sub1", "-"),                            1, 0, cur, l("--candidates", "--num", "--str"));
         test(spec, a("sub1", "-"),                            1, 1, cur, l("-candidates", "-num", "-str"));
@@ -1109,22 +1108,22 @@ public class AutoCompleteTest {
         test(spec, a("sub1", "--candidates", "a", "--"),      3, 2, cur, l("candidates", "num", "str"));
         test(spec, a("sub1", "--num"),                        2, 0, cur, l());
         test(spec, a("sub1", "--str"),                        2, 0, cur, l());
-        test(spec, a("sub2"),                                 1, 0, cur, l("--directory", "--num2", "-d", "Aaa", "Bbb", "Ccc", "subsub1", "subsub2"));
+        test(spec, a("sub2"),                                 1, 0, cur, l("--directory", "--num2", "-d", "Aaa", "Bbb", "Ccc", "sub2child1-alias", "sub2child2-alias", "subsub1", "subsub2"));
         test(spec, a("sub2", "-"),                            1, 1, cur, l("-directory", "-num2", "d"));
         test(spec, a("sub2", "-d"),                           2, 0, cur, l());
-        test(spec, a("sub2", "-d", "/"),                      3, 0, cur, l("--directory", "--num2", "-d", "Aaa", "Bbb", "Ccc", "subsub1", "subsub2"));
+        test(spec, a("sub2", "-d", "/"),                      3, 0, cur, l("--directory", "--num2", "-d", "Aaa", "Bbb", "Ccc", "sub2child1-alias", "sub2child2-alias", "subsub1", "subsub2"));
         test(spec, a("sub2", "-d", "/", "-"),                 3, 1, cur, l("-directory", "-num2", "d"));
         test(spec, a("sub2", "-d", "/", "--"),                3, 2, cur, l("directory", "num2"));
         test(spec, a("sub2", "-d", "/", "--n"),               3, 3, cur, l("um2"));
         test(spec, a("sub2", "-d", "/", "--num2"),            3, 6, cur, l(""));
         test(spec, a("sub2", "-d", "/", "--num2"),            4, 0, cur, l());
         test(spec, a("sub2", "-d", "/", "--num2", "0"),       4, 1, cur, l());
-        test(spec, a("sub2", "-d", "/", "--num2", "0"),       5, 0, cur, l("--directory", "--num2", "-d", "Aaa", "Bbb", "Ccc", "subsub1", "subsub2"));
-        test(spec, a("sub2", "-d", "/", "--num2", "0", "s"),  5, 1, cur, l("ubsub1", "ubsub2"));
+        test(spec, a("sub2", "-d", "/", "--num2", "0"),       5, 0, cur, l("--directory", "--num2", "-d", "Aaa", "Bbb", "Ccc", "sub2child1-alias", "sub2child2-alias", "subsub1", "subsub2"));
+        test(spec, a("sub2", "-d", "/", "--num2", "0", "s"),  5, 1, cur, l("ub2child1-alias", "ub2child2-alias", "ubsub1", "ubsub2"));
         test(spec, a("sub2", "A"),                            1, 1, cur, l("aa"));
         test(spec, a("sub2", "Aaa"),                          1, 3, cur, l(""));
-        test(spec, a("sub2", "Aaa"),                          2, 0, cur, l("--directory", "--num2", "-d", "Aaa", "Bbb", "Ccc", "subsub1", "subsub2"));
-        test(spec, a("sub2", "Aaa", "s"),                     2, 1, cur, l("ubsub1", "ubsub2"));
+        test(spec, a("sub2", "Aaa"),                          2, 0, cur, l("--directory", "--num2", "-d", "Aaa", "Bbb", "Ccc", "sub2child1-alias", "sub2child2-alias", "subsub1", "subsub2"));
+        test(spec, a("sub2", "Aaa", "s"),                     2, 1, cur, l("ub2child1-alias", "ub2child2-alias", "ubsub1", "ubsub2"));
         test(spec, a("sub2", "Aaa", "subsub1"),               3, 0, cur, l("--host", "-h"));
         test(spec, a("sub2", "subsub1"),                      2, 0, cur, l("--host", "-h"));
         test(spec, a("sub2", "subsub2"),                      2, 0, cur, l("--timeUnit", "--timeout", "-t", "-u", "aaa", "bbb", "ccc"));
@@ -1251,6 +1250,18 @@ public class AutoCompleteTest {
                         .paramLabel("_A\tB C")
                         .completionCandidates(Arrays.asList("1")).build());
         String actual = AutoComplete.bash("bashify", new CommandLine(cmd));
+        String expected = format(loadTextFromClasspath("/bashify_completion.bash"), CommandLine.VERSION);
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testBashifyWithExtras() {
+        CommandSpec cmd = CommandSpec.create().addOption(
+                OptionSpec.builder("-x")
+                        .type(String.class)
+                        .paramLabel("_A\tB C")
+                        .completionCandidates(Arrays.asList("1")).build());
+        String actual = AutoComplete.bash("./bashify.sh", new CommandLine(cmd));
         String expected = format(loadTextFromClasspath("/bashify_completion.bash"), CommandLine.VERSION);
         assertEquals(expected, actual);
     }
@@ -1896,4 +1907,35 @@ public class AutoCompleteTest {
         }
     }
 
+    @CommandLine.Command(name = "aliases", aliases = {"a"})
+    static class Issue1388AliasesCommand {}
+
+    @CommandLine.Command(name = "aliases-parent", subcommands = {Issue1388AliasesCommand.class})
+    static class Issue1388AliasesParentCommand {}
+
+    @Test
+    public void testIssue1388_AliasesCommand() throws FileNotFoundException {
+        File existingScript = new File("aliases-parent_completion");
+        if (existingScript.exists()) {
+            assertTrue(existingScript.delete());
+        }
+        try {
+            AutoComplete.main(Issue1388AliasesParentCommand.class.getName());
+
+            assertEquals("", systemErrRule.getLog());
+            assertEquals("", systemOutRule.getLog());
+
+            assertTrue("Expected file '" + existingScript.getAbsolutePath() + "' to exist",
+                    existingScript.exists());
+
+            Scanner scanner = new Scanner(existingScript);
+            scanner.useDelimiter("\\Z"); // end of file
+            String script = scanner.next();
+            scanner.close();
+            assertThat(script, containsString("local cmds0=(aliases)"));
+            assertThat(script, containsString("local cmds1=(a)"));
+        } finally {
+            existingScript.delete();
+        }
+    }
 }

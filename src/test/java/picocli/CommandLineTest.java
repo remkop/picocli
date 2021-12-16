@@ -138,7 +138,7 @@ public class CommandLineTest {
     }
     @Test
     public void testVersion() {
-        assertEquals("4.6.2-SNAPSHOT", CommandLine.VERSION);
+        assertEquals("4.6.3-SNAPSHOT", CommandLine.VERSION);
     }
     @Test
     public void testArrayPositionalParametersAreReplacedNotAppendedTo() {
@@ -1828,8 +1828,8 @@ public class CommandLineTest {
         List<CommandLine> parsed = commandLine.parse("--git-dir=/home/rpopma/picocli status -sbuno".split(" "));
         assertEquals("command count", 2, parsed.size());
 
-        assertEquals(Demo.Git.class,       parsed.get(0).getCommand().getClass());
-        assertEquals(Demo.GitStatus.class, parsed.get(1).getCommand().getClass());
+        assertEquals(Demo.Git.class,       ((Object) parsed.get(0).getCommand()).getClass());
+        assertEquals(Demo.GitStatus.class, ((Object) parsed.get(1).getCommand()).getClass());
 
         Demo.Git git = (Demo.Git) parsed.get(0).getCommand();
         assertEquals(new File("/home/rpopma/picocli"), git.gitDir);
@@ -1851,8 +1851,8 @@ public class CommandLineTest {
 
         Map<String, CommandLine> commandMap = commandLine.getSubcommands();
         assertEquals(2, commandMap.size());
-        assertTrue("cmd1", commandMap.get("cmd1").getCommand() instanceof Command1);
-        assertTrue("cmd2", commandMap.get("cmd2").getCommand() instanceof Command2);
+        assertTrue("cmd1", ((Object) commandMap.get("cmd1").getCommand()) instanceof Command1);
+        assertTrue("cmd2", ((Object) commandMap.get("cmd2").getCommand()) instanceof Command2);
     }
 
     @Test
@@ -1866,8 +1866,8 @@ public class CommandLineTest {
 
         Map<String, CommandLine> commandMap = commandLine.getSubcommands();
         assertEquals(2, commandMap.size());
-        assertTrue("cmd1", commandMap.get("CMD1").getCommand() instanceof Command1);
-        assertTrue("cmd2", commandMap.get("CMD2").getCommand() instanceof Command2);
+        assertTrue("cmd1", ((Object) commandMap.get("CMD1").getCommand()) instanceof Command1);
+        assertTrue("cmd2", ((Object) commandMap.get("CMD2").getCommand()) instanceof Command2);
     }
 
     @Test(expected = InitializationException.class)
@@ -1916,7 +1916,7 @@ public class CommandLineTest {
             CommandLine.populateCommand(new App(), "-v", "-v");
             fail("expected exception");
         } catch (OverwrittenOptionException ex) {
-            assertEquals("option '-v' (<bool>) should be specified only once", ex.getMessage());
+            assertEquals("option '-v' should be specified only once", ex.getMessage());
         }
     }
 
@@ -1936,7 +1936,7 @@ public class CommandLineTest {
             CommandLine.populateCommand(new App(), "-v", "--verbose");
             fail("expected exception");
         } catch (OverwrittenOptionException ex) {
-            assertEquals("option '--verbose' (<bool>) should be specified only once", ex.getMessage());
+            assertEquals("option '--verbose' should be specified only once", ex.getMessage());
         }
     }
 
@@ -2614,7 +2614,7 @@ public class CommandLineTest {
                     addSubcommand("sub2", new Sub2()).
                     parseArgs("sub1 -x abc".split(" "));
         } catch (ParameterException ex) {
-            assertTrue(ex.getCommandLine().getCommand() instanceof Top);
+            assertTrue(((Object) ex.getCommandLine().getCommand()) instanceof Top);
         }
         try {
             new CommandLine(new Top()).
@@ -2622,7 +2622,7 @@ public class CommandLineTest {
                     addSubcommand("sub2", new Sub2()).
                     parseArgs("-o OPT sub1 -wrong ABC".split(" "));
         } catch (ParameterException ex) {
-            assertTrue(ex.getCommandLine().getCommand() instanceof Sub1);
+            assertTrue(((Object) ex.getCommandLine().getCommand()) instanceof Sub1);
         }
         try {
             new CommandLine(new Top()).
@@ -2630,7 +2630,7 @@ public class CommandLineTest {
                     addSubcommand("sub2", new Sub2()).
                     parseArgs("-o OPT sub2 -wrong ABC".split(" "));
         } catch (ParameterException ex) {
-            assertTrue(ex.getCommandLine().getCommand() instanceof Sub2);
+            assertTrue(((Object) ex.getCommandLine().getCommand()) instanceof Sub2);
         }
         List<CommandLine> parsed = new CommandLine(new Top()).
                 addSubcommand("sub1", new Sub1()).
@@ -2655,17 +2655,17 @@ public class CommandLineTest {
         try {
             new CommandLine(new Top()).parseArgs("sub207A -x abc".split(" "));
         } catch (ParameterException ex) {
-            assertTrue(ex.getCommandLine().getCommand() instanceof Top);
+            assertTrue(((Object) ex.getCommandLine().getCommand()) instanceof Top);
         }
         try {
             new CommandLine(new Top()).parseArgs("-o OPT sub207A -wrong ABC".split(" "));
         } catch (ParameterException ex) {
-            assertTrue(ex.getCommandLine().getCommand() instanceof Sub207A);
+            assertTrue(((Object) ex.getCommandLine().getCommand()) instanceof Sub207A);
         }
         try {
             new CommandLine(new Top()).parseArgs("-o OPT sub207B -wrong ABC".split(" "));
         } catch (ParameterException ex) {
-            assertTrue(ex.getCommandLine().getCommand() instanceof Sub207B);
+            assertTrue(((Object) ex.getCommandLine().getCommand()) instanceof Sub207B);
         }
         List<CommandLine> parsed = new CommandLine(new Top()).
                 parse("-o OPT sub207A -x ABC".split(" "));

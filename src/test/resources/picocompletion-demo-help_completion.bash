@@ -116,17 +116,39 @@ function currentPositionalIndex() {
 # to generate possible options and subcommands for the last specified subcommand.
 function _complete_picocompletion-demo-help() {
   local cmds0=(sub1)
-  local cmds1=(sub2)
-  local cmds2=(help)
-  local cmds3=(sub2 subsub1)
-  local cmds4=(sub2 subsub2)
-  local cmds5=(sub2 subsub3)
+  local cmds1=(sub1-alias)
+  local cmds2=(sub2)
+  local cmds3=(sub2-alias)
+  local cmds4=(help)
+  local cmds5=(sub2 subsub1)
+  local cmds6=(sub2 sub2child1-alias)
+  local cmds7=(sub2 subsub2)
+  local cmds8=(sub2 sub2child2-alias)
+  local cmds9=(sub2 subsub3)
+  local cmds10=(sub2 sub2child3-alias)
+  local cmds11=(sub2-alias subsub1)
+  local cmds12=(sub2-alias sub2child1-alias)
+  local cmds13=(sub2-alias subsub2)
+  local cmds14=(sub2-alias sub2child2-alias)
+  local cmds15=(sub2-alias subsub3)
+  local cmds16=(sub2-alias sub2child3-alias)
 
-  if CompWordsContainsArray "${cmds5[@]}"; then _picocli_picocompletion-demo-help_sub2_subsub3; return $?; fi
-  if CompWordsContainsArray "${cmds4[@]}"; then _picocli_picocompletion-demo-help_sub2_subsub2; return $?; fi
-  if CompWordsContainsArray "${cmds3[@]}"; then _picocli_picocompletion-demo-help_sub2_subsub1; return $?; fi
-  if CompWordsContainsArray "${cmds2[@]}"; then _picocli_picocompletion-demo-help_help; return $?; fi
-  if CompWordsContainsArray "${cmds1[@]}"; then _picocli_picocompletion-demo-help_sub2; return $?; fi
+  if CompWordsContainsArray "${cmds16[@]}"; then _picocli_picocompletion-demo-help_sub2alias_sub2child3alias; return $?; fi
+  if CompWordsContainsArray "${cmds15[@]}"; then _picocli_picocompletion-demo-help_sub2alias_subsub3; return $?; fi
+  if CompWordsContainsArray "${cmds14[@]}"; then _picocli_picocompletion-demo-help_sub2alias_sub2child2alias; return $?; fi
+  if CompWordsContainsArray "${cmds13[@]}"; then _picocli_picocompletion-demo-help_sub2alias_subsub2; return $?; fi
+  if CompWordsContainsArray "${cmds12[@]}"; then _picocli_picocompletion-demo-help_sub2alias_sub2child1alias; return $?; fi
+  if CompWordsContainsArray "${cmds11[@]}"; then _picocli_picocompletion-demo-help_sub2alias_subsub1; return $?; fi
+  if CompWordsContainsArray "${cmds10[@]}"; then _picocli_picocompletion-demo-help_sub2_sub2child3alias; return $?; fi
+  if CompWordsContainsArray "${cmds9[@]}"; then _picocli_picocompletion-demo-help_sub2_subsub3; return $?; fi
+  if CompWordsContainsArray "${cmds8[@]}"; then _picocli_picocompletion-demo-help_sub2_sub2child2alias; return $?; fi
+  if CompWordsContainsArray "${cmds7[@]}"; then _picocli_picocompletion-demo-help_sub2_subsub2; return $?; fi
+  if CompWordsContainsArray "${cmds6[@]}"; then _picocli_picocompletion-demo-help_sub2_sub2child1alias; return $?; fi
+  if CompWordsContainsArray "${cmds5[@]}"; then _picocli_picocompletion-demo-help_sub2_subsub1; return $?; fi
+  if CompWordsContainsArray "${cmds4[@]}"; then _picocli_picocompletion-demo-help_help; return $?; fi
+  if CompWordsContainsArray "${cmds3[@]}"; then _picocli_picocompletion-demo-help_sub2alias; return $?; fi
+  if CompWordsContainsArray "${cmds2[@]}"; then _picocli_picocompletion-demo-help_sub2; return $?; fi
+  if CompWordsContainsArray "${cmds1[@]}"; then _picocli_picocompletion-demo-help_sub1alias; return $?; fi
   if CompWordsContainsArray "${cmds0[@]}"; then _picocli_picocompletion-demo-help_sub1; return $?; fi
 
   # No subcommands were specified; generate completions for the top-level command.
@@ -138,7 +160,7 @@ function _picocli_picocompletion-demo-help() {
   # Get completion data
   local curr_word=${COMP_WORDS[COMP_CWORD]}
 
-  local commands="sub1 sub2 help"
+  local commands="sub1 sub1-alias sub2 sub2-alias help"
   local flag_opts="-V --version -h --help"
   local arg_opts=""
 
@@ -184,13 +206,47 @@ function _picocli_picocompletion-demo-help_sub1() {
   fi
 }
 
+# Generates completions for the options and subcommands of the `sub1-alias` subcommand.
+function _picocli_picocompletion-demo-help_sub1alias() {
+  # Get completion data
+  local curr_word=${COMP_WORDS[COMP_CWORD]}
+  local prev_word=${COMP_WORDS[COMP_CWORD-1]}
+
+  local commands=""
+  local flag_opts=""
+  local arg_opts="--num --str --candidates"
+  local str2_option_args="aaa bbb ccc" # --candidates values
+
+  compopt +o default
+
+  case ${prev_word} in
+    --num)
+      return
+      ;;
+    --str)
+      return
+      ;;
+    --candidates)
+      COMPREPLY=( $( compgen -W "${str2_option_args}" -- "${curr_word}" ) )
+      return $?
+      ;;
+  esac
+
+  if [[ "${curr_word}" == -* ]]; then
+    COMPREPLY=( $(compgen -W "${flag_opts} ${arg_opts}" -- "${curr_word}") )
+  else
+    local positionals=""
+    COMPREPLY=( $(compgen -W "${commands} ${positionals}" -- "${curr_word}") )
+  fi
+}
+
 # Generates completions for the options and subcommands of the `sub2` subcommand.
 function _picocli_picocompletion-demo-help_sub2() {
   # Get completion data
   local curr_word=${COMP_WORDS[COMP_CWORD]}
   local prev_word=${COMP_WORDS[COMP_CWORD-1]}
 
-  local commands="subsub1 subsub2 subsub3"
+  local commands="subsub1 sub2child1-alias subsub2 sub2child2-alias subsub3 sub2child3-alias"
   local flag_opts=""
   local arg_opts="--num2 --directory -d"
 
@@ -201,6 +257,7 @@ function _picocli_picocompletion-demo-help_sub2() {
       return
       ;;
     --directory|-d)
+      local IFS=$'\n'
       compopt -o filenames
       COMPREPLY=( $( compgen -f -- "${curr_word}" ) ) # files
       return $?
@@ -214,6 +271,44 @@ function _picocli_picocompletion-demo-help_sub2() {
     local positionals=""
     local currIndex
     currIndex=$(currentPositionalIndex "sub2" "${arg_opts}" "${flag_opts}")
+    if (( currIndex >= 0 && currIndex <= 0 )); then
+      positionals=$( compgen -W "$possibilities_pos_param_args" -- "${curr_word}" )
+    fi
+    COMPREPLY=( $(compgen -W "${commands} ${positionals}" -- "${curr_word}") )
+  fi
+}
+
+# Generates completions for the options and subcommands of the `sub2-alias` subcommand.
+function _picocli_picocompletion-demo-help_sub2alias() {
+  # Get completion data
+  local curr_word=${COMP_WORDS[COMP_CWORD]}
+  local prev_word=${COMP_WORDS[COMP_CWORD-1]}
+
+  local commands="subsub1 sub2child1-alias subsub2 sub2child2-alias subsub3 sub2child3-alias"
+  local flag_opts=""
+  local arg_opts="--num2 --directory -d"
+
+  compopt +o default
+
+  case ${prev_word} in
+    --num2)
+      return
+      ;;
+    --directory|-d)
+      local IFS=$'\n'
+      compopt -o filenames
+      COMPREPLY=( $( compgen -f -- "${curr_word}" ) ) # files
+      return $?
+      ;;
+  esac
+  local possibilities_pos_param_args="Aaa Bbb Ccc" # 0-0 values
+
+  if [[ "${curr_word}" == -* ]]; then
+    COMPREPLY=( $(compgen -W "${flag_opts} ${arg_opts}" -- "${curr_word}") )
+  else
+    local positionals=""
+    local currIndex
+    currIndex=$(currentPositionalIndex "sub2-alias" "${arg_opts}" "${flag_opts}")
     if (( currIndex >= 0 && currIndex <= 0 )); then
       positionals=$( compgen -W "$possibilities_pos_param_args" -- "${curr_word}" )
     fi
@@ -240,6 +335,34 @@ function _picocli_picocompletion-demo-help_help() {
 
 # Generates completions for the options and subcommands of the `subsub1` subcommand.
 function _picocli_picocompletion-demo-help_sub2_subsub1() {
+  # Get completion data
+  local curr_word=${COMP_WORDS[COMP_CWORD]}
+  local prev_word=${COMP_WORDS[COMP_CWORD-1]}
+
+  local commands=""
+  local flag_opts=""
+  local arg_opts="-h --host"
+
+  compopt +o default
+
+  case ${prev_word} in
+    -h|--host)
+      compopt -o filenames
+      COMPREPLY=( $( compgen -A hostname -- "${curr_word}" ) )
+      return $?
+      ;;
+  esac
+
+  if [[ "${curr_word}" == -* ]]; then
+    COMPREPLY=( $(compgen -W "${flag_opts} ${arg_opts}" -- "${curr_word}") )
+  else
+    local positionals=""
+    COMPREPLY=( $(compgen -W "${commands} ${positionals}" -- "${curr_word}") )
+  fi
+}
+
+# Generates completions for the options and subcommands of the `sub2child1-alias` subcommand.
+function _picocli_picocompletion-demo-help_sub2_sub2child1alias() {
   # Get completion data
   local curr_word=${COMP_WORDS[COMP_CWORD]}
   local prev_word=${COMP_WORDS[COMP_CWORD-1]}
@@ -303,6 +426,43 @@ function _picocli_picocompletion-demo-help_sub2_subsub2() {
   fi
 }
 
+# Generates completions for the options and subcommands of the `sub2child2-alias` subcommand.
+function _picocli_picocompletion-demo-help_sub2_sub2child2alias() {
+  # Get completion data
+  local curr_word=${COMP_WORDS[COMP_CWORD]}
+  local prev_word=${COMP_WORDS[COMP_CWORD-1]}
+
+  local commands=""
+  local flag_opts=""
+  local arg_opts="-u --timeUnit -t --timeout"
+  local timeUnit_option_args="%2$s" # --timeUnit values
+
+  compopt +o default
+
+  case ${prev_word} in
+    -u|--timeUnit)
+      COMPREPLY=( $( compgen -W "${timeUnit_option_args}" -- "${curr_word}" ) )
+      return $?
+      ;;
+    -t|--timeout)
+      return
+      ;;
+  esac
+  local str2_pos_param_args="aaa bbb ccc" # 0-0 values
+
+  if [[ "${curr_word}" == -* ]]; then
+    COMPREPLY=( $(compgen -W "${flag_opts} ${arg_opts}" -- "${curr_word}") )
+  else
+    local positionals=""
+    local currIndex
+    currIndex=$(currentPositionalIndex "sub2child2-alias" "${arg_opts}" "${flag_opts}")
+    if (( currIndex >= 0 && currIndex <= 0 )); then
+      positionals=$( compgen -W "$str2_pos_param_args" -- "${curr_word}" )
+    fi
+    COMPREPLY=( $(compgen -W "${commands} ${positionals}" -- "${curr_word}") )
+  fi
+}
+
 # Generates completions for the options and subcommands of the `subsub3` subcommand.
 function _picocli_picocompletion-demo-help_sub2_subsub3() {
   # Get completion data
@@ -322,6 +482,227 @@ function _picocli_picocompletion-demo-help_sub2_subsub3() {
     if (( currIndex >= 0 && currIndex <= 0 )); then
       positionals=$( compgen -W "$cands_pos_param_args" -- "${curr_word}" )
     elif (( currIndex >= 1 && currIndex <= 2 )); then
+      local IFS=$'\n'
+      compopt -o filenames
+      positionals=$( compgen -f -- "${curr_word}" ) # files
+    elif (( currIndex >= 3 && currIndex <= 2147483647 )); then
+      compopt -o filenames
+      positionals=$( compgen -A hostname -- "${curr_word}" )
+    fi
+    COMPREPLY=( $(compgen -W "${commands} ${positionals}" -- "${curr_word}") )
+  fi
+}
+
+# Generates completions for the options and subcommands of the `sub2child3-alias` subcommand.
+function _picocli_picocompletion-demo-help_sub2_sub2child3alias() {
+  # Get completion data
+  local curr_word=${COMP_WORDS[COMP_CWORD]}
+
+  local commands=""
+  local flag_opts=""
+  local arg_opts=""
+  local cands_pos_param_args="aaa bbb ccc" # 0-0 values
+
+  if [[ "${curr_word}" == -* ]]; then
+    COMPREPLY=( $(compgen -W "${flag_opts} ${arg_opts}" -- "${curr_word}") )
+  else
+    local positionals=""
+    local currIndex
+    currIndex=$(currentPositionalIndex "sub2child3-alias" "${arg_opts}" "${flag_opts}")
+    if (( currIndex >= 0 && currIndex <= 0 )); then
+      positionals=$( compgen -W "$cands_pos_param_args" -- "${curr_word}" )
+    elif (( currIndex >= 1 && currIndex <= 2 )); then
+      local IFS=$'\n'
+      compopt -o filenames
+      positionals=$( compgen -f -- "${curr_word}" ) # files
+    elif (( currIndex >= 3 && currIndex <= 2147483647 )); then
+      compopt -o filenames
+      positionals=$( compgen -A hostname -- "${curr_word}" )
+    fi
+    COMPREPLY=( $(compgen -W "${commands} ${positionals}" -- "${curr_word}") )
+  fi
+}
+
+# Generates completions for the options and subcommands of the `subsub1` subcommand.
+function _picocli_picocompletion-demo-help_sub2alias_subsub1() {
+  # Get completion data
+  local curr_word=${COMP_WORDS[COMP_CWORD]}
+  local prev_word=${COMP_WORDS[COMP_CWORD-1]}
+
+  local commands=""
+  local flag_opts=""
+  local arg_opts="-h --host"
+
+  compopt +o default
+
+  case ${prev_word} in
+    -h|--host)
+      compopt -o filenames
+      COMPREPLY=( $( compgen -A hostname -- "${curr_word}" ) )
+      return $?
+      ;;
+  esac
+
+  if [[ "${curr_word}" == -* ]]; then
+    COMPREPLY=( $(compgen -W "${flag_opts} ${arg_opts}" -- "${curr_word}") )
+  else
+    local positionals=""
+    COMPREPLY=( $(compgen -W "${commands} ${positionals}" -- "${curr_word}") )
+  fi
+}
+
+# Generates completions for the options and subcommands of the `sub2child1-alias` subcommand.
+function _picocli_picocompletion-demo-help_sub2alias_sub2child1alias() {
+  # Get completion data
+  local curr_word=${COMP_WORDS[COMP_CWORD]}
+  local prev_word=${COMP_WORDS[COMP_CWORD-1]}
+
+  local commands=""
+  local flag_opts=""
+  local arg_opts="-h --host"
+
+  compopt +o default
+
+  case ${prev_word} in
+    -h|--host)
+      compopt -o filenames
+      COMPREPLY=( $( compgen -A hostname -- "${curr_word}" ) )
+      return $?
+      ;;
+  esac
+
+  if [[ "${curr_word}" == -* ]]; then
+    COMPREPLY=( $(compgen -W "${flag_opts} ${arg_opts}" -- "${curr_word}") )
+  else
+    local positionals=""
+    COMPREPLY=( $(compgen -W "${commands} ${positionals}" -- "${curr_word}") )
+  fi
+}
+
+# Generates completions for the options and subcommands of the `subsub2` subcommand.
+function _picocli_picocompletion-demo-help_sub2alias_subsub2() {
+  # Get completion data
+  local curr_word=${COMP_WORDS[COMP_CWORD]}
+  local prev_word=${COMP_WORDS[COMP_CWORD-1]}
+
+  local commands=""
+  local flag_opts=""
+  local arg_opts="-u --timeUnit -t --timeout"
+  local timeUnit_option_args="%2$s" # --timeUnit values
+
+  compopt +o default
+
+  case ${prev_word} in
+    -u|--timeUnit)
+      COMPREPLY=( $( compgen -W "${timeUnit_option_args}" -- "${curr_word}" ) )
+      return $?
+      ;;
+    -t|--timeout)
+      return
+      ;;
+  esac
+  local str2_pos_param_args="aaa bbb ccc" # 0-0 values
+
+  if [[ "${curr_word}" == -* ]]; then
+    COMPREPLY=( $(compgen -W "${flag_opts} ${arg_opts}" -- "${curr_word}") )
+  else
+    local positionals=""
+    local currIndex
+    currIndex=$(currentPositionalIndex "subsub2" "${arg_opts}" "${flag_opts}")
+    if (( currIndex >= 0 && currIndex <= 0 )); then
+      positionals=$( compgen -W "$str2_pos_param_args" -- "${curr_word}" )
+    fi
+    COMPREPLY=( $(compgen -W "${commands} ${positionals}" -- "${curr_word}") )
+  fi
+}
+
+# Generates completions for the options and subcommands of the `sub2child2-alias` subcommand.
+function _picocli_picocompletion-demo-help_sub2alias_sub2child2alias() {
+  # Get completion data
+  local curr_word=${COMP_WORDS[COMP_CWORD]}
+  local prev_word=${COMP_WORDS[COMP_CWORD-1]}
+
+  local commands=""
+  local flag_opts=""
+  local arg_opts="-u --timeUnit -t --timeout"
+  local timeUnit_option_args="%2$s" # --timeUnit values
+
+  compopt +o default
+
+  case ${prev_word} in
+    -u|--timeUnit)
+      COMPREPLY=( $( compgen -W "${timeUnit_option_args}" -- "${curr_word}" ) )
+      return $?
+      ;;
+    -t|--timeout)
+      return
+      ;;
+  esac
+  local str2_pos_param_args="aaa bbb ccc" # 0-0 values
+
+  if [[ "${curr_word}" == -* ]]; then
+    COMPREPLY=( $(compgen -W "${flag_opts} ${arg_opts}" -- "${curr_word}") )
+  else
+    local positionals=""
+    local currIndex
+    currIndex=$(currentPositionalIndex "sub2child2-alias" "${arg_opts}" "${flag_opts}")
+    if (( currIndex >= 0 && currIndex <= 0 )); then
+      positionals=$( compgen -W "$str2_pos_param_args" -- "${curr_word}" )
+    fi
+    COMPREPLY=( $(compgen -W "${commands} ${positionals}" -- "${curr_word}") )
+  fi
+}
+
+# Generates completions for the options and subcommands of the `subsub3` subcommand.
+function _picocli_picocompletion-demo-help_sub2alias_subsub3() {
+  # Get completion data
+  local curr_word=${COMP_WORDS[COMP_CWORD]}
+
+  local commands=""
+  local flag_opts=""
+  local arg_opts=""
+  local cands_pos_param_args="aaa bbb ccc" # 0-0 values
+
+  if [[ "${curr_word}" == -* ]]; then
+    COMPREPLY=( $(compgen -W "${flag_opts} ${arg_opts}" -- "${curr_word}") )
+  else
+    local positionals=""
+    local currIndex
+    currIndex=$(currentPositionalIndex "subsub3" "${arg_opts}" "${flag_opts}")
+    if (( currIndex >= 0 && currIndex <= 0 )); then
+      positionals=$( compgen -W "$cands_pos_param_args" -- "${curr_word}" )
+    elif (( currIndex >= 1 && currIndex <= 2 )); then
+      local IFS=$'\n'
+      compopt -o filenames
+      positionals=$( compgen -f -- "${curr_word}" ) # files
+    elif (( currIndex >= 3 && currIndex <= 2147483647 )); then
+      compopt -o filenames
+      positionals=$( compgen -A hostname -- "${curr_word}" )
+    fi
+    COMPREPLY=( $(compgen -W "${commands} ${positionals}" -- "${curr_word}") )
+  fi
+}
+
+# Generates completions for the options and subcommands of the `sub2child3-alias` subcommand.
+function _picocli_picocompletion-demo-help_sub2alias_sub2child3alias() {
+  # Get completion data
+  local curr_word=${COMP_WORDS[COMP_CWORD]}
+
+  local commands=""
+  local flag_opts=""
+  local arg_opts=""
+  local cands_pos_param_args="aaa bbb ccc" # 0-0 values
+
+  if [[ "${curr_word}" == -* ]]; then
+    COMPREPLY=( $(compgen -W "${flag_opts} ${arg_opts}" -- "${curr_word}") )
+  else
+    local positionals=""
+    local currIndex
+    currIndex=$(currentPositionalIndex "sub2child3-alias" "${arg_opts}" "${flag_opts}")
+    if (( currIndex >= 0 && currIndex <= 0 )); then
+      positionals=$( compgen -W "$cands_pos_param_args" -- "${curr_word}" )
+    elif (( currIndex >= 1 && currIndex <= 2 )); then
+      local IFS=$'\n'
       compopt -o filenames
       positionals=$( compgen -f -- "${curr_word}" ) # files
     elif (( currIndex >= 3 && currIndex <= 2147483647 )); then

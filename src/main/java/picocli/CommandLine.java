@@ -72,7 +72,7 @@ import static picocli.CommandLine.Help.Column.Overflow.WRAP;
  *
  *     // CheckSum implements Callable, so parsing, error handling and handling user
  *     // requests for usage help or version help can be done with one line of code.
- *     public static void main(String[] args) throws Exception {
+ *     public static void main(String[] args) {
  *         int exitCode = new CommandLine(new CheckSum()).execute(args);
  *         System.exit(exitCode);
  *     }
@@ -145,7 +145,7 @@ import static picocli.CommandLine.Help.Column.Overflow.WRAP;
 public class CommandLine {
 
     /** This is picocli version {@value}. */
-    public static final String VERSION = "4.6.2-SNAPSHOT";
+    public static final String VERSION = "4.6.3-SNAPSHOT";
 
     private final Tracer tracer = new Tracer();
     private CommandSpec commandSpec;
@@ -578,10 +578,10 @@ public class CommandLine {
         return this;
     }
 
-    /** Returns whether whether variables should be interpolated in String values. The default is {@code true}.
+    /** Returns whether variables should be interpolated in String values. The default is {@code true}.
      * @since 4.0 */
     public boolean isInterpolateVariables() { return getCommandSpec().interpolateVariables(); }
-    /** Sets whether whether variables should be interpolated in String values. The default is {@code true}.
+    /** Sets whether variables should be interpolated in String values. The default is {@code true}.
      * <p>The specified setting will be registered with this {@code CommandLine} and the full hierarchy of its
      * subcommands and nested sub-subcommands <em>at the moment this method is called</em>. Subcommands added
      * later will have the default setting. To ensure a setting is applied to all
@@ -1433,7 +1433,7 @@ public class CommandLine {
     public static <T> T populateSpec(Class<T> spec, String... args) {
         CommandLine cli = toCommandLine(spec, new DefaultFactory());
         cli.parse(args);
-        return cli.getCommand();
+        return cli.<T>getCommand();
     }
 
     /** Expands any {@linkplain CommandLine#isExpandAtFiles() @-files} in the specified command line arguments, then
@@ -1921,9 +1921,9 @@ public class CommandLine {
                 return parsed.getCommandSpec().exitCodeOnVersionHelp();
             } else if (parsed.getCommandSpec().helpCommand()) {
                 PrintWriter err = parsed.getErr();
-                if (parsed.getCommand() instanceof IHelpCommandInitializable2) {
+                if (((Object) parsed.getCommand()) instanceof IHelpCommandInitializable2) {
                     ((IHelpCommandInitializable2) parsed.getCommand()).init(parsed, colorScheme, out, err);
-                } else if (parsed.getCommand() instanceof IHelpCommandInitializable) {
+                } else if (((Object) parsed.getCommand()) instanceof IHelpCommandInitializable) {
                     ((IHelpCommandInitializable) parsed.getCommand()).init(parsed, colorScheme.ansi, System.out, System.err);
                 }
                 executeUserObject(parsed, new ArrayList<Object>());
@@ -2768,7 +2768,7 @@ public class CommandLine {
     @Deprecated public static <C extends Callable<T>, T> T call(C callable, String... args) {
         CommandLine cmd = new CommandLine(callable);
         List<Object> results = cmd.parseWithHandler(new RunLast(), args);
-        return firstElement(results);
+        return CommandLine.<T>firstElement(results);
     }
 
     /**
@@ -2837,7 +2837,7 @@ public class CommandLine {
     @Deprecated public static <C extends Callable<T>, T> T call(C callable, PrintStream out, PrintStream err, Help.Ansi ansi, String... args) {
         CommandLine cmd = new CommandLine(callable);
         List<Object> results = cmd.parseWithHandlers(new RunLast().useOut(out).useAnsi(ansi), new DefaultExceptionHandler<List<Object>>().useErr(err).useAnsi(ansi), args);
-        return firstElement(results);
+        return CommandLine.<T>firstElement(results);
     }
     /**
      * Equivalent to {@code new CommandLine(callableClass, factory).execute(args)}, except for the return value.
@@ -2856,7 +2856,7 @@ public class CommandLine {
     @Deprecated public static <C extends Callable<T>, T> T call(Class<C> callableClass, IFactory factory, String... args) {
         CommandLine cmd = new CommandLine(callableClass, factory);
         List<Object> results = cmd.parseWithHandler(new RunLast(), args);
-        return firstElement(results);
+        return CommandLine.<T>firstElement(results);
     }
     /**
      * Delegates to {@link #call(Class, IFactory, PrintStream, PrintStream, Help.Ansi, String...)} with
@@ -2932,7 +2932,7 @@ public class CommandLine {
     @Deprecated public static <C extends Callable<T>, T> T call(Class<C> callableClass, IFactory factory, PrintStream out, PrintStream err, Help.Ansi ansi, String... args) {
         CommandLine cmd = new CommandLine(callableClass, factory);
         List<Object> results = cmd.parseWithHandlers(new RunLast().useOut(out).useAnsi(ansi), new DefaultExceptionHandler<List<Object>>().useErr(err).useAnsi(ansi), args);
-        return firstElement(results);
+        return CommandLine.<T>firstElement(results);
     }
 
     @SuppressWarnings("unchecked") private static <T> T firstElement(List<Object> results) {
@@ -5483,34 +5483,41 @@ public class CommandLine {
                 Callable<?> callable = Callable.class.cast(cls.getConstructor(Object.class, Object.class).newInstance(null, null));
                 try { return (T) callable.call(); }
                 catch (Exception ex) { throw new InitializationException("Error in Groovy closure: " + ex); }
-
             }
-            if (cls.isInterface() && Collection.class.isAssignableFrom(cls)) {
-                if (List.class.isAssignableFrom(cls)) {
-                    return cls.cast(new ArrayList<Object>());
-                } else if (SortedSet.class.isAssignableFrom(cls)) {
-                    return cls.cast(new TreeSet<Object>());
-                } else if (Set.class.isAssignableFrom(cls)) {
-                    return cls.cast(new LinkedHashSet<Object>());
-                } else if (Queue.class.isAssignableFrom(cls)) {
-                    return cls.cast(new LinkedList<Object>()); // ArrayDeque is only available since 1.6
+            if (cls.isInterface()) {
+                if (Collection.class.isAssignableFrom(cls)) {
+                    if (List.class.isAssignableFrom(cls)) {
+                        return cls.cast(new ArrayList<Object>());
+                    } else if (SortedSet.class.isAssignableFrom(cls)) {
+                        return cls.cast(new TreeSet<Object>());
+                    } else if (Set.class.isAssignableFrom(cls)) {
+                        return cls.cast(new LinkedHashSet<Object>());
+                    } else if (Queue.class.isAssignableFrom(cls)) {
+                        return cls.cast(new LinkedList<Object>()); // ArrayDeque is only available since 1.6
+                    } else {
+                        return cls.cast(new ArrayList<Object>());
+                    }
                 }
-                return cls.cast(new ArrayList<Object>());
-            }
-            if (Map.class.isAssignableFrom(cls)) {
-                try { // if it is an implementation class, instantiate it
-                    return cls.cast(cls.getDeclaredConstructor().newInstance());
-                } catch (Exception ignored) { }
-                return cls.cast(new LinkedHashMap<Object, Object>());
+                if (SortedMap.class.isAssignableFrom(cls)) {
+                    return cls.cast(new TreeMap<Object, Object>());
+                }
+                if (Map.class.isAssignableFrom(cls)) {
+                    return cls.cast(new LinkedHashMap<Object, Object>());
+                }
             }
             try {
                 @SuppressWarnings("deprecation") // Class.newInstance is deprecated in Java 9
                 T result = cls.newInstance();
                 return result;
             } catch (Exception ex) {
+                // TODO log the error at debug level
                 Constructor<T> constructor = cls.getDeclaredConstructor();
-                constructor.setAccessible(true);
-                return constructor.newInstance();
+                try {
+                    return constructor.newInstance();
+                } catch (IllegalAccessException iaex) {
+                    constructor.setAccessible(true);
+                    return constructor.newInstance();
+                }
             }
         }
         private static ITypeConverter<?>[] createConverter(IFactory factory, Class<? extends ITypeConverter<?>>[] classes) {
@@ -6412,7 +6419,7 @@ public class CommandLine {
              */
             public CommandSpec addSubcommand(String name, CommandLine subCommandLine) {
                 CommandSpec subSpec = subCommandLine.getCommandSpec();
-                String actualName = validateSubcommandName(name, subSpec);
+                String actualName = validateSubcommandName(interpolator.interpolateCommandName(name), subSpec);
                 Tracer t = new Tracer();
                 if (t.isDebug()) {t.debug("Adding subcommand '%s' to '%s'%n", actualName, this.qualifiedName());}
                 String previousName = commands.getCaseSensitiveKey(actualName);
@@ -6422,7 +6429,7 @@ public class CommandLine {
                 subSpec.parent(this);
                 for (String alias : subSpec.aliases()) {
                     if (t.isDebug()) {t.debug("Adding alias '%s' for '%s'%n", (parent == null ? "" : parent.qualifiedName() + " ") + alias, this.qualifiedName());}
-                    previous = commands.put(alias, subCommandLine);
+                    previous = commands.put(interpolator.interpolate(alias), subCommandLine);
                     if (previous != null && previous != subCommandLine) { throw new DuplicateNameException("Alias '" + alias + "' for subcommand '" + actualName + "' is already used by another subcommand of '" + this.name() + "'"); }
                 }
                 subSpec.initCommandHierarchyWithResourceBundle(resourceBundleBaseName(), resourceBundle());
@@ -6520,10 +6527,10 @@ public class CommandLine {
              * @since 4.0 */
             public CommandSpec setAddMethodSubcommands(Boolean addMethodSubcommands) { isAddMethodSubcommands = addMethodSubcommands; return this; }
 
-            /** Returns whether whether variables should be interpolated in String values. True by default.
+            /** Returns whether variables should be interpolated in String values. True by default.
              * @since 4.0 */
             public boolean interpolateVariables() { return (interpolateVariables == null) ? DEFAULT_INTERPOLATE_VARIABLES : interpolateVariables; }
-            /** Sets whether whether variables should be interpolated in String values. True by default.
+            /** Sets whether variables should be interpolated in String values. True by default.
              * @since 4.0 */
             public CommandSpec interpolateVariables(Boolean interpolate) { interpolateVariables = interpolate; return this; }
 
@@ -8743,7 +8750,8 @@ public class CommandLine {
             public Range arity()           { return arity; }
 
             /** Returns the name of the option or positional parameter used in the usage help message.
-             * @see Option#paramLabel() {@link Parameters#paramLabel()} */
+             * @see Option#paramLabel()
+             * @see Parameters#paramLabel() */
             public String paramLabel()     { return interpolate(paramLabel); }
 
             /** Returns whether usage syntax decorations around the {@linkplain #paramLabel() paramLabel} should be suppressed.
@@ -8787,7 +8795,7 @@ public class CommandLine {
             /** Returns the root option or positional parameter (on the parent command), if this option or positional parameter was inherited;
              * or {@code null} if it was not.
              * @see Option#scope()
-             * @since 4.6.2-SNAPSHOT */
+             * @since 4.6.0 */
             public ArgSpec root() { return root; }
 
             /** Returns the type to convert the option or positional parameter to before {@linkplain #setValue(Object) setting} the value.
@@ -8928,7 +8936,7 @@ public class CommandLine {
             /** Returns the current value of this argument. Delegates to the current {@link #getter()}. */
             public <T> T getValue() throws PicocliException {
                 try {
-                    return getter.get();
+                    return getter.<T>get();
                 } catch (PicocliException ex) { throw ex;
                 } catch (Exception ex) {        throw new PicocliException("Could not get value for " + this + ": " + ex, ex);
                 }
@@ -9384,7 +9392,8 @@ public class CommandLine {
                 public Range arity()           { return arity; }
 
                 /** Returns the name of the option or positional parameter used in the usage help message.
-                 * @see Option#paramLabel() {@link Parameters#paramLabel()} */
+                 * @see Option#paramLabel()
+                 * @see Parameters#paramLabel() */
                 public String paramLabel()     { return paramLabel; }
 
                 /** Returns whether usage syntax decorations around the {@linkplain #paramLabel() paramLabel} should be suppressed.
@@ -9425,7 +9434,7 @@ public class CommandLine {
                 /** Returns the root option or positional parameter (on the parent command), if this option or positional parameter was inherited;
                  * or {@code null} if it was not.
                  * @see Option#scope()
-                 * @since 4.6.2-SNAPSHOT */
+                 * @since 4.6.0 */
                 public ArgSpec root() { return root; }
 
                 /** Returns the type to convert the option or positional parameter to before {@linkplain #setValue(Object) setting} the value.
@@ -9568,7 +9577,7 @@ public class CommandLine {
 
                 /**
                  * Sets the root object for this inherited option, and returns this builder.
-                 * @since 4.6.2-SNAPSHOT */
+                 * @since 4.6.0 */
                 public T root(ArgSpec root)                  { this.root = root ; return self(); }
 
                 /** Sets the type to convert the option or positional parameter to before {@linkplain #setValue(Object) setting} the value, and returns this builder.
@@ -10227,7 +10236,7 @@ public class CommandLine {
                 int result = 0;
                 for (ArgSpec arg : args) {
                     if (arg.isPositional()) {
-                        result += ((PositionalParamSpec) arg).capacity().min();
+                        result += ((PositionalParamSpec) arg).capacity().max();
                     }
                 }
                 return result;
@@ -11768,7 +11777,7 @@ public class CommandLine {
                 ProxyBinding(Method method) { this.method = Assert.notNull(method, "method"); }
                 @SuppressWarnings("unchecked") public <T> T get() { return (T) map.get(method.getName()); }
                 public <T> T set(T value) {
-                    T result = get();
+                    T result = this.<T>get();
                     map.put(method.getName(), value);
                     return result;
                 }
@@ -14438,7 +14447,9 @@ public class CommandLine {
                 if (argSpec.arity().max > 1) {
                     desc += " at index " + optionParamIndex;
                 }
-                desc += " (" + argSpec.paramLabel() + ")";
+                if (argSpec.arity().max > 0) {
+                    desc += " (" + argSpec.paramLabel() + ")";
+                }
             }
         } else {
             desc = prefix + "positional parameter at index " + ((PositionalParamSpec) argSpec).index() + " (" + argSpec.paramLabel() + ")";
@@ -14521,12 +14532,17 @@ public class CommandLine {
         }
     }
     static Charset getStdoutEncoding() {
-        String encoding = System.getProperty("sun.stdout.encoding");
-        return encoding != null ? Charset.forName(encoding) : Charset.defaultCharset();
+        return charsetForName(System.getProperty("sun.stdout.encoding"));
     }
     static Charset getStderrEncoding() {
-        String encoding = System.getProperty("sun.stderr.encoding");
-        return encoding != null ? Charset.forName(encoding) : Charset.defaultCharset();
+        return charsetForName(System.getProperty("sun.stderr.encoding"));
+    }
+    static Charset charsetForName(String encoding) {
+        if (encoding != null) {
+            if ("cp65001".equalsIgnoreCase(encoding)) { encoding = "UTF-8"; } // #1474 MS Windows uses code page 65001 for UTF8
+            return Charset.forName(encoding);
+        }
+        return Charset.defaultCharset();
     }
     static PrintWriter newPrintWriter(OutputStream stream, Charset charset) {
         return new PrintWriter(new BufferedWriter(new OutputStreamWriter(stream, charset)), true);
@@ -14779,9 +14795,9 @@ public class CommandLine {
                 description = "Show usage help for the help command and exit.")
         private boolean helpRequested;
 
-        @Parameters(paramLabel = "COMMAND", descriptionKey = "helpCommand.command",
+        @Parameters(paramLabel = "COMMAND", arity="0..1", descriptionKey = "helpCommand.command",
                 description = "The COMMAND to display the usage help message for.")
-        private String[] commands = new String[0];
+        private String commands;
 
         private CommandLine self;
         private PrintStream out;
@@ -14796,9 +14812,9 @@ public class CommandLine {
             CommandLine parent = self == null ? null : self.getParent();
             if (parent == null) { return; }
             Help.ColorScheme colors = colorScheme != null ? colorScheme : Help.defaultColorScheme(ansi);
-            if (commands.length > 0) {
+            if (commands != null) {
                 Map<String, CommandLine> parentSubcommands = parent.getCommandSpec().subcommands();
-                String fullName = commands[0];
+                String fullName = commands;
                 if (parent.isAbbreviatedSubcommandsAllowed()) {
                     fullName = AbbreviationMatcher.match(parentSubcommands.keySet(), fullName,
                             parent.isSubcommandsCaseInsensitive(), self);
@@ -14811,7 +14827,7 @@ public class CommandLine {
                         subcommand.usage(out, colors); // for compatibility with pre-4.0 clients
                     }
                 } else {
-                    throw new ParameterException(parent, "Unknown subcommand '" + commands[0] + "'.", null, commands[0]);
+                    throw new ParameterException(parent, "Unknown subcommand '" + commands + "'.", null, commands);
                 }
             } else {
                 if (outWriter != null) {
