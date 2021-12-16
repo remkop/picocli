@@ -11091,10 +11091,17 @@ public class CommandLine {
                 accessible.setAccessible(true);
                 name = propertyName(method.getName());
                 Class<?>[] parameterTypes = method.getParameterTypes();
-                boolean isGetter = parameterTypes.length == 0 && method.getReturnType() != Void.TYPE && method.getReturnType() != Void.class;
-                boolean isSetter = parameterTypes.length > 0;
-                if (isSetter == isGetter) { throw new InitializationException("Invalid method, must be either getter or setter: " + method); }
-                if (isGetter) {
+                if (parameterTypes.length > 0) {
+                    // accepts arguments, so must be a setter
+                    typeInfo = createTypeInfo(parameterTypes[0], method.getGenericParameterTypes()[0]);
+                    MethodBinding binding = new MethodBinding(scope, method, spec);
+                    getter = binding; setter = binding;
+                    initialValueState = InitialValueState.UNAVAILABLE; // arg is setter method;
+                } else if (method.getReturnType() == Void.TYPE || method.getReturnType() == Void.class) {
+                    // neither accepts arguments, nor returns non-void, so cannot be a setter or a getter, respectively
+                    throw new InitializationException("Invalid method, must be either getter or setter: " + method);
+                } else {
+                    // does not accept arguments, but returns non-void, so is a getter
                     typeInfo = createTypeInfo(method.getReturnType(), method.getGenericReturnType());
                     if (ObjectScope.isProxyClass(scope)) {
                         Object proxy = ObjectScope.tryGet(scope);
@@ -11108,11 +11115,6 @@ public class CommandLine {
                         getter = binding; setter = binding;
                     }
                     initialValueState = InitialValueState.POSTPONED; // the initial value can be obtained from the getter
-                } else {
-                    typeInfo = createTypeInfo(parameterTypes[0], method.getGenericParameterTypes()[0]);
-                    MethodBinding binding = new MethodBinding(scope, method, spec);
-                    getter = binding; setter = binding;
-                    initialValueState = InitialValueState.UNAVAILABLE; // arg is setter method;
                 }
             }
             TypedMember(MethodParam param, IScope scope) {
