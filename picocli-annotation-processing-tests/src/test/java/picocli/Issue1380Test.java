@@ -11,53 +11,27 @@ import java.io.PrintStream;
 import static org.junit.Assert.assertEquals;
 
 /**
+ * Testing class for exclusiveOptions
+ */
+class Issue1380ExclusiveOptions {
+    @Option(names = {"-s", "--silent"}, description = "Silent mode", required = false)
+    protected boolean silent;
+
+    @Option(names = {"-v", "--verbose"}, description = "Verbose mode", required = false)
+    protected boolean verbose;
+
+    @Option(names = {"-j", "--json"}, description = "JSON printing", required = false)
+    protected boolean json;
+}
+
+/**
  * Testing class for creating a commandline with ArgGroup exclusive tree
  */
 @Command(requiredOptionMarker = '*')
 class TestingClassExclusiveTrue {
 
     @ArgGroup(exclusive = true, multiplicity = "0..1")
-    private TestingClassExclusiveTrue.ExclusiveOptions exclusive;
-
-    /**
-     * Added getters to satisfy PMF and findBug requirements
-     */
-    public ExclusiveOptions getExclusive() {
-        return this.exclusive;
-    }
-
-    private static class ExclusiveOptions {
-        @Option(names = {"-s", "--silent"}, description = "Silent mode", required = false)
-        private boolean silent;
-
-        /**
-         * Added getters to satisfy PMF and findBug requirements
-         */
-        public boolean getSilent() {
-            return this.silent;
-        }
-
-        @Option(names = {"-v", "--verbose"}, description = "Verbose mode", required = false)
-        private boolean verbose;
-
-        /**
-         * Added getters to satisfy PMF and findBug requirements
-         */
-        public boolean getVerbose() {
-            return this.verbose;
-        }
-
-        @Option(names = {"-j", "--json"}, description = "JSON printing", required = false)
-        private boolean json;
-
-        /**
-         * Added getters to satisfy PMF and findBug requirements
-         */
-        public boolean getJson(){
-            return this.json;
-        }
-
-    }
+    protected Issue1380ExclusiveOptions exclusive;
 }
 
 /**
@@ -67,55 +41,16 @@ class TestingClassExclusiveTrue {
 class TestingClassExclusiveFalse {
 
     @ArgGroup(exclusive = false, multiplicity = "0..1")
-    private TestingClassExclusiveFalse.ExclusiveOptions exclusive;
-
-    /**
-     * Added getters to satisfy PMF and findBug requirements
-     */
-    public ExclusiveOptions getExclusive() {
-        return this.exclusive;
-    }
-
-    private static class ExclusiveOptions {
-        @Option(names = {"-s", "--silent"}, description = "Silent mode", required = false)
-        private boolean silent;
-
-        /**
-         * Added getters to satisfy PMF and findBug requirements
-         */
-        public boolean getSilent() {
-            return this.silent;
-        }
-
-        @Option(names = {"-v", "--verbose"}, description = "Verbose mode", required = false)
-        private boolean verbose;
-
-        /**
-         * Added getters to satisfy PMF and findBug requirements
-         */
-        public boolean getVerbose() {
-            return this.verbose;
-        }
-
-        @Option(names = {"-j", "--json"}, description = "JSON printing", required = false)
-        private boolean json;
-
-        /**
-         * Added getters to satisfy PMF and findBug requirements
-         */
-        public boolean getJson(){
-            return this.json;
-        }
-    }
+    protected Issue1380ExclusiveOptions exclusive;
 }
 
 /**
- * JUnit testing class for issue 1380 // CS427 https://github.com/remkop/picocli/issues/1380
+ * JUnit testing class for issue#1380 // CS427 https://github.com/remkop/picocli/issues/1380
  */
 public class Issue1380Test {
 
     /**
-     * JUnit test class for issue 1380 with exclusive set to true // CS427 https://github.com/remkop/picocli/issues/1380
+     * JUnit test class for issue#1380 with exclusive set to true // CS427 https://github.com/remkop/picocli/issues/1380
      */
     @Test
     public void testingWithExclusiveTrue() {
@@ -131,11 +66,10 @@ public class Issue1380Test {
                 "  -v, --verbose   Verbose mode\n";
 
         assertEquals(expectedText, returnedText);
-
     }
 
     /**
-     * JUnit test class for issue 1380 with exclusive set to false // CS427 https://github.com/remkop/picocli/issues/1380
+     * JUnit test class for issue#1380 with exclusive set to false// CS427 https://github.com/remkop/picocli/issues/1380
      */
     @Test
     public void testingWithExclusiveFalse() {
@@ -150,6 +84,5 @@ public class Issue1380Test {
                 "  -v, --verbose   Verbose mode\n";
 
         assertEquals(expectedText, returnedText);
-
     }
 }

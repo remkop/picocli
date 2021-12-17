@@ -18,40 +18,29 @@ import static org.junit.Assert.assertEquals;
 class TestingClass {
 
     @ArgGroup(exclusive = true, multiplicity = "0..1")
-    private TestingClass.ExclusiveOptions exclusive;
+    protected TestingClass.ExclusiveOptions exclusive;
 
     public TestingClass.ExclusiveOptions getExclusive() {
         return this.exclusive;
     }
     private static class ExclusiveOptions {
         @Option(names = {"-h", "--help"}, descriptionKey = "help.message", required = false)
-        private boolean showHelp;
+        protected boolean showHelp;
 
         @Option(names = {"-j", "--json"}, descriptionKey = "json.message", required = false)
-        private boolean isJson;
-
-        /**
-         * Added getters to satisfy PMF and findBug requirements
-         */
-        public boolean getshowHelp(){ return this.showHelp; }
-
-        /**
-         * Added getters to satisfy PMF and findBug requirements
-         */
-        public boolean getJson(){ return this.isJson; }
+        protected boolean isJson;
 
     }
 }
 
-
 @Ignore
 /**
- * JUnit testing class for issue 1420 // CS427 https://github.com/remkop/picocli/issues/1420
+ * JUnit testing class for issue#1420 // CS427 https://github.com/remkop/picocli/issues/1420
  */
 public class Issue1420Test {
 
     /**
-     * JUnit test class for issue 1420 with resourceBundle // CS427 https://github.com/remkop/picocli/issues/1420
+     * JUnit test class for issue#1420 with resourceBundle // CS427 https://github.com/remkop/picocli/issues/1420
      */
     @Test
     public void testingWithResourceBundle1() {
@@ -65,6 +54,5 @@ public class Issue1420Test {
                 "  -j, --json   Set json export-on\n";
 
         assertEquals(expectedText, returnedText);
-
     }
 }

@@ -8528,7 +8528,7 @@ public class CommandLine {
 
             // parser fields
             private boolean required;
-            private boolean optionIsNotRequired;
+            private boolean originallyRequired;
             private final boolean interactive;
             private final boolean echo;
             private final String prompt;
@@ -8581,7 +8581,7 @@ public class CommandLine {
                 annotatedElement = builder.annotatedElement;
                 defaultValue = NO_DEFAULT_VALUE.equals(builder.defaultValue) ? null : builder.defaultValue;
                 required = builder.required;
-                optionIsNotRequired = builder.optionIsNotRequired;
+                originallyRequired = builder.originallyRequired;
                 toString = builder.toString;
                 getter = builder.getter;
                 setter = builder.setter;
@@ -8638,11 +8638,11 @@ public class CommandLine {
                 }
             }
 
-            /** Returns whether this is a required option or positional parameter without a default value.
-             * If this argument is part of a {@linkplain ArgGroup group}, this method returns whether this argument is required <em>within the group</em> (so it is not necessarily a required argument for the command).
-             * @see Option#optionIsNotRequired() */
-            public boolean optionIsNotRequired(){
-                return optionIsNotRequired;
+            /** Returns the original value of the option's required attribute, regardless of whether the option is used in an exclusive group or not.
+             * @since 4.7.0
+             * @see Option#required() */
+            public boolean originallyRequired(){
+                return originallyRequired;
             }
 
             /** Returns whether this is a required option or positional parameter without a default value.
@@ -9196,7 +9196,7 @@ public class CommandLine {
                 private String[] description;
                 private String descriptionKey;
                 private boolean required;
-                private boolean optionIsNotRequired;
+                private boolean originallyRequired;
                 private boolean interactive;
                 private boolean echo;
                 private String prompt;
@@ -9234,7 +9234,7 @@ public class CommandLine {
                     description = original.description;
                     descriptionKey = original.descriptionKey;
                     required = original.required;
-                    optionIsNotRequired = original.optionIsNotRequired;
+                    originallyRequired = original.originallyRequired;
                     interactive = original.interactive;
                     echo = original.echo;
                     prompt = original.prompt;
@@ -10132,8 +10132,8 @@ public class CommandLine {
                         if (!arg.required()) {
                             modifiedArgs += sep + (arg.isOption() ? ((OptionSpec) arg).longestName() : (arg.paramLabel() + "[" + ((PositionalParamSpec) arg).index() + "]"));
                             sep = ",";
-                            //Keep initial required as optionIsNotRequired for Issue#1380 https://github.com/remkop/picocli/issues/1380
-                            arg.optionIsNotRequired = true;
+                            //Keep initial required as originallyRequired for Issue#1380 https://github.com/remkop/picocli/issues/1380
+                            arg.originallyRequired = true;
                             arg.required = true;
                         }
                     }
@@ -16128,7 +16128,7 @@ public class CommandLine {
                 String longOption = join(names, shortOptionCount, names.length - shortOptionCount, ", ");
                 Text longOptionText = createLongOptionText(option, paramLabelRenderer, scheme, longOption);
 
-                String requiredOption = !option.optionIsNotRequired() && option.required() ? requiredMarker : "";
+                String requiredOption = !option.originallyRequired() && option.required() ? requiredMarker : "";
                 return renderDescriptionLines(option, scheme, requiredOption, shortOption, longOptionText);
             }
 
