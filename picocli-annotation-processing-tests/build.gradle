@@ -13,7 +13,7 @@ dependencies {
     implementation project(':picocli-codegen')
     testImplementation "junit:junit:$junitVersion",
                        "com.google.testing.compile:compile-testing:$compileTestingVersion",
-                       "org.apache.logging.log4j:log4j-api:2.16.0",
+                       "org.apache.logging.log4j:log4j-api:2.17.0",
                        "org.apache.logging.log4j:log4j-core:2.16.0"
 
     if (org.gradle.api.JavaVersion.current().isJava8Compatible() && !org.gradle.api.JavaVersion.current().isJava9Compatible()) {
