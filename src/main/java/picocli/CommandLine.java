@@ -11475,20 +11475,19 @@ public class CommandLine {
                     injectSpecIntoVersionProvider(result, cmd, factory);
                     result.setAddMethodSubcommands(false); // method commands don't have method subcommands
                     hasCommandAnnotation = true;
-                    initSubcommands(cmd, null, result, factory, new Stack<Class<?>>()); // after adding options
+                    initSubcommands(cmd, null, result, factory, Collections.<Class<?>>emptySet()); // after adding options
                     result.mixinStandardHelpOptions(cmd.mixinStandardHelpOptions()); // do this last
                     initFromMethodParameters(userObject, method, result, null, factory);
                     // set command name to method name, unless @Command#name is set
                     result.initName(((Method)command).getName());
                 } else {
-                    Stack<Class<?>> hierarchy = new Stack<Class<?>>();
                     Class<?> cls = userObject.getType();
+                    Stack<Class<?>> hierarchy = new Stack<Class<?>>();
                     while (cls != null) {
                         hierarchy.add(cls);
                         cls = cls.getSuperclass();
                     }
-                    @SuppressWarnings("unchecked")
-                    Stack<Class<?>> originalHierarchy = (Stack<Class<?>>) hierarchy.clone();
+                    Set<Class<?>> fullHierarchySet = new HashSet<Class<?>>(hierarchy);
                     boolean mixinStandardHelpOptions = false;
                     while (!hierarchy.isEmpty()) {
                         cls = hierarchy.pop();
@@ -11499,7 +11498,7 @@ public class CommandLine {
                             hasCommandAnnotation = true;
                             mixinStandardHelpOptions |= cmd.mixinStandardHelpOptions();
                         }
-                        initSubcommands(cmd, cls, result, factory, originalHierarchy); // after adding options
+                        initSubcommands(cmd, cls, result, factory, fullHierarchySet); // after adding options
                         initMethodSubcommands(cls, result, factory); // regardless of @Command annotation. NOTE: after adding options
                         hasCommandAnnotation |= initFromAnnotatedMembers(userObject, cls, result, null, factory, null);
                     }
@@ -11522,7 +11521,7 @@ public class CommandLine {
                 });
             }
 
-            private static void initSubcommands(Command cmd, Class<?> cls, CommandSpec parent, IFactory factory, Stack<Class<?>> hierarchy) {
+            private static void initSubcommands(Command cmd, Class<?> cls, CommandSpec parent, IFactory factory, Set<Class<?>> hierarchy) {
                 if (cmd == null) { return; }
                 for (Class<?> sub : cmd.subcommands()) {
                     if (sub.equals(cls)) {
