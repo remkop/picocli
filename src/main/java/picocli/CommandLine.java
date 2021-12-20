@@ -11879,13 +11879,14 @@ public class CommandLine {
 
             private CommandUserObject(Object objectOrClass, IFactory factory) {
                 this.factory = Assert.notNull(factory, "factory");
-                type = objectOrClass == null ? null : objectOrClass.getClass();
-                instance = objectOrClass;
                 if (objectOrClass instanceof Class) {
-                    type = (Class<?>) objectOrClass;
                     instance = null;
-                } else if (objectOrClass instanceof Method) {
-                    type = null; // don't mix in options/positional params from outer class @Command
+                    type = (Class<?>) objectOrClass;
+                } else {
+                    instance = objectOrClass;
+                    type = objectOrClass == null || objectOrClass instanceof Method // don't mix in options/positional params from outer class @Command
+                        ? null
+                        : objectOrClass.getClass();
                 }
             }
             @Override public String toString() {
