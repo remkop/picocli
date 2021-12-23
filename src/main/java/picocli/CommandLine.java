@@ -6428,9 +6428,7 @@ public class CommandLine {
                 if (subSpec.name == null) { subSpec.name(actualName); }
                 subSpec.parent(this);
                 for (String alias : subSpec.aliases()) {
-                    if (t.isDebug()) {t.debug("Adding alias '%s' for '%s'%n", (parent == null ? "" : parent.qualifiedName() + " ") + alias, this.qualifiedName());}
-                    previous = commands.put(interpolator.interpolate(alias), subCommandLine);
-                    if (previous != null && previous != subCommandLine) { throw new DuplicateNameException("Alias '" + alias + "' for subcommand '" + actualName + "' is already used by another subcommand of '" + this.name() + "'"); }
+                    addAlias(alias, actualName, subCommandLine, t);
                 }
                 subSpec.initCommandHierarchyWithResourceBundle(resourceBundleBaseName(), resourceBundle());
                 if (scopeType() == ScopeType.INHERIT) {
@@ -6450,6 +6448,17 @@ public class CommandLine {
                     }
                 }
                 return this;
+            }
+            private void addAlias(String alias, String name, CommandLine subCommandLine, Tracer t) {
+                if (t.isDebug()) {t.debug("Adding alias '%s' for '%s'%n", (parent == null ? "" : parent.qualifiedName() + " ") + alias, qualifiedName());}
+                CommandLine previous = commands.put(interpolator.interpolate(alias), subCommandLine);
+                if (previous != null && previous != subCommandLine) {
+                    throw new DuplicateNameException("Alias '" + alias + "' for subcommand '" + name + "' is already used by another subcommand of '" + name() + "'");
+                }
+            }
+            private void removeAlias(String alias, CommandLine subCommandLine, Tracer t) {
+                if (t.isDebug()) {t.debug("Removing alias '%s' for '%s'%n", (parent == null ? "" : parent.qualifiedName() + " ") + alias, qualifiedName());}
+                commands.remove(interpolator.interpolate(alias));
             }
             private void inheritAttributesFrom(CommandSpec root) {
                 inherited = true;
@@ -7086,7 +7095,21 @@ public class CommandLine {
              * @return this CommandSpec for method chaining
              * @since 3.1 */
             public CommandSpec aliases(String... aliases) {
+                Set<String> existingAliasSet = this.aliases;
                 this.aliases = new LinkedHashSet<String>(Arrays.asList(aliases == null ? new String[0] : aliases));
+                if (parent != null) {
+                    //remove & add aliases
+                    Set<String> newAliasSet = new LinkedHashSet<String>(this.aliases);
+                    newAliasSet.removeAll(existingAliasSet);
+                    Tracer t = new Tracer();
+                    for (String alias : newAliasSet) {
+                        parent.addAlias(alias, name, commandLine, t);
+                    }
+                    existingAliasSet.removeAll(this.aliases);
+                    for (String alias : existingAliasSet) {
+                        parent.removeAlias(alias, commandLine, t);
+                    }
+                }
                 return this;
             }
 
