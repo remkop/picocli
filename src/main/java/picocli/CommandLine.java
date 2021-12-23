@@ -6499,16 +6499,21 @@ public class CommandLine {
             }
 
             private String validateSubcommandName(String name, CommandSpec subSpec) {
-                String result = name == null ? subSpec.name : name; // NOTE: check subSpec.name field, not subSpec.name()!
-                if (result == null && !subSpec.aliases.isEmpty()) {
+                if (name != null) {
+                    return name;
+                }
+                if (subSpec.name != null) { // NOTE: check subSpec.name field, not subSpec.name()!
+                    return subSpec.name;
+                }
+                if (!subSpec.aliases.isEmpty()) {
                     Iterator<String> iter = subSpec.aliases.iterator();
-                    result = iter.next();
+                    String result = iter.next();
                     iter.remove();
+                    if (result != null) {
+                        return result;
+                    }
                 }
-                if (result == null) {
-                    throw new InitializationException("Cannot add subcommand with null name to " + this.qualifiedName());
-                }
-                return result;
+                throw new InitializationException("Cannot add subcommand with null name to " + qualifiedName());
             }
 
             private void initCommandHierarchyWithResourceBundle(String bundleBaseName, ResourceBundle rb) {
