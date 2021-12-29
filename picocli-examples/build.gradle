@@ -31,7 +31,7 @@ dependencies {
                    "org.apache.ivy:ivy:$ivyVersion", // for Intelli/J
                    // for the Logging example
                    "org.apache.logging.log4j:log4j-api:2.17.0",
-                   "org.apache.logging.log4j:log4j-core:2.17.0",
+                   "org.apache.logging.log4j:log4j-core:2.17.1",
                    // for the JSR-380 BeanValidation example
                    "javax.validation:validation-api:2.0.1.Final",
                    "org.hibernate.validator:hibernate-validator:7.0.1.Final",
