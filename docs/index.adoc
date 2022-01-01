@@ -3230,7 +3230,7 @@ class MyApp implements Runnable {
     static class Outer {
         @Option(names = "-x", defaultValue = "XX") String x = "XX";
 
-        @ArgGroup(exclusive = "true")
+        @ArgGroup(exclusive = true)
         Inner inner; // no initial value
     }
 
@@ -3265,7 +3265,7 @@ class MyApp : Runnable {
     class Outer {
         @Option(names = "-x", defaultValue = "XX") var x = "XX";
 
-        @ArgGroup(exclusive = "true")
+        @ArgGroup(exclusive = true)
         lateinit var inner: Inner // no initial value
     }
 
