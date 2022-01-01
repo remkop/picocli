@@ -476,7 +476,7 @@ Usage: <main class> [OPTIONS] [<files>...]
 Note that the positional parameters are not abbreviated.
 
 === Custom Synopsis
-For even more control of the synopsis, use the `customSynopsis` attribute to specify one ore more synopsis lines. For example:
+For even more control of the synopsis, use the `customSynopsis` attribute to specify one or more synopsis lines. For example:
 
 .Example custom synopsis with multiple lines
 ----

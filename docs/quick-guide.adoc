@@ -232,7 +232,7 @@ public class ISOCodeResolver { // <1>
 }
 
 @Command(name = "language",
-  description = "Resolves one ore more ISO language codes (ISO-639-1 or 639-2)") // <4>
+  description = "Resolves one or more ISO language codes (ISO-639-1 or 639-2)") // <4>
 class SubcommandAsClass implements Runnable {
 
     @Parameters(arity = "1..*", paramLabel = "<languageCode>", description = "language code(s)")
@@ -367,7 +367,7 @@ Resolves ISO country codes (ISO-3166-1) or language codes (ISO-639-1/-2)
 Commands:
   help      Displays help information about the specified command
   country   Resolves ISO country codes (ISO-3166-1)
-  language  Resolves one ore more ISO language codes (ISO-639-1 or 639-2)
+  language  Resolves one or more ISO language codes (ISO-639-1 or 639-2)
 ----
 
 === ISOCodeResolver execution: try it!
@@ -408,7 +408,7 @@ class Tar {
     @Option(names = { "-f", "--file" }, paramLabel = "ARCHIVE", description = "the archive file")
     File archive;
 
-    @Parameters(paramLabel = "FILE", description = "one ore more files to archive")
+    @Parameters(paramLabel = "FILE", description = "one or more files to archive")
     File[] files;
 
     @Option(names = { "-h", "--help" }, usageHelp = true, description = "display a help message")
@@ -807,7 +807,7 @@ Usage: <main class> [OPTIONS] [<files>...]
 
 
 ==== Custom Synopsis
-For even more control of the synopsis, use the `customSynopsis` attribute to specify one ore more synopsis lines. For example:
+For even more control of the synopsis, use the `customSynopsis` attribute to specify one or more synopsis lines. For example:
 ----
 Usage: ln [OPTION]... [-T] TARGET LINK_NAME   (1st form)
   or:  ln [OPTION]... TARGET                  (2nd form)
