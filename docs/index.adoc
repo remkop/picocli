@@ -432,7 +432,7 @@ class Tar {
     @Option(names = { "-f", "--file" }, paramLabel = "ARCHIVE", description = "the archive file")
     File archive;
 
-    @Parameters(paramLabel = "FILE", description = "one ore more files to archive")
+    @Parameters(paramLabel = "FILE", description = "one or more files to archive")
     File[] files;
 
     @Option(names = { "-h", "--help" }, usageHelp = true, description = "display a help message")
@@ -450,7 +450,7 @@ class Tar : Runnable {
     @Option(names = ["-f", "--file"], paramLabel = "ARCHIVE", description = ["the archive file"])
     lateinit var archive: File;
 
-    @Parameters(paramLabel = "FILE", description = ["one ore more files to archive"])
+    @Parameters(paramLabel = "FILE", description = ["one or more files to archive"])
     lateinit var files: Array<File>;
 
     @Option(names = ["-h", "--help"], usageHelp = true, description = ["display a help message"])
@@ -6081,7 +6081,7 @@ class App {
 ----
 
 === Custom Synopsis
-For even more control of the synopsis, use the `customSynopsis` attribute to specify one ore more synopsis lines. For example:
+For even more control of the synopsis, use the `customSynopsis` attribute to specify one or more synopsis lines. For example:
 ----
 Usage: ln [OPTION]... [-T] TARGET LINK_NAME   (1st form)
   or:  ln [OPTION]... TARGET                  (2nd form)
@@ -11861,7 +11861,7 @@ In a production system, to have to set the boolean configuration value `quarkus.
 Please refer to the Quarkus guide https://quarkus.io/guides/mailer[Sending Emails] for details and additional information.
 ====
 
-As an extra, our command line interface offers the opportunity to specify one ore more custom header lines via the `headers` subcommand, more specifically via the `--header` option (`KEY="MY VALUE STRINGS"`) of this subcommand:
+As an extra, our command line interface offers the opportunity to specify one or more custom header lines via the `headers` subcommand, more specifically via the `--header` option (`KEY="MY VALUE STRINGS"`) of this subcommand:
 ----
 ./mvnw compile quarkus:dev -Dquarkus.args="--from= ... --to ... body message headers \
     --header X-Mailer=Picocli/Quarkus --header X-Mailer-Version=1.0"

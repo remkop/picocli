@@ -2692,7 +2692,7 @@ You may be interested in this <a href="http://catb.org/~esr/writings/taoup/html/
     <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="o">{</span> <span class="s">"-f"</span><span class="o">,</span> <span class="s">"--file"</span> <span class="o">},</span> <span class="n">paramLabel</span> <span class="o">=</span> <span class="s">"ARCHIVE"</span><span class="o">,</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"the archive file"</span><span class="o">)</span>
     <span class="nc">File</span> <span class="n">archive</span><span class="o">;</span>
 
-    <span class="nd">@Parameters</span><span class="o">(</span><span class="n">paramLabel</span> <span class="o">=</span> <span class="s">"FILE"</span><span class="o">,</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"one ore more files to archive"</span><span class="o">)</span>
+    <span class="nd">@Parameters</span><span class="o">(</span><span class="n">paramLabel</span> <span class="o">=</span> <span class="s">"FILE"</span><span class="o">,</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"one or more files to archive"</span><span class="o">)</span>
     <span class="nc">File</span><span class="o">[]</span> <span class="n">files</span><span class="o">;</span>
 
     <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="o">{</span> <span class="s">"-h"</span><span class="o">,</span> <span class="s">"--help"</span> <span class="o">},</span> <span class="n">usageHelp</span> <span class="o">=</span> <span class="kc">true</span><span class="o">,</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"display a help message"</span><span class="o">)</span>
@@ -2710,7 +2710,7 @@ You may be interested in this <a href="http://catb.org/~esr/writings/taoup/html/
     <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-f"</span><span class="p">,</span> <span class="s">"--file"</span><span class="p">],</span> <span class="n">paramLabel</span> <span class="p">=</span> <span class="s">"ARCHIVE"</span><span class="p">,</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"the archive file"</span><span class="p">])</span>
     <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">archive</span><span class="p">:</span> <span class="nc">File</span><span class="p">;</span>
 
-    <span class="nd">@Parameters</span><span class="p">(</span><span class="n">paramLabel</span> <span class="p">=</span> <span class="s">"FILE"</span><span class="p">,</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"one ore more files to archive"</span><span class="p">])</span>
+    <span class="nd">@Parameters</span><span class="p">(</span><span class="n">paramLabel</span> <span class="p">=</span> <span class="s">"FILE"</span><span class="p">,</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"one or more files to archive"</span><span class="p">])</span>
     <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">files</span><span class="p">:</span> <span class="nc">Array</span><span class="p">&lt;</span><span class="nc">File</span><span class="p">&gt;;</span>
 
     <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-h"</span><span class="p">,</span> <span class="s">"--help"</span><span class="p">],</span> <span class="n">usageHelp</span> <span class="p">=</span> <span class="k">true</span><span class="p">,</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"display a help message"</span><span class="p">])</span>
@@ -9936,7 +9936,7 @@ We want the usage help message to show this.</p>
 <div class="sect2">
 <h3 id="_custom_synopsis"><a class="anchor" href="#_custom_synopsis"></a>14.9. Custom Synopsis</h3>
 <div class="paragraph">
-<p>For even more control of the synopsis, use the <code>customSynopsis</code> attribute to specify one ore more synopsis lines. For example:</p>
+<p>For even more control of the synopsis, use the <code>customSynopsis</code> attribute to specify one or more synopsis lines. For example:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -16854,7 +16854,7 @@ Please refer to the Quarkus guide <a href="https://quarkus.io/guides/mailer">Sen
 </table>
 </div>
 <div class="paragraph">
-<p>As an extra, our command line interface offers the opportunity to specify one ore more custom header lines via the <code>headers</code> subcommand, more specifically via the <code>--header</code> option (<code>KEY="MY VALUE STRINGS"</code>) of this subcommand:</p>
+<p>As an extra, our command line interface offers the opportunity to specify one or more custom header lines via the <code>headers</code> subcommand, more specifically via the <code>--header</code> option (<code>KEY="MY VALUE STRINGS"</code>) of this subcommand:</p>
 </div>
 <div class="listingblock">
 <div class="content">

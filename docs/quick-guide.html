@@ -2135,7 +2135,7 @@ NO: Norway</pre>
 <span class="o">}</span>
 
 <span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">"language"</span><span class="o">,</span>
-  <span class="n">description</span> <span class="o">=</span> <span class="s">"Resolves one ore more ISO language codes (ISO-639-1 or 639-2)"</span><span class="o">)</span> <i class="conum" data-value="4"></i><b>(4)</b>
+  <span class="n">description</span> <span class="o">=</span> <span class="s">"Resolves one or more ISO language codes (ISO-639-1 or 639-2)"</span><span class="o">)</span> <i class="conum" data-value="4"></i><b>(4)</b>
 <span class="kd">class</span> <span class="nc">SubcommandAsClass</span> <span class="kd">implements</span> <span class="nc">Runnable</span> <span class="o">{</span>
 
     <span class="nd">@Parameters</span><span class="o">(</span><span class="n">arity</span> <span class="o">=</span> <span class="s">"1..*"</span><span class="o">,</span> <span class="n">paramLabel</span> <span class="o">=</span> <span class="s">"&lt;languageCode&gt;"</span><span class="o">,</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"language code(s)"</span><span class="o">)</span>
@@ -2305,7 +2305,7 @@ Resolves ISO country codes (ISO-3166-1) or language codes (ISO-639-1/-2)
 Commands:
   help      Displays help information about the specified command
   country   Resolves ISO country codes (ISO-3166-1)
-  language  Resolves one ore more ISO language codes (ISO-639-1 or 639-2)</pre>
+  language  Resolves one or more ISO language codes (ISO-639-1 or 639-2)</pre>
 </div>
 </div>
 </div>
@@ -2365,7 +2365,7 @@ Option names commonly start with <code>-</code> or <code>--</code>, but picocli 
     <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="o">{</span> <span class="s">"-f"</span><span class="o">,</span> <span class="s">"--file"</span> <span class="o">},</span> <span class="n">paramLabel</span> <span class="o">=</span> <span class="s">"ARCHIVE"</span><span class="o">,</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"the archive file"</span><span class="o">)</span>
     <span class="nc">File</span> <span class="n">archive</span><span class="o">;</span>
 
-    <span class="nd">@Parameters</span><span class="o">(</span><span class="n">paramLabel</span> <span class="o">=</span> <span class="s">"FILE"</span><span class="o">,</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"one ore more files to archive"</span><span class="o">)</span>
+    <span class="nd">@Parameters</span><span class="o">(</span><span class="n">paramLabel</span> <span class="o">=</span> <span class="s">"FILE"</span><span class="o">,</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"one or more files to archive"</span><span class="o">)</span>
     <span class="nc">File</span><span class="o">[]</span> <span class="n">files</span><span class="o">;</span>
 
     <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="o">{</span> <span class="s">"-h"</span><span class="o">,</span> <span class="s">"--help"</span> <span class="o">},</span> <span class="n">usageHelp</span> <span class="o">=</span> <span class="kc">true</span><span class="o">,</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"display a help message"</span><span class="o">)</span>
@@ -2923,7 +2923,7 @@ Positional parameters are not abbreviated.</p>
 <div class="sect3">
 <h4 id="_custom_synopsis"><a class="anchor" href="#_custom_synopsis"></a>10.2.5. Custom Synopsis</h4>
 <div class="paragraph">
-<p>For even more control of the synopsis, use the <code>customSynopsis</code> attribute to specify one ore more synopsis lines. For example:</p>
+<p>For even more control of the synopsis, use the <code>customSynopsis</code> attribute to specify one or more synopsis lines. For example:</p>
 </div>
 <div class="listingblock">
 <div class="content">
