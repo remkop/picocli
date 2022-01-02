@@ -53,11 +53,11 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#1488] DEP: Bump log4j-api from 2.13.0 to 2.14.1
 * [#1487] DEP: Bump kotlin-script-runtime from 1.5.31 to 1.6.0
 * [#1486] DEP: Bump gradle-nexus-staging-plugin from 0.21.0 to 0.30.0
-* [#1500] DEP: Bump gradle from 7.3 to 7.3.1. Thanks to [Ross Goldberg](https://github.com/rgoldberg) for the pull request.
+* [#1500][#1517] DEP: Bump gradle from 7.3 to 7.3.3. Thanks to [Ross Goldberg](https://github.com/rgoldberg) for the pull request.
 * [#1515] DEP: Bump kotlin-gradle-plugin from 1.6.0 to 1.6.10
 * [#1512] DEP: Bump kotlin-script-runtime from 1.6.0 to 1.6.10
-* [#1514] DEP: Bump log4j-api from 2.14.1 to 2.16.0
-* [#1513] DEP: Bump log4j-core from 2.14.1 to 2.16.0
+* [#1514] DEP: Bump log4j-api from 2.14.1 to 2.17.1
+* [#1513] DEP: Bump log4j-core from 2.14.1 to 2.17.1
 
 ## <a name="4.6.3-deprecated"></a> Deprecations
 No features were deprecated in this release.
