@@ -15,7 +15,7 @@ public class Issue1537Ambiguous {
     @Command
     static class MyCommand implements Runnable {
 
-        @Command(name = "chemical-files", aliases = "chem-formats")
+        @Command(name = "chemical-files", aliases = {"chem-formats"})
         void sub() {}
 
         public void run() {}
@@ -23,7 +23,7 @@ public class Issue1537Ambiguous {
 
     @Test
     public void testExecute() {
-        int exitCode = new CommandLine(new MyCommand()).execute("chem");
+        int exitCode = new CommandLine(new MyCommand()).setAbbreviatedOptionsAllowed(true).execute("chem");
         assertEquals(2, exitCode);
 
         String expected = String.format(
@@ -35,7 +35,7 @@ public class Issue1537Ambiguous {
     @Test
     public void testParseArgs() {
         try {
-            new CommandLine(new MyCommand()).parseArgs("chem");
+            new CommandLine(new MyCommand()).setAbbreviatedOptionsAllowed(true).parseArgs("chem");
             fail("expected exception");
         } catch (CommandLine.UnmatchedArgumentException ex) {
             assertEquals("Unmatched argument at index 0: 'chem'", ex.getMessage());
