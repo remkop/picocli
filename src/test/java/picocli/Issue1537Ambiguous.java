@@ -23,22 +23,24 @@ public class Issue1537Ambiguous {
 
     @Test
     public void testExecute() {
-        int exitCode = new CommandLine(new MyCommand()).setAbbreviatedOptionsAllowed(true).execute("chem");
+        int exitCode = new CommandLine(new MyCommand()).setAbbreviatedSubcommandsAllowed(true).execute("chem");
         assertEquals(2, exitCode);
 
         String expected = String.format(
-            "Unmatched argument at index 0: 'chem'%n" +
-            "Did you mean: chem-formats or chemical-files?%n");
+            "Error: 'chem' is not unique: it matches 'chemical-files', 'chem-formats'%n" +
+                "Usage: <main class> [COMMAND]%n" +
+                "Commands:%n" +
+                "  chemical-files, chem-formats%n");
         assertEquals(expected, systemErrRule.getLog());
     }
 
     @Test
     public void testParseArgs() {
         try {
-            new CommandLine(new MyCommand()).setAbbreviatedOptionsAllowed(true).parseArgs("chem");
+            new CommandLine(new MyCommand()).setAbbreviatedSubcommandsAllowed(true).parseArgs("chem");
             fail("expected exception");
-        } catch (CommandLine.UnmatchedArgumentException ex) {
-            assertEquals("Unmatched argument at index 0: 'chem'", ex.getMessage());
+        } catch (CommandLine.ParameterException ex) {
+            assertEquals("Error: 'chem' is not unique: it matches 'chemical-files', 'chem-formats'", ex.getMessage());
         }
     }
 }
