@@ -8060,7 +8060,7 @@ class ListFiles : Runnable {
 ----
 
 === Subcommand Aliases
-Commands may optionally define an `aliases` attribute to provide alternate names for commands that will be recognized by the parser. Aliases are displayed in the default help output. For example:
+Commands may optionally define an `aliases` attribute to provide alternate names for subcommands that will be recognized by the parser. Aliases are displayed in the default help output. For example:
 
 .Java
 [source,java,role="primary"]
