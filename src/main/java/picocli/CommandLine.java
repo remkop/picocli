@@ -18413,7 +18413,7 @@ public class CommandLine {
                     return false;
                 }
                 MatchResult<?> p = (MatchResult<?>) o;
-                return fullName.equals(p.fullName) && Objects.equals(value, p.value);
+                return fullName.equals(p.fullName) && (hasValue() ? value.equals(p.value) : value == p.value);
             }
 
             @Override
