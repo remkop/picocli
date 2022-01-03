@@ -8,11 +8,13 @@ import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
 
 import java.io.IOException;
 import java.util.concurrent.Callable;
 
 import static java.lang.System.exit;
+import static picocli.tool.jline3.Repl.runRepl;
 import static picocli.tool.jline3.YourProcessing.process;
 
 /**
@@ -39,19 +41,27 @@ public class ExampleTool {
     version = {"example tool 0-SNAPSHOT"}
 )
 final class Options implements Callable<Integer> {
+    @Option(
+        names = {"--prompt"},
+        description = {"Change the interactive prompt from '> '."}
+    )
+    private String prompt = "> ";
+
     @Override
     public Integer call() {
         // Return failure to demonstrate that `-h` does not fail: standard
         // options are handled by Picocli: this `call()` method is not
         // invoked by standard options
-        return 1;
+        return runRepl(prompt);
     }
 }
 
 final class Repl {
     /**
      * This is an <em>absolutely minimal</em> REPL.
+     *
      * @param prompt the prompt to show on left-side asking user for input
+     *
      * @return the exit code for <code>main()</code>
      *
      * @todo Newer versions of Java permit defining this as a lambda
