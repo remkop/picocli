@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'application'
 }
 
 group 'info.picocli'
@@ -25,6 +26,20 @@ jar {
                     'Implementation-Version': archiveVersion.get(),
                     'Automatic-Module-Name' : 'info.picocli.shell.jline3'
     }
+
+    // Build an executable jar for `ExampleTool` and bundle dependencies
+    // within the executable jar.  Note that the _same_ classes turn up
+    // multiple times from "rootProject", hence "WARN"
+    duplicatesStrategy = DuplicatesStrategy.WARN
+    from {
+        configurations.runtimeClasspath.collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
+}
+
+application {
+    mainClass = 'picocli.tool.jline3.ExampleTool'
 }
 
 ext {
@@ -33,4 +48,3 @@ ext {
     PUBLISH_VERSION = "$projectVersion"
 }
 apply from: "${rootProject.projectDir}/gradle/publish-mavencentral.gradle"
-
