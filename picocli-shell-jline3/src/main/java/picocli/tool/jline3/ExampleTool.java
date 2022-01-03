@@ -11,7 +11,9 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -58,19 +60,38 @@ final class Options implements Callable<Integer> {
 
     @Override
     public Integer call() {
+        // Check if we are reading from a pipe or shell redirection
+        final boolean isatty = null != System.console();
+
         // Return failure to demonstrate that `-h` does not fail: standard
         // options are handled by Picocli: this `call()` method is not
         // invoked by standard options
-
-        if (arguments.isEmpty())
+        if (!isatty) {
+            // TODO: Bleh.  Nicer in more modern Java
+            try (final BufferedReader lineReader = lineReader()) {
+                while (true) {
+                    final String line = lineReader.readLine();
+                    if (null == line) break;
+                    final Integer result = process(line);
+                    if (0 != result)
+                        return result;
+                }
+            } catch (final IOException e) {
+                return 2;
+            }
+        } else if (arguments.isEmpty())
             return runRepl(prompt);
         else for (final String argument : arguments) {
-            final Integer result = process(argument);
-            if (0 != result)
-                return result;
-        }
+                final Integer result = process(argument);
+                if (0 != result)
+                    return result;
+            }
 
         return 0;
+    }
+
+    private static BufferedReader lineReader() {
+        return new BufferedReader(new InputStreamReader(System.in));
     }
 }
 
@@ -123,12 +144,14 @@ final class Repl {
 /**
  * Your processing logic goes here. It could be human-edited text from the
  * REPL, it could be tests, it could be text passed from the command line, it
- * could be text read from <code>STDIN</code> via a pipe or shell redirection.
+ * could be text read from <code>STDIN</code> via a pipe or shell
+ * redirection.
  */
 final class YourProcessing {
     // TODO: It is challenging in Java to return _all of_ a status code for
     //  the command line, output results, and to let caller handle exceptions
     static Integer process(final String input) {
+        System.out.println(input); // Dummy example
         return 0;
     }
 }
