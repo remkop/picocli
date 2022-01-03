@@ -6,7 +6,7 @@
 Picocli Shell JLine3 contains components and documentation for building
 interactive shell command line applications with JLine 3 and picocli.
 
-JLine and picocli complement each other very well and have little or none functional overlap.
+JLine and picocli complement each other very well and have little or no functional overlap.
 
 JLine provides interactive shell functionality but has no built-in command line parsing functionality.
 What it does provide is a tokenizer for splitting a single command line String into an array of command line argument Strings.
