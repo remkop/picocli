@@ -22,6 +22,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#1384][#1493] Bugfix: parser now correctly handles ArgGroups with optional positional parameters. Thanks to [Matthew Lewis](https://github.com/mattjlewis) for raising this and to [Kurt Kaiser](https://github.com/kurtkaiser) for the pull request.
 * [#1366][#1370] Enhancement: show in usage help that the built-in `help` command only works on the first argument. Thanks to [Patrice Duroux](https://github.com/peutch) for the pull request.
 * [#1492] Enhancement: Use EditorConfig to define file formats and coding style; Thanks to [Goooler](https://github.com/Goooler) for the pull request.
+* [#1530] Enhancement: Simplified `CommandSpec#validateSubcommandName` implementation. Thanks to [Ross Goldberg](https://github.com/rgoldberg) for the pull request.
 * [#1491] Build: Add build job in CI; Thanks to [Goooler](https://github.com/Goooler) for the pull request.
 * [#1482] Build: Optimize gradle; Thanks to [Goooler](https://github.com/Goooler) for the pull request.
 * [#1484] Enhancement: Fixed `org.junit.Assert.assertThat` deprecation warning; Thanks to [Ross Goldberg](https://github.com/rgoldberg) for the pull request.
