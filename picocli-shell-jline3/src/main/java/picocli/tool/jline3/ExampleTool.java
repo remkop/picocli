@@ -9,11 +9,14 @@ import org.jline.terminal.TerminalBuilder;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.Callable;
 
 import static java.lang.System.exit;
+import static java.util.Collections.emptyList;
 import static picocli.tool.jline3.Repl.runRepl;
 import static picocli.tool.jline3.YourProcessing.process;
 
@@ -47,12 +50,27 @@ final class Options implements Callable<Integer> {
     )
     private String prompt = "> ";
 
+    @Parameters(
+        description = {"Command line arguments",
+            "Edit this help as suitable."}
+    )
+    private List<String> arguments = emptyList();
+
     @Override
     public Integer call() {
         // Return failure to demonstrate that `-h` does not fail: standard
         // options are handled by Picocli: this `call()` method is not
         // invoked by standard options
-        return runRepl(prompt);
+
+        if (arguments.isEmpty())
+            return runRepl(prompt);
+        else for (final String argument : arguments) {
+            final Integer result = process(argument);
+            if (0 != result)
+                return result;
+        }
+
+        return 0;
     }
 }
 
@@ -104,8 +122,8 @@ final class Repl {
 
 /**
  * Your processing logic goes here. It could be human-edited text from the
- * REPL, it could be test passed from the command line, it could be text read
- * from <code>STDIN</code> via a pipe or shell redirection.
+ * REPL, it could be tests, it could be text passed from the command line, it
+ * could be text read from <code>STDIN</code> via a pipe or shell redirection.
  */
 final class YourProcessing {
     // TODO: It is challenging in Java to return _all of_ a status code for
