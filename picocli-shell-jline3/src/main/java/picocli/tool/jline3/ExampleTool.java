@@ -40,53 +40,46 @@ public class ExampleTool {
     }
 }
 
-@Command(
-    name = "example tool",
-    mixinStandardHelpOptions = true,
-    version = {"example tool 0-SNAPSHOT"}
-)
+@Command(name = "example tool", mixinStandardHelpOptions = true, version = {"example tool 0-SNAPSHOT"})
 final class Options implements Callable<Integer> {
-    @Option(
-        names = {"--prompt"},
-        description = {"Change the interactive prompt from '> '."}
-    )
+    @Option(names = {"--prompt"}, description = {"Change the interactive prompt from '> '."})
     private String prompt = "> ";
 
-    @Parameters(
-        description = {"Command line arguments",
-            "Edit this help as suitable."}
-    )
+    @Parameters(description = {"Command line arguments", "Edit this help as suitable."})
     private List<String> arguments = emptyList();
 
     @Override
     public Integer call() {
-        // Check if we are reading from a pipe or shell redirection
-        final boolean isatty = null != System.console();
-
         // Return failure to demonstrate that `-h` does not fail: standard
         // options are handled by Picocli: this `call()` method is not
         // invoked by standard options
-        if (!isatty) {
-            // TODO: Bleh.  Nicer in more modern Java
-            try (final BufferedReader lineReader = lineReader()) {
-                while (true) {
-                    final String line = lineReader.readLine();
-                    if (null == line) break;
-                    final Integer result = process(line);
-                    if (0 != result)
-                        return result;
-                }
-            } catch (final IOException e) {
-                return 2;
-            }
-        } else if (arguments.isEmpty())
-            return runRepl(prompt);
-        else for (final String argument : arguments) {
-                final Integer result = process(argument);
-                if (0 != result)
-                    return result;
-            }
 
+        // Use case #1 -- process command line arguments
+        if (!arguments.isEmpty()) {
+            for (final String argument : arguments) {
+                final Integer result = process(argument);
+                if (0 != result) return result;
+            }
+            return 0;
+        }
+        // Use case #2 -- pipe or shell redirection
+        else if (null == System.console()) return runFromInput();
+        // Use case #3 -- interactive REPL
+        else return runRepl(prompt);
+    }
+
+    /** @todo Nicer way using more modern Java. */
+    private static Integer runFromInput() {
+        try (final BufferedReader lineReader = lineReader()) {
+            while (true) {
+                final String line = lineReader.readLine();
+                if (null == line) break;
+                final Integer result = process(line);
+                if (0 != result) return result;
+            }
+        } catch (final IOException e) {
+            return 2;
+        }
         return 0;
     }
 
@@ -106,12 +99,8 @@ final class Repl {
      * @todo Newer versions of Java permit defining this as a lambda
      */
     static Integer runRepl(final String prompt) {
-        try (final Terminal terminal = TerminalBuilder.builder()
-            .name("example tool")
-            .build()) {
-            final LineReader lineReader = LineReaderBuilder.builder()
-                .terminal(terminal)
-                .build();
+        try (final Terminal terminal = TerminalBuilder.builder().name("example tool").build()) {
+            final LineReader lineReader = LineReaderBuilder.builder().terminal(terminal).build();
             do {
                 final String input;
                 try {
