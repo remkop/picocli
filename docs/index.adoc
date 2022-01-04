@@ -432,7 +432,7 @@ class Tar {
     @Option(names = { "-f", "--file" }, paramLabel = "ARCHIVE", description = "the archive file")
     File archive;
 
-    @Parameters(paramLabel = "FILE", description = "one ore more files to archive")
+    @Parameters(paramLabel = "FILE", description = "one or more files to archive")
     File[] files;
 
     @Option(names = { "-h", "--help" }, usageHelp = true, description = "display a help message")
@@ -450,7 +450,7 @@ class Tar : Runnable {
     @Option(names = ["-f", "--file"], paramLabel = "ARCHIVE", description = ["the archive file"])
     lateinit var archive: File;
 
-    @Parameters(paramLabel = "FILE", description = ["one ore more files to archive"])
+    @Parameters(paramLabel = "FILE", description = ["one or more files to archive"])
     lateinit var files: Array<File>;
 
     @Option(names = ["-h", "--help"], usageHelp = true, description = ["display a help message"])
@@ -3230,7 +3230,7 @@ class MyApp implements Runnable {
     static class Outer {
         @Option(names = "-x", defaultValue = "XX") String x = "XX";
 
-        @ArgGroup(exclusive = "true")
+        @ArgGroup(exclusive = true)
         Inner inner; // no initial value
     }
 
@@ -3265,7 +3265,7 @@ class MyApp : Runnable {
     class Outer {
         @Option(names = "-x", defaultValue = "XX") var x = "XX";
 
-        @ArgGroup(exclusive = "true")
+        @ArgGroup(exclusive = true)
         lateinit var inner: Inner // no initial value
     }
 
@@ -6081,7 +6081,7 @@ class App {
 ----
 
 === Custom Synopsis
-For even more control of the synopsis, use the `customSynopsis` attribute to specify one ore more synopsis lines. For example:
+For even more control of the synopsis, use the `customSynopsis` attribute to specify one or more synopsis lines. For example:
 ----
 Usage: ln [OPTION]... [-T] TARGET LINK_NAME   (1st form)
   or:  ln [OPTION]... TARGET                  (2nd form)
@@ -8060,7 +8060,7 @@ class ListFiles : Runnable {
 ----
 
 === Subcommand Aliases
-Commands may optionally define an `aliases` attribute to provide alternate names for commands that will be recognized by the parser. Aliases are displayed in the default help output. For example:
+Commands may optionally define an `aliases` attribute to provide alternate names that will be recognized by the parser. Aliases are displayed in the default help output. For example:
 
 .Java
 [source,java,role="primary"]
@@ -11861,7 +11861,7 @@ In a production system, to have to set the boolean configuration value `quarkus.
 Please refer to the Quarkus guide https://quarkus.io/guides/mailer[Sending Emails] for details and additional information.
 ====
 
-As an extra, our command line interface offers the opportunity to specify one ore more custom header lines via the `headers` subcommand, more specifically via the `--header` option (`KEY="MY VALUE STRINGS"`) of this subcommand:
+As an extra, our command line interface offers the opportunity to specify one or more custom header lines via the `headers` subcommand, more specifically via the `--header` option (`KEY="MY VALUE STRINGS"`) of this subcommand:
 ----
 ./mvnw compile quarkus:dev -Dquarkus.args="--from= ... --to ... body message headers \
     --header X-Mailer=Picocli/Quarkus --header X-Mailer-Version=1.0"

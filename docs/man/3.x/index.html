@@ -860,7 +860,7 @@ You may be interested in this <a href="http://catb.org/~esr/writings/taoup/html/
     <span class="annotation">@Option</span>(names = { <span class="string"><span class="delimiter">&quot;</span><span class="content">-f</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--file</span><span class="delimiter">&quot;</span></span> }, paramLabel = <span class="string"><span class="delimiter">&quot;</span><span class="content">ARCHIVE</span><span class="delimiter">&quot;</span></span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">the archive file</span><span class="delimiter">&quot;</span></span>)
     <span class="predefined-type">File</span> archive;
 
-    <span class="annotation">@Parameters</span>(paramLabel = <span class="string"><span class="delimiter">&quot;</span><span class="content">FILE</span><span class="delimiter">&quot;</span></span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">one ore more files to archive</span><span class="delimiter">&quot;</span></span>)
+    <span class="annotation">@Parameters</span>(paramLabel = <span class="string"><span class="delimiter">&quot;</span><span class="content">FILE</span><span class="delimiter">&quot;</span></span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">one or more files to archive</span><span class="delimiter">&quot;</span></span>)
     <span class="predefined-type">File</span><span class="type">[]</span> files;
 
     <span class="annotation">@Option</span>(names = { <span class="string"><span class="delimiter">&quot;</span><span class="content">-h</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--help</span><span class="delimiter">&quot;</span></span> }, usageHelp = <span class="predefined-constant">true</span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">display a help message</span><span class="delimiter">&quot;</span></span>)
@@ -2900,7 +2900,7 @@ Options with a lower number are shown before options with a higher number.</p>
 <div class="sect2">
 <h3 id="_custom_synopsis">10.7. Custom Synopsis</h3>
 <div class="paragraph">
-<p>For even more control of the synopsis, use the <code>customSynopsis</code> attribute to specify one ore more synopsis lines. For example:</p>
+<p>For even more control of the synopsis, use the <code>customSynopsis</code> attribute to specify one or more synopsis lines. For example:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -3815,7 +3815,7 @@ adding subcommands.
 <div class="sect2">
 <h3 id="_subcommand_aliases">13.3. Subcommand Aliases</h3>
 <div class="paragraph">
-<p>Commands may optionally define an <code>aliases</code> attribute to provide alternate names for commands that will be recognized by the parser. Aliases are displayed in the default help output. For example:</p>
+<p>Commands may optionally define an <code>aliases</code> attribute to provide alternate names that will be recognized by the parser. Aliases are displayed in the default help output. For example:</p>
 </div>
 <div class="listingblock">
 <div class="content">
