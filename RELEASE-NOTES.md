@@ -40,6 +40,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#1383][#1502] DOC: add tests demonstrating usage of multiple arguments. Thanks to [Ben Kedo](https://github.com/MadFoal) and [lind6](https://github.com/lind6) for the pull request.
 * [#1462] DOC, BUILD, DEP: Extend documentation on argument files, fix broken/outdated links, update dependencies. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1457] DOC: add caution about arguments in @files with quoted option parameters. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+* [#1544][#1545] Add NOTICE file with GPL v2 + CPE license. Thanks to [Keith M Swartz](https://github.com/kswartz26) for the pull request.
 * [#1491] BUILD: Add build job in CI; Thanks to [Goooler](https://github.com/Goooler) for the pull request.
 * [#1482] BUILD: Optimize gradle; Thanks to [Goooler](https://github.com/Goooler) for the pull request.
 * [#1461] BUILD: Allow publishing without signing for non-release versions. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
