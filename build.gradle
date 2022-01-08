@@ -13,7 +13,7 @@ buildscript {
 
     dependencies {
         classpath "org.asciidoctor:asciidoctor-gradle-jvm:$asciidoctorGradlePluginVersion"
-        classpath 'org.asciidoctor:asciidoctorj-pdf:1.6.0'
+        classpath 'org.asciidoctor:asciidoctorj-pdf:1.6.2'
         classpath "gradle.plugin.org.beryx:badass-jar:1.2.0"
         classpath 'biz.aQute.bnd:biz.aQute.bnd.gradle:6.1.0'
         classpath "io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.30.0"
