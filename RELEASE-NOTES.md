@@ -64,6 +64,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#1514] DEP: Bump log4j-api from 2.14.1 to 2.17.1
 * [#1513] DEP: Bump log4j-core from 2.14.1 to 2.17.1
 * [#1543] DEP: Bump asciidoctorj-pdf from 1.6.0 to 1.6.2
+* [#1547] DEP: Bump scala-library from 2.13.7 to 2.13.8
 
 ## <a name="4.6.3-deprecated"></a> Deprecations
 No features were deprecated in this release.
