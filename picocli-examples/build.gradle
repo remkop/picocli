@@ -25,7 +25,7 @@ dependencies {
     api rootProject
     api project(':picocli-groovy')
     api "org.jetbrains.kotlin:kotlin-stdlib"
-    api 'org.scala-lang:scala-library:2.13.7'
+    api 'org.scala-lang:scala-library:2.13.8'
     ivy            "org.apache.ivy:ivy:$ivyVersion" // for Intelli/J
     implementation "org.codehaus.groovy:groovy-all:$groovyVersion",
                    "org.apache.ivy:ivy:$ivyVersion", // for Intelli/J
