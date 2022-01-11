@@ -33,6 +33,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#1485] Enhancement: Fix build warnings; build doc enhancements; Thanks to [Ross Goldberg](https://github.com/rgoldberg) for the pull request.
 * [#1483] Enhancement: Improved `AbstractCommandSpecProcessor#isSubcommand`; Thanks to [Ross Goldberg](https://github.com/rgoldberg) for the pull request.
 * [#1499] Enhancement: Improved `DefaultFactory#create(Class<T>)`. Thanks to [Ross Goldberg](https://github.com/rgoldberg) for the pull request.
+* [#1518] Enhancement: Simplified detection of getter & setter in `TypedMember` constructor. Thanks to [Ross Goldberg](https://github.com/rgoldberg) for the pull request.
 * [#1539] DOC: Various documentation improvements. Thanks to [Hamid Nazari](https://github.com/hamid-nazari) for the pull request.
 * [#1481] DOC: Removed repeated "whether" typo in JavaDoc; Thanks to [Ross Goldberg](https://github.com/rgoldberg) for the pull request.
 * [#1125][#1538] DOC: Update "Option Names or Subcommands as Option Values" section in user manual; Thanks to [Scott Turner](https://github.com/turnef) for raising this.
