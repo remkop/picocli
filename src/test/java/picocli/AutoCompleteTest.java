@@ -687,7 +687,10 @@ public class AutoCompleteTest {
                 "  alias compopt=complete\n" +
                 "\n" +
                 "  # Enable bash completion in zsh (see [7])\n" +
-                "  autoload -U +X compinit && compinit\n" +
+                "  # Only initialize completions module once to avoid unregistering existing completions.\n" +
+                "  if ! type compdef > /dev/null; then\n" +
+                "    autoload -U +X compinit && compinit\n" +
+                "  fi\n" +
                 "  autoload -U +X bashcompinit && bashcompinit\n" +
                 "fi\n" +
                 "\n" +
@@ -898,7 +901,10 @@ public class AutoCompleteTest {
                 "  alias compopt=complete\n" +
                 "\n" +
                 "  # Enable bash completion in zsh (see [7])\n" +
-                "  autoload -U +X compinit && compinit\n" +
+                "  # Only initialize completions module once to avoid unregistering existing completions.\n" +
+                "  if ! type compdef > /dev/null; then\n" +
+                "    autoload -U +X compinit && compinit\n" +
+                "  fi\n" +
                 "  autoload -U +X bashcompinit && bashcompinit\n" +
                 "fi\n" +
                 "\n" +
@@ -1457,7 +1463,10 @@ public class AutoCompleteTest {
                     "  alias compopt=complete\n" +
                     "\n" +
                     "  # Enable bash completion in zsh (see [7])\n" +
-                    "  autoload -U +X compinit && compinit\n" +
+                    "  # Only initialize completions module once to avoid unregistering existing completions.\n" +
+                    "  if ! type compdef > /dev/null; then\n" +
+                    "    autoload -U +X compinit && compinit\n" +
+                    "  fi\n" +
                     "  autoload -U +X bashcompinit && bashcompinit\n" +
                     "fi\n" +
                     "\n" +
@@ -1660,7 +1669,10 @@ public class AutoCompleteTest {
                 "  alias compopt=complete\n" +
                 "\n" +
                 "  # Enable bash completion in zsh (see [7])\n" +
-                "  autoload -U +X compinit && compinit\n" +
+                "  # Only initialize completions module once to avoid unregistering existing completions.\n" +
+                "  if ! type compdef > /dev/null; then\n" +
+                "    autoload -U +X compinit && compinit\n" +
+                "  fi\n" +
                 "  autoload -U +X bashcompinit && bashcompinit\n" +
                 "fi\n" +
                 "\n" +
