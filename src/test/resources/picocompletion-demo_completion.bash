@@ -51,7 +51,10 @@ elif [ -n "$ZSH_VERSION" ]; then
   alias compopt=complete
 
   # Enable bash completion in zsh (see [7])
-  autoload -U +X compinit && compinit
+  # Only initialize completions module once to avoid unregistering existing completions.
+  if ! type compdef > /dev/null; then
+    autoload -U +X compinit && compinit
+  fi
   autoload -U +X bashcompinit && bashcompinit
 fi
 
