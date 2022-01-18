@@ -5,7 +5,7 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Spec;
 
-@Command(name = "Command1", subcommands =  CommandLine.HelpCommand.class,
+@Command(name = "Command2", subcommands =  CommandLine.HelpCommand.class,
     description = "Command 1 description")
 class Command2 {
     @Spec

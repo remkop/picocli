@@ -11,7 +11,7 @@ import static com.google.testing.compile.CompilationSubject.assertThat;
 import static com.google.testing.compile.Compiler.javac;
 
 public class Issue1440Test {
-    @Ignore("https://github.com/remkop/picocli/issues/1440")
+    //@Ignore("https://github.com/remkop/picocli/issues/1440")
     @Test
     public void testIssue1440() {
         Processor processor = new AnnotatedCommandSourceGeneratorProcessor();
