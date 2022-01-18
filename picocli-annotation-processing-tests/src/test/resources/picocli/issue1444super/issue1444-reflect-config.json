@@ -1,0 +1,42 @@
+[
+  {
+    "name" : "picocli.issue1444super.AbstractCommand",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "fields" : [
+      { "name" : "loginSessionNameOptions" }
+    ]
+  },
+  {
+    "name" : "picocli.issue1444super.AbstractCommand$LoginSessionNameOptions",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "fields" : [
+      { "name" : "loginSessionName" }
+    ]
+  },
+  {
+    "name" : "picocli.issue1444super.ConcreteCommand",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "fields" : [
+      { "name" : "otherOptions" }
+    ]
+  },
+  {
+    "name" : "picocli.issue1444super.ConcreteCommand$OtherOptions",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "fields" : [
+      { "name" : "option" }
+    ]
+  }
+]
