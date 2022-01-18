@@ -29,7 +29,7 @@ public class Issue1444Test {
 
     @Ignore
     @Test
-    public void testGenerateReflectConfigIssue1444() {
+    public void testGenerateReflectConfigIssue1444CompileOnlyConcreteSubclass() {
         NativeImageConfigGeneratorProcessor processor = new NativeImageConfigGeneratorProcessor();
         Compilation compilation =
                 javac()
@@ -46,4 +46,24 @@ public class Issue1444Test {
         assertThat(compilation).hadWarningCount(0); // #826 version warnings are now suppressed
     }
 
+    @Test
+    public void testGenerateReflectConfigIssue1444CompileBoth() {
+        NativeImageConfigGeneratorProcessor processor = new NativeImageConfigGeneratorProcessor();
+        Compilation compilation =
+            javac()
+                .withProcessors(processor)
+                .withOptions("-A" + OPTION_PROJECT + "=issue1444super")
+                .compile(JavaFileObjects.forSourceLines(
+                        "picocli.issue1444super.ConcreteCommand",
+                        slurp("/picocli/issue1444super/ConcreteCommand.java")),
+                    JavaFileObjects.forSourceLines(
+                        "picocli.issue1444super.AbstractCommand",
+                        slurp("/picocli/issue1444super/AbstractCommand.java"))//,
+                );
+        assertThat(compilation).succeeded();
+        assertThat(compilation)
+            .generatedFile(StandardLocation.CLASS_OUTPUT, "META-INF/native-image/picocli-generated/issue1444super/reflect-config.json")
+            .contentsAsUtf8String().isEqualTo(slurp("/picocli/issue1444super/issue1444-reflect-config.json"));
+        assertThat(compilation).hadWarningCount(0); // #826 version warnings are now suppressed
+    }
 }

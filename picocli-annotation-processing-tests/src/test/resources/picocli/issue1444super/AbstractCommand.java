@@ -5,6 +5,7 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.ArgGroup;
 
+//@Command
 public abstract class AbstractCommand implements Runnable {
     @ArgGroup(heading = "Optional login session name:%n", order = 1000)
     protected LoginSessionNameOptions loginSessionNameOptions;
