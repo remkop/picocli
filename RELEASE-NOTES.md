@@ -20,6 +20,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 ## <a name="4.6.3-fixes"></a> Fixed issues
 * [#1440] Bugfix: annotation processor incorrectly failed with `DuplicateOptionAnnotationsException` when multiple commands had a subcommand in common and an inherited (`scope = ScopeType.INHERIT`) option. Thanks to [nemetsSY](https://github.com/nemetsSY) for raising this.
+* [#1472] Bugfix: annotation processor option `-Averbose=true` no longer incorrectly triggers `warning: The following options were not recognized by any processor: '[verbose]'`. Thanks to [Lorenz Leutgeb](https://github.com/lorenzleutgeb) for raising this.
 * [#1384][#1493] Bugfix: parser now correctly handles ArgGroups with optional positional parameters. Thanks to [Matthew Lewis](https://github.com/mattjlewis) for raising this and to [Kurt Kaiser](https://github.com/kurtkaiser) for the pull request.
 * [#1474] Bugfix: Avoid `UnsupportedCharsetException: cp65001` on Microsoft Windows console when code page is set to UTF-8. Thanks to [epuni](https://github.com/epuni) for raising this.
 * [#1466][#1467] Bugfix/Enhancement: Autocomplete now shows subcommand aliases in the completion candidates. Thanks to [Ruud Senden](https://github.com/rsenden) for the pull request.
