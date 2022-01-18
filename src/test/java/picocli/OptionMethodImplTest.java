@@ -227,6 +227,136 @@ public class OptionMethodImplTest {
     }
 
     @Test
+    public void testObjectsWithoutDefaultAreNotReset() {
+        String[] args = "-b -y1 -s2 -i3 -l4 -f5 -d6 -bigint=7 -string abc -list a -list b -map 1=2.0 -set 33 -set 22".split(" ");
+        Objects objects = new Objects();
+        CommandLine cmd = new CommandLine(objects);
+        cmd.parseArgs(args);
+        assertTrue(objects.aBoolean);
+        assertEquals(Byte.valueOf((byte) 1), objects.aByte);
+        assertEquals(Short.valueOf((short) 2), objects.aShort);
+        assertEquals(Integer.valueOf(3), objects.anInt);
+        assertEquals(Long.valueOf(4), objects.aLong);
+        assertEquals(5f, objects.aFloat, 0.0001);
+        assertEquals(6d, objects.aDouble, 0.0001);
+        assertEquals(BigInteger.valueOf(7), objects.aBigInteger);
+        assertEquals("abc", objects.aString);
+        assertEquals(Arrays.asList("a", "b"), objects.aList);
+        Map<Integer, Double> map = new HashMap<Integer, Double>();
+        map.put(1, 2.0);
+        assertEquals(map, objects.aMap);
+        Set<Short> set = new TreeSet<Short>();
+        set.add((short) 22);
+        set.add((short) 33);
+        assertEquals(set, objects.aSet);
+
+        cmd.parseArgs(); // no args: no invocations, still same value
+        assertTrue(objects.aBoolean);
+        assertEquals(Byte.valueOf((byte) 1), objects.aByte);
+        assertEquals(Short.valueOf((short) 2), objects.aShort);
+        assertEquals(Integer.valueOf(3), objects.anInt);
+        assertEquals(Long.valueOf(4), objects.aLong);
+        assertEquals(5f, objects.aFloat, 0.0001);
+        assertEquals(6d, objects.aDouble, 0.0001);
+        assertEquals(BigInteger.valueOf(7), objects.aBigInteger);
+        assertEquals("abc", objects.aString);
+        assertEquals(Arrays.asList("a", "b"), objects.aList);
+        /*Map<Integer, Double>*/ map = new HashMap<Integer, Double>();
+        map.put(1, 2.0);
+        assertEquals(map, objects.aMap);
+        /*Set<Short>*/ set = new TreeSet<Short>();
+        set.add((short) 22);
+        set.add((short) 33);
+        assertEquals(set, objects.aSet);
+
+//        cmd.parseArgs(); // no args: reset to initial value
+//        assertNull(objects.aBoolean);
+//        assertNull(objects.aByte);
+//        assertNull(objects.aShort);
+//        assertNull(objects.anInt);
+//        assertNull(objects.aLong);
+//        assertNull(objects.aFloat);
+//        assertNull(objects.aDouble);
+//        assertNull(objects.aBigInteger);
+//        assertNull(objects.aString);
+//        assertNull(objects.aList);
+//        assertNull(objects.aMap);
+//        assertNull(objects.aSet);
+    }
+
+    static class ObjectsWithNullDefaults {
+        Boolean aBoolean;
+        Byte aByte;
+        Short aShort;
+        Integer anInt;
+        Long aLong;
+        Float aFloat;
+        Double aDouble;
+        BigInteger aBigInteger;
+        String aString;
+        List<String> aList;
+        Map<Integer, Double> aMap;
+        SortedSet<Short> aSet;
+
+        @Option(names = "-b", defaultValue = Option.NULL_VALUE) void setBoolean(Boolean val) { aBoolean = val; }
+        @Option(names = "-y", defaultValue = Option.NULL_VALUE) void setByte(Byte val) { aByte = val; }
+        @Option(names = "-s", defaultValue = Option.NULL_VALUE) void setShort(Short val) { aShort = val; }
+        @Option(names = "-i", defaultValue = Option.NULL_VALUE) void setInt(Integer val) { anInt = val; }
+        @Option(names = "-l", defaultValue = Option.NULL_VALUE) void setLong(Long val) { aLong = val; }
+        @Option(names = "-f", defaultValue = Option.NULL_VALUE) void setFloat(Float val) { aFloat = val; }
+        @Option(names = "-d", defaultValue = Option.NULL_VALUE) void setDouble(Double val) { aDouble = val; }
+
+        @Option(names = "-bigint", defaultValue = Option.NULL_VALUE) void setBigInteger(BigInteger val) { aBigInteger = val; }
+        @Option(names = "-string", defaultValue = Option.NULL_VALUE) void setString(String val) { aString = val; }
+        @Option(names = "-list",   defaultValue = Option.NULL_VALUE, split = ",") void setList(List<String> val) { aList = val; }
+
+        @Option(names = "-map", defaultValue = Option.NULL_VALUE, split = ",")
+        void setMap(Map<Integer, Double> val) { aMap = val; }
+
+        @Option(names = "-set", defaultValue = Option.NULL_VALUE, split = ",")
+        void setSortedSet(SortedSet<Short> val) { aSet = val; }
+    }
+
+    @Test
+    public void testObjectsWithNullDefaultAreReset() {
+        String[] args = "-b -y1 -s2 -i3 -l4 -f5 -d6 -bigint=7 -string abc -list a -list b -map 1=2.0 -set 33 -set 22".split(" ");
+        ObjectsWithNullDefaults objects = new ObjectsWithNullDefaults();
+        CommandLine cmd = new CommandLine(objects);
+        cmd.parseArgs(args);
+        assertTrue(objects.aBoolean);
+        assertEquals(Byte.valueOf((byte) 1), objects.aByte);
+        assertEquals(Short.valueOf((short) 2), objects.aShort);
+        assertEquals(Integer.valueOf(3), objects.anInt);
+        assertEquals(Long.valueOf(4), objects.aLong);
+        assertEquals(5f, objects.aFloat, 0.0001);
+        assertEquals(6d, objects.aDouble, 0.0001);
+        assertEquals(BigInteger.valueOf(7), objects.aBigInteger);
+        assertEquals("abc", objects.aString);
+        assertEquals(Arrays.asList("a", "b"), objects.aList);
+        Map<Integer, Double> map = new HashMap<Integer, Double>();
+        map.put(1, 2.0);
+        assertEquals(map, objects.aMap);
+        Set<Short> set = new TreeSet<Short>();
+        set.add((short) 22);
+        set.add((short) 33);
+        assertEquals(set, objects.aSet);
+
+        cmd.parseArgs(); // no args: reset
+        assertNull(objects.aBoolean);
+        assertNull(objects.aByte);
+        assertNull(objects.aShort);
+        assertNull(objects.anInt);
+        assertNull(objects.aLong);
+        assertNull(objects.aFloat);
+        assertNull(objects.aDouble);
+        assertNull(objects.aBigInteger);
+        assertNull(objects.aString);
+        assertNull(objects.aList);
+        assertNull(objects.aMap);
+        assertNull(objects.aSet);
+    }
+
+    @Test
     public void testExceptionFromMethod() {
         class App {
             @Option(names = "--jvm")

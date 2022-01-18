@@ -8552,6 +8552,8 @@ public class CommandLine {
             private final IParameterPreprocessor preprocessor;
             private final String mapFallbackValue;
             private final String defaultValue;
+            private final String originalDefaultValue;
+            private final String originalMapFallbackValue;
             private       Object initialValue;
             private final boolean hasInitialValue;
             private       InitialValueState initialValueState;
@@ -8598,6 +8600,8 @@ public class CommandLine {
                 scope  = builder.scope;
                 scopeType = builder.scopeType;
                 mapFallbackValue = builder.mapFallbackValue;
+                originalDefaultValue = builder.originalDefaultValue;
+                originalMapFallbackValue = builder.originalMapFallbackValue;
 
                 Range tempArity = builder.arity;
                 if (tempArity == null) {
@@ -9229,6 +9233,8 @@ public class CommandLine {
                 private ScopeType scopeType = ScopeType.LOCAL;
                 private IAnnotatedElement annotatedElement;
                 private String mapFallbackValue = UNSPECIFIED;
+                private String originalDefaultValue = UNSPECIFIED;
+                private String originalMapFallbackValue = UNSPECIFIED;
 
                 Builder() {}
                 Builder(ArgSpec original) {
@@ -9263,7 +9269,8 @@ public class CommandLine {
                     setter = original.setter;
                     scope = original.scope;
                     scopeType = original.scopeType;
-                    mapFallbackValue = original.mapFallbackValue;
+                    originalDefaultValue = original.originalDefaultValue;
+                    originalMapFallbackValue = original.originalMapFallbackValue;
                 }
                 Builder(IAnnotatedElement annotatedElement) {
                     this.annotatedElement = annotatedElement;
@@ -9296,6 +9303,8 @@ public class CommandLine {
                     hidden = option.hidden();
                     defaultValue = NULL_VALUE.equals(option.defaultValue()) ? null : option.defaultValue();
                     mapFallbackValue = NULL_VALUE.equals(option.mapFallbackValue()) ? null : option.mapFallbackValue();
+                    originalDefaultValue = option.defaultValue();
+                    originalMapFallbackValue = option.mapFallbackValue();
                     showDefaultValue = option.showDefaultValue();
                     scopeType = option.scope();
                     inherited = false;
@@ -9334,6 +9343,8 @@ public class CommandLine {
                         hidden = parameters.hidden();
                         defaultValue = NULL_VALUE.equals(parameters.defaultValue()) ? null : parameters.defaultValue();
                         mapFallbackValue = NULL_VALUE.equals(parameters.mapFallbackValue()) ? null : parameters.mapFallbackValue();
+                        originalDefaultValue = parameters.defaultValue();
+                        originalMapFallbackValue = parameters.mapFallbackValue();
                         showDefaultValue = parameters.showDefaultValue();
                         scopeType = parameters.scope();
                         inherited = false;
@@ -9698,6 +9709,7 @@ public class CommandLine {
             private final boolean versionHelp;
             private final boolean negatable;
             private final String fallbackValue;
+            private final String originalFallbackValue;
             private final int order;
 
             public static OptionSpec.Builder builder(String name, String... names) {
@@ -9725,6 +9737,7 @@ public class CommandLine {
                 order = builder.order;
                 negatable = builder.negatable;
                 fallbackValue = builder.fallbackValue;
+                originalFallbackValue = builder.originalFallbackValue;
 
                 if (names.length == 0 || Arrays.asList(names).contains("")) {
                     throw new InitializationException("Invalid names: " + Arrays.toString(names));
@@ -9837,6 +9850,7 @@ public class CommandLine {
                 private boolean versionHelp;
                 private boolean negatable;
                 private String fallbackValue = DEFAULT_FALLBACK_VALUE;
+                private String originalFallbackValue = ArgSpec.UNSPECIFIED;
                 private int order = DEFAULT_ORDER;
 
                 private Builder(String[] names) { this.names = names; }
@@ -9848,6 +9862,7 @@ public class CommandLine {
                     versionHelp = original.versionHelp;
                     negatable = original.negatable;
                     fallbackValue = original.fallbackValue;
+                    originalFallbackValue = original.originalFallbackValue;
                     order = original.order;
                 }
                 private Builder(IAnnotatedElement member, IFactory factory) {
@@ -9859,6 +9874,7 @@ public class CommandLine {
                     versionHelp = option.versionHelp();
                     negatable = option.negatable();
                     fallbackValue = NULL_VALUE.equals(option.fallbackValue()) ? null : option.fallbackValue();
+                    originalFallbackValue = option.fallbackValue();
                     order = option.order();
                 }
 
@@ -13251,9 +13267,9 @@ public class CommandLine {
             // is not null otherwise the original default or initial value are used
             String fromProvider = defaultValueProvider == null ? null : defaultValueProvider.defaultValue(arg);
             String defaultValue = fromProvider == null ? arg.defaultValue() : fromProvider;
+            String provider = defaultValueProvider == null ? "" : (" from " + defaultValueProvider.toString());
 
             if (defaultValue != null && !ArgSpec.NULL_VALUE.equals(defaultValue)) {
-                String provider = defaultValueProvider == null ? "" : (" from " + defaultValueProvider.toString());
                 if (tracer.isDebug()) {tracer.debug("Applying defaultValue (%s)%s to %s on %s%n", defaultValue, provider, arg, arg.scopeString());}
                 Range arity = arg.arity().min(Math.max(1, arg.arity().min));
                 applyOption(arg, false, LookBehind.SEPARATE, false, arity, stack(defaultValue), new HashSet<ArgSpec>(), arg.toString);
@@ -13261,7 +13277,16 @@ public class CommandLine {
                 if (arg.typeInfo().isOptional()) {
                     if (tracer.isDebug()) {tracer.debug("Applying Optional.empty() to %s on %s%n", arg, arg.scopeString());}
                     arg.setValue(getOptionalEmpty());
+                } else if (ArgSpec.UNSPECIFIED.equals(arg.originalDefaultValue)) {
+                    tracer.debug("defaultValue not defined for %s%n", arg);
+                    return false;
                 } else {
+                    if (ArgSpec.NULL_VALUE.equals(arg.originalDefaultValue)) {
+                        defaultValue = null;
+                        if (tracer.isDebug()) {tracer.debug("Applying defaultValue (%s)%s to %s on %s%n", defaultValue, provider, arg, arg.scopeString());}
+                        arg.setValue(defaultValue);
+                        return true;
+                    }
                     tracer.debug("defaultValue not defined for %s%n", arg);
                 }
             }
