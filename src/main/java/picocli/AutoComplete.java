@@ -731,11 +731,11 @@ public class AutoComplete {
             } else if (type.equals(File.class) || "java.nio.file.Path".equals(type.getName())) {
                 buff.append(format("%s    %s (( currIndex >= %d && currIndex <= %d )); then\n", indent, ifOrElif, min, max));
                 buff.append(format("%s      local IFS=$'\\n'\n", indent));
-                buff.append(format("%s      compopt -o filenames\n", indent));
+                buff.append(format("%s      type compopt &>/dev/null && compopt -o filenames\n", indent)); // #1464 workaround for old bash
                 buff.append(format("%s      positionals=$( compgen -f -- \"%s\" ) # files\n", indent, currWord));
             } else if (type.equals(InetAddress.class)) {
                 buff.append(format("%s    %s (( currIndex >= %d && currIndex <= %d )); then\n", indent, ifOrElif, min, max));
-                buff.append(format("%s      compopt -o filenames\n", indent));
+                buff.append(format("%s      type compopt &>/dev/null && compopt -o filenames\n", indent)); // #1464 workaround for old bash
                 buff.append(format("%s      positionals=$( compgen -A hostname -- \"%s\" )\n", indent, currWord));
             }
         }
@@ -753,7 +753,7 @@ public class AutoComplete {
         }
 
         return "\n"
-                + "  compopt +o default\n"
+                + "  type compopt &>/dev/null && compopt +o default\n" // #1464 workaround for old bash
                 + "\n"
                 + "  case ${prev_word} in\n"
                 + optionsCases
@@ -776,13 +776,13 @@ public class AutoComplete {
             } else if (type.equals(File.class) || "java.nio.file.Path".equals(type.getName())) {
                 buff.append(format("%s    %s)\n", indent, concat("|", option.names()))); // "    -f|--file)\n"
                 buff.append(format("%s      local IFS=$'\\n'\n", indent));
-                buff.append(format("%s      compopt -o filenames\n", indent));
+                buff.append(format("%s      type compopt &>/dev/null && compopt -o filenames\n", indent)); // #1464 workaround for old bash
                 buff.append(format("%s      COMPREPLY=( $( compgen -f -- \"%s\" ) ) # files\n", indent, currWord));
                 buff.append(format("%s      return $?\n", indent));
                 buff.append(format("%s      ;;\n", indent));
             } else if (type.equals(InetAddress.class)) {
                 buff.append(format("%s    %s)\n", indent, concat("|", option.names()))); // "    -h|--host)\n"
-                buff.append(format("%s      compopt -o filenames\n", indent));
+                buff.append(format("%s      type compopt &>/dev/null && compopt -o filenames\n", indent)); // #1464 workaround for old bash
                 buff.append(format("%s      COMPREPLY=( $( compgen -A hostname -- \"%s\" ) )\n", indent, currWord));
                 buff.append(format("%s      return $?\n", indent));
                 buff.append(format("%s      ;;\n", indent));

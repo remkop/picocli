@@ -155,7 +155,7 @@ function _picocli_rcmd_sub1() {
   local flag_opts="flag1 -h --help -V --version"
   local arg_opts="option1"
 
-  compopt +o default
+  type compopt &>/dev/null && compopt +o default
 
   case ${prev_word} in
     option1)
@@ -181,7 +181,7 @@ function _picocli_rcmd_sub2() {
   local flag_opts="flag-2 -h --help -V --version"
   local arg_opts="option-2"
 
-  compopt +o default
+  type compopt &>/dev/null && compopt +o default
 
   case ${prev_word} in
     option-2)

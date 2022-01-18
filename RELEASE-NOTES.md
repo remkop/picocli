@@ -26,6 +26,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#1531] Bugfix: Options defined as annotated methods should reset between `parseArgs` invocations when `CommandLine` instance is reused. Thanks to [kaushalkumar](https://github.com/kaushalkumar) for raising this.
 * [#1458][#1473] Enhancement: autocompletion now supports file names containing spaces. Thanks to [zpater345](https://github.com/zpater345) for raising this and thanks to [NewbieOrange](https://github.com/NewbieOrange) for the pull request.
 * [#1477] Enhancement: Remove file name extension and local dir prefix from the command name in generated autocomplete scripts. Thanks to [Andrea Peruffo](https://github.com/andreaTP) for the pull request.
+* [#1464] Enhancement: Fix Bash error `compopt: command not found` on older versions Bash. Thanks to [Andres Almiray](https://github.com/aalmiray) for raising this.
 * [#1476] Enhancement: improve error message in `AbstractCommandSpecProcessor#extractTypedMember`. Thanks to [Ross Goldberg](https://github.com/rgoldberg) for raising this.
 * [#1475] Enhancement: Fix typo in annotation target-type error message. Thanks to [Ross Goldberg](https://github.com/rgoldberg) for the pull request.
 * [#1366][#1370] Enhancement: show in usage help that the built-in `help` command only works on the first argument. Thanks to [Patrice Duroux](https://github.com/peutch) for the pull request.

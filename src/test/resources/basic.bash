@@ -135,7 +135,7 @@ function _picocli_basicExample() {
   local arg_opts="-u --timeUnit -t --timeout"
   local timeUnit_option_args="%2$s" # --timeUnit values
 
-  compopt +o default
+  type compopt &>/dev/null && compopt +o default
 
   case ${prev_word} in
     -u|--timeUnit)

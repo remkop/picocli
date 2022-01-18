@@ -770,7 +770,7 @@ public class AutoCompleteTest {
                 "  local flag_opts=\"-w --writeCommandScript -f --force -h --help -V --version\"\n" +
                 "  local arg_opts=\"-c --factory -n --name -o --completionScript\"\n" +
                 "\n" +
-                "  compopt +o default\n" +
+                "  type compopt &>/dev/null && compopt +o default\n" +
                 "\n" +
                 "  case ${prev_word} in\n" +
                 "    -c|--factory)\n" +
@@ -781,7 +781,7 @@ public class AutoCompleteTest {
                 "      ;;\n" +
                 "    -o|--completionScript)\n" +
                 "      local IFS=$'\\n'\n" +
-                "      compopt -o filenames\n" +
+                "      type compopt &>/dev/null && compopt -o filenames\n" +
                 "      COMPREPLY=( $( compgen -f -- \"${curr_word}\" ) ) # files\n" +
                 "      return $?\n" +
                 "      ;;\n" +
@@ -984,7 +984,7 @@ public class AutoCompleteTest {
                 "  local flag_opts=\"\"\n" +
                 "  local arg_opts=\"-t --timeout\"\n" +
                 "\n" +
-                "  compopt +o default\n" +
+                "  type compopt &>/dev/null && compopt +o default\n" +
                 "\n" +
                 "  case ${prev_word} in\n" +
                 "    -t|--timeout)\n" +
@@ -1754,7 +1754,7 @@ public class AutoCompleteTest {
                 "  local flag_opts=\"\"\n" +
                 "  local arg_opts=\"--apples --bbb\"\n" + // NOTE: no --aaa: this option is hidden
                 "\n" +
-                "  compopt +o default\n" +
+                "  type compopt &>/dev/null && compopt +o default\n" +
                 "\n" +
                 "  case ${prev_word} in\n" +
                 "    --apples)\n" +
