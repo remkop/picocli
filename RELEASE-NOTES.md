@@ -52,6 +52,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#1459] BUILD: The nexus-staging Gradle plugin must be applied to the root project, not to subprojects. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
 * [#1503] BUILD: Fix failing `System.exit` tests on Java 18.
 * [#1504] BUILD: Run tests on Java 6-7 in CI environment, semi-automate testing on Java 5.
+* [#1516] DEP: Remove redundant dependency on `jline-console` in `picocli-shell-jline3`. Thanks to [kaushalkumar](https://github.com/kaushalkumar) for raising this.
 * [#1495] DEP: Bump validation-api from 2.0.0.Final to 2.0.1.Final
 * [#1496] DEP: Bump biz.aQute.bnd.gradle from 5.1.2 to 6.1.0
 * [#1494] DEP: Bump kotlin-gradle-plugin from 1.5.31 to 1.6.0
