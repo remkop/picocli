@@ -118,6 +118,11 @@ function currentPositionalIndex() {
 # on the command line and delegates to the appropriate function
 # to generate possible options and subcommands for the last specified subcommand.
 function _complete_rcmd() {
+  # Edge case: if command line has no space after subcommand, then don't assume this subcommand is selected (remkop/picocli#1468).
+  if [ "${COMP_LINE}" = "${COMP_WORDS[0]} sub-1" ];    then _picocli_rcmd; return $?; fi
+  if [ "${COMP_LINE}" = "${COMP_WORDS[0]} sub-2" ];    then _picocli_rcmd; return $?; fi
+
+  # Find the longest sequence of subcommands and call the bash function for that subcommand.
   local cmds0=(sub-1)
   local cmds1=(sub-2)
 

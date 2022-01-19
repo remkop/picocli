@@ -118,6 +118,25 @@ function currentPositionalIndex() {
 # on the command line and delegates to the appropriate function
 # to generate possible options and subcommands for the last specified subcommand.
 function _complete_picocompletion-demo() {
+  # Edge case: if command line has no space after subcommand, then don't assume this subcommand is selected (remkop/picocli#1468).
+  if [ "${COMP_LINE}" = "${COMP_WORDS[0]} sub1" ];    then _picocli_picocompletion-demo; return $?; fi
+  if [ "${COMP_LINE}" = "${COMP_WORDS[0]} sub1-alias" ];    then _picocli_picocompletion-demo; return $?; fi
+  if [ "${COMP_LINE}" = "${COMP_WORDS[0]} sub2" ];    then _picocli_picocompletion-demo; return $?; fi
+  if [ "${COMP_LINE}" = "${COMP_WORDS[0]} sub2-alias" ];    then _picocli_picocompletion-demo; return $?; fi
+  if [ "${COMP_LINE}" = "${COMP_WORDS[0]} sub2 subsub1" ];    then _picocli_picocompletion-demo_sub2; return $?; fi
+  if [ "${COMP_LINE}" = "${COMP_WORDS[0]} sub2 sub2child1-alias" ];    then _picocli_picocompletion-demo_sub2; return $?; fi
+  if [ "${COMP_LINE}" = "${COMP_WORDS[0]} sub2 subsub2" ];    then _picocli_picocompletion-demo_sub2; return $?; fi
+  if [ "${COMP_LINE}" = "${COMP_WORDS[0]} sub2 sub2child2-alias" ];    then _picocli_picocompletion-demo_sub2; return $?; fi
+  if [ "${COMP_LINE}" = "${COMP_WORDS[0]} sub2 subsub3" ];    then _picocli_picocompletion-demo_sub2; return $?; fi
+  if [ "${COMP_LINE}" = "${COMP_WORDS[0]} sub2 sub2child3-alias" ];    then _picocli_picocompletion-demo_sub2; return $?; fi
+  if [ "${COMP_LINE}" = "${COMP_WORDS[0]} sub2-alias subsub1" ];    then _picocli_picocompletion-demo_sub2alias; return $?; fi
+  if [ "${COMP_LINE}" = "${COMP_WORDS[0]} sub2-alias sub2child1-alias" ];    then _picocli_picocompletion-demo_sub2alias; return $?; fi
+  if [ "${COMP_LINE}" = "${COMP_WORDS[0]} sub2-alias subsub2" ];    then _picocli_picocompletion-demo_sub2alias; return $?; fi
+  if [ "${COMP_LINE}" = "${COMP_WORDS[0]} sub2-alias sub2child2-alias" ];    then _picocli_picocompletion-demo_sub2alias; return $?; fi
+  if [ "${COMP_LINE}" = "${COMP_WORDS[0]} sub2-alias subsub3" ];    then _picocli_picocompletion-demo_sub2alias; return $?; fi
+  if [ "${COMP_LINE}" = "${COMP_WORDS[0]} sub2-alias sub2child3-alias" ];    then _picocli_picocompletion-demo_sub2alias; return $?; fi
+
+  # Find the longest sequence of subcommands and call the bash function for that subcommand.
   local cmds0=(sub1)
   local cmds1=(sub1-alias)
   local cmds2=(sub2)

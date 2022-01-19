@@ -754,6 +754,9 @@ public class AutoCompleteTest {
                 "# on the command line and delegates to the appropriate function\n" +
                 "# to generate possible options and subcommands for the last specified subcommand.\n" +
                 "function _complete_picocli.AutoComplete() {\n" +
+                "  # Edge case: if command line has no space after subcommand, then don't assume this subcommand is selected (remkop/picocli#1468).\n" +
+                "\n" +
+                "  # Find the longest sequence of subcommands and call the bash function for that subcommand.\n" +
                 "\n" +
                 "\n" +
                 "  # No subcommands were specified; generate completions for the top-level command.\n" +
@@ -968,6 +971,9 @@ public class AutoCompleteTest {
                 "# on the command line and delegates to the appropriate function\n" +
                 "# to generate possible options and subcommands for the last specified subcommand.\n" +
                 "function _complete_nondefault() {\n" +
+                "  # Edge case: if command line has no space after subcommand, then don't assume this subcommand is selected (remkop/picocli#1468).\n" +
+                "\n" +
+                "  # Find the longest sequence of subcommands and call the bash function for that subcommand.\n" +
                 "\n" +
                 "\n" +
                 "  # No subcommands were specified; generate completions for the top-level command.\n" +
@@ -1530,6 +1536,10 @@ public class AutoCompleteTest {
                     "# on the command line and delegates to the appropriate function\n" +
                     "# to generate possible options and subcommands for the last specified subcommand.\n" +
                     "function _complete_%1$s() {\n" +
+                    "  # Edge case: if command line has no space after subcommand, then don't assume this subcommand is selected (remkop/picocli#1468).\n" +
+                    "  if [ \"${COMP_LINE}\" = \"${COMP_WORDS[0]} generate-completion\" ];    then _picocli_myapp; return $?; fi\n" +
+                    "\n" +
+                    "  # Find the longest sequence of subcommands and call the bash function for that subcommand.\n" +
                     "  local cmds0=(generate-completion)\n" +
                     "\n" +
                     "  if CompWordsContainsArray \"${cmds0[@]}\"; then _picocli_myapp_generatecompletion; return $?; fi\n" +
@@ -1736,6 +1746,10 @@ public class AutoCompleteTest {
                 "# on the command line and delegates to the appropriate function\n" +
                 "# to generate possible options and subcommands for the last specified subcommand.\n" +
                 "function _complete_%1$s() {\n" +
+                "  # Edge case: if command line has no space after subcommand, then don't assume this subcommand is selected (remkop/picocli#1468).\n" +
+                "  if [ \"${COMP_LINE}\" = \"${COMP_WORDS[0]} help\" ];    then _picocli_CompletionDemo; return $?; fi\n" +
+                "\n" +
+                "  # Find the longest sequence of subcommands and call the bash function for that subcommand.\n" +
                 "  local cmds0=(help)\n" +
                 "\n" +
                 "  if CompWordsContainsArray \"${cmds0[@]}\"; then _picocli_%1$s_help; return $?; fi\n" +

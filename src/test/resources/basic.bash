@@ -118,6 +118,9 @@ function currentPositionalIndex() {
 # on the command line and delegates to the appropriate function
 # to generate possible options and subcommands for the last specified subcommand.
 function _complete_basicExample() {
+  # Edge case: if command line has no space after subcommand, then don't assume this subcommand is selected (remkop/picocli#1468).
+
+  # Find the longest sequence of subcommands and call the bash function for that subcommand.
 
 
   # No subcommands were specified; generate completions for the top-level command.

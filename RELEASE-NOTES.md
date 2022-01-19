@@ -24,6 +24,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#1384][#1493] Bugfix: parser now correctly handles ArgGroups with optional positional parameters. Thanks to [Matthew Lewis](https://github.com/mattjlewis) for raising this and to [Kurt Kaiser](https://github.com/kurtkaiser) for the pull request.
 * [#1474] Bugfix: Avoid `UnsupportedCharsetException: cp65001` on Microsoft Windows console when code page is set to UTF-8. Thanks to [epuni](https://github.com/epuni) for raising this.
 * [#1466][#1467] Bugfix/Enhancement: Autocomplete now shows subcommand aliases in the completion candidates. Thanks to [Ruud Senden](https://github.com/rsenden) for the pull request.
+* [#1468] Bugfix/Enhancement: Autocompletion now displays completion candidates on exact match. Thanks to [Ruud Senden](https://github.com/rsenden) for raising this.
 * [#1537][#1541] Bugfix: AbbreviationMatcher now treats aliases of the same object as one match. Thanks to [Staffan Arvidsson McShane](https://github.com/StaffanArvidsson) for raising this and [NewbieOrange](https://github.com/NewbieOrange) for the pull request.
 * [#1531] Bugfix: Options defined as annotated methods should reset between `parseArgs` invocations when `CommandLine` instance is reused. Thanks to [kaushalkumar](https://github.com/kaushalkumar) for raising this.
 * [#1458][#1473] Enhancement: autocompletion now supports file names containing spaces. Thanks to [zpater345](https://github.com/zpater345) for raising this and thanks to [NewbieOrange](https://github.com/NewbieOrange) for the pull request.
