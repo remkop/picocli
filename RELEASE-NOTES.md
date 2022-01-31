@@ -50,7 +50,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#1457] DOC: add caution about arguments in @files with quoted option parameters. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1544][#1545] DOC: Add NOTICE file with GPL v2 + CPE license. Thanks to [Keith M Swartz](https://github.com/kswartz26) for the pull request.
 * [#1553] SECURITY: Fix code scanning alert - Token-Permissions
-* [#1554] Fix code scanning alert - Pinned-Dependencies
+* [#1554] SECURITY: Fix code scanning alert - Pinned-Dependencies
 * [#1491] BUILD: Add build job in CI; Thanks to [Goooler](https://github.com/Goooler) for the pull request.
 * [#1482] BUILD: Optimize gradle; Thanks to [Goooler](https://github.com/Goooler) for the pull request.
 * [#1461] BUILD: Allow publishing without signing for non-release versions. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
