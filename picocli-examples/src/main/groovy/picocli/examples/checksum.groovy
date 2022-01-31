@@ -16,7 +16,7 @@ class Checksum implements Callable<Integer> {
 
     @Option(names = ['-a', '--algorithm'], description = ['MD2, MD5, SHA-1, SHA-256, SHA-384, SHA-512,',
             '  or any other MessageDigest algorithm.'])
-    String algorithm = 'MD5'
+    String algorithm = 'SHA-1'
 
     Integer call() throws Exception {
         files.each {
