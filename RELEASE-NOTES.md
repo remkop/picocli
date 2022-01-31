@@ -52,7 +52,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#1553] SECURITY: Fix code scanning alert - Token-Permissions
 * [#1554] SECURITY: Fix code scanning alert - Pinned-Dependencies
 * [#1555] SECURITY: Fix code scanning alert - Create SECURITY.md
-* [#1556] SECURITY: Fix code scanning alert - SAST
+* [#1556][#1557] SECURITY: Fix code scanning alert - SAST
 * [#1558] SECURITY: Fix code scanning alert - Pinned-Dependencies in codeql-analysis.yml
 * [#1491] BUILD: Add build job in CI; Thanks to [Goooler](https://github.com/Goooler) for the pull request.
 * [#1482] BUILD: Optimize gradle; Thanks to [Goooler](https://github.com/Goooler) for the pull request.
