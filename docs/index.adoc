@@ -86,14 +86,14 @@ import java.security.MessageDigest;
 import java.util.concurrent.Callable;
 
 @Command(name = "checksum", mixinStandardHelpOptions = true, version = "checksum 4.0",
-         description = "Prints the checksum (MD5 by default) of a file to STDOUT.")
+         description = "Prints the checksum (SHA-256 by default) of a file to STDOUT.")
 class CheckSum implements Callable<Integer> {
 
     @Parameters(index = "0", description = "The file whose checksum to calculate.")
     private File file;
 
     @Option(names = {"-a", "--algorithm"}, description = "MD5, SHA-1, SHA-256, ...")
-    private String algorithm = "MD5";
+    private String algorithm = "SHA-256";
 
     @Override
     public Integer call() throws Exception { // your business logic goes here...
@@ -128,14 +128,14 @@ import java.security.MessageDigest
 import java.util.concurrent.Callable
 
 @Command(name = 'checksum', mixinStandardHelpOptions = true, version = 'checksum 4.0',
-  description = 'Prints the checksum (MD5 by default) of a file to STDOUT.')
+  description = 'Prints the checksum (SHA-256 by default) of a file to STDOUT.')
 class Checksum implements Callable<Integer> {
 
     @Parameters(index = '0', description = 'The file whose checksum to calculate.')
     File file
 
     @Option(names = ['-a', '--algorithm'], description = 'MD5, SHA-1, SHA-256, ...')
-    String algorithm = 'MD5'
+    String algorithm = 'SHA-256'
 
     Integer call() throws Exception {
         println MessageDigest.getInstance(algorithm).digest(file.bytes).encodeHex().toString()
@@ -158,14 +158,14 @@ import groovy.transform.Field
 import java.security.MessageDigest
 
 @Command(name = 'checksum', mixinStandardHelpOptions = true, version = 'checksum 4.0',
-  description = 'Prints the checksum (MD5 by default) of a file to STDOUT.')
+  description = 'Prints the checksum (SHA-256 by default) of a file to STDOUT.')
 @picocli.groovy.PicocliScript
 
 @Parameters(index = '0', description = 'The file whose checksum to calculate.')
 @Field File file
 
 @Option(names = ['-a', '--algorithm'], description = 'MD5, SHA-1, SHA-256, ...')
-@Field String algorithm = 'MD5'
+@Field String algorithm = 'SHA-256'
 
 println MessageDigest.getInstance(algorithm).digest(file.bytes).encodeHex().toString()
 ----
@@ -187,14 +187,14 @@ import java.util.concurrent.Callable
 import kotlin.system.exitProcess
 
 @Command(name = "checksum", mixinStandardHelpOptions = true, version = ["checksum 4.0"],
-    description = ["Prints the checksum (MD5 by default) of a file to STDOUT."])
+    description = ["Prints the checksum (SHA-256 by default) of a file to STDOUT."])
 class Checksum : Callable<Int> {
 
     @Parameters(index = "0", description = ["The file whose checksum to calculate."])
     lateinit var file: File
 
     @Option(names = ["-a", "--algorithm"], description = ["MD5, SHA-1, SHA-256, ..."])
-    var algorithm = "MD5"
+    var algorithm = "SHA-256"
 
     override fun call(): Int {
         val fileContents = Files.readAllBytes(file.toPath())
@@ -221,14 +221,14 @@ import java.security.MessageDigest
 import java.util.concurrent.Callable
 
 @Command(name = "checksum", mixinStandardHelpOptions = true, version = Array("checksum 4.0"),
-  description = Array("Prints the checksum (MD5 by default) of a file to STDOUT."))
+  description = Array("Prints the checksum (SHA-256 by default) of a file to STDOUT."))
 class Checksum extends Callable[Int] {
 
   @Parameters(index = "0", description = Array("The file whose checksum to calculate."))
    private var file: File = null
 
   @Option(names = Array("-a", "--algorithm"), description = Array("MD5, SHA-1, SHA-256, ..."))
-  private var algorithm = "MD5"
+  private var algorithm = "SHA-256"
 
   def call(): Int = {
     val fileContents = Files.readAllBytes(file.toPath)

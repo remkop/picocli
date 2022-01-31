@@ -56,6 +56,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#1558] SECURITY: Fix code scanning alert - Pinned-Dependencies in codeql-analysis.yml
 * [#1559] SECURITY: Fix code scanning alert - Token-Permissions in codeql-analysis.yml
 * [#1560] SECURITY: Fix code scanning alert - Binary-Artifacts - Validate Gradle Wrapper
+* [#1561] SECURITY: Fix code scanning alert - Doc/example code uses a broken or risky cryptographic algorithm
 * [#1491] BUILD: Add build job in CI; Thanks to [Goooler](https://github.com/Goooler) for the pull request.
 * [#1482] BUILD: Optimize gradle; Thanks to [Goooler](https://github.com/Goooler) for the pull request.
 * [#1461] BUILD: Allow publishing without signing for non-release versions. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.

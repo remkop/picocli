@@ -16,7 +16,7 @@ import java.util.concurrent.Callable;
 
 @Command(name = "checksum", mixinStandardHelpOptions = true, version = "checksum 4.0",
   subcommands = GenerateCompletion.class, defaultValueProvider = PropertiesDefaultProvider.class,
-  description = "ファイルのチェックサム（デフォルトはMD5）を標準出力に表示する。",
+  description = "ファイルのチェックサム（デフォルトはSHA-1）を標準出力に表示する。",
        header = { "@|cyan " +
                "     _    _ _   _  ___ \n" +
                "  _ | |_ | | | | |/ __|\n" +
@@ -29,7 +29,7 @@ class CheckSum implements Callable<Integer> {
     private File file;
 
     @Option(names = {"-a", "--algorithm"}, description = "MD5, SHA-1, SHA-256, ...")
-    private String algorithm = "MD5";
+    private String algorithm = "SHA-1";
 
     public static void main(String... args) {
         System.exit(new CommandLine(new CheckSum()).execute(args));

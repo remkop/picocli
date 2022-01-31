@@ -31,7 +31,7 @@ We will use this small, but realistic, example CheckSum utility to demonstrate v
 .Checksum: an example picocli-based command line application
 [source,java,linenums]
 ----
-@Command(description = "Prints the checksum (MD5 by default) of a file to STDOUT.",
+@Command(description = "Prints the checksum (SHA-1 by default) of a file to STDOUT.",
          name = "checksum", mixinStandardHelpOptions = true, version = "checksum 3.0")
 class CheckSum implements Callable<Void> {
 
@@ -39,7 +39,7 @@ class CheckSum implements Callable<Void> {
     private File file;
 
     @Option(names = {"-a", "--algorithm"}, description = "MD5, SHA-1, SHA-256, ...")
-    private String algorithm = "MD5";
+    private String algorithm = "SHA-1";
 
     public static void main(String[] args) {
         // CheckSum implements Callable, so parsing, error handling and handling user
@@ -71,7 +71,7 @@ This gives an error message saying the `<file>` parameter is missing:
 
 image:images/checksum-help.png[]
 
-The `<file>` positional parameter does not have a default, so this a mandatory parameter. The `--algorithm` option does have a default: `"MD5"`, so it is optional.
+The `<file>` positional parameter does not have a default, so this a mandatory parameter. The `--algorithm` option does have a default: `"SHA-1"`, so it is optional.
 
 Note that our program does not have any logic to validate the user input. The validation was done automatically by picocli as part of the `CommandLine.call(Callable, String[])` invocation in our `main` method. Later we will show some alternatives that give more control to the application.
 
@@ -79,14 +79,14 @@ Now let's try running this program with some valid input, and see how the output
 
 .Comparing our `CheckSum` utility against `md5sum` and `sha1sum`
 ----
-$ java picocli.example.CheckSum picocli-3.9.5.jar
+$ java picocli.example.CheckSum --algorithm=MD5 picocli-3.9.5.jar
 509e3e2602854d5b88e2e7baa476a7fe
 
 $ md5sum picocli-3.9.5.jar
 509e3e2602854d5b88e2e7baa476a7fe *picocli-3.9.5.jar
 
 
-$ java picocli.example.CheckSum --algorithm=SHA1 picocli-3.9.5.jar
+$ java picocli.example.CheckSum picocli-3.9.5.jar
 f659a2feef0e8f7f8458aaf7d36c4d92f65320c8
 
 $ sha1sum picocli-3.9.5.jar
@@ -110,7 +110,7 @@ The version information shown is what was specified in the command annotation: `
 ----
 $ java picocli.example.CheckSum --help
 Usage: checksum [-hV] [-a=<algorithm>] <file>
-Prints the checksum (MD5 by default) of a file to STDOUT.
+Prints the checksum (SHA-1 by default) of a file to STDOUT.
       <file>      The file whose checksum to calculate.
   -a, --algorithm=<algorithm>
                   MD5, SHA-1, SHA-256, ...
@@ -805,7 +805,7 @@ private static class AlgoList extends ArrayList<String> {
 }
 @Option(names = {"-a", "--algorithm"}, completionCandidates = AlgoList.class,
         description = "${COMPLETION-CANDIDATES}, ...")
-private String algorithm = "MD5";
+private String algorithm = "SHA-1";
 ----
 Values in the `completionCandidates` list are shown as completion candidates when the user presses `[TAB]` after the `-a` option, similarly to `enum` typed options.
 
@@ -842,7 +842,7 @@ import static picocli.CommandLine.*
 @Option(names = ["-a", "--algorithm"], description = [
         "MD2, MD5, SHA-1, SHA-256, SHA-384, SHA-512, or",
         "  any other MessageDigest algorithm. See [1] for more details."])
-@Field private String algorithm = "MD5"
+@Field private String algorithm = "SHA-1"
 
 files.each {
   println ""+MessageDigest.getInstance(algorithm).digest(it.bytes).encodeHex()+"\t"+it

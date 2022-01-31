@@ -38,7 +38,7 @@ class LocaleControl : Callable<Int> {
     lateinit var file: File
 
     @Option(names = ["-a", "--algorithm"], descriptionKey = "Algorithms", order = 2)
-    var algorithm = "MD5"
+    var algorithm = "SHA-1"
 
     @Throws(Exception::class)
     override fun call(): Int {

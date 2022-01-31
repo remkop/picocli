@@ -15,7 +15,7 @@ import kotlin.system.exitProcess
 
 @Command(name = "checksum", mixinStandardHelpOptions = true,
         subcommands = [ HelpCommand::class ], version = ["checksum 4.1.4"],
-        description = ["Prints the checksum (MD5 by default) of file(s) to STDOUT."])
+        description = ["Prints the checksum (SHA-1 by default) of file(s) to STDOUT."])
 class Checksum : Callable<Int> {
 
     @Parameters(index = "0..*", description = ["The file(s) whose checksum to calculate."],
@@ -23,7 +23,7 @@ class Checksum : Callable<Int> {
     val files: ArrayList<File> = arrayListOf()
 
     @Option(names = ["-a", "--algorithm"], description = ["MD5, SHA-1, SHA-256, ..."])
-    var algorithm = "MD5"
+    var algorithm = "SHA-1"
 
     override fun call(): Int {
         for (file in files)
