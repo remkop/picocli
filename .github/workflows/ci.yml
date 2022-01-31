@@ -48,6 +48,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@629c2de402a417ea7690ca6ce3f33229e27606a5 # v2
 
+      - name: Validate Gradle Wrapper
+        uses: gradle/wrapper-validation-action@e6e38bacfdf1a337459f332974bb2327a31aaf4b # v1
+
       - name: Configure JDK ${{ matrix.java-version }}
         uses: actions/setup-java@f0bb91606209742fe3ea40199be2f3ef195ecabf # v2
         with:
