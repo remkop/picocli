@@ -4,7 +4,7 @@
 # <a name="4.6.3"></a> Picocli 4.6.3
 The picocli community is pleased to announce picocli 4.6.3.
 
-This release includes bugfixes and enhancements.
+This release includes bugfixes and enhancements, as well as security improvements.
 
 This is the seventy-eighth public release.
 Picocli follows [semantic versioning](http://semver.org/).
