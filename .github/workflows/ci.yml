@@ -1,5 +1,6 @@
 name: Build
 on: [ push, pull_request ]
+permissions: read-all
 
 jobs:
   build-java-8-plus:
