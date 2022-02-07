@@ -10274,6 +10274,49 @@ class ValidationExample : Runnable {
 }
 ----
 
+[WARNING]
+====
+Applications that *reuse a single `CommandLine` instance for multiple `parseArgs` or `execute` invocations* should be aware of the following:
+
+Annotated setter method options that explicitly set `defaultValue = Option.NULL_VALUE` will get a call with a `null` parameter when the command line did not include that option.
+
+If the setter method annotation does _not_ explicitly set `defaultValue = Option.NULL_VALUE`, then this method will not be called when the command line did not include that option. This means that the value will retain the value of the previous `parseArgs` or `execute` invocation, which may not be desirable. (This only happens for applications that reuse a single `CommandLine` instance for multiple `parseArgs` or `execute` invocations.)
+
+.Java
+[source,java,role="primary"]
+----
+class App {
+    String x;
+    String y;
+
+    // reset to null when option not specified
+    @Option(names = "-x", defaultValue = Option.NULL)
+    void setX(String x) { this.x = x; }
+
+    // retains value of previous parseArgs invocation when option not specified
+    @Option(names = "-y")
+    void setY(String y) { this.y = y; }
+}
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+class App {
+    var x
+    var y
+
+    // reset to null when option not specified
+    @Option(names = ["-x"], defaultValue = Option.NULL)
+    fun setX(x: String) { this.x = x }
+
+    // retains value of previous parseArgs invocation when option not specified
+    @Option(names = ["-y"])
+    fun setY(y: String) { this.y = y }
+}
+----
+
+====
 
 [#command-methods]
 === [[_command-methods]] `@Command` Methods
