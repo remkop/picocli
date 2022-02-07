@@ -1,13 +1,18 @@
 # picocli Release Notes
 
 
-# <a name="4.6.3"></a> Picocli 4.6.3
+# <a name="4.6.3"></a> Picocli 4.6.3 (UNRELEASED)
 The picocli community is pleased to announce picocli 4.6.3.
 
 This release includes bugfixes and enhancements, as well as security improvements.
 
+Several improvements to the annotation processor and the generated autocompletion scripts.
+
+Much gratitude to the picocli community for the many pull requests and other contributions!
+
 This is the seventy-eighth public release.
 Picocli follows [semantic versioning](http://semver.org/).
+Artifacts in this release are signed by Remko Popma (6601 E5C0 8DCC BB96).
 
 ## <a name="4.6.3-toc"></a> Table of Contents
 * [New and noteworthy](#4.6.3-new)
@@ -107,6 +112,7 @@ Note that these system properties [seem to have been](https://wrapper.tanukisoft
 
 This is the seventy-seventh public release.
 Picocli follows [semantic versioning](http://semver.org/).
+Artifacts in this release are signed by Remko Popma (6601 E5C0 8DCC BB96).
 
 ## <a name="4.6.2-toc"></a> Table of Contents
 * [New and noteworthy](#4.6.2-new)
