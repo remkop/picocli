@@ -34,9 +34,9 @@ public class Issue1565HideParamOnUnknownOption {
      * when an unknown option was specified.
      * <p>
      * Example: when the end user entered `mycommand --passworf=TOPSECRET`, then the
-     * default handler would show a message saying "Unknown option: '----passworf=TOPSECRET'".
+     * default handler would show a message saying "Unknown option: '--passworf=TOPSECRET'".
      * </p><p>
-     * Instead, this handler shows the message "Unknown option: '----passworf'".
+     * Instead, this handler shows the message "Unknown option: '--passworf'".
      * </p><p>
      * Other than that, this handler behaves identical to the picocli built-in default
      * parameter exception handler, except that the built-in exception handler also
