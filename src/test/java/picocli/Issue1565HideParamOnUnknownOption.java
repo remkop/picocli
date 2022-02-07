@@ -47,7 +47,7 @@ public class Issue1565HideParamOnUnknownOption {
         public int handleParseException(ParameterException ex, String[] args) throws Exception {
             String errorMessage = ex.getMessage();
             int equalsPosition = errorMessage.indexOf("=");
-            if (equalsPosition >= 1 && errorMessage.endsWith("'")) {
+            if (errorMessage.startsWith("Unknown option: ") && equalsPosition >= 1 && errorMessage.endsWith("'")) {
                 errorMessage = errorMessage.substring(0, equalsPosition) + "'";
             }
 
