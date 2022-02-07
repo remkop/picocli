@@ -29,34 +29,51 @@ public class Issue1565HideParamOnUnknownOption {
         @Option(names = "--option") String option;
     }
 
+    /**
+     * Parameter exception handler that does not display the attached option parameter
+     * when an unknown option was specified.
+     * <p>
+     * Example: when the end user entered `mycommand --passworf=TOPSECRET`, then the
+     * default handler would show a message saying "Unknown option: '----passworf=TOPSECRET'".
+     * </p><p>
+     * Instead, this handler shows the message "Unknown option: '----passworf'".
+     * </p><p>
+     * Other than that, this handler behaves identical to the picocli built-in default
+     * parameter exception handler, except that the built-in exception handler also
+     * shows a stack trace when the picocli trace level is set to DEBUG.
+     * </p>
+     */
+    static class MyUnknownOptionHandler implements IParameterExceptionHandler {
+        public int handleParseException(ParameterException ex, String[] args) throws Exception {
+            String errorMessage = ex.getMessage();
+            int equalsPosition = errorMessage.indexOf("=");
+            if (equalsPosition >= 1 && errorMessage.endsWith("'")) {
+                errorMessage = errorMessage.substring(0, equalsPosition) + "'";
+            }
+
+            CommandLine cmd = ex.getCommandLine();
+            PrintWriter writer = cmd.getErr();
+            CommandLine.Help.ColorScheme colorScheme = cmd.getColorScheme();
+            writer.println(colorScheme.errorText(errorMessage));
+            if (!CommandLine.UnmatchedArgumentException.printSuggestions(ex, writer)) {
+                ex.getCommandLine().usage(writer, colorScheme);
+            }
+            return mappedExitCode(ex, cmd.getExitCodeExceptionMapper(), cmd.getCommandSpec().exitCodeOnInvalidInput());
+        }
+        private int mappedExitCode(Throwable t, CommandLine.IExitCodeExceptionMapper mapper, int defaultExitCode) {
+            try {
+                return (mapper != null) ? mapper.getExitCode(t) : defaultExitCode;
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                return defaultExitCode;
+            }
+        }
+    }
+
     @Test
     public void testIssue1565() {
         CommandLine cmd = new CommandLine(new Issue1565());
-        cmd.setParameterExceptionHandler(new IParameterExceptionHandler() {
-            public int handleParseException(ParameterException ex, String[] args) throws Exception {
-                CommandLine cmd = ex.getCommandLine();
-                PrintWriter writer = cmd.getErr();
-                CommandLine.Help.ColorScheme colorScheme = cmd.getColorScheme();
-                String errorMessage = ex.getMessage();
-                int equalsPosition = errorMessage.indexOf("=");
-                if (equalsPosition >= 1 && errorMessage.endsWith("'")) {
-                    errorMessage = errorMessage.substring(0, equalsPosition) + "'";
-                }
-                writer.println(colorScheme.errorText(errorMessage));
-                if (!CommandLine.UnmatchedArgumentException.printSuggestions(ex, writer)) {
-                    ex.getCommandLine().usage(writer, colorScheme);
-                }
-                return mappedExitCode(ex, cmd.getExitCodeExceptionMapper(), cmd.getCommandSpec().exitCodeOnInvalidInput());
-            }
-            private int mappedExitCode(Throwable t, CommandLine.IExitCodeExceptionMapper mapper, int defaultExitCode) {
-                try {
-                    return (mapper != null) ? mapper.getExitCode(t) : defaultExitCode;
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                    return defaultExitCode;
-                }
-            }
-        });
+        cmd.setParameterExceptionHandler(new MyUnknownOptionHandler());
         cmd.execute("--aption=SENSITIVE_VALUE");
 
         String expected = String.format("" +
