@@ -7090,18 +7090,18 @@ public class CommandLine {
              * @return this CommandSpec for method chaining
              * @since 3.1 */
             public CommandSpec aliases(String... aliases) {
-                Set<String> existingAliasSet = this.aliases;
+                Set<String> previousAliasSet = this.aliases;
                 this.aliases = new LinkedHashSet<String>(Arrays.asList(aliases == null ? new String[0] : aliases));
                 if (parent != null) {
                     //remove & add aliases
-                    Set<String> newAliasSet = new LinkedHashSet<String>(this.aliases);
-                    newAliasSet.removeAll(existingAliasSet);
+                    Set<String> addedAliasSet = new LinkedHashSet<String>(this.aliases);
+                    addedAliasSet.removeAll(previousAliasSet);
                     Tracer t = new Tracer();
-                    for (String alias : newAliasSet) {
+                    for (String alias : addedAliasSet) {
                         parent.addAlias(alias, name, commandLine, t);
                     }
-                    existingAliasSet.removeAll(this.aliases);
-                    for (String alias : existingAliasSet) {
+                    previousAliasSet.removeAll(this.aliases);
+                    for (String alias : previousAliasSet) {
                         parent.removeAlias(alias, commandLine, t);
                     }
                 }
