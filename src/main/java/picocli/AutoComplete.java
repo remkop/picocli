@@ -293,12 +293,14 @@ public class AutoComplete {
     }
     private static class CommandDescriptor {
         final String functionName;
+        final String parentFunctionName;
         final String parentWithoutTopLevelCommand;
         final String commandName;
         final CommandLine commandLine;
 
-        CommandDescriptor(String functionName, String parentWithoutTopLevelCommand, String commandName, CommandLine commandLine) {
+        CommandDescriptor(String functionName, String parentFunctionName, String parentWithoutTopLevelCommand, String commandName, CommandLine commandLine) {
             this.functionName = functionName;
+            this.parentFunctionName = parentFunctionName;
             this.parentWithoutTopLevelCommand = parentWithoutTopLevelCommand;
             this.commandName = commandName;
             this.commandLine = commandLine;
@@ -359,7 +361,10 @@ public class AutoComplete {
             "  alias compopt=complete\n" +
             "\n" +
             "  # Enable bash completion in zsh (see [7])\n" +
-            "  autoload -U +X compinit && compinit\n" +
+            "  # Only initialize completions module once to avoid unregistering existing completions.\n" +
+            "  if ! type compdef > /dev/null; then\n" +
+            "    autoload -U +X compinit && compinit\n" +
+            "  fi\n" +
             "  autoload -U +X bashcompinit && bashcompinit\n" +
             "fi\n" +
             "\n" +
@@ -496,7 +501,7 @@ public class AutoComplete {
 
     private static List<CommandDescriptor> createHierarchy(String scriptName, CommandLine commandLine) {
         List<CommandDescriptor> result = new ArrayList<CommandDescriptor>();
-        result.add(new CommandDescriptor("_picocli_" + scriptName, "", scriptName, commandLine));
+        result.add(new CommandDescriptor("_picocli_" + scriptName, "", "", scriptName, commandLine));
         createSubHierarchy(scriptName, "", commandLine, result);
         return result;
     }
@@ -509,9 +514,12 @@ public class AutoComplete {
             String commandName = entry.getKey(); // may be an alias
             String functionNameWithoutPrefix = bashify(concat("_", parentWithoutTopLevelCommand.replace(' ', '_'), commandName));
             String functionName = concat("_", "_picocli", scriptName, functionNameWithoutPrefix);
+            String parentFunctionName = parentWithoutTopLevelCommand.length() == 0
+                ? concat("_", "_picocli", scriptName)
+                : concat("_", "_picocli", scriptName, bashify(parentWithoutTopLevelCommand.replace(' ', '_')));
 
             // remember the function name and associated subcommand so we can easily generate a function later
-            out.add(new CommandDescriptor(functionName, parentWithoutTopLevelCommand, commandName, entry.getValue()));
+            out.add(new CommandDescriptor(functionName, parentFunctionName, parentWithoutTopLevelCommand, commandName, entry.getValue()));
         }
 
         // then recursively do the same for all nested subcommands
@@ -532,6 +540,13 @@ public class AutoComplete {
                 "# on the command line and delegates to the appropriate function\n" +
                 "# to generate possible options and subcommands for the last specified subcommand.\n" +
                 "function _complete_%1$s() {\n" +
+//        # Edge case: if command line has no space after subcommand, then don't assume this subcommand is selected
+//        if [ "${COMP_LINE}" = "${COMP_WORDS[0]} abc" ];    then _picocli_mycmd; return $?; fi
+//        if [ "${COMP_LINE}" = "${COMP_WORDS[0]} abcdef" ]; then _picocli_mycmd; return $?; fi
+//        if [ "${COMP_LINE}" = "${COMP_WORDS[0]} generate-completion" ]; then _picocli_mycmd; return $?; fi
+//        if [ "${COMP_LINE}" = "${COMP_WORDS[0]} abcdef sub1" ]; then _picocli_mycmd_abcdef; return $?; fi
+//        if [ "${COMP_LINE}" = "${COMP_WORDS[0]} abcdef sub2" ]; then _picocli_mycmd_abcdef; return $?; fi
+//
 //                "  CMDS1=(%1$s gettingstarted)\n" +
 //                "  CMDS2=(%1$s tool)\n" +
 //                "  CMDS3=(%1$s tool sub1)\n" +
@@ -555,29 +570,39 @@ public class AutoComplete {
         StringBuilder buff = new StringBuilder(1024);
         buff.append(format(FUNCTION_HEADER, scriptName));
 
-        List<String> functionCallsToArrContains = new ArrayList<String>();
+        generatedEdgeCaseFunctionCalls(buff, hierarchy);
+        generateFunctionCallsToArrContains(buff, hierarchy);
 
-        generateFunctionCallsToArrContains(buff, functionCallsToArrContains, hierarchy);
-
-        buff.append("\n");
-        Collections.reverse(functionCallsToArrContains);
-        for (String func : functionCallsToArrContains) {
-            buff.append(func);
-        }
         buff.append(format(FUNCTION_FOOTER, scriptName));
         return buff.toString();
     }
 
-    private static void generateFunctionCallsToArrContains(StringBuilder buff,
-                                                           List<String> functionCalls,
-                                                           List<CommandDescriptor> hierarchy) {
+    // https://github.com/remkop/picocli/issues/1468
+    private static void generatedEdgeCaseFunctionCalls(StringBuilder buff, List<CommandDescriptor> hierarchy) {
+        buff.append("  # Edge case: if command line has no space after subcommand, then don't assume this subcommand is selected (remkop/picocli#1468).\n");
+        for (CommandDescriptor descriptor : hierarchy.subList(1, hierarchy.size())) { // skip top-level command
+            String withoutTopLevelCommand = concat(" ", descriptor.parentWithoutTopLevelCommand, descriptor.commandName);
+            buff.append(format("  if [ \"${COMP_LINE}\" = \"${COMP_WORDS[0]} %1$s\" ];    then %2$s; return $?; fi\n", withoutTopLevelCommand, descriptor.parentFunctionName));
+        }
+        buff.append("\n");
+    }
 
+    private static void generateFunctionCallsToArrContains(StringBuilder buff,
+                                                           List<CommandDescriptor> hierarchy) {
+        buff.append("  # Find the longest sequence of subcommands and call the bash function for that subcommand.\n");
+        List<String> functionCalls = new ArrayList<String>();
         for (CommandDescriptor descriptor : hierarchy.subList(1, hierarchy.size())) { // skip top-level command
             int count = functionCalls.size();
             String withoutTopLevelCommand = concat(" ", descriptor.parentWithoutTopLevelCommand, descriptor.commandName);
 
             functionCalls.add(format("  if CompWordsContainsArray \"${cmds%2$d[@]}\"; then %1$s; return $?; fi\n", descriptor.functionName, count));
             buff.append(      format("  local cmds%2$d=(%1$s)\n", withoutTopLevelCommand, count));
+        }
+
+        buff.append("\n");
+        Collections.reverse(functionCalls);
+        for (String func : functionCalls) {
+            buff.append(func);
         }
     }
     private static String concat(String infix, String... values) {
@@ -728,11 +753,11 @@ public class AutoComplete {
             } else if (type.equals(File.class) || "java.nio.file.Path".equals(type.getName())) {
                 buff.append(format("%s    %s (( currIndex >= %d && currIndex <= %d )); then\n", indent, ifOrElif, min, max));
                 buff.append(format("%s      local IFS=$'\\n'\n", indent));
-                buff.append(format("%s      compopt -o filenames\n", indent));
+                buff.append(format("%s      type compopt &>/dev/null && compopt -o filenames\n", indent)); // #1464 workaround for old bash
                 buff.append(format("%s      positionals=$( compgen -f -- \"%s\" ) # files\n", indent, currWord));
             } else if (type.equals(InetAddress.class)) {
                 buff.append(format("%s    %s (( currIndex >= %d && currIndex <= %d )); then\n", indent, ifOrElif, min, max));
-                buff.append(format("%s      compopt -o filenames\n", indent));
+                buff.append(format("%s      type compopt &>/dev/null && compopt -o filenames\n", indent)); // #1464 workaround for old bash
                 buff.append(format("%s      positionals=$( compgen -A hostname -- \"%s\" )\n", indent, currWord));
             }
         }
@@ -750,7 +775,7 @@ public class AutoComplete {
         }
 
         return "\n"
-                + "  compopt +o default\n"
+                + "  type compopt &>/dev/null && compopt +o default\n" // #1464 workaround for old bash
                 + "\n"
                 + "  case ${prev_word} in\n"
                 + optionsCases
@@ -773,13 +798,13 @@ public class AutoComplete {
             } else if (type.equals(File.class) || "java.nio.file.Path".equals(type.getName())) {
                 buff.append(format("%s    %s)\n", indent, concat("|", option.names()))); // "    -f|--file)\n"
                 buff.append(format("%s      local IFS=$'\\n'\n", indent));
-                buff.append(format("%s      compopt -o filenames\n", indent));
+                buff.append(format("%s      type compopt &>/dev/null && compopt -o filenames\n", indent)); // #1464 workaround for old bash
                 buff.append(format("%s      COMPREPLY=( $( compgen -f -- \"%s\" ) ) # files\n", indent, currWord));
                 buff.append(format("%s      return $?\n", indent));
                 buff.append(format("%s      ;;\n", indent));
             } else if (type.equals(InetAddress.class)) {
                 buff.append(format("%s    %s)\n", indent, concat("|", option.names()))); // "    -h|--host)\n"
-                buff.append(format("%s      compopt -o filenames\n", indent));
+                buff.append(format("%s      type compopt &>/dev/null && compopt -o filenames\n", indent)); // #1464 workaround for old bash
                 buff.append(format("%s      COMPREPLY=( $( compgen -A hostname -- \"%s\" ) )\n", indent, currWord));
                 buff.append(format("%s      return $?\n", indent));
                 buff.append(format("%s      ;;\n", indent));

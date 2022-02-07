@@ -229,11 +229,17 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
     }
 
     private CommandSpec buildCommand(Element element, final Context context, final RoundEnvironment roundEnv) {
+        return buildCommand(true, element, context, roundEnv);
+    }
+    private CommandSpec buildCommand(boolean reuseExisting, Element element, final Context context, final RoundEnvironment roundEnv) {
         debugElement(element, "@Command");
 
-        CommandSpec result = context.commands.get(element);
-        if (result != null) {
-            return result;
+        CommandSpec result = null;
+        if (reuseExisting) { // #1440 subcommands should create separate instances
+            result = context.commands.get(element);
+            if (result != null) {
+                return result;
+            }
         }
         result = CommandSpec.wrapWithoutInspection(element);
         result.interpolateVariables(false);
@@ -387,7 +393,7 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
             logger.fine("Processing subcommand: " + subcommandElement);
 
             if (isValidSubcommandHasNameAttribute(subcommandElement)) {
-                CommandSpec commandSpec = buildCommand(subcommandElement, context, roundEnv);
+                CommandSpec commandSpec = buildCommand(false, subcommandElement, context, roundEnv);
                 result.add(commandSpec);
             }
         }

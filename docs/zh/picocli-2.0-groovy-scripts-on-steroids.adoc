@@ -14,7 +14,7 @@ Picocli 2.0 增加了对其他 JVM 语言的支持，尤其是 Groovy。
 您可能喜欢Picocli的使用帮助，它默认显示ANSI http://picocli.info/#_ansi_colors_and_styles[颜色和样式]
 另一个您可能喜欢的功能是命令行
 http://picocli.info/autocomplete.html[TAB autocompletion]。 最后，还有一些小功能，
-比如说您的脚本需要零行解析代码的命令行， 
+比如说您的脚本需要零行解析代码的命令行，
 Picocli的 http://picocli.info/#subcommands[子命令]支持，
 选项和位置参数的 http://picocli.info/#_strongly_typed_everything[类型转换]，
 以及 http://picocli.info/#tracing[解析器跟踪]，只是举几个例子。
@@ -25,8 +25,8 @@ image:cli.jpg[Alt="Picocli强大的微型命令行接口",width='20%']
 == 案例
 
 让我们来看个例子。下面的 checksum.groovy 脚本采用一个或多个文件参数，每个文件输出一个校验和文件名。默认情况下，
-`checksum.groovy` 算法是 MD5，但是用户可能会指定一个不同的 MessageDigest 算法。用户可以通过 `-h` 或 `--help` 选项请
-求使用帮助 。 
+`checksum.groovy` 算法是 SHA-1，但是用户可能会指定一个不同的 MessageDigest 算法。用户可以通过 `-h` 或 `--help` 选项请
+求使用帮助 。
 
 [source,groovy]
 ----
@@ -42,7 +42,7 @@ import static picocli.CommandLine.*
 @Option(names = ["-a", "--algorithm"], description = [
         "MD2, MD5, SHA-1, SHA-256, SHA-384, SHA-512,",
         "  or any other MessageDigest algorithm."])
-@Field String algorithm = "MD5"
+@Field String algorithm = "SHA-1"
 
 @Option(names= ["-h", "--help"], usageHelp= true, description= "Show this help message and exit.")
 @Field boolean helpRequested
@@ -52,7 +52,7 @@ files.each {
 }
 ----
 当在 `$picocli-home/examples/src/main/groovy/picocli/examples` 目录中运行时，本示例脚本给
-出以下结果: 
+出以下结果:
 
 [source,bash]
 ----
@@ -82,7 +82,7 @@ class Checksum {
     File[] files
 
     @Option(names = ["-a", "--algorithm"], description = ["..."])
-    String algorithm = "MD5"
+    String algorithm = "SHA-1"
 
     @Option(names = ["-h", "--help"], usageHelp = true, description = "...")
     boolean helpRequested
@@ -170,7 +170,7 @@ import static picocli.CommandLine.*
 @Option(names = ["-a", "--algorithm"], description = [
         "MD2, MD5, SHA-1, SHA-256, SHA-384, SHA-512, or",
         "  any other MessageDigest algorithm. See [1] for more details."])
-@Field private String algorithm = "MD5"
+@Field private String algorithm = "SHA-1"
 
 @Option(names= ["-h", "--help"], usageHelp=true, description="Show this help message and exit.")
 @Field private boolean helpRequested

@@ -677,7 +677,7 @@ public class Demo implements Runnable {
 
     static
     // tag::CheckSum[]
-    @Command(description = "Prints the checksum (MD5 by default) of a file to STDOUT.",
+    @Command(description = "Prints the checksum (SHA-1 by default) of a file to STDOUT.",
             name = "checksum", mixinStandardHelpOptions = true, version = "checksum 3.0")
     class CheckSum implements Callable<Integer> {
 
@@ -685,7 +685,7 @@ public class Demo implements Runnable {
         private File file;
 
         @Option(names = {"-a", "--algorithm"}, description = "MD5, SHA-1, SHA-256, ...")
-        private String algorithm = "MD5";
+        private String algorithm = "SHA-1";
 
         public static void main(String[] args) {
             // CheckSum implements Callable,

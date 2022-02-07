@@ -10,8 +10,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.Arrays;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import static org.junit.Assert.*;
 import static picocli.CommandLine.AbbreviationMatcher.match;
@@ -32,73 +32,73 @@ public class AbbreviationMatcherTest {
     @Rule
     public final ProvideSystemProperty ansiOFF = new ProvideSystemProperty("picocli.ansi", "false");
 
-    private Set<String> createSet() {
-        Set<String> result = new LinkedHashSet<String>();
-        result.add("kebab-case-extra");
-        result.add("kebab-case-extra-extra");
-        result.add("kebab-case");
-        result.add("kc"); // alias
-        result.add("very-long-kebab-case");
-        result.add("camelCase");
-        result.add("veryLongCamelCase");
-        result.add("super-long-option");
-        result.add("extremely-long-option-with-many-components");
+    private Map<String, Integer> createMap() {
+        Map<String, Integer> result = new LinkedHashMap<String, Integer>();
+        result.put("kebab-case-extra", 1);
+        result.put("kebab-case-extra-extra", 2);
+        result.put("kebab-case", 3);
+        result.put("kc", 4); // alias
+        result.put("very-long-kebab-case", 5);
+        result.put("camelCase", 6);
+        result.put("veryLongCamelCase", 7);
+        result.put("super-long-option", 8);
+        result.put("extremely-long-option-with-many-components", 9);
         return result;
     }
 
     @Test
     public void testPrefixMatch() {
-        Set<String> set = createSet();
+        Map<String, Integer> map = createMap();
         CommandLine cmd = new CommandLine(Model.CommandSpec.create());
 
-        assertEquals("kebab-case", match(set, "kebab-case", false, cmd));
-        assertEquals("kebab-case-extra", match(set, "kebab-case-extra", false, cmd));
-        assertEquals("very-long-kebab-case", match(set, "very-long-kebab-case", false, cmd));
-        assertEquals("very-long-kebab-case", match(set, "v-l-k-c", false, cmd));
-        assertEquals("very-long-kebab-case", match(set, "vLKC", false, cmd));
-        assertEquals("camelCase", match(set, "camelCase", false, cmd));
-        assertEquals("camelCase", match(set, "cC", false, cmd));
-        assertEquals("camelCase", match(set, "c-c", false, cmd));
-        assertEquals("camelCase", match(set, "camC", false, cmd));
-        assertEquals("camelCase", match(set, "camel", false, cmd));
-        assertEquals("camelCase", match(set, "ca", false, cmd));
-        assertEquals("super-long-option", match(set, "s-l-o", false, cmd));
-        assertEquals("super-long-option", match(set, "s-long-opt", false, cmd));
-        assertEquals("super-long-option", match(set, "super", false, cmd));
-        assertEquals("super-long-option", match(set, "sup", false, cmd));
-        assertEquals("super-long-option", match(set, "sup-long", false, cmd));
-        assertNotEquals("super-long-option", match(set, "SLO", false, cmd));
-        assertEquals   ("super-long-option", match(set, "sLO", false, cmd));
-        assertEquals("super-long-option", match(set, "s-opt", false, cmd));
-        assertEquals("veryLongCamelCase", match(set, "veryLongCamelCase", false, cmd));
-        assertEquals("veryLongCamelCase", match(set, "vLCC", false, cmd));
-        assertEquals("veryLongCamelCase", match(set, "v-l-c-c", false, cmd));
-        assertEquals("extremely-long-option-with-many-components", match(set, "extr-opt-comp", false, cmd));
-        assertEquals("extremely-long-option-with-many-components", match(set, "extr-long-opt-comp", false, cmd));
-        assertEquals("extremely-long-option-with-many-components", match(set, "extr-comp", false, cmd));
-        assertNotEquals("extremely-long-option-with-many-components", match(set, "extr-opt-long-comp", false, cmd));
-        assertNotEquals("extremely-long-option-with-many-components", match(set, "long", false, cmd));
+        assertEquals("kebab-case", match(map, "kebab-case", false, cmd).getFullName());
+        assertEquals("kebab-case-extra", match(map, "kebab-case-extra", false, cmd).getFullName());
+        assertEquals("very-long-kebab-case", match(map, "very-long-kebab-case", false, cmd).getFullName());
+        assertEquals("very-long-kebab-case", match(map, "v-l-k-c", false, cmd).getFullName());
+        assertEquals("very-long-kebab-case", match(map, "vLKC", false, cmd).getFullName());
+        assertEquals("camelCase", match(map, "camelCase", false, cmd).getFullName());
+        assertEquals("camelCase", match(map, "cC", false, cmd).getFullName());
+        assertEquals("camelCase", match(map, "c-c", false, cmd).getFullName());
+        assertEquals("camelCase", match(map, "camC", false, cmd).getFullName());
+        assertEquals("camelCase", match(map, "camel", false, cmd).getFullName());
+        assertEquals("camelCase", match(map, "ca", false, cmd).getFullName());
+        assertEquals("super-long-option", match(map, "s-l-o", false, cmd).getFullName());
+        assertEquals("super-long-option", match(map, "s-long-opt", false, cmd).getFullName());
+        assertEquals("super-long-option", match(map, "super", false, cmd).getFullName());
+        assertEquals("super-long-option", match(map, "sup", false, cmd).getFullName());
+        assertEquals("super-long-option", match(map, "sup-long", false, cmd).getFullName());
+        assertNotEquals("super-long-option", match(map, "SLO", false, cmd).getFullName());
+        assertEquals   ("super-long-option", match(map, "sLO", false, cmd).getFullName());
+        assertEquals("super-long-option", match(map, "s-opt", false, cmd).getFullName());
+        assertEquals("veryLongCamelCase", match(map, "veryLongCamelCase", false, cmd).getFullName());
+        assertEquals("veryLongCamelCase", match(map, "vLCC", false, cmd).getFullName());
+        assertEquals("veryLongCamelCase", match(map, "v-l-c-c", false, cmd).getFullName());
+        assertEquals("extremely-long-option-with-many-components", match(map, "extr-opt-comp", false, cmd).getFullName());
+        assertEquals("extremely-long-option-with-many-components", match(map, "extr-long-opt-comp", false, cmd).getFullName());
+        assertEquals("extremely-long-option-with-many-components", match(map, "extr-comp", false, cmd).getFullName());
+        assertNotEquals("extremely-long-option-with-many-components", match(map, "extr-opt-long-comp", false, cmd).getFullName());
+        assertNotEquals("extremely-long-option-with-many-components", match(map, "long", false, cmd).getFullName());
 
         try {
-            match(set, "vLC", false, cmd);
+            match(map, "vLC", false, cmd);
             fail("Expected exception");
         } catch (ParameterException ex) {
             assertEquals("Error: 'vLC' is not unique: it matches 'very-long-kebab-case', 'veryLongCamelCase'", ex.getMessage());
         }
         try {
-            match(set, "k-c", false, cmd);
+            match(map, "k-c", false, cmd);
             fail("Expected exception");
         } catch (ParameterException ex) {
             assertEquals("Error: 'k-c' is not unique: it matches 'kebab-case-extra', 'kebab-case-extra-extra', 'kebab-case'", ex.getMessage());
         }
         try {
-            match(set, "kC", false, cmd);
+            match(map, "kC", false, cmd);
             fail("Expected exception");
         } catch (ParameterException ex) {
             assertEquals("Error: 'kC' is not unique: it matches 'kebab-case-extra', 'kebab-case-extra-extra', 'kebab-case'", ex.getMessage());
         }
         try {
-            match(set, "keb-ca", false, cmd);
+            match(map, "keb-ca", false, cmd);
             fail("Expected exception");
         } catch (ParameterException ex) {
             assertEquals("Error: 'keb-ca' is not unique: it matches 'kebab-case-extra', 'kebab-case-extra-extra', 'kebab-case'", ex.getMessage());
@@ -110,33 +110,33 @@ public class AbbreviationMatcherTest {
     //|`some-long-command` | `so`, sLC`, `s-l-c`, `soLoCo`, `someCom`
     @Test
     public void testUserManualExamples() {
-        Set<String> original = new LinkedHashSet<String>();
-        original.add("--veryLongCamelCase");
-        original.add("--super-long-option");
-        original.add("some-long-command");
+        Map<String, Integer> original = new LinkedHashMap<String, Integer>();
+        original.put("--veryLongCamelCase", 1);
+        original.put("--super-long-option", 2);
+        original.put("some-long-command", 3);
 
         CommandLine cmd = new CommandLine(Model.CommandSpec.create());
 
-        assertNotEquals("--veryLongCamelCase", match(original, "--VLCC", false, cmd));
-        assertEquals("--veryLongCamelCase", match(original, "--very", false, cmd));
-        assertEquals("--veryLongCamelCase", match(original, "--vLCC", false, cmd));
-        assertEquals("--veryLongCamelCase", match(original, "--vCase", false, cmd));
+        assertNotEquals("--veryLongCamelCase", match(original, "--VLCC", false, cmd).getFullName());
+        assertEquals("--veryLongCamelCase", match(original, "--very", false, cmd).getFullName());
+        assertEquals("--veryLongCamelCase", match(original, "--vLCC", false, cmd).getFullName());
+        assertEquals("--veryLongCamelCase", match(original, "--vCase", false, cmd).getFullName());
 
-        assertEquals("--super-long-option", match(original, "--sup", false, cmd));
-        assertNotEquals("--super-long-option", match(original, "--Sup", false, cmd));
-        assertEquals("--super-long-option", match(original, "--sLO", false, cmd));
-        assertEquals("--super-long-option", match(original, "--s-l-o", false, cmd));
-        assertEquals("--super-long-option", match(original, "--s-lon", false, cmd));
-        assertEquals("--super-long-option", match(original, "--s-opt", false, cmd));
-        assertEquals("--super-long-option", match(original, "--sOpt", false, cmd));
+        assertEquals("--super-long-option", match(original, "--sup", false, cmd).getFullName());
+        assertNotEquals("--super-long-option", match(original, "--Sup", false, cmd).getFullName());
+        assertEquals("--super-long-option", match(original, "--sLO", false, cmd).getFullName());
+        assertEquals("--super-long-option", match(original, "--s-l-o", false, cmd).getFullName());
+        assertEquals("--super-long-option", match(original, "--s-lon", false, cmd).getFullName());
+        assertEquals("--super-long-option", match(original, "--s-opt", false, cmd).getFullName());
+        assertEquals("--super-long-option", match(original, "--sOpt", false, cmd).getFullName());
 
-        assertNotEquals("some-long-command", match(original, "So", false, cmd));
-        assertEquals("some-long-command", match(original, "so", false, cmd));
-        assertEquals("some-long-command", match(original, "sLC", false, cmd));
-        assertEquals("some-long-command", match(original, "s-l-c", false, cmd));
-        assertEquals("some-long-command", match(original, "soLoCo", false, cmd));
-        assertNotEquals("some-long-command", match(original, "SoLoCo", false, cmd));
-        assertEquals("some-long-command", match(original, "someCom", false, cmd));
+        assertNotEquals("some-long-command", match(original, "So", false, cmd).getFullName());
+        assertEquals("some-long-command", match(original, "so", false, cmd).getFullName());
+        assertEquals("some-long-command", match(original, "sLC", false, cmd).getFullName());
+        assertEquals("some-long-command", match(original, "s-l-c", false, cmd).getFullName());
+        assertEquals("some-long-command", match(original, "soLoCo", false, cmd).getFullName());
+        assertNotEquals("some-long-command", match(original, "SoLoCo", false, cmd).getFullName());
+        assertEquals("some-long-command", match(original, "someCom", false, cmd).getFullName());
     }
 
     @Test
@@ -561,6 +561,21 @@ public class AbbreviationMatcherTest {
         cmd.setAbbreviatedOptionsAllowed(true);
         cmd.parseArgs("--x-y=123");
         assertEquals(123, bean.x);
+    }
+
+    @Test
+    public void testAmbiguousAbbreviatedSubcommands() {
+        @Command
+        class Issue1537Ambiguous implements Runnable {
+            @Command(name = "chemical-files", aliases = "chem-formats")
+            void sub() {}
+
+            public void run() {}
+        }
+        int exitCode = new CommandLine(new Issue1537Ambiguous()).setAbbreviatedSubcommandsAllowed(true).execute("chem");
+        assertEquals(0, exitCode);
+        CommandLine.ParseResult result = new CommandLine(new Issue1537Ambiguous()).setAbbreviatedSubcommandsAllowed(true).parseArgs("chem");
+        assertEquals("chemical-files", result.subcommand().asCommandLineList().get(0).getCommandName());
     }
 
 }

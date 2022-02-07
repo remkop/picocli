@@ -51,7 +51,10 @@ elif [ -n "$ZSH_VERSION" ]; then
   alias compopt=complete
 
   # Enable bash completion in zsh (see [7])
-  autoload -U +X compinit && compinit
+  # Only initialize completions module once to avoid unregistering existing completions.
+  if ! type compdef > /dev/null; then
+    autoload -U +X compinit && compinit
+  fi
   autoload -U +X bashcompinit && bashcompinit
 fi
 
@@ -115,6 +118,26 @@ function currentPositionalIndex() {
 # on the command line and delegates to the appropriate function
 # to generate possible options and subcommands for the last specified subcommand.
 function _complete_picocompletion-demo-help() {
+  # Edge case: if command line has no space after subcommand, then don't assume this subcommand is selected (remkop/picocli#1468).
+  if [ "${COMP_LINE}" = "${COMP_WORDS[0]} sub1" ];    then _picocli_picocompletion-demo-help; return $?; fi
+  if [ "${COMP_LINE}" = "${COMP_WORDS[0]} sub1-alias" ];    then _picocli_picocompletion-demo-help; return $?; fi
+  if [ "${COMP_LINE}" = "${COMP_WORDS[0]} sub2" ];    then _picocli_picocompletion-demo-help; return $?; fi
+  if [ "${COMP_LINE}" = "${COMP_WORDS[0]} sub2-alias" ];    then _picocli_picocompletion-demo-help; return $?; fi
+  if [ "${COMP_LINE}" = "${COMP_WORDS[0]} help" ];    then _picocli_picocompletion-demo-help; return $?; fi
+  if [ "${COMP_LINE}" = "${COMP_WORDS[0]} sub2 subsub1" ];    then _picocli_picocompletion-demo-help_sub2; return $?; fi
+  if [ "${COMP_LINE}" = "${COMP_WORDS[0]} sub2 sub2child1-alias" ];    then _picocli_picocompletion-demo-help_sub2; return $?; fi
+  if [ "${COMP_LINE}" = "${COMP_WORDS[0]} sub2 subsub2" ];    then _picocli_picocompletion-demo-help_sub2; return $?; fi
+  if [ "${COMP_LINE}" = "${COMP_WORDS[0]} sub2 sub2child2-alias" ];    then _picocli_picocompletion-demo-help_sub2; return $?; fi
+  if [ "${COMP_LINE}" = "${COMP_WORDS[0]} sub2 subsub3" ];    then _picocli_picocompletion-demo-help_sub2; return $?; fi
+  if [ "${COMP_LINE}" = "${COMP_WORDS[0]} sub2 sub2child3-alias" ];    then _picocli_picocompletion-demo-help_sub2; return $?; fi
+  if [ "${COMP_LINE}" = "${COMP_WORDS[0]} sub2-alias subsub1" ];    then _picocli_picocompletion-demo-help_sub2alias; return $?; fi
+  if [ "${COMP_LINE}" = "${COMP_WORDS[0]} sub2-alias sub2child1-alias" ];    then _picocli_picocompletion-demo-help_sub2alias; return $?; fi
+  if [ "${COMP_LINE}" = "${COMP_WORDS[0]} sub2-alias subsub2" ];    then _picocli_picocompletion-demo-help_sub2alias; return $?; fi
+  if [ "${COMP_LINE}" = "${COMP_WORDS[0]} sub2-alias sub2child2-alias" ];    then _picocli_picocompletion-demo-help_sub2alias; return $?; fi
+  if [ "${COMP_LINE}" = "${COMP_WORDS[0]} sub2-alias subsub3" ];    then _picocli_picocompletion-demo-help_sub2alias; return $?; fi
+  if [ "${COMP_LINE}" = "${COMP_WORDS[0]} sub2-alias sub2child3-alias" ];    then _picocli_picocompletion-demo-help_sub2alias; return $?; fi
+
+  # Find the longest sequence of subcommands and call the bash function for that subcommand.
   local cmds0=(sub1)
   local cmds1=(sub1-alias)
   local cmds2=(sub2)
@@ -183,7 +206,7 @@ function _picocli_picocompletion-demo-help_sub1() {
   local arg_opts="--num --str --candidates"
   local str2_option_args="aaa bbb ccc" # --candidates values
 
-  compopt +o default
+  type compopt &>/dev/null && compopt +o default
 
   case ${prev_word} in
     --num)
@@ -217,7 +240,7 @@ function _picocli_picocompletion-demo-help_sub1alias() {
   local arg_opts="--num --str --candidates"
   local str2_option_args="aaa bbb ccc" # --candidates values
 
-  compopt +o default
+  type compopt &>/dev/null && compopt +o default
 
   case ${prev_word} in
     --num)
@@ -250,7 +273,7 @@ function _picocli_picocompletion-demo-help_sub2() {
   local flag_opts=""
   local arg_opts="--num2 --directory -d"
 
-  compopt +o default
+  type compopt &>/dev/null && compopt +o default
 
   case ${prev_word} in
     --num2)
@@ -258,7 +281,7 @@ function _picocli_picocompletion-demo-help_sub2() {
       ;;
     --directory|-d)
       local IFS=$'\n'
-      compopt -o filenames
+      type compopt &>/dev/null && compopt -o filenames
       COMPREPLY=( $( compgen -f -- "${curr_word}" ) ) # files
       return $?
       ;;
@@ -288,7 +311,7 @@ function _picocli_picocompletion-demo-help_sub2alias() {
   local flag_opts=""
   local arg_opts="--num2 --directory -d"
 
-  compopt +o default
+  type compopt &>/dev/null && compopt +o default
 
   case ${prev_word} in
     --num2)
@@ -296,7 +319,7 @@ function _picocli_picocompletion-demo-help_sub2alias() {
       ;;
     --directory|-d)
       local IFS=$'\n'
-      compopt -o filenames
+      type compopt &>/dev/null && compopt -o filenames
       COMPREPLY=( $( compgen -f -- "${curr_word}" ) ) # files
       return $?
       ;;
@@ -343,11 +366,11 @@ function _picocli_picocompletion-demo-help_sub2_subsub1() {
   local flag_opts=""
   local arg_opts="-h --host"
 
-  compopt +o default
+  type compopt &>/dev/null && compopt +o default
 
   case ${prev_word} in
     -h|--host)
-      compopt -o filenames
+      type compopt &>/dev/null && compopt -o filenames
       COMPREPLY=( $( compgen -A hostname -- "${curr_word}" ) )
       return $?
       ;;
@@ -371,11 +394,11 @@ function _picocli_picocompletion-demo-help_sub2_sub2child1alias() {
   local flag_opts=""
   local arg_opts="-h --host"
 
-  compopt +o default
+  type compopt &>/dev/null && compopt +o default
 
   case ${prev_word} in
     -h|--host)
-      compopt -o filenames
+      type compopt &>/dev/null && compopt -o filenames
       COMPREPLY=( $( compgen -A hostname -- "${curr_word}" ) )
       return $?
       ;;
@@ -400,7 +423,7 @@ function _picocli_picocompletion-demo-help_sub2_subsub2() {
   local arg_opts="-u --timeUnit -t --timeout"
   local timeUnit_option_args="%2$s" # --timeUnit values
 
-  compopt +o default
+  type compopt &>/dev/null && compopt +o default
 
   case ${prev_word} in
     -u|--timeUnit)
@@ -437,7 +460,7 @@ function _picocli_picocompletion-demo-help_sub2_sub2child2alias() {
   local arg_opts="-u --timeUnit -t --timeout"
   local timeUnit_option_args="%2$s" # --timeUnit values
 
-  compopt +o default
+  type compopt &>/dev/null && compopt +o default
 
   case ${prev_word} in
     -u|--timeUnit)
@@ -483,10 +506,10 @@ function _picocli_picocompletion-demo-help_sub2_subsub3() {
       positionals=$( compgen -W "$cands_pos_param_args" -- "${curr_word}" )
     elif (( currIndex >= 1 && currIndex <= 2 )); then
       local IFS=$'\n'
-      compopt -o filenames
+      type compopt &>/dev/null && compopt -o filenames
       positionals=$( compgen -f -- "${curr_word}" ) # files
     elif (( currIndex >= 3 && currIndex <= 2147483647 )); then
-      compopt -o filenames
+      type compopt &>/dev/null && compopt -o filenames
       positionals=$( compgen -A hostname -- "${curr_word}" )
     fi
     COMPREPLY=( $(compgen -W "${commands} ${positionals}" -- "${curr_word}") )
@@ -513,10 +536,10 @@ function _picocli_picocompletion-demo-help_sub2_sub2child3alias() {
       positionals=$( compgen -W "$cands_pos_param_args" -- "${curr_word}" )
     elif (( currIndex >= 1 && currIndex <= 2 )); then
       local IFS=$'\n'
-      compopt -o filenames
+      type compopt &>/dev/null && compopt -o filenames
       positionals=$( compgen -f -- "${curr_word}" ) # files
     elif (( currIndex >= 3 && currIndex <= 2147483647 )); then
-      compopt -o filenames
+      type compopt &>/dev/null && compopt -o filenames
       positionals=$( compgen -A hostname -- "${curr_word}" )
     fi
     COMPREPLY=( $(compgen -W "${commands} ${positionals}" -- "${curr_word}") )
@@ -533,11 +556,11 @@ function _picocli_picocompletion-demo-help_sub2alias_subsub1() {
   local flag_opts=""
   local arg_opts="-h --host"
 
-  compopt +o default
+  type compopt &>/dev/null && compopt +o default
 
   case ${prev_word} in
     -h|--host)
-      compopt -o filenames
+      type compopt &>/dev/null && compopt -o filenames
       COMPREPLY=( $( compgen -A hostname -- "${curr_word}" ) )
       return $?
       ;;
@@ -561,11 +584,11 @@ function _picocli_picocompletion-demo-help_sub2alias_sub2child1alias() {
   local flag_opts=""
   local arg_opts="-h --host"
 
-  compopt +o default
+  type compopt &>/dev/null && compopt +o default
 
   case ${prev_word} in
     -h|--host)
-      compopt -o filenames
+      type compopt &>/dev/null && compopt -o filenames
       COMPREPLY=( $( compgen -A hostname -- "${curr_word}" ) )
       return $?
       ;;
@@ -590,7 +613,7 @@ function _picocli_picocompletion-demo-help_sub2alias_subsub2() {
   local arg_opts="-u --timeUnit -t --timeout"
   local timeUnit_option_args="%2$s" # --timeUnit values
 
-  compopt +o default
+  type compopt &>/dev/null && compopt +o default
 
   case ${prev_word} in
     -u|--timeUnit)
@@ -627,7 +650,7 @@ function _picocli_picocompletion-demo-help_sub2alias_sub2child2alias() {
   local arg_opts="-u --timeUnit -t --timeout"
   local timeUnit_option_args="%2$s" # --timeUnit values
 
-  compopt +o default
+  type compopt &>/dev/null && compopt +o default
 
   case ${prev_word} in
     -u|--timeUnit)
@@ -673,10 +696,10 @@ function _picocli_picocompletion-demo-help_sub2alias_subsub3() {
       positionals=$( compgen -W "$cands_pos_param_args" -- "${curr_word}" )
     elif (( currIndex >= 1 && currIndex <= 2 )); then
       local IFS=$'\n'
-      compopt -o filenames
+      type compopt &>/dev/null && compopt -o filenames
       positionals=$( compgen -f -- "${curr_word}" ) # files
     elif (( currIndex >= 3 && currIndex <= 2147483647 )); then
-      compopt -o filenames
+      type compopt &>/dev/null && compopt -o filenames
       positionals=$( compgen -A hostname -- "${curr_word}" )
     fi
     COMPREPLY=( $(compgen -W "${commands} ${positionals}" -- "${curr_word}") )
@@ -703,10 +726,10 @@ function _picocli_picocompletion-demo-help_sub2alias_sub2child3alias() {
       positionals=$( compgen -W "$cands_pos_param_args" -- "${curr_word}" )
     elif (( currIndex >= 1 && currIndex <= 2 )); then
       local IFS=$'\n'
-      compopt -o filenames
+      type compopt &>/dev/null && compopt -o filenames
       positionals=$( compgen -f -- "${curr_word}" ) # files
     elif (( currIndex >= 3 && currIndex <= 2147483647 )); then
-      compopt -o filenames
+      type compopt &>/dev/null && compopt -o filenames
       positionals=$( compgen -A hostname -- "${curr_word}" )
     fi
     COMPREPLY=( $(compgen -W "${commands} ${positionals}" -- "${curr_word}") )

@@ -15,7 +15,7 @@ import static picocli.CommandLine.*
 
 @Option(names = ['-a', '--algorithm'], description = ['MD2, MD5, SHA-1, SHA-256, SHA-384, SHA-512,',
         '  or any other MessageDigest algorithm.'])
-@Field private String algorithm = 'MD5'
+@Field private String algorithm = 'SHA-1'
 
 files.each {
     println MessageDigest.getInstance(algorithm).digest(it.bytes).encodeHex().toString() + "\t" + it

@@ -51,7 +51,10 @@ elif [ -n "$ZSH_VERSION" ]; then
   alias compopt=complete
 
   # Enable bash completion in zsh (see [7])
-  autoload -U +X compinit && compinit
+  # Only initialize completions module once to avoid unregistering existing completions.
+  if ! type compdef > /dev/null; then
+    autoload -U +X compinit && compinit
+  fi
   autoload -U +X bashcompinit && bashcompinit
 fi
 
@@ -115,6 +118,11 @@ function currentPositionalIndex() {
 # on the command line and delegates to the appropriate function
 # to generate possible options and subcommands for the last specified subcommand.
 function _complete_rcmd() {
+  # Edge case: if command line has no space after subcommand, then don't assume this subcommand is selected (remkop/picocli#1468).
+  if [ "${COMP_LINE}" = "${COMP_WORDS[0]} sub-1" ];    then _picocli_rcmd; return $?; fi
+  if [ "${COMP_LINE}" = "${COMP_WORDS[0]} sub-2" ];    then _picocli_rcmd; return $?; fi
+
+  # Find the longest sequence of subcommands and call the bash function for that subcommand.
   local cmds0=(sub-1)
   local cmds1=(sub-2)
 
@@ -152,7 +160,7 @@ function _picocli_rcmd_sub1() {
   local flag_opts="flag1 -h --help -V --version"
   local arg_opts="option1"
 
-  compopt +o default
+  type compopt &>/dev/null && compopt +o default
 
   case ${prev_word} in
     option1)
@@ -178,7 +186,7 @@ function _picocli_rcmd_sub2() {
   local flag_opts="flag-2 -h --help -V --version"
   local arg_opts="option-2"
 
-  compopt +o default
+  type compopt &>/dev/null && compopt +o default
 
   case ${prev_word} in
     option-2)

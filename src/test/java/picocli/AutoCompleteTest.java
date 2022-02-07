@@ -687,7 +687,10 @@ public class AutoCompleteTest {
                 "  alias compopt=complete\n" +
                 "\n" +
                 "  # Enable bash completion in zsh (see [7])\n" +
-                "  autoload -U +X compinit && compinit\n" +
+                "  # Only initialize completions module once to avoid unregistering existing completions.\n" +
+                "  if ! type compdef > /dev/null; then\n" +
+                "    autoload -U +X compinit && compinit\n" +
+                "  fi\n" +
                 "  autoload -U +X bashcompinit && bashcompinit\n" +
                 "fi\n" +
                 "\n" +
@@ -751,6 +754,9 @@ public class AutoCompleteTest {
                 "# on the command line and delegates to the appropriate function\n" +
                 "# to generate possible options and subcommands for the last specified subcommand.\n" +
                 "function _complete_picocli.AutoComplete() {\n" +
+                "  # Edge case: if command line has no space after subcommand, then don't assume this subcommand is selected (remkop/picocli#1468).\n" +
+                "\n" +
+                "  # Find the longest sequence of subcommands and call the bash function for that subcommand.\n" +
                 "\n" +
                 "\n" +
                 "  # No subcommands were specified; generate completions for the top-level command.\n" +
@@ -767,7 +773,7 @@ public class AutoCompleteTest {
                 "  local flag_opts=\"-w --writeCommandScript -f --force -h --help -V --version\"\n" +
                 "  local arg_opts=\"-c --factory -n --name -o --completionScript\"\n" +
                 "\n" +
-                "  compopt +o default\n" +
+                "  type compopt &>/dev/null && compopt +o default\n" +
                 "\n" +
                 "  case ${prev_word} in\n" +
                 "    -c|--factory)\n" +
@@ -778,7 +784,7 @@ public class AutoCompleteTest {
                 "      ;;\n" +
                 "    -o|--completionScript)\n" +
                 "      local IFS=$'\\n'\n" +
-                "      compopt -o filenames\n" +
+                "      type compopt &>/dev/null && compopt -o filenames\n" +
                 "      COMPREPLY=( $( compgen -f -- \"${curr_word}\" ) ) # files\n" +
                 "      return $?\n" +
                 "      ;;\n" +
@@ -898,7 +904,10 @@ public class AutoCompleteTest {
                 "  alias compopt=complete\n" +
                 "\n" +
                 "  # Enable bash completion in zsh (see [7])\n" +
-                "  autoload -U +X compinit && compinit\n" +
+                "  # Only initialize completions module once to avoid unregistering existing completions.\n" +
+                "  if ! type compdef > /dev/null; then\n" +
+                "    autoload -U +X compinit && compinit\n" +
+                "  fi\n" +
                 "  autoload -U +X bashcompinit && bashcompinit\n" +
                 "fi\n" +
                 "\n" +
@@ -962,6 +971,9 @@ public class AutoCompleteTest {
                 "# on the command line and delegates to the appropriate function\n" +
                 "# to generate possible options and subcommands for the last specified subcommand.\n" +
                 "function _complete_nondefault() {\n" +
+                "  # Edge case: if command line has no space after subcommand, then don't assume this subcommand is selected (remkop/picocli#1468).\n" +
+                "\n" +
+                "  # Find the longest sequence of subcommands and call the bash function for that subcommand.\n" +
                 "\n" +
                 "\n" +
                 "  # No subcommands were specified; generate completions for the top-level command.\n" +
@@ -978,7 +990,7 @@ public class AutoCompleteTest {
                 "  local flag_opts=\"\"\n" +
                 "  local arg_opts=\"-t --timeout\"\n" +
                 "\n" +
-                "  compopt +o default\n" +
+                "  type compopt &>/dev/null && compopt +o default\n" +
                 "\n" +
                 "  case ${prev_word} in\n" +
                 "    -t|--timeout)\n" +
@@ -1457,7 +1469,10 @@ public class AutoCompleteTest {
                     "  alias compopt=complete\n" +
                     "\n" +
                     "  # Enable bash completion in zsh (see [7])\n" +
-                    "  autoload -U +X compinit && compinit\n" +
+                    "  # Only initialize completions module once to avoid unregistering existing completions.\n" +
+                    "  if ! type compdef > /dev/null; then\n" +
+                    "    autoload -U +X compinit && compinit\n" +
+                    "  fi\n" +
                     "  autoload -U +X bashcompinit && bashcompinit\n" +
                     "fi\n" +
                     "\n" +
@@ -1521,6 +1536,10 @@ public class AutoCompleteTest {
                     "# on the command line and delegates to the appropriate function\n" +
                     "# to generate possible options and subcommands for the last specified subcommand.\n" +
                     "function _complete_%1$s() {\n" +
+                    "  # Edge case: if command line has no space after subcommand, then don't assume this subcommand is selected (remkop/picocli#1468).\n" +
+                    "  if [ \"${COMP_LINE}\" = \"${COMP_WORDS[0]} generate-completion\" ];    then _picocli_myapp; return $?; fi\n" +
+                    "\n" +
+                    "  # Find the longest sequence of subcommands and call the bash function for that subcommand.\n" +
                     "  local cmds0=(generate-completion)\n" +
                     "\n" +
                     "  if CompWordsContainsArray \"${cmds0[@]}\"; then _picocli_myapp_generatecompletion; return $?; fi\n" +
@@ -1660,7 +1679,10 @@ public class AutoCompleteTest {
                 "  alias compopt=complete\n" +
                 "\n" +
                 "  # Enable bash completion in zsh (see [7])\n" +
-                "  autoload -U +X compinit && compinit\n" +
+                "  # Only initialize completions module once to avoid unregistering existing completions.\n" +
+                "  if ! type compdef > /dev/null; then\n" +
+                "    autoload -U +X compinit && compinit\n" +
+                "  fi\n" +
                 "  autoload -U +X bashcompinit && bashcompinit\n" +
                 "fi\n" +
                 "\n" +
@@ -1724,6 +1746,10 @@ public class AutoCompleteTest {
                 "# on the command line and delegates to the appropriate function\n" +
                 "# to generate possible options and subcommands for the last specified subcommand.\n" +
                 "function _complete_%1$s() {\n" +
+                "  # Edge case: if command line has no space after subcommand, then don't assume this subcommand is selected (remkop/picocli#1468).\n" +
+                "  if [ \"${COMP_LINE}\" = \"${COMP_WORDS[0]} help\" ];    then _picocli_CompletionDemo; return $?; fi\n" +
+                "\n" +
+                "  # Find the longest sequence of subcommands and call the bash function for that subcommand.\n" +
                 "  local cmds0=(help)\n" +
                 "\n" +
                 "  if CompWordsContainsArray \"${cmds0[@]}\"; then _picocli_%1$s_help; return $?; fi\n" +
@@ -1742,7 +1768,7 @@ public class AutoCompleteTest {
                 "  local flag_opts=\"\"\n" +
                 "  local arg_opts=\"--apples --bbb\"\n" + // NOTE: no --aaa: this option is hidden
                 "\n" +
-                "  compopt +o default\n" +
+                "  type compopt &>/dev/null && compopt +o default\n" +
                 "\n" +
                 "  case ${prev_word} in\n" +
                 "    --apples)\n" +

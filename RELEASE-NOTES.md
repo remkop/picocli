@@ -4,7 +4,7 @@
 # <a name="4.6.3"></a> Picocli 4.6.3
 The picocli community is pleased to announce picocli 4.6.3.
 
-This release includes bugfixes and enhancements.
+This release includes bugfixes and enhancements, as well as security improvements.
 
 This is the seventy-eighth public release.
 Picocli follows [semantic versioning](http://semver.org/).
@@ -19,30 +19,51 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 
 ## <a name="4.6.3-fixes"></a> Fixed issues
+* [#1440] Bugfix: annotation processor incorrectly failed with `DuplicateOptionAnnotationsException` when multiple commands had a subcommand in common and an inherited (`scope = ScopeType.INHERIT`) option. Thanks to [nemetsSY](https://github.com/nemetsSY) for raising this.
+* [#1472] Bugfix: annotation processor option `-Averbose=true` no longer incorrectly triggers `warning: The following options were not recognized by any processor: '[verbose]'`. Thanks to [Lorenz Leutgeb](https://github.com/lorenzleutgeb) for raising this.
 * [#1384][#1493] Bugfix: parser now correctly handles ArgGroups with optional positional parameters. Thanks to [Matthew Lewis](https://github.com/mattjlewis) for raising this and to [Kurt Kaiser](https://github.com/kurtkaiser) for the pull request.
+* [#1474] Bugfix: Avoid `UnsupportedCharsetException: cp65001` on Microsoft Windows console when code page is set to UTF-8. Thanks to [epuni](https://github.com/epuni) for raising this.
+* [#1466][#1467] Bugfix/Enhancement: Autocomplete now shows subcommand aliases in the completion candidates. Thanks to [Ruud Senden](https://github.com/rsenden) for the pull request.
+* [#1468] Bugfix/Enhancement: Autocompletion now displays completion candidates on exact match. Thanks to [Ruud Senden](https://github.com/rsenden) for raising this.
+* [#1537][#1541] Bugfix: AbbreviationMatcher now treats aliases of the same object as one match. Thanks to [Staffan Arvidsson McShane](https://github.com/StaffanArvidsson) for raising this and [NewbieOrange](https://github.com/NewbieOrange) for the pull request.
+* [#1531] Bugfix: Options defined as annotated methods should reset between `parseArgs` invocations when `CommandLine` instance is reused. Thanks to [kaushalkumar](https://github.com/kaushalkumar) for raising this.
+* [#1458][#1473] Enhancement: autocompletion now supports file names containing spaces. Thanks to [zpater345](https://github.com/zpater345) for raising this and thanks to [NewbieOrange](https://github.com/NewbieOrange) for the pull request.
+* [#1477] Enhancement: Remove file name extension and local dir prefix from the command name in generated autocomplete scripts. Thanks to [Andrea Peruffo](https://github.com/andreaTP) for the pull request.
+* [#1464] Enhancement: Fix Bash error `compopt: command not found` on older versions Bash. Thanks to [Andres Almiray](https://github.com/aalmiray) for raising this.
+* [#1476] Enhancement: improve error message in `AbstractCommandSpecProcessor#extractTypedMember`. Thanks to [Ross Goldberg](https://github.com/rgoldberg) for raising this.
+* [#1475] Enhancement: Fix typo in annotation target-type error message. Thanks to [Ross Goldberg](https://github.com/rgoldberg) for the pull request.
 * [#1366][#1370] Enhancement: show in usage help that the built-in `help` command only works on the first argument. Thanks to [Patrice Duroux](https://github.com/peutch) for the pull request.
 * [#1492] Enhancement: Use EditorConfig to define file formats and coding style; Thanks to [Goooler](https://github.com/Goooler) for the pull request.
-* [#1491] Build: Add build job in CI; Thanks to [Goooler](https://github.com/Goooler) for the pull request.
-* [#1482] Build: Optimize gradle; Thanks to [Goooler](https://github.com/Goooler) for the pull request.
+* [#1530] Enhancement: Simplified `CommandSpec#validateSubcommandName` implementation. Thanks to [Ross Goldberg](https://github.com/rgoldberg) for the pull request.
 * [#1484] Enhancement: Fixed `org.junit.Assert.assertThat` deprecation warning; Thanks to [Ross Goldberg](https://github.com/rgoldberg) for the pull request.
 * [#1485] Enhancement: Fix build warnings; build doc enhancements; Thanks to [Ross Goldberg](https://github.com/rgoldberg) for the pull request.
 * [#1483] Enhancement: Improved `AbstractCommandSpecProcessor#isSubcommand`; Thanks to [Ross Goldberg](https://github.com/rgoldberg) for the pull request.
 * [#1499] Enhancement: Improved `DefaultFactory#create(Class<T>)`. Thanks to [Ross Goldberg](https://github.com/rgoldberg) for the pull request.
+* [#1518] Enhancement: Simplified detection of getter & setter in `TypedMember` constructor. Thanks to [Ross Goldberg](https://github.com/rgoldberg) for the pull request.
+* [#1526][#1548] Enhancement: Autocompletion on ZSH should only call `compinit` once. Thanks to [Ben Herweyer](https://github.com/bherw) for the pull request.
+* [#1539] DOC: Various documentation improvements. Thanks to [Hamid Nazari](https://github.com/hamid-nazari) for the pull request.
 * [#1481] DOC: Removed repeated "whether" typo in JavaDoc; Thanks to [Ross Goldberg](https://github.com/rgoldberg) for the pull request.
-* [#1474] Bugfix: Avoid `UnsupportedCharsetException: cp65001` on Microsoft Windows console when code page is set to UTF-8. Thanks to [epuni](https://github.com/epuni) for raising this.
-* [#1466][#1467] Bugfix/Enhancement: Autocomplete now shows subcommand aliases in the completion candidates. Thanks to [Ruud Senden](https://github.com/rsenden) for the pull request.
-* [#1458][#1473] Enhancement: autocompletion now supports file names containing spaces. Thanks to [zpater345](https://github.com/zpater345) for raising this and thanks to [NewbieOrange](https://github.com/NewbieOrange) for the pull request.
-* [#1477] Enhancement: Remove file name extension and local dir prefix from the command name in generated autocomplete scripts. Thanks to [Andrea Peruffo](https://github.com/andreaTP) for the pull request.
-* [#1476] Enhancement: improve error message in `AbstractCommandSpecProcessor#extractTypedMember`. Thanks to [Ross Goldberg](https://github.com/rgoldberg) for raising this.
-* [#1475] Enhancement: Fix typo in annotation target-type error message. Thanks to [Ross Goldberg](https://github.com/rgoldberg) for the pull request.
+* [#1125][#1538] DOC: Update "Option Names or Subcommands as Option Values" section in user manual; Thanks to [Scott Turner](https://github.com/turnef) for raising this.
 * [#1409][#1463] DOC: add documentation section on using default values in argument groups. Thanks to [Ben Kedo](https://github.com/MadFoal) for the pull request.
 * [#1383][#1502] DOC: add tests demonstrating usage of multiple arguments. Thanks to [Ben Kedo](https://github.com/MadFoal) and [lind6](https://github.com/lind6) for the pull request.
 * [#1462] DOC, BUILD, DEP: Extend documentation on argument files, fix broken/outdated links, update dependencies. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1457] DOC: add caution about arguments in @files with quoted option parameters. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+* [#1544][#1545] DOC: Add NOTICE file with GPL v2 + CPE license. Thanks to [Keith M Swartz](https://github.com/kswartz26) for the pull request.
+* [#1553] SECURITY: Fix code scanning alert - Token-Permissions
+* [#1554] SECURITY: Fix code scanning alert - Pinned-Dependencies
+* [#1555] SECURITY: Fix code scanning alert - Create SECURITY.md
+* [#1556][#1557] SECURITY: Fix code scanning alert - SAST
+* [#1558] SECURITY: Fix code scanning alert - Pinned-Dependencies in codeql-analysis.yml
+* [#1559] SECURITY: Fix code scanning alert - Token-Permissions in codeql-analysis.yml
+* [#1560] SECURITY: Fix code scanning alert - Binary-Artifacts - Validate Gradle Wrapper
+* [#1561] SECURITY: Fix code scanning alert - Doc/example code uses a broken or risky cryptographic algorithm
+* [#1491] BUILD: Add build job in CI; Thanks to [Goooler](https://github.com/Goooler) for the pull request.
+* [#1482] BUILD: Optimize gradle; Thanks to [Goooler](https://github.com/Goooler) for the pull request.
 * [#1461] BUILD: Allow publishing without signing for non-release versions. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
 * [#1459] BUILD: The nexus-staging Gradle plugin must be applied to the root project, not to subprojects. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
 * [#1503] BUILD: Fix failing `System.exit` tests on Java 18.
 * [#1504] BUILD: Run tests on Java 6-7 in CI environment, semi-automate testing on Java 5.
+* [#1516] DEP: Remove redundant dependency on `jline-console` in `picocli-shell-jline3`. Thanks to [kaushalkumar](https://github.com/kaushalkumar) for raising this.
 * [#1495] DEP: Bump validation-api from 2.0.0.Final to 2.0.1.Final
 * [#1496] DEP: Bump biz.aQute.bnd.gradle from 5.1.2 to 6.1.0
 * [#1494] DEP: Bump kotlin-gradle-plugin from 1.5.31 to 1.6.0
@@ -53,11 +74,16 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#1488] DEP: Bump log4j-api from 2.13.0 to 2.14.1
 * [#1487] DEP: Bump kotlin-script-runtime from 1.5.31 to 1.6.0
 * [#1486] DEP: Bump gradle-nexus-staging-plugin from 0.21.0 to 0.30.0
-* [#1500] DEP: Bump gradle from 7.3 to 7.3.1. Thanks to [Ross Goldberg](https://github.com/rgoldberg) for the pull request.
+* [#1500][#1517] DEP: Bump gradle from 7.3 to 7.3.3. Thanks to [Ross Goldberg](https://github.com/rgoldberg) for the pull request.
 * [#1515] DEP: Bump kotlin-gradle-plugin from 1.6.0 to 1.6.10
 * [#1512] DEP: Bump kotlin-script-runtime from 1.6.0 to 1.6.10
-* [#1514] DEP: Bump log4j-api from 2.14.1 to 2.16.0
-* [#1513] DEP: Bump log4j-core from 2.14.1 to 2.16.0
+* [#1514] DEP: Bump log4j-api from 2.14.1 to 2.17.1
+* [#1513] DEP: Bump log4j-core from 2.14.1 to 2.17.1
+* [#1543] DEP: Bump asciidoctorj-pdf from 1.6.0 to 1.6.2
+* [#1547] DEP: Bump scala-library from 2.13.7 to 2.13.8
+* [#1550] DEP: Bump hibernate-validator from 7.0.1.Final to 7.0.2.Final
+* [#1551] DEP: Bump hibernate-validator-annotation-processor from 7.0.1.Final to 7.0.2.Final
+
 
 ## <a name="4.6.3-deprecated"></a> Deprecations
 No features were deprecated in this release.
