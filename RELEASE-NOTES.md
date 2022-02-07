@@ -23,6 +23,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#1472] Bugfix: annotation processor option `-Averbose=true` no longer incorrectly triggers `warning: The following options were not recognized by any processor: '[verbose]'`. Thanks to [Lorenz Leutgeb](https://github.com/lorenzleutgeb) for raising this.
 * [#1384][#1493] Bugfix: parser now correctly handles ArgGroups with optional positional parameters. Thanks to [Matthew Lewis](https://github.com/mattjlewis) for raising this and to [Kurt Kaiser](https://github.com/kurtkaiser) for the pull request.
 * [#1474] Bugfix: Avoid `UnsupportedCharsetException: cp65001` on Microsoft Windows console when code page is set to UTF-8. Thanks to [epuni](https://github.com/epuni) for raising this.
+* [#1528][#1529] Bugfix: Allow aliases of a CommandSpec that is already a subcommand to be properly & consistently modified. Thanks to [Ross Goldberg](https://github.com/rgoldberg) for the pull request.
 * [#1466][#1467] Bugfix/Enhancement: Autocomplete now shows subcommand aliases in the completion candidates. Thanks to [Ruud Senden](https://github.com/rsenden) for the pull request.
 * [#1468] Bugfix/Enhancement: Autocompletion now displays completion candidates on exact match. Thanks to [Ruud Senden](https://github.com/rsenden) for raising this.
 * [#1537][#1541] Bugfix: AbbreviationMatcher now treats aliases of the same object as one match. Thanks to [Staffan Arvidsson McShane](https://github.com/StaffanArvidsson) for raising this and [NewbieOrange](https://github.com/NewbieOrange) for the pull request.
