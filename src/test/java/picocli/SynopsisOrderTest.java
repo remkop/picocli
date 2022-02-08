@@ -1,5 +1,6 @@
 package picocli;
 
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.ProvideSystemProperty;
@@ -9,7 +10,7 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Help;
 
 import static java.lang.String.format;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 import static picocli.TestUtil.usageString;
 
 public class SynopsisOrderTest {
@@ -34,6 +35,7 @@ public class SynopsisOrderTest {
 		AllGroups allGroups;
 	}
 
+    @Ignore("Requires #964")
 	@Test
 	public void testSynopsisOrderForArgGroup() {
 		String result = usageString(new SynopsisOrder(), Help.Ansi.OFF);
