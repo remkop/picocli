@@ -1,7 +1,7 @@
 # picocli Release Notes
 
 
-# <a name="4.6.3"></a> Picocli 4.6.3 (UNRELEASED)
+# <a name="4.6.3"></a> Picocli 4.6.3
 The picocli community is pleased to announce picocli 4.6.3.
 
 This release includes bugfixes and enhancements, as well as documentation and security improvements.

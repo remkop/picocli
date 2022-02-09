@@ -1,7 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
-
 <head>
 <meta charset="UTF-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -1713,163 +1711,88 @@ new ClipboardJS('.clipboard', {
 });
 </script>
 <style>
-
 .hidden {
-
     display: none;
-
 }
-
-
 
 .switch {
-
     border-width: 1px 1px 0 1px;
-
     border-style: solid;
-
     border-color: #7a2518;
-
     display: inline-block;
-
 }
-
-
 
 .switch--item {
-
     padding: 10px;
-
     background-color: #ffffff;
-
     color: #7a2518;
-
     display: inline-block;
-
     cursor: pointer;
-
 }
-
-
 
 .switch--item.selected {
-
     background-color: #7a2519;
-
     color: #ffffff;
-
 }
-
-
 
 </style>
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/zepto/1.2.0/zepto.min.js"></script>
-
 <script type="text/javascript">
-
 function addBlockSwitches() {
-
     $('.primary').each(function() {
-
         primary = $(this);
-
         createSwitchItem(primary, createBlockSwitch(primary)).item.addClass("selected");
-
         primary.children('.title').remove();
-
     });
-
     $('.secondary').each(function(idx, node) {
-
         secondary = $(node);
-
         primary = findPrimary(secondary);
-
         switchItem = createSwitchItem(secondary, primary.children('.switch'));
-
         switchItem.content.addClass('hidden');
-
         findPrimary(secondary).append(switchItem.content);
-
         secondary.remove();
-
     });
-
 }
-
-
 
 function createBlockSwitch(primary) {
-
     blockSwitch = $('<div class="switch"></div>');
-
     primary.prepend(blockSwitch);
-
     return blockSwitch;
-
 }
-
-
 
 function findPrimary(secondary) {
-
     candidate = secondary.prev();
-
     while (!candidate.is('.primary')) {
-
         candidate = candidate.prev();
-
     }
-
     return candidate;
-
 }
-
-
 
 function createSwitchItem(block, blockSwitch) {
-
     blockName = block.children('.title').text();
-
     content = block.children('.content').first().append(block.next('.colist'));
-
     item = $('<div class="switch--item">' + blockName + '</div>');
-
     item.on('click', '', content, function(e) {
-
         $(this).addClass('selected');
-
         $(this).siblings().removeClass('selected');
-
         e.data.siblings('.content').addClass('hidden');
-
         e.data.removeClass('hidden');
-
     });
-
     blockSwitch.append(item);
-
     return {'item': item, 'content': content};
-
 }
-
-
 
 $(addBlockSwitches);
 
-
-
 </script>
-
 
 </head>
 <body class="article toc2 toc-left">
 <div id="header">
 <h1>picocli - a mighty tiny command line interface</h1>
 <div class="details">
-<span id="revnumber">version 4.6.2,</span>
-<span id="revdate">2021-11-05</span>
+<span id="revnumber">version 4.6.3,</span>
+<span id="revdate">2022-02-09</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Features</div>
@@ -2270,14 +2193,14 @@ Picocli also provides a <a href="#_programmatic_api">programmatic API</a>, separ
 <span class="kn">import</span> <span class="nn">java.util.concurrent.Callable</span><span class="o">;</span>
 
 <span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">"checksum"</span><span class="o">,</span> <span class="n">mixinStandardHelpOptions</span> <span class="o">=</span> <span class="kc">true</span><span class="o">,</span> <span class="n">version</span> <span class="o">=</span> <span class="s">"checksum 4.0"</span><span class="o">,</span>
-         <span class="n">description</span> <span class="o">=</span> <span class="s">"Prints the checksum (MD5 by default) of a file to STDOUT."</span><span class="o">)</span>
+         <span class="n">description</span> <span class="o">=</span> <span class="s">"Prints the checksum (SHA-256 by default) of a file to STDOUT."</span><span class="o">)</span>
 <span class="kd">class</span> <span class="nc">CheckSum</span> <span class="kd">implements</span> <span class="nc">Callable</span><span class="o">&lt;</span><span class="nc">Integer</span><span class="o">&gt;</span> <span class="o">{</span>
 
     <span class="nd">@Parameters</span><span class="o">(</span><span class="n">index</span> <span class="o">=</span> <span class="s">"0"</span><span class="o">,</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"The file whose checksum to calculate."</span><span class="o">)</span>
     <span class="kd">private</span> <span class="nc">File</span> <span class="n">file</span><span class="o">;</span>
 
     <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="o">{</span><span class="s">"-a"</span><span class="o">,</span> <span class="s">"--algorithm"</span><span class="o">},</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"MD5, SHA-1, SHA-256, ..."</span><span class="o">)</span>
-    <span class="kd">private</span> <span class="nc">String</span> <span class="n">algorithm</span> <span class="o">=</span> <span class="s">"MD5"</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="nc">String</span> <span class="n">algorithm</span> <span class="o">=</span> <span class="s">"SHA-256"</span><span class="o">;</span>
 
     <span class="nd">@Override</span>
     <span class="kd">public</span> <span class="nc">Integer</span> <span class="nf">call</span><span class="o">()</span> <span class="kd">throws</span> <span class="nc">Exception</span> <span class="o">{</span> <span class="c1">// your business logic goes here...</span>
@@ -2299,7 +2222,7 @@ Picocli also provides a <a href="#_programmatic_api">programmatic API</a>, separ
 <div id="CheckSum-App-Groovy" class="listingblock secondary">
 <div class="title">Groovy</div>
 <div class="content">
-<pre class="rouge highlight"><code data-lang="groovy"><span class="nd">@Grab</span><span class="o">(</span><span class="s1">'info.picocli:picocli-groovy:4.6.2'</span><span class="o">)</span>
+<pre class="rouge highlight"><code data-lang="groovy"><span class="nd">@Grab</span><span class="o">(</span><span class="s1">'info.picocli:picocli-groovy:4.6.3'</span><span class="o">)</span>
 <span class="kn">import</span> <span class="nn">picocli.CommandLine</span>
 <span class="kn">import</span> <span class="nn">static</span> <span class="n">picocli</span><span class="o">.</span><span class="na">CommandLine</span><span class="o">.*</span>
 
@@ -2307,14 +2230,14 @@ Picocli also provides a <a href="#_programmatic_api">programmatic API</a>, separ
 <span class="kn">import</span> <span class="nn">java.util.concurrent.Callable</span>
 
 <span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s1">'checksum'</span><span class="o">,</span> <span class="n">mixinStandardHelpOptions</span> <span class="o">=</span> <span class="kc">true</span><span class="o">,</span> <span class="n">version</span> <span class="o">=</span> <span class="s1">'checksum 4.0'</span><span class="o">,</span>
-  <span class="n">description</span> <span class="o">=</span> <span class="s1">'Prints the checksum (MD5 by default) of a file to STDOUT.'</span><span class="o">)</span>
+  <span class="n">description</span> <span class="o">=</span> <span class="s1">'Prints the checksum (SHA-256 by default) of a file to STDOUT.'</span><span class="o">)</span>
 <span class="kd">class</span> <span class="nc">Checksum</span> <span class="kd">implements</span> <span class="n">Callable</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span> <span class="o">{</span>
 
     <span class="nd">@Parameters</span><span class="o">(</span><span class="n">index</span> <span class="o">=</span> <span class="s1">'0'</span><span class="o">,</span> <span class="n">description</span> <span class="o">=</span> <span class="s1">'The file whose checksum to calculate.'</span><span class="o">)</span>
     <span class="n">File</span> <span class="n">file</span>
 
     <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="o">[</span><span class="s1">'-a'</span><span class="o">,</span> <span class="s1">'--algorithm'</span><span class="o">],</span> <span class="n">description</span> <span class="o">=</span> <span class="s1">'MD5, SHA-1, SHA-256, ...'</span><span class="o">)</span>
-    <span class="n">String</span> <span class="n">algorithm</span> <span class="o">=</span> <span class="s1">'MD5'</span>
+    <span class="n">String</span> <span class="n">algorithm</span> <span class="o">=</span> <span class="s1">'SHA-256'</span>
 
     <span class="n">Integer</span> <span class="nf">call</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">Exception</span> <span class="o">{</span>
         <span class="n">println</span> <span class="n">MessageDigest</span><span class="o">.</span><span class="na">getInstance</span><span class="o">(</span><span class="n">algorithm</span><span class="o">).</span><span class="na">digest</span><span class="o">(</span><span class="n">file</span><span class="o">.</span><span class="na">bytes</span><span class="o">).</span><span class="na">encodeHex</span><span class="o">().</span><span class="na">toString</span><span class="o">()</span>
@@ -2330,20 +2253,20 @@ Picocli also provides a <a href="#_programmatic_api">programmatic API</a>, separ
 <div id="CheckSum-App-Groovy-Script" class="listingblock secondary">
 <div class="title">Groovy script</div>
 <div class="content">
-<pre class="rouge highlight"><code data-lang="groovy"><span class="nd">@Grab</span><span class="o">(</span><span class="s1">'info.picocli:picocli-groovy:4.6.2'</span><span class="o">)</span>
+<pre class="rouge highlight"><code data-lang="groovy"><span class="nd">@Grab</span><span class="o">(</span><span class="s1">'info.picocli:picocli-groovy:4.6.3'</span><span class="o">)</span>
 <span class="kn">import</span> <span class="nn">static</span> <span class="n">picocli</span><span class="o">.</span><span class="na">CommandLine</span><span class="o">.*</span>
 <span class="kn">import</span> <span class="nn">groovy.transform.Field</span>
 <span class="kn">import</span> <span class="nn">java.security.MessageDigest</span>
 
 <span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s1">'checksum'</span><span class="o">,</span> <span class="n">mixinStandardHelpOptions</span> <span class="o">=</span> <span class="kc">true</span><span class="o">,</span> <span class="n">version</span> <span class="o">=</span> <span class="s1">'checksum 4.0'</span><span class="o">,</span>
-  <span class="n">description</span> <span class="o">=</span> <span class="s1">'Prints the checksum (MD5 by default) of a file to STDOUT.'</span><span class="o">)</span>
+  <span class="n">description</span> <span class="o">=</span> <span class="s1">'Prints the checksum (SHA-256 by default) of a file to STDOUT.'</span><span class="o">)</span>
 <span class="nd">@picocli.groovy.PicocliScript</span>
 
 <span class="nd">@Parameters</span><span class="o">(</span><span class="n">index</span> <span class="o">=</span> <span class="s1">'0'</span><span class="o">,</span> <span class="n">description</span> <span class="o">=</span> <span class="s1">'The file whose checksum to calculate.'</span><span class="o">)</span>
 <span class="nd">@Field</span> <span class="n">File</span> <span class="n">file</span>
 
 <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="o">[</span><span class="s1">'-a'</span><span class="o">,</span> <span class="s1">'--algorithm'</span><span class="o">],</span> <span class="n">description</span> <span class="o">=</span> <span class="s1">'MD5, SHA-1, SHA-256, ...'</span><span class="o">)</span>
-<span class="nd">@Field</span> <span class="n">String</span> <span class="n">algorithm</span> <span class="o">=</span> <span class="s1">'MD5'</span>
+<span class="nd">@Field</span> <span class="n">String</span> <span class="n">algorithm</span> <span class="o">=</span> <span class="s1">'SHA-256'</span>
 
 <span class="n">println</span> <span class="n">MessageDigest</span><span class="o">.</span><span class="na">getInstance</span><span class="o">(</span><span class="n">algorithm</span><span class="o">).</span><span class="na">digest</span><span class="o">(</span><span class="n">file</span><span class="o">.</span><span class="na">bytes</span><span class="o">).</span><span class="na">encodeHex</span><span class="o">().</span><span class="na">toString</span><span class="o">()</span></code></pre>
 </div>
@@ -2364,14 +2287,14 @@ Picocli also provides a <a href="#_programmatic_api">programmatic API</a>, separ
 <span class="k">import</span> <span class="nn">kotlin.system.exitProcess</span>
 
 <span class="nd">@Command</span><span class="p">(</span><span class="n">name</span> <span class="p">=</span> <span class="s">"checksum"</span><span class="p">,</span> <span class="n">mixinStandardHelpOptions</span> <span class="p">=</span> <span class="k">true</span><span class="p">,</span> <span class="n">version</span> <span class="p">=</span> <span class="p">[</span><span class="s">"checksum 4.0"</span><span class="p">],</span>
-    <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"Prints the checksum (MD5 by default) of a file to STDOUT."</span><span class="p">])</span>
+    <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"Prints the checksum (SHA-256 by default) of a file to STDOUT."</span><span class="p">])</span>
 <span class="kd">class</span> <span class="nc">Checksum</span> <span class="p">:</span> <span class="nc">Callable</span><span class="p">&lt;</span><span class="nc">Int</span><span class="p">&gt;</span> <span class="p">{</span>
 
     <span class="nd">@Parameters</span><span class="p">(</span><span class="n">index</span> <span class="p">=</span> <span class="s">"0"</span><span class="p">,</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"The file whose checksum to calculate."</span><span class="p">])</span>
     <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">file</span><span class="p">:</span> <span class="nc">File</span>
 
     <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-a"</span><span class="p">,</span> <span class="s">"--algorithm"</span><span class="p">],</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"MD5, SHA-1, SHA-256, ..."</span><span class="p">])</span>
-    <span class="kd">var</span> <span class="py">algorithm</span> <span class="p">=</span> <span class="s">"MD5"</span>
+    <span class="kd">var</span> <span class="py">algorithm</span> <span class="p">=</span> <span class="s">"SHA-256"</span>
 
     <span class="k">override</span> <span class="k">fun</span> <span class="nf">call</span><span class="p">():</span> <span class="nc">Int</span> <span class="p">{</span>
         <span class="kd">val</span> <span class="py">fileContents</span> <span class="p">=</span> <span class="nc">Files</span><span class="p">.</span><span class="nf">readAllBytes</span><span class="p">(</span><span class="n">file</span><span class="p">.</span><span class="nf">toPath</span><span class="p">())</span>
@@ -2397,14 +2320,14 @@ Picocli also provides a <a href="#_programmatic_api">programmatic API</a>, separ
 <span class="k">import</span> <span class="nn">java.util.concurrent.Callable</span>
 
 <span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="k">=</span> <span class="s">"checksum"</span><span class="o">,</span> <span class="n">mixinStandardHelpOptions</span> <span class="k">=</span> <span class="kc">true</span><span class="o">,</span> <span class="n">version</span> <span class="k">=</span> <span class="nc">Array</span><span class="o">(</span><span class="s">"checksum 4.0"</span><span class="o">),</span>
-  <span class="n">description</span> <span class="k">=</span> <span class="nc">Array</span><span class="o">(</span><span class="s">"Prints the checksum (MD5 by default) of a file to STDOUT."</span><span class="o">))</span>
+  <span class="n">description</span> <span class="k">=</span> <span class="nc">Array</span><span class="o">(</span><span class="s">"Prints the checksum (SHA-256 by default) of a file to STDOUT."</span><span class="o">))</span>
 <span class="k">class</span> <span class="nc">Checksum</span> <span class="k">extends</span> <span class="nc">Callable</span><span class="o">[</span><span class="kt">Int</span><span class="o">]</span> <span class="o">{</span>
 
   <span class="nd">@Parameters</span><span class="o">(</span><span class="n">index</span> <span class="k">=</span> <span class="s">"0"</span><span class="o">,</span> <span class="n">description</span> <span class="k">=</span> <span class="nc">Array</span><span class="o">(</span><span class="s">"The file whose checksum to calculate."</span><span class="o">))</span>
    <span class="k">private</span> <span class="k">var</span> <span class="n">file</span><span class="k">:</span> <span class="kt">File</span> <span class="o">=</span> <span class="kc">null</span>
 
   <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="k">=</span> <span class="nc">Array</span><span class="o">(</span><span class="s">"-a"</span><span class="o">,</span> <span class="s">"--algorithm"</span><span class="o">),</span> <span class="n">description</span> <span class="k">=</span> <span class="nc">Array</span><span class="o">(</span><span class="s">"MD5, SHA-1, SHA-256, ..."</span><span class="o">))</span>
-  <span class="k">private</span> <span class="k">var</span> <span class="n">algorithm</span> <span class="k">=</span> <span class="s">"MD5"</span>
+  <span class="k">private</span> <span class="k">var</span> <span class="n">algorithm</span> <span class="k">=</span> <span class="s">"SHA-256"</span>
 
   <span class="k">def</span> <span class="nf">call</span><span class="o">()</span><span class="k">:</span> <span class="kt">Int</span> <span class="o">=</span> <span class="o">{</span>
     <span class="k">val</span> <span class="nv">fileContents</span> <span class="k">=</span> <span class="nv">Files</span><span class="o">.</span><span class="py">readAllBytes</span><span class="o">(</span><span class="nv">file</span><span class="o">.</span><span class="py">toPath</span><span class="o">)</span>
@@ -2475,7 +2398,7 @@ The example <code>main</code> method calls <code>CommandLine.execute</code> to p
 <div class="title">Gradle</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="groovy"><span class="n">dependencies</span> <span class="o">{</span>
-    <span class="n">implementation</span> <span class="s1">'info.picocli:picocli:4.6.2'</span>
+    <span class="n">implementation</span> <span class="s1">'info.picocli:picocli:4.6.3'</span>
 <span class="o">}</span></code></pre>
 </div>
 </div>
@@ -2485,7 +2408,7 @@ The example <code>main</code> method calls <code>CommandLine.execute</code> to p
 <pre class="rouge highlight"><code data-lang="xml"><span class="nt">&lt;dependency&gt;</span>
   <span class="nt">&lt;groupId&gt;</span>info.picocli<span class="nt">&lt;/groupId&gt;</span>
   <span class="nt">&lt;artifactId&gt;</span>picocli<span class="nt">&lt;/artifactId&gt;</span>
-  <span class="nt">&lt;version&gt;</span>4.6.2<span class="nt">&lt;/version&gt;</span>
+  <span class="nt">&lt;version&gt;</span>4.6.3<span class="nt">&lt;/version&gt;</span>
 <span class="nt">&lt;/dependency&gt;</span></code></pre>
 </div>
 </div>
@@ -2541,8 +2464,8 @@ In most cases no further configuration is needed when generating a native image.
 <div class="title">Gradle</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="groovy"><span class="n">dependencies</span> <span class="o">{</span>
-    <span class="n">implementation</span> <span class="s1">'info.picocli:picocli:4.6.2'</span>
-    <span class="n">annotationProcessor</span> <span class="s1">'info.picocli:picocli-codegen:4.6.2'</span>
+    <span class="n">implementation</span> <span class="s1">'info.picocli:picocli:4.6.3'</span>
+    <span class="n">annotationProcessor</span> <span class="s1">'info.picocli:picocli-codegen:4.6.3'</span>
 <span class="o">}</span>
 
 
@@ -2564,7 +2487,7 @@ In most cases no further configuration is needed when generating a native image.
       <span class="nt">&lt;path&gt;</span>
         <span class="nt">&lt;groupId&gt;</span>info.picocli<span class="nt">&lt;/groupId&gt;</span>
         <span class="nt">&lt;artifactId&gt;</span>picocli-codegen<span class="nt">&lt;/artifactId&gt;</span>
-        <span class="nt">&lt;version&gt;</span>4.6.2<span class="nt">&lt;/version&gt;</span>
+        <span class="nt">&lt;version&gt;</span>4.6.3<span class="nt">&lt;/version&gt;</span>
       <span class="nt">&lt;/path&gt;</span>
     <span class="nt">&lt;/annotationProcessorPaths&gt;</span>
     <span class="nt">&lt;compilerArgs&gt;</span>
@@ -2589,7 +2512,7 @@ then replace <code>annotationProcessor</code> with <code>kapt</code>:</p>
 <pre class="rouge highlight"><code>apply plugin: 'kotlin-kapt' // required
 dependencies {
     // ...
-    kapt 'info.picocli:picocli-codegen:4.6.2'
+    kapt 'info.picocli:picocli-codegen:4.6.3'
 }</code></pre>
 </div>
 </div>
@@ -2632,7 +2555,7 @@ dependencies {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="rouge highlight"><code data-lang="bash">java <span class="nt">-cp</span> <span class="s2">"picocli-4.6.2.jar:checksum.jar"</span> CheckSum <span class="nt">--algorithm</span> SHA-1 hello.txt</code></pre>
+<pre class="rouge highlight"><code data-lang="bash">java <span class="nt">-cp</span> <span class="s2">"picocli-4.6.3.jar:checksum.jar"</span> CheckSum <span class="nt">--algorithm</span> SHA-1 hello.txt</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -6316,7 +6239,7 @@ This allows the application to determine whether the user specified a value for 
     <span class="kd">static</span> <span class="kd">class</span> <span class="nc">Outer</span> <span class="o">{</span>
         <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-x"</span><span class="o">,</span> <span class="n">defaultValue</span> <span class="o">=</span> <span class="s">"XX"</span><span class="o">)</span> <span class="nc">String</span> <span class="n">x</span> <span class="o">=</span> <span class="s">"XX"</span><span class="o">;</span>
 
-        <span class="nd">@ArgGroup</span><span class="o">(</span><span class="n">exclusive</span> <span class="o">=</span> <span class="s">"true"</span><span class="o">)</span>
+        <span class="nd">@ArgGroup</span><span class="o">(</span><span class="n">exclusive</span> <span class="o">=</span> <span class="kc">true</span><span class="o">)</span>
         <span class="nc">Inner</span> <span class="n">inner</span><span class="o">;</span> <span class="c1">// no initial value</span>
     <span class="o">}</span>
 
@@ -6350,7 +6273,7 @@ This allows the application to determine whether the user specified a value for 
     <span class="kd">class</span> <span class="nc">Outer</span> <span class="p">{</span>
         <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="s">"-x"</span><span class="p">,</span> <span class="n">defaultValue</span> <span class="p">=</span> <span class="s">"XX"</span><span class="p">)</span> <span class="kd">var</span> <span class="py">x</span> <span class="p">=</span> <span class="s">"XX"</span><span class="p">;</span>
 
-        <span class="nd">@ArgGroup</span><span class="p">(</span><span class="n">exclusive</span> <span class="p">=</span> <span class="s">"true"</span><span class="p">)</span>
+        <span class="nd">@ArgGroup</span><span class="p">(</span><span class="n">exclusive</span> <span class="p">=</span> <span class="k">true</span><span class="p">)</span>
         <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">inner</span><span class="p">:</span> <span class="nc">Inner</span> <span class="c1">// no initial value</span>
     <span class="p">}</span>
 
@@ -8182,14 +8105,14 @@ Setting this to <code>false</code> will result in values resembling option names
 </div>
 </div>
 <div class="sect2">
-    <h3 id="_option_names_or_subcommands_as_option_values"><a class="anchor" href="#_option_names_or_subcommands_as_option_values"></a>11.9. Option Names or Subcommands as Option Values</h3>
-    <div class="paragraph">
-        <p>Since picocli 4.4, the parser will no longer assign values that match a subcommand name or an option name to options that take a parameter, unless the value is in quotes.
-            For example:</p>
-    </div>
-    <div class="listingblock primary">
-        <div class="title">Java</div>
-        <div class="content">
+<h3 id="_option_names_or_subcommands_as_option_values"><a class="anchor" href="#_option_names_or_subcommands_as_option_values"></a>11.9. Option Names or Subcommands as Option Values</h3>
+<div class="paragraph">
+<p>Since picocli 4.4, the parser will no longer assign values that match a subcommand name or an option name to options that take a parameter, unless the value is in quotes.
+For example:</p>
+</div>
+<div class="listingblock primary">
+<div class="title">Java</div>
+<div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kd">class</span> <span class="nc">App</span> <span class="o">{</span>
     <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-x"</span><span class="o">)</span> <span class="nc">String</span> <span class="n">x</span><span class="o">;</span>
     <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-y"</span><span class="o">)</span> <span class="nc">String</span> <span class="n">y</span><span class="o">;</span>
@@ -8200,11 +8123,11 @@ Setting this to <code>false</code> will result in values resembling option names
         <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">printf</span><span class="o">(</span><span class="s">"x='%s', y='%s'%n"</span><span class="o">,</span> <span class="n">app</span><span class="o">.</span><span class="na">x</span><span class="o">,</span> <span class="n">app</span><span class="o">.</span><span class="na">y</span><span class="o">);</span>
     <span class="o">}</span>
 <span class="o">}</span></code></pre>
-        </div>
-    </div>
-    <div class="listingblock secondary">
-        <div class="title">Kotlin</div>
-        <div class="content">
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
 <pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">class</span> <span class="nc">App</span> <span class="p">{</span>
     <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-x"</span><span class="p">])</span> <span class="kd">var</span> <span class="py">x</span><span class="p">:</span> <span class="nc">String</span><span class="p">?</span> <span class="p">=</span> <span class="k">null</span>
     <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-y"</span><span class="p">])</span> <span class="kd">var</span> <span class="py">y</span><span class="p">:</span> <span class="nc">String</span><span class="p">?</span> <span class="p">=</span> <span class="k">null</span>
@@ -8215,35 +8138,35 @@ Setting this to <code>false</code> will result in values resembling option names
     <span class="nc">CommandLine</span><span class="p">(</span><span class="n">app</span><span class="p">).</span><span class="nf">setTrimQuotes</span><span class="p">(</span><span class="k">true</span><span class="p">).</span><span class="nf">parseArgs</span><span class="p">(*</span><span class="n">args</span><span class="p">)</span>
     <span class="nf">println</span><span class="p">(</span><span class="s">"x='${app.x}', y='${app.y}'"</span><span class="p">)</span>
 <span class="p">}</span></code></pre>
-        </div>
-    </div>
-    <div class="paragraph">
-        <p>In previous versions of picocli, the above command would accept input <code>-x -y</code>, and the value <code>-y</code> would be assigned to the <code>x</code> String field.
-            As of picocli 4.4, the above input will be rejected with an error message indicating that the <code>-x</code> option requires a parameter.</p>
-    </div>
-    <div class="paragraph">
-        <p>If it is necessary to accept values that match option names, such values need to be quoted.
-            For example:</p>
-    </div>
-    <div class="listingblock">
-        <div class="content">
-            <pre class="rouge highlight"><code data-lang="bash">java App <span class="nt">-x</span><span class="o">=</span><span class="s2">"-y"</span></code></pre>
-        </div>
-    </div>
-    <div class="paragraph">
-        <p>This will print the following output:</p>
-    </div>
-    <div class="listingblock">
-        <div class="content">
-            <pre class="rouge highlight"><code data-lang="bash"><span class="nv">x</span><span class="o">=</span><span class="s1">'-y'</span>, <span class="nv">y</span><span class="o">=</span><span class="s1">'null'</span></code></pre>
-        </div>
-    </div>
-    <div class="paragraph">
-        <p>Another idea is to replace or augment picocli&#8217;s parser by doing <a href="#_custom_parameter_processing">custom parameter processing</a> for such options. For example:</p>
-    </div>
-    <div class="listingblock primary">
-        <div class="title">Java</div>
-        <div class="content">
+</div>
+</div>
+<div class="paragraph">
+<p>In previous versions of picocli, the above command would accept input <code>-x -y</code>, and the value <code>-y</code> would be assigned to the <code>x</code> String field.
+As of picocli 4.4, the above input will be rejected with an error message indicating that the <code>-x</code> option requires a parameter.</p>
+</div>
+<div class="paragraph">
+<p>If it is necessary to accept values that match option names, such values need to be quoted.
+For example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="bash">java App <span class="nt">-x</span><span class="o">=</span><span class="s2">"-y"</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This will print the following output:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="bash"><span class="nv">x</span><span class="o">=</span><span class="s1">'-y'</span>, <span class="nv">y</span><span class="o">=</span><span class="s1">'null'</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Another idea is to replace or augment picocli&#8217;s parser by doing <a href="#_custom_parameter_processing">custom parameter processing</a> for such options. For example:</p>
+</div>
+<div class="listingblock primary">
+<div class="title">Java</div>
+<div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kd">class</span> <span class="nc">App</span> <span class="kd">implements</span> <span class="nc">Runnable</span> <span class="o">{</span>
     <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-x"</span><span class="o">,</span> <span class="n">parameterConsumer</span> <span class="o">=</span> <span class="nc">App</span><span class="o">.</span><span class="na">CustomConsumer</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
     <span class="nc">String</span> <span class="n">x</span><span class="o">;</span>
@@ -8274,11 +8197,11 @@ Setting this to <code>false</code> will result in values resembling option names
         <span class="k">new</span> <span class="nf">CommandLine</span><span class="o">(</span><span class="k">new</span> <span class="nc">App</span><span class="o">()).</span><span class="na">execute</span><span class="o">(</span><span class="n">args</span><span class="o">);</span>
     <span class="o">}</span>
 <span class="o">}</span></code></pre>
-        </div>
-    </div>
-    <div class="listingblock secondary">
-        <div class="title">Kotlin</div>
-        <div class="content">
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
 <pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">class</span> <span class="nc">App</span> <span class="p">:</span> <span class="nc">Runnable</span> <span class="p">{</span>
     <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-x"</span><span class="p">],</span> <span class="n">parameterConsumer</span> <span class="p">=</span> <span class="nc">CustomConsumer</span><span class="o">::</span><span class="k">class</span><span class="p">)</span>
     <span class="kd">var</span> <span class="py">x</span><span class="p">:</span> <span class="nc">String</span><span class="p">?</span> <span class="p">=</span> <span class="k">null</span>
@@ -8312,23 +8235,22 @@ Setting this to <code>false</code> will result in values resembling option names
         <span class="p">}</span>
     <span class="p">}</span>
 <span class="p">}</span></code></pre>
-        </div>
-    </div>
-    <div class="paragraph">
-        <p>The above code assigns whatever command line argument that follows the <code>-x</code> option to that option,
-            and allows input like the following:</p>
-    </div>
-    <div class="listingblock">
-        <div class="content">
+</div>
+</div>
+<div class="paragraph">
+<p>The above code assigns whatever command line argument that follows the <code>-x</code> option to that option,
+and allows input like the following:</p>
+</div>
+<div class="listingblock">
+<div class="content">
 <pre class="rouge highlight"><code data-lang="bash">java App <span class="nt">-x</span><span class="o">=</span>mySubcommand
 java App <span class="nt">-x</span> mySubcommand
 java App <span class="nt">-x</span><span class="o">=</span><span class="nt">-y</span>
 java App <span class="nt">-x</span> <span class="nt">-y</span> <span class="nt">-y</span><span class="o">=</span>123</code></pre>
-        </div>
-    </div>
 </div>
-    <div class="sect2">
-
+</div>
+</div>
+<div class="sect2">
 <h3 id="_toggle_boolean_flags"><a class="anchor" href="#_toggle_boolean_flags"></a>11.10. Toggle Boolean Flags</h3>
 <div class="paragraph">
 <p>When a flag option is specified on the command line picocli will set its value to the opposite of its <em>default</em> value.</p>
@@ -14493,7 +14415,7 @@ The minimal example below demonstrates how to implement this two phase approach:
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="rouge highlight"><code data-lang="bash">java <span class="nt">-cp</span> <span class="s2">"picocli-4.6.2.jar;myapp.jar"</span> org.myorg.GreetingApp Sarah Lea</code></pre>
+<pre class="rouge highlight"><code data-lang="bash">java <span class="nt">-cp</span> <span class="s2">"picocli-4.6.3.jar;myapp.jar"</span> org.myorg.GreetingApp Sarah Lea</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -14510,7 +14432,7 @@ Hello Lea!</pre>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="rouge highlight"><code data-lang="bash">java <span class="nt">-cp</span> <span class="s2">"picocli-4.6.2.jar;myapp.jar"</span> org.myorg.GreetingApp <span class="nt">--locale</span><span class="o">=</span>es Sarah Lea</code></pre>
+<pre class="rouge highlight"><code data-lang="bash">java <span class="nt">-cp</span> <span class="s2">"picocli-4.6.3.jar;myapp.jar"</span> org.myorg.GreetingApp <span class="nt">--locale</span><span class="o">=</span>es Sarah Lea</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -14958,6 +14880,60 @@ For example, Groovy&#8217;s <a href="http://groovy-lang.org/dsls.html#_clibuilde
     <span class="c1">// ...</span>
 <span class="p">}</span></code></pre>
 </div>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-warning" title="Warning"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Applications that <strong>reuse a single <code>CommandLine</code> instance for multiple <code>parseArgs</code> or <code>execute</code> invocations</strong> should be aware of the following:</p>
+</div>
+<div class="paragraph">
+<p>Annotated setter method options that explicitly set <code>defaultValue = Option.NULL_VALUE</code> will get a call with a <code>null</code> parameter when the command line did not include that option.</p>
+</div>
+<div class="paragraph">
+<p>If the setter method annotation does <em>not</em> explicitly set <code>defaultValue = Option.NULL_VALUE</code>, then this method will not be called when the command line did not include that option. This means that the value will retain the value of the previous <code>parseArgs</code> or <code>execute</code> invocation, which may not be desirable. (This only happens for applications that reuse a single <code>CommandLine</code> instance for multiple <code>parseArgs</code> or <code>execute</code> invocations.)</p>
+</div>
+<div class="listingblock primary">
+<div class="title">Java</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="java"><span class="kd">class</span> <span class="nc">App</span> <span class="o">{</span>
+    <span class="nc">String</span> <span class="n">x</span><span class="o">;</span>
+    <span class="nc">String</span> <span class="n">y</span><span class="o">;</span>
+
+    <span class="c1">// reset to null when option not specified</span>
+    <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-x"</span><span class="o">,</span> <span class="n">defaultValue</span> <span class="o">=</span> <span class="nc">Option</span><span class="o">.</span><span class="na">NULL</span><span class="o">)</span>
+    <span class="kt">void</span> <span class="nf">setX</span><span class="o">(</span><span class="nc">String</span> <span class="n">x</span><span class="o">)</span> <span class="o">{</span> <span class="k">this</span><span class="o">.</span><span class="na">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">;</span> <span class="o">}</span>
+
+    <span class="c1">// retains value of previous parseArgs invocation when option not specified</span>
+    <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-y"</span><span class="o">)</span>
+    <span class="kt">void</span> <span class="nf">setY</span><span class="o">(</span><span class="nc">String</span> <span class="n">y</span><span class="o">)</span> <span class="o">{</span> <span class="k">this</span><span class="o">.</span><span class="na">y</span> <span class="o">=</span> <span class="n">y</span><span class="o">;</span> <span class="o">}</span>
+<span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">class</span> <span class="nc">App</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="py">x</span>
+    <span class="kd">var</span> <span class="py">y</span>
+
+    <span class="c1">// reset to null when option not specified</span>
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-x"</span><span class="p">],</span> <span class="n">defaultValue</span> <span class="p">=</span> <span class="nc">Option</span><span class="p">.</span><span class="nc">NULL</span><span class="p">)</span>
+    <span class="k">fun</span> <span class="nf">setX</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="nc">String</span><span class="p">)</span> <span class="p">{</span> <span class="k">this</span><span class="p">.</span><span class="n">x</span> <span class="p">=</span> <span class="n">x</span> <span class="p">}</span>
+
+    <span class="c1">// retains value of previous parseArgs invocation when option not specified</span>
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-y"</span><span class="p">])</span>
+    <span class="k">fun</span> <span class="nf">setY</span><span class="p">(</span><span class="n">y</span><span class="p">:</span> <span class="nc">String</span><span class="p">)</span> <span class="p">{</span> <span class="k">this</span><span class="p">.</span><span class="n">y</span> <span class="p">=</span> <span class="n">y</span> <span class="p">}</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
+</td>
+</tr>
+</table>
 </div>
 </div>
 </div>
@@ -16080,7 +16056,7 @@ Extract the archive file to a directory of your choice and open a shell or comma
 <pre class="rouge highlight"><code data-lang="xml"><span class="nt">&lt;dependency&gt;</span>
   <span class="nt">&lt;groupId&gt;</span>info.picocli<span class="nt">&lt;/groupId&gt;</span>
   <span class="nt">&lt;artifactId&gt;</span>picocli-spring-boot-starter<span class="nt">&lt;/artifactId&gt;</span>
-  <span class="nt">&lt;version&gt;</span>4.6.2<span class="nt">&lt;/version&gt;</span>
+  <span class="nt">&lt;version&gt;</span>4.6.3<span class="nt">&lt;/version&gt;</span>
 <span class="nt">&lt;/dependency&gt;</span></code></pre>
 </div>
 </div>
@@ -16088,7 +16064,7 @@ Extract the archive file to a directory of your choice and open a shell or comma
 <div class="title">Gradle (Groovy)</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="groovy"><span class="n">dependencies</span> <span class="o">{</span>
-    <span class="n">implementation</span> <span class="s1">'info.picocli:picocli-spring-boot-starter:4.6.2'</span>
+    <span class="n">implementation</span> <span class="s1">'info.picocli:picocli-spring-boot-starter:4.6.3'</span>
 <span class="o">}</span></code></pre>
 </div>
 </div>
@@ -16096,7 +16072,7 @@ Extract the archive file to a directory of your choice and open a shell or comma
 <div class="title">Gradle (Kotlin)</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="kotlin"><span class="nf">dependencies</span> <span class="p">{</span>
-    <span class="nf">implementation</span><span class="p">(</span><span class="s">"info.picocli:picocli-spring-boot-starter:4.6.2"</span><span class="p">)</span>
+    <span class="nf">implementation</span><span class="p">(</span><span class="s">"info.picocli:picocli-spring-boot-starter:4.6.3"</span><span class="p">)</span>
 <span class="p">}</span></code></pre>
 </div>
 </div>
@@ -16506,7 +16482,7 @@ You can make it a <code>hidden</code> option so it is not shown in the usage hel
 <div class="sect2">
 <h3 id="_micronaut_example"><a class="anchor" href="#_micronaut_example"></a>22.3. Micronaut Example</h3>
 <div class="paragraph">
-<p><span class="image"><img src="https://avatars.githubusercontent.com/u/36880643?s=200&v=4" alt="Micronaut Logo"></span></p>
+<p><span class="image"><img src="https://avatars.githubusercontent.com/u/36880643?s=200&amp;v=4" alt="Micronaut Logo"></span></p>
 </div>
 <div class="paragraph">
 <p>The Micronaut microservices framework provides <a href="https://docs.micronaut.io/latest/guide/index.html#picocli">built-in support</a> for picocli with its <code>PicocliRunner</code> class.</p>
@@ -17706,7 +17682,7 @@ To mock commands with subcommands you will need to use <code>mock()</code> inste
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="rouge highlight"><code data-lang="bash">java <span class="nt">-cp</span> <span class="s2">"picocli-4.6.2.jar;myapp.jar"</span> org.myorg.MyMainClass <span class="nt">--option</span><span class="o">=</span>value arg0 arg1</code></pre>
+<pre class="rouge highlight"><code data-lang="bash">java <span class="nt">-cp</span> <span class="s2">"picocli-4.6.3.jar;myapp.jar"</span> org.myorg.MyMainClass <span class="nt">--option</span><span class="o">=</span>value arg0 arg1</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -17730,7 +17706,7 @@ To mock commands with subcommands you will need to use <code>mock()</code> inste
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="rouge highlight"><code data-lang="bash"><span class="nb">alias </span><span class="nv">mycommand</span><span class="o">=</span><span class="s1">'java -cp "/path/to/picocli-4.6.2.jar:/path/to/myapp.jar" org.myorg.MainClass'</span></code></pre>
+<pre class="rouge highlight"><code data-lang="bash"><span class="nb">alias </span><span class="nv">mycommand</span><span class="o">=</span><span class="s1">'java -cp "/path/to/picocli-4.6.3.jar:/path/to/myapp.jar" org.myorg.MainClass'</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -17807,7 +17783,7 @@ you can then create a native image by invoking the <code>native-image</code> com
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>path/to/native-image -cp picocli-4.6.2.jar --static -jar myapp.jar</pre>
+<pre>path/to/native-image -cp picocli-4.6.3.jar --static -jar myapp.jar</pre>
 </div>
 </div>
 <div class="admonitionblock caution">
@@ -17985,7 +17961,7 @@ The script body is executed if the user input was valid and did not request usag
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="rouge highlight"><code data-lang="groovy"><span class="nd">@Grab</span><span class="o">(</span><span class="s1">'info.picocli:picocli-groovy:4.6.2'</span><span class="o">)</span>
+<pre class="rouge highlight"><code data-lang="groovy"><span class="nd">@Grab</span><span class="o">(</span><span class="s1">'info.picocli:picocli-groovy:4.6.3'</span><span class="o">)</span>
 <span class="nd">@GrabConfig</span><span class="o">(</span><span class="n">systemClassLoader</span><span class="o">=</span><span class="kc">true</span><span class="o">)</span>
 <span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s2">"myScript"</span><span class="o">,</span>
         <span class="n">mixinStandardHelpOptions</span> <span class="o">=</span> <span class="kc">true</span><span class="o">,</span> <span class="c1">// add --help and --version options</span>
@@ -18071,7 +18047,7 @@ The table below compares these two base classes.</p>
 </td>
 <td class="content">
 When upgrading scripts from picocli versions older than 4.0, just changing the version number is not enough!
-Scripts should use <code>@Grab('info.picocli:picocli-groovy:4.6.2')</code>. The old artifact id <code>@Grab('info.picocli:picocli:4.6.2')</code> will not work,
+Scripts should use <code>@Grab('info.picocli:picocli-groovy:4.6.3')</code>. The old artifact id <code>@Grab('info.picocli:picocli:4.6.3')</code> will not work,
 because the <code>@picocli.groovy.PicocliScript</code> annotation class and supporting classes have been moved into a separate module, <code>picocli-groovy</code>.
 </td>
 </tr>
@@ -18166,7 +18142,7 @@ When using a Groovy version older than 2.4.7, use this workaround for the <a hre
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="rouge highlight"><code data-lang="groovy"><span class="nd">@Grab</span><span class="o">(</span><span class="s1">'info.picocli:picocli-groovy:4.6.2'</span><span class="o">)</span>
+<pre class="rouge highlight"><code data-lang="groovy"><span class="nd">@Grab</span><span class="o">(</span><span class="s1">'info.picocli:picocli-groovy:4.6.3'</span><span class="o">)</span>
 <span class="nd">@GrabExclude</span><span class="o">(</span><span class="s1">'org.codehaus.groovy:groovy-all'</span><span class="o">)</span> <span class="c1">// work around GROOVY-7613</span>
 <span class="o">...</span></code></pre>
 </div>
@@ -18357,14 +18333,14 @@ so be aware that you will have to write <code>Array(&#8230;&#8203;)</code> for t
 <div class="listingblock primary">
 <div class="title">Gradle</div>
 <div class="content">
-<pre class="rouge highlight"><code data-lang="groovy"><span class="n">implementation</span> <span class="s1">'info.picocli:picocli:4.6.2'</span></code></pre>
+<pre class="rouge highlight"><code data-lang="groovy"><span class="n">implementation</span> <span class="s1">'info.picocli:picocli:4.6.3'</span></code></pre>
 </div>
 </div>
 <div class="listingblock secondary">
 <div class="title">Gradle (Kotlin)</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="kotlin"><span class="nf">dependencies</span> <span class="p">{</span>
-    <span class="nf">implementation</span><span class="p">(</span><span class="s">"info.picocli:picocli:4.6.2"</span><span class="p">)</span>
+    <span class="nf">implementation</span><span class="p">(</span><span class="s">"info.picocli:picocli:4.6.3"</span><span class="p">)</span>
 <span class="p">}</span></code></pre>
 </div>
 </div>
@@ -18374,46 +18350,46 @@ so be aware that you will have to write <code>Array(&#8230;&#8203;)</code> for t
 <pre class="rouge highlight"><code data-lang="xml"><span class="nt">&lt;dependency&gt;</span>
   <span class="nt">&lt;groupId&gt;</span>info.picocli<span class="nt">&lt;/groupId&gt;</span>
   <span class="nt">&lt;artifactId&gt;</span>picocli<span class="nt">&lt;/artifactId&gt;</span>
-  <span class="nt">&lt;version&gt;</span>4.6.2<span class="nt">&lt;/version&gt;</span>
+  <span class="nt">&lt;version&gt;</span>4.6.3<span class="nt">&lt;/version&gt;</span>
 <span class="nt">&lt;/dependency&gt;</span></code></pre>
 </div>
 </div>
 <div class="listingblock secondary">
 <div class="title">Scala SBT</div>
 <div class="content">
-<pre class="rouge highlight"><code>libraryDependencies += "info.picocli" % "picocli" % "4.6.2"</code></pre>
+<pre class="rouge highlight"><code>libraryDependencies += "info.picocli" % "picocli" % "4.6.3"</code></pre>
 </div>
 </div>
 <div class="listingblock secondary">
 <div class="title">Ivy</div>
 <div class="content">
-<pre class="rouge highlight"><code>&lt;dependency org="info.picocli" name="picocli" rev="4.6.2" /&gt;</code></pre>
+<pre class="rouge highlight"><code>&lt;dependency org="info.picocli" name="picocli" rev="4.6.3" /&gt;</code></pre>
 </div>
 </div>
 <div class="listingblock secondary">
 <div class="title">Grape</div>
 <div class="content">
 <pre class="rouge highlight"><code>@Grapes(
-    @Grab(group='info.picocli', module='picocli', version='4.6.2')
+    @Grab(group='info.picocli', module='picocli', version='4.6.3')
 )</code></pre>
 </div>
 </div>
 <div class="listingblock secondary">
 <div class="title">Leiningen</div>
 <div class="content">
-<pre class="rouge highlight"><code>[info.picocli/picocli "4.6.2"]</code></pre>
+<pre class="rouge highlight"><code>[info.picocli/picocli "4.6.3"]</code></pre>
 </div>
 </div>
 <div class="listingblock secondary">
 <div class="title">Buildr</div>
 <div class="content">
-<pre class="rouge highlight"><code>'info.picocli:picocli:jar:4.6.2'</code></pre>
+<pre class="rouge highlight"><code>'info.picocli:picocli:jar:4.6.3'</code></pre>
 </div>
 </div>
 <div class="listingblock secondary">
 <div class="title">JBang</div>
 <div class="content">
-<pre class="rouge highlight"><code>//DEPS info.picocli:picocli:4.6.2</code></pre>
+<pre class="rouge highlight"><code>//DEPS info.picocli:picocli:4.6.3</code></pre>
 </div>
 </div>
 </div>
@@ -18421,7 +18397,7 @@ so be aware that you will have to write <code>Array(&#8230;&#8203;)</code> for t
 <h3 id="_source"><a class="anchor" href="#_source"></a>37.2. Source</h3>
 <div class="paragraph">
 <p>By using picocli in source form, you can avoid having an external dependency on picocli.
-Picocli has only one source file: <a href="https://github.com/remkop/picocli/blob/v4.6.2/src/main/java/picocli/CommandLine.java">CommandLine.java</a>.
+Picocli has only one source file: <a href="https://github.com/remkop/picocli/blob/v4.6.3-SNAPSHOT/src/main/java/picocli/CommandLine.java">CommandLine.java</a>.
 This facilitates including picocli in your project: simply copy and paste the code of this file into a file called <code>CommandLine.java</code>, add it to your project, and enjoy!</p>
 </div>
 </div>
@@ -18430,8 +18406,8 @@ This facilitates including picocli in your project: simply copy and paste the co
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 4.6.2<br>
-Last updated 2021-11-18 05:00:24 +0900
+Version 4.6.3<br>
+Last updated 2022-02-09 18:12:01 +0900
 </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/tocbot/3.0.7/tocbot.min.js"></script>
