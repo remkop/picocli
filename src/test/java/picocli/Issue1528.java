@@ -12,7 +12,6 @@ public class Issue1528 {
 
     @Command(name = "main", subcommands = SubCommand.class)
     static class MainCommand implements Callable<Integer> {
-        @Override
         public Integer call() throws Exception {
             return null;
         }
@@ -20,7 +19,6 @@ public class Issue1528 {
 
     @Command(name = "sub")
     static class SubCommand implements Callable<Integer> {
-        @Override
         public Integer call() throws Exception {
             return null;
         }
