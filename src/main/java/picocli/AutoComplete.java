@@ -116,7 +116,7 @@ public class AutoComplete {
                     "",
                     "Example",
                     "-------",
-                    "  java -cp \"myapp.jar;picocli-4.6.3.jar\" \\",
+                    "  java -cp \"myapp.jar;picocli-4.7.0-SNAPSHOT.jar\" \\",
                     "              picocli.AutoComplete my.pkg.MyClass"
             },
             exitCodeListHeading = "%nExit Codes:%n",

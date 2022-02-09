@@ -145,7 +145,7 @@ import static picocli.CommandLine.Help.Column.Overflow.WRAP;
 public class CommandLine {
 
     /** This is picocli version {@value}. */
-    public static final String VERSION = "4.6.3";
+    public static final String VERSION = "4.7.0-SNAPSHOT";
 
     private final Tracer tracer = new Tracer();
     private CommandSpec commandSpec;
