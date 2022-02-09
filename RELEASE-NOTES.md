@@ -46,6 +46,7 @@ Artifacts in this release are signed by Remko Popma (6601 E5C0 8DCC BB96).
 * [#1483] Enhancement: Improved `AbstractCommandSpecProcessor#isSubcommand`; Thanks to [Ross Goldberg](https://github.com/rgoldberg) for the pull request.
 * [#1499] Enhancement: Improved `DefaultFactory#create(Class<T>)`. Thanks to [Ross Goldberg](https://github.com/rgoldberg) for the pull request.
 * [#1518] Enhancement: Simplified detection of getter & setter in `TypedMember` constructor. Thanks to [Ross Goldberg](https://github.com/rgoldberg) for the pull request.
+* [#1568] Enhancement: CommandLine cleanup. Thanks to [Ross Goldberg](https://github.com/rgoldberg) for the pull request.
 * [#1526][#1548] Enhancement: Autocompletion on ZSH should only call `compinit` once. Thanks to [Ben Herweyer](https://github.com/bherw) for the pull request.
 * [#1539] DOC: Various documentation improvements. Thanks to [Hamid Nazari](https://github.com/hamid-nazari) for the pull request.
 * [#1481] DOC: Removed repeated "whether" typo in JavaDoc; Thanks to [Ross Goldberg](https://github.com/rgoldberg) for the pull request.
@@ -82,6 +83,7 @@ Artifacts in this release are signed by Remko Popma (6601 E5C0 8DCC BB96).
 * [#1487] DEP: Bump kotlin-script-runtime from 1.5.31 to 1.6.0
 * [#1486] DEP: Bump gradle-nexus-staging-plugin from 0.21.0 to 0.30.0
 * [#1500][#1517] DEP: Bump gradle from 7.3 to 7.3.3. Thanks to [Ross Goldberg](https://github.com/rgoldberg) for the pull request.
+* [#1569] DEP: Bump gradle from 7.3.3 to 7.4. Thanks to [Ross Goldberg](https://github.com/rgoldberg) for the pull request.
 * [#1515] DEP: Bump kotlin-gradle-plugin from 1.6.0 to 1.6.10
 * [#1512] DEP: Bump kotlin-script-runtime from 1.6.0 to 1.6.10
 * [#1514] DEP: Bump log4j-api from 2.14.1 to 2.17.1
