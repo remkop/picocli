@@ -11447,7 +11447,7 @@ public class CommandLine {
                 boolean hasArgAnnotation = false;
                 while (!hierarchy.isEmpty()) {
                     cls = hierarchy.pop();
-                    hasArgAnnotation |= initFromAnnotatedFields(scope, cls, commandSpec, builder, factory, null);
+                    hasArgAnnotation |= initFromAnnotatedMembers(scope, cls, commandSpec, builder, factory, null);
                 }
                 ArgGroupSpec result = builder.build();
                 if (annotationsAreMandatory) {validateArgGroupSpec(result, hasArgAnnotation, cls.getName()); }
@@ -11475,20 +11475,19 @@ public class CommandLine {
                     injectSpecIntoVersionProvider(result, cmd, factory);
                     result.setAddMethodSubcommands(false); // method commands don't have method subcommands
                     hasCommandAnnotation = true;
-                    initSubcommands(cmd, null, result, factory, new Stack<Class<?>>()); // after adding options
+                    initSubcommands(cmd, null, result, factory, Collections.<Class<?>>emptySet()); // after adding options
                     result.mixinStandardHelpOptions(cmd.mixinStandardHelpOptions()); // do this last
                     initFromMethodParameters(userObject, method, result, null, factory);
                     // set command name to method name, unless @Command#name is set
                     result.initName(((Method)command).getName());
                 } else {
-                    Stack<Class<?>> hierarchy = new Stack<Class<?>>();
                     Class<?> cls = userObject.getType();
+                    Stack<Class<?>> hierarchy = new Stack<Class<?>>();
                     while (cls != null) {
                         hierarchy.add(cls);
                         cls = cls.getSuperclass();
                     }
-                    @SuppressWarnings("unchecked")
-                    Stack<Class<?>> originalHierarchy = (Stack<Class<?>>) hierarchy.clone();
+                    Set<Class<?>> fullHierarchySet = new HashSet<Class<?>>(hierarchy);
                     boolean mixinStandardHelpOptions = false;
                     while (!hierarchy.isEmpty()) {
                         cls = hierarchy.pop();
@@ -11499,9 +11498,9 @@ public class CommandLine {
                             hasCommandAnnotation = true;
                             mixinStandardHelpOptions |= cmd.mixinStandardHelpOptions();
                         }
-                        initSubcommands(cmd, cls, result, factory, originalHierarchy); // after adding options
+                        initSubcommands(cmd, cls, result, factory, fullHierarchySet); // after adding options
                         initMethodSubcommands(cls, result, factory); // regardless of @Command annotation. NOTE: after adding options
-                        hasCommandAnnotation |= initFromAnnotatedFields(userObject, cls, result, null, factory, null);
+                        hasCommandAnnotation |= initFromAnnotatedMembers(userObject, cls, result, null, factory, null);
                     }
                     result.mixinStandardHelpOptions(mixinStandardHelpOptions); //#377 Standard help options should be added last
                 }
@@ -11515,14 +11514,14 @@ public class CommandLine {
 
             private static void injectSpecIntoVersionProvider(CommandSpec result, Command cmd, IFactory factory) {
                 if (result.versionProvider() == null) { return; }
-                CommandReflection.initFromAnnotatedFields(new ObjectScope(result.versionProvider()), cmd.versionProvider(), result, null, factory, new Predicate<TypedMember>() {
+                initFromAnnotatedMembers(new ObjectScope(result.versionProvider()), cmd.versionProvider(), result, null, factory, new Predicate<TypedMember>() {
                     public boolean test(TypedMember tm) {
                         return tm.isSpec() && !(tm.isArgGroup() || tm.isUnmatched() || tm.isMixin() || tm.isOption() || tm.isParameter() || tm.isParentCommand());
                     }
                 });
             }
 
-            private static void initSubcommands(Command cmd, Class<?> cls, CommandSpec parent, IFactory factory, Stack<Class<?>> hierarchy) {
+            private static void initSubcommands(Command cmd, Class<?> cls, CommandSpec parent, IFactory factory, Set<Class<?>> hierarchy) {
                 if (cmd == null) { return; }
                 for (Class<?> sub : cmd.subcommands()) {
                     if (sub.equals(cls)) {
@@ -11565,7 +11564,7 @@ public class CommandLine {
                 }
                 return subCommand.name();
             }
-            private static boolean initFromAnnotatedFields(IScope scope, Class<?> cls, CommandSpec receiver, ArgGroupSpec.Builder groupBuilder, IFactory factory, Predicate<TypedMember> predicate) {
+            private static boolean initFromAnnotatedMembers(IScope scope, Class<?> cls, CommandSpec receiver, ArgGroupSpec.Builder groupBuilder, IFactory factory, Predicate<TypedMember> predicate) {
                 boolean result = false;
                 for (Field field : cls.getDeclaredFields()) {
                     result |= initFromAnnotatedTypedMembers(TypedMember.createIfAnnotated(field, scope), predicate, receiver, groupBuilder, factory);
@@ -11880,13 +11879,14 @@ public class CommandLine {
 
             private CommandUserObject(Object objectOrClass, IFactory factory) {
                 this.factory = Assert.notNull(factory, "factory");
-                type = objectOrClass == null ? null : objectOrClass.getClass();
-                instance = objectOrClass;
                 if (objectOrClass instanceof Class) {
-                    type = (Class<?>) objectOrClass;
                     instance = null;
-                } else if (objectOrClass instanceof Method) {
-                    type = null; // don't mix in options/positional params from outer class @Command
+                    type = (Class<?>) objectOrClass;
+                } else {
+                    instance = objectOrClass;
+                    type = objectOrClass == null || objectOrClass instanceof Method // don't mix in options/positional params from outer class @Command
+                        ? null
+                        : objectOrClass.getClass();
                 }
             }
             @Override public String toString() {
