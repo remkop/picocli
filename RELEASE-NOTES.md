@@ -4,7 +4,7 @@
 # <a name="4.6.3"></a> Picocli 4.6.3 (UNRELEASED)
 The picocli community is pleased to announce picocli 4.6.3.
 
-This release includes bugfixes and enhancements, as well as security improvements.
+This release includes bugfixes and enhancements, as well as documentation and security improvements.
 
 Several improvements to the annotation processor and the generated autocompletion scripts.
 
