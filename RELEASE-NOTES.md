@@ -22,6 +22,26 @@ Artifacts in this release are signed by Remko Popma (6601 E5C0 8DCC BB96).
 
 ## <a name="4.6.3-new"></a> New and Noteworthy
 
+### Default branch renamed to `main`
+The default branch has been renamed! `master` is now named `main`.
+
+If you have a local clone, you can update it by running the following commands:
+
+```bash
+git branch -m master main
+git fetch origin
+git branch -u origin/main main
+git remote set-head origin -a
+```
+
+### Autocompletion script improvements
+
+* Autocompletion now shows subcommand aliases in the completion candidates
+* Autocompletion now displays completion candidates on exact match
+* Autocompletion now supports file names containing spaces
+* Remove file name extension and local dir prefix from the command name in generated autocomplete scripts
+* Fix Bash error `compopt: command not found` on older versions of Bash
+* Autocompletion on ZSH should only call `compinit` once
 
 ## <a name="4.6.3-fixes"></a> Fixed issues
 * [#1440] Bugfix: annotation processor incorrectly failed with `DuplicateOptionAnnotationsException` when multiple commands had a subcommand in common and an inherited (`scope = ScopeType.INHERIT`) option. Thanks to [nemetsSY](https://github.com/nemetsSY) for raising this.
@@ -33,7 +53,7 @@ Artifacts in this release are signed by Remko Popma (6601 E5C0 8DCC BB96).
 * [#1468] Bugfix/Enhancement: Autocompletion now displays completion candidates on exact match. Thanks to [Ruud Senden](https://github.com/rsenden) for raising this.
 * [#1537][#1541] Bugfix: AbbreviationMatcher now treats aliases of the same object as one match. Thanks to [Staffan Arvidsson McShane](https://github.com/StaffanArvidsson) for raising this and [NewbieOrange](https://github.com/NewbieOrange) for the pull request.
 * [#1531] Bugfix: Options defined as annotated methods should reset between `parseArgs` invocations when `CommandLine` instance is reused. Thanks to [kaushalkumar](https://github.com/kaushalkumar) for raising this.
-* [#1458][#1473] Enhancement: autocompletion now supports file names containing spaces. Thanks to [zpater345](https://github.com/zpater345) for raising this and thanks to [NewbieOrange](https://github.com/NewbieOrange) for the pull request.
+* [#1458][#1473] Enhancement: Autocompletion now supports file names containing spaces. Thanks to [zpater345](https://github.com/zpater345) for raising this and thanks to [NewbieOrange](https://github.com/NewbieOrange) for the pull request.
 * [#1477] Enhancement: Remove file name extension and local dir prefix from the command name in generated autocomplete scripts. Thanks to [Andrea Peruffo](https://github.com/andreaTP) for the pull request.
 * [#1464] Enhancement: Fix Bash error `compopt: command not found` on older versions Bash. Thanks to [Andres Almiray](https://github.com/aalmiray) for raising this.
 * [#1476] Enhancement: improve error message in `AbstractCommandSpecProcessor#extractTypedMember`. Thanks to [Ross Goldberg](https://github.com/rgoldberg) for raising this.
