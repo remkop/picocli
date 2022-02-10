@@ -20,8 +20,8 @@ Artifacts in this release are signed by Remko Popma (6601 E5C0 8DCC BB96).
 
 
 ## <a name="4.7.0-fixes"></a> Fixed issues
-[#1396][#1401] API: Support generic types in containers (e.g. List, Map). Thanks to [Michał Górniewski](https://github.com/mgorniew) for the pull request.
-
+* [#1396][#1401] API: Support generic types in containers (e.g. List, Map). Thanks to [Michał Górniewski](https://github.com/mgorniew) for the pull request.
+* [#1380][#1505] API, bugfix: `requiredOptionMarker` should not be displayed on `ArgGroup` options. Thanks to [Ahmed El Khalifa](https://github.com/ahmede41) for the pull request.
 
 
 ## <a name="4.7.0-deprecated"></a> Deprecations
