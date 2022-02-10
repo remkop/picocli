@@ -111,6 +111,30 @@ task copyDocs(type: Copy) {
     from('build/docs/')
     into 'docs'
 }
+task extractReleaseNotesNext {
+    doLast {
+        String cutoff = projectPreviousPublishedVersion.replaceAll("\\\\", "")
+        String doneMarker = "# <a name=\"${cutoff}\"></a> Picocli ${cutoff}"
+
+        File src = new File("RELEASE-NOTES.md")
+        File dest = new File("RELEASE-NOTES-NEXT.md")
+
+        dest.withWriter('UTF-8') { writer ->
+            PrintWriter pw = new PrintWriter(writer)
+            src.withReader('UTF-8') { reader ->
+                boolean done = false
+                reader.eachLine {String line ->
+                    if (!done) {
+                        done = doneMarker.equals(line)
+                        if (!done && !"# picocli Release Notes".equals(line)) {
+                            pw.println(line)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
 
 /*
 Release procedure:
@@ -120,23 +144,26 @@ Release procedure:
 4. ./gradlew clean build
 5. ./gradlew copyDocs
 6. update RELEASE-NOTES.md
-7. ./gradlew bumpReadmeVersion
-7a update README.md (latest version, release notes)
-8. (in new cmd prompt session) cd picocli-legacy-tests ^ set JAVA_HOME=C:\apps\jdk1.5.0_22 ^ gradlew clean build --no-daemon
-9. commit -m "Release picocli version ..."
-10. tag v$version
-11 ./gradlew publishReleasePublicationToSonatypeRepository - creates a Sonatype staging repository, and uploads artifacts
-12. Close the Sonatype info/picocli staging repo:
+7. (OPTIONAL) ./gradlew extractReleaseNotesNext # for the create-release-and-publish-package CI workflow
+8. ./gradlew bumpReadmeVersion
+9. update README.md (latest version, release notes)
+10. (in new cmd prompt session)
+    cd picocli-legacy-tests & set JAVA_HOME=C:\apps\jdk1.5.0_22\&& echo ++%JAVA_HOME%++ && gradlew clean build --no-daemon
+11. commit -m "Release picocli version ..."
+12. tag v$version
+13 ./gradlew publishReleasePublicationToSonatypeRepository - creates a Sonatype staging repository, and uploads artifacts
+14. Close the Sonatype info/picocli staging repo:
   a. Manually: Log in to https://oss.sonatype.org/ and in the menu on the left, select Staging repositories.
      Click the close button in the GUI and watch progress in the
   b. Automatically with the codearte.nexus-staging plugin:
      ./gradlew closeAndReleaseRepository
 
-13. edit version numbers: increase minor version and add -SNAPSHOT classifier
-14. ./gradlew bumpVersion
-15. check modified files
-16. commit -m "Prepare for next development cycle"
-17. push (make sure that Push Tags is checked)
+15. edit version numbers: increase minor version and add -SNAPSHOT classifier
+16. ./gradlew bumpVersion
+17. check modified files
+18. delete RELEASE-NOTES-NEXT.md
+19. commit -m "Prepare for next development cycle"
+20. push (make sure that Push Tags is checked)
 
 18. Log in to GitHub, go to https://github.com/remkop/picocli/releases
 19. Click the new tag, click Edit button, update title and release notes (copy from RELEASE-NOTES.md)
