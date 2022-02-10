@@ -132,7 +132,8 @@ public class MapOptionsOptionalTest {
             App app = CommandLine.populateCommand(new App(), "-Dkey1=123", "-Dkey2=456");
             fail("Expected exception");
         } catch (Exception ex) {
-            String msg = String.format(UNSUPPORTED_TYPE_ERRORMSG, "java.util.Map<java.util.Optional<java.lang.String>, java.util.Optional<java.lang.Integer>>");
+            //String msg = String.format(UNSUPPORTED_TYPE_ERRORMSG, "java.util.Map<java.util.Optional<java.lang.String>, java.util.Optional<java.lang.Integer>>");
+            String msg = "No TypeConverter registered for java.util.Optional of field java.util.Map<java.util.Optional<String>, java.util.Optional<Integer>> picocli.MapOptionsOptionalTest$10App.map";
             assertEquals(msg, ex.getMessage());
         }
     }
@@ -146,8 +147,9 @@ public class MapOptionsOptionalTest {
             App app = CommandLine.populateCommand(new App(), "-X123", "-X456");
             fail("Expected exception");
         } catch (Exception ex) {
-            String msg = String.format(UNSUPPORTED_TYPE_ERRORMSG, "java.util.List<java.util.Optional<java.lang.Integer>>");
-            assertEquals(msg, ex.getMessage());
+            //String msg = String.format(UNSUPPORTED_TYPE_ERRORMSG, "java.util.List<java.util.Optional<java.lang.Integer>>");
+            String msg = "PicocliException: Cannot create converter for types [class java.util.Optional] for field java.util.List<java.util.Optional<Integer>> picocli.MapOptionsOptionalTest$11App.list while processing argument at or before arg[0] '-X123' in [-X123, -X456]";
+            assertTrue(ex.getMessage(), ex.getMessage().startsWith(msg));
         }
     }
 
