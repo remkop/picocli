@@ -59,11 +59,11 @@ public class Issue1380Test {
         new CommandLine(new TestingClassExclusiveTrue()).usage(printStream);
 
         String returnedText = tempOut.toString();
-        String expectedText =
-        "Usage: <main class> [-s | -v | -j]\n"+
-                "  -j, --json      JSON printing\n"+
-                "  -s, --silent    Silent mode\n"+
-                "  -v, --verbose   Verbose mode\n";
+        String expectedText = String.format(
+        "Usage: <main class> [-s | -v | -j]%n"+
+                "  -j, --json      JSON printing%n"+
+                "  -s, --silent    Silent mode%n"+
+                "  -v, --verbose   Verbose mode%n");
 
         assertEquals(expectedText, returnedText);
     }
@@ -78,10 +78,11 @@ public class Issue1380Test {
         new CommandLine(new TestingClassExclusiveFalse()).usage(printStream);
 
         String returnedText = tempOut.toString();
-        String expectedText = "Usage: <main class> [[-s] [-v] [-j]]\n" +
-                "  -j, --json      JSON printing\n" +
-                "  -s, --silent    Silent mode\n" +
-                "  -v, --verbose   Verbose mode\n";
+        String expectedText = String.format(
+                "Usage: <main class> [[-s] [-v] [-j]]%n" +
+                "  -j, --json      JSON printing%n" +
+                "  -s, --silent    Silent mode%n" +
+                "  -v, --verbose   Verbose mode%n");
 
         assertEquals(expectedText, returnedText);
     }
