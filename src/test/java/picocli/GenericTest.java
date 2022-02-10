@@ -83,7 +83,7 @@ public class GenericTest {
 
             @Override
             public GenericValue convert(String value) throws Exception {
-                return new GenericValue<>("abc");
+                return new GenericValue("abc");
             }
         }
         NoConverterApp app = new NoConverterApp();
