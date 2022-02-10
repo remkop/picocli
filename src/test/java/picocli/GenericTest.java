@@ -8,8 +8,7 @@ import picocli.CommandLine.Option;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 import static picocli.CommandLine.ITypeConverter;
 import static picocli.CommandLine.Parameters;
 
@@ -35,7 +34,6 @@ public class GenericTest {
     }
 
     static final class GenericValueConverter implements ITypeConverter<GenericValue<?>> {
-
         public GenericValue<?> convert(String value) throws Exception {
             if (value.startsWith("s")) {
                 return new GenericValue<String>(value);
@@ -68,7 +66,9 @@ public class GenericTest {
             CommandLine.populateCommand(new NoConverterApp(), "sOne", "15");
             fail("Expected exception");
         } catch (MissingTypeConverterException ex) {
-            assertEquals("No TypeConverter registered for picocli.GenericTest$GenericValue of field java.util.List<picocli.GenericTest$GenericValue<?>> picocli.GenericTest$1NoConverterApp.values", ex.getMessage());
+            String j8errMsg = "No TypeConverter registered for picocli.GenericTest$GenericValue of field java.util.List<picocli.GenericTest.picocli.GenericTest$GenericValue<?>> picocli.GenericTest$1NoConverterApp.values";
+            String j11errMsg = "No TypeConverter registered for picocli.GenericTest$GenericValue of field java.util.List<picocli.GenericTest$GenericValue<?>> picocli.GenericTest$1NoConverterApp.values";
+            assertTrue(ex.getMessage(),j8errMsg.equals(ex.getMessage()) || j11errMsg.equals(ex.getMessage()));
         }
     }
 
@@ -80,8 +80,6 @@ public class GenericTest {
         }
         @SuppressWarnings("rawtypes")
         class GenericConverter implements ITypeConverter<GenericValue> {
-
-            @Override
             public GenericValue convert(String value) throws Exception {
                 return new GenericValue("abc");
             }

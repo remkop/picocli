@@ -1,5 +1,35 @@
 # picocli Release Notes
 
+# <a name="4.7.0"></a> Picocli 4.7.0 (UNRELEASED)
+The picocli community is pleased to announce picocli 4.7.0.
+
+This release includes bugfixes and enhancements.
+
+
+This is the seventy-nineth public release.
+Picocli follows [semantic versioning](http://semver.org/).
+Artifacts in this release are signed by Remko Popma (6601 E5C0 8DCC BB96).
+
+## <a name="4.7.0-toc"></a> Table of Contents
+* [New and noteworthy](#4.7.0-new)
+* [Fixed issues](#4.7.0-fixes)
+* [Deprecations](#4.7.0-deprecated)
+* [Potential breaking changes](#4.7.0-breaking-changes)
+
+## <a name="4.7.0-new"></a> New and Noteworthy
+
+
+## <a name="4.7.0-fixes"></a> Fixed issues
+[#1396][#1401] API: Support generic types in containers (e.g. List, Map). Thanks to [Michał Górniewski](https://github.com/mgorniew) for the pull request.
+
+
+
+## <a name="4.7.0-deprecated"></a> Deprecations
+No features were deprecated in this release.
+
+## <a name="4.7.0-breaking-changes"></a> Potential breaking changes
+This release has no breaking changes.
+
 
 # <a name="4.6.3"></a> Picocli 4.6.3
 The picocli community is pleased to announce picocli 4.6.3.
