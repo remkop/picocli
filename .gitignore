@@ -21,3 +21,5 @@ picocli.iml
 /src/test/dejagnu.tests/testrun.log
 /src/test/dejagnu.tests/testrun.sum
 /src/test/dejagnu.tests/tmp/
+/picocli-legacy-tests/gradle/wrapper/dists/**/*.lck
+/picocli-legacy-tests/gradle/wrapper/dists/**/*.ok

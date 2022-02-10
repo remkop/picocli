@@ -77,7 +77,7 @@ public class OptionMethodSpecTest {
     @Test
     public void testInterfaceIsInstantiated() {
         CommandLine cmd = new CommandLine(Primitives.class);
-        assertTrue(cmd.getCommand() instanceof Primitives);
+        assertTrue(((Object) cmd.getCommand()) instanceof Primitives);
     }
 
     @Test
@@ -262,6 +262,142 @@ public class OptionMethodSpecTest {
         set.add((short) 22);
         set.add((short) 33);
         assertEquals(set, objects.getSortedSet());
+    }
+
+    @Test
+    public void testObjectsWithoutDefaultAreNotReset() {
+        //TestUtil.setTraceLevel("DEBUG");
+        String[] args = "-b -y1 -s2 -i3 -l4 -f5 -d6 -bigint=7 -string abc -list a -list b -map 1=2.0 -set 33 -set 22".split(" ");
+        CommandLine cmd = new CommandLine(Objects.class);
+        cmd.parseArgs(args);
+        Objects objects = cmd.getCommand();
+        assertTrue(objects.aBoolean());
+        assertEquals(Byte.valueOf((byte) 1), objects.aByte());
+        assertEquals(Short.valueOf((short) 2), objects.aShort());
+        assertEquals(Integer.valueOf(3), objects.anInt());
+        assertEquals(Long.valueOf(4), objects.aLong());
+        assertEquals(5f, objects.aFloat(), 0.0001);
+        assertEquals(6d, objects.aDouble(), 0.0001);
+        assertEquals(BigInteger.valueOf(7), objects.aBigInteger());
+        assertEquals("abc", objects.aString());
+        assertEquals(Arrays.asList("a", "b"), objects.getList());
+        Map<Integer, Double> map = new HashMap<Integer, Double>();
+        map.put(1, 2.0);
+        assertEquals(map, objects.getMap());
+        Set<Short> set = new TreeSet<Short>();
+        set.add((short) 22);
+        set.add((short) 33);
+        assertEquals(set, objects.getSortedSet());
+
+//        cmd.parseArgs(); // no args: no invocations, still same value
+//        assertTrue(objects.aBoolean());
+//        assertEquals(Byte.valueOf((byte) 1), objects.aByte());
+//        assertEquals(Short.valueOf((short) 2), objects.aShort());
+//        assertEquals(Integer.valueOf(3), objects.anInt());
+//        assertEquals(Long.valueOf(4), objects.aLong());
+//        assertEquals(5f, objects.aFloat(), 0.0001);
+//        assertEquals(6d, objects.aDouble(), 0.0001);
+//        assertEquals(BigInteger.valueOf(7), objects.aBigInteger());
+//        assertEquals("abc", objects.aString());
+//        assertEquals(Arrays.asList("a", "b"), objects.getList());
+//        /*Map<Integer, Double>*/ map = new HashMap<Integer, Double>();
+//        map.put(1, 2.0);
+//        assertEquals(map, objects.getMap());
+//        /*Set<Short>*/ set = new TreeSet<Short>();
+//        set.add((short) 22);
+//        set.add((short) 33);
+//        assertEquals(set, objects.getSortedSet());
+
+        cmd.parseArgs(); // no args: reset to initial value
+        assertNull(objects.aBoolean());
+        assertNull(objects.aByte());
+        assertNull(objects.aShort());
+        assertNull(objects.anInt());
+        assertNull(objects.aLong());
+        assertNull(objects.aFloat());
+        assertNull(objects.aDouble());
+        assertNull(objects.aBigInteger());
+        assertNull(objects.aString());
+        assertNull(objects.getList());
+        assertNull(objects.getMap());
+        assertNull(objects.getSortedSet());
+    }
+
+    interface ObjectsWithNullDefaults {
+        @Option(names = "-b", defaultValue = Option.NULL_VALUE)
+        Boolean aBoolean();
+
+        @Option(names = "-y", defaultValue = Option.NULL_VALUE)
+        Byte aByte();
+
+        @Option(names = "-s", defaultValue = Option.NULL_VALUE)
+        Short aShort();
+
+        @Option(names = "-i", defaultValue = Option.NULL_VALUE)
+        Integer anInt();
+
+        @Option(names = "-l", defaultValue = Option.NULL_VALUE)
+        Long aLong();
+
+        @Option(names = "-f", defaultValue = Option.NULL_VALUE)
+        Float aFloat();
+
+        @Option(names = "-d", defaultValue = Option.NULL_VALUE)
+        Double aDouble();
+
+        @Option(names = "-bigint", defaultValue = Option.NULL_VALUE)
+        BigInteger aBigInteger();
+
+        @Option(names = "-string", defaultValue = Option.NULL_VALUE)
+        String aString();
+
+        @Option(names = "-list", defaultValue = Option.NULL_VALUE, split = ",")
+        List<String> getList();
+
+        @Option(names = "-map", defaultValue = Option.NULL_VALUE, split = ",")
+        Map<Integer, Double> getMap();
+
+        @Option(names = "-set", defaultValue = Option.NULL_VALUE, split = ",")
+        SortedSet<Short> getSortedSet();
+    }
+
+    @Test
+    public void testObjectsWithNullDefaultAreReset() {
+        String[] args = "-b -y1 -s2 -i3 -l4 -f5 -d6 -bigint=7 -string abc -list a -list b -map 1=2.0 -set 33 -set 22".split(" ");
+        CommandLine cmd = new CommandLine(ObjectsWithNullDefaults.class);
+        cmd.parseArgs(args);
+        ObjectsWithNullDefaults objects = cmd.getCommand();
+        assertTrue(objects.aBoolean());
+        assertEquals(Byte.valueOf((byte) 1), objects.aByte());
+        assertEquals(Short.valueOf((short) 2), objects.aShort());
+        assertEquals(Integer.valueOf(3), objects.anInt());
+        assertEquals(Long.valueOf(4), objects.aLong());
+        assertEquals(5f, objects.aFloat(), 0.0001);
+        assertEquals(6d, objects.aDouble(), 0.0001);
+        assertEquals(BigInteger.valueOf(7), objects.aBigInteger());
+        assertEquals("abc", objects.aString());
+        assertEquals(Arrays.asList("a", "b"), objects.getList());
+        Map<Integer, Double> map = new HashMap<Integer, Double>();
+        map.put(1, 2.0);
+        assertEquals(map, objects.getMap());
+        Set<Short> set = new TreeSet<Short>();
+        set.add((short) 22);
+        set.add((short) 33);
+        assertEquals(set, objects.getSortedSet());
+
+        cmd.parseArgs(); // no args: reset
+        assertNull(objects.aBoolean());
+        assertNull(objects.aByte());
+        assertNull(objects.aShort());
+        assertNull(objects.anInt());
+        assertNull(objects.aLong());
+        assertNull(objects.aFloat());
+        assertNull(objects.aDouble());
+        assertNull(objects.aBigInteger());
+        assertNull(objects.aString());
+        assertNull(objects.getList());
+        assertNull(objects.getMap());
+        assertNull(objects.getSortedSet());
     }
 
     interface InvalidAnnotatedStringOrPrimitiveFields {

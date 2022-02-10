@@ -1771,7 +1771,7 @@ public class HelpTest {
         final int[] count = {0};
         TextTable tt = TextTable.forDefaultColumns(Help.Ansi.OFF, UsageMessageSpec.DEFAULT_USAGE_WIDTH);
         tt = new TextTable(Help.Ansi.OFF, tt.columns()) {
-            @Override public void addRowValues(Text[] columnValues) {
+            @Override public void addRowValues(Text... columnValues) {
                 assertArrayEquals(values[count[0]], columnValues);
                 count[0]++;
             }
@@ -2035,7 +2035,7 @@ public class HelpTest {
         @Command(customSynopsis = {
                 "<the-app> --number=NUMBER --other-option=<aargh>",
                 "          --more=OTHER --and-other-option=<aargh>",
-                "<the-app> --number=NUMBER --and-other-option=<aargh>",
+                "<the-app> --number=NUMBER --and-other-option=<aargh>"
         })
         class App {@Option(names = "--ignored") boolean ignored;}
         Help help = new Help(new App(), Help.Ansi.OFF);
@@ -3064,8 +3064,8 @@ public class HelpTest {
     public void test244SubcommandsNotParsed() {
         List<CommandLine> list = new CommandLine(new Top()).parse("-h", "sub");
         assertEquals(2, list.size());
-        assertTrue(list.get(0).getCommand() instanceof Top);
-        assertTrue(list.get(1).getCommand() instanceof Sub);
+        assertTrue(((Object) list.get(0).getCommand()) instanceof Top);
+        assertTrue(((Object) list.get(1).getCommand()) instanceof Sub);
         assertTrue(((Top) list.get(0).getCommand()).isUsageHelpRequested);
     }
 

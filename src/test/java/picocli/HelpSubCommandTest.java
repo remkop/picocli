@@ -111,7 +111,7 @@ public class HelpSubCommandTest {
                 new Help.ColorScheme.Builder(CommandLine.Help.defaultColorScheme(Help.Ansi.ON))
                         .commands(Help.Ansi.Style.underline)
                         .build()); // add underline
-        
+
         String expected = Help.Ansi.ON.new Text(String.format("" +
                 "Usage: @|bold,underline top|@ [COMMAND]%n" +
                 "top level command%n" +
@@ -139,8 +139,8 @@ public class HelpSubCommandTest {
         assertEquals(expected, baos.toString());
     }
 
-    @SuppressWarnings("deprecation")
     @Command(name = "customHelp", helpCommand = true)
+    @SuppressWarnings("deprecation")
     static class LegacyCustomHelpCommand implements IHelpCommandInitializable, Runnable {
         private CommandLine helpCommandLine;
         private Help.Ansi ansi;
@@ -346,13 +346,13 @@ public class HelpSubCommandTest {
         String expected = String.format("" +
                 "Displays help information about the specified command%n" +
                 "%n" +
-                "Usage: <main class> help [-h] [COMMAND...]%n" +
+                "Usage: <main class> help [-h] [COMMAND]%n" +
                 "%n" +
                 "When no COMMAND is given, the usage help for the main command is displayed.%n" +
                 "If a COMMAND is specified, the help for that command is shown.%n" +
                 "%n" +
-                "      [COMMAND...]   The COMMAND to display the usage help message for.%n" +
-                "  -h, --help         Show usage help for the help command and exit.%n");
+                "      [COMMAND]   The COMMAND to display the usage help message for.%n" +
+                "  -h, --help      Show usage help for the help command and exit.%n");
         assertEquals(expected, sw.toString());
 
         sw = new StringWriter();

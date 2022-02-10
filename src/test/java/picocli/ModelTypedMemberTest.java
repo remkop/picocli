@@ -1,5 +1,6 @@
 package picocli;
 
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.ProvideSystemProperty;
@@ -21,6 +22,7 @@ public class ModelTypedMemberTest {
     @Rule
     public final ProvideSystemProperty ansiOFF = new ProvideSystemProperty("picocli.ansi", "false");
 
+    @Ignore("No longer expected to fail after [#1396][#1401]")
     @Test
     public void testInferTypes() {
         class App {

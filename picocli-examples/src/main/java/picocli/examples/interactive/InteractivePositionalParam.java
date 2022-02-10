@@ -17,7 +17,7 @@ public class InteractivePositionalParam implements Callable<Integer> {
 }
 
 @Command(name = "password",
-        description = "Prompts for a password and prints its MD5 hash")
+        description = "Prompts for a password and prints its SHA-256 hash")
 class EnterPasswordCommand implements Callable<Void> {
 
     // https://github.com/remkop/picocli/issues/840
@@ -31,8 +31,8 @@ class EnterPasswordCommand implements Callable<Void> {
         char[] password = System.console().readPassword("Password to encrypt");
 
         byte[] raw = char2bytes(password);
-        MessageDigest md5 = MessageDigest.getInstance("MD5");
-        System.out.printf("Your password is hashed to %s.%n", base64(md5.digest(raw)));
+        MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
+        System.out.printf("Your password is hashed to %s.%n", base64(sha256.digest(raw)));
 
         Arrays.fill(password, '*');
         Arrays.fill(raw, (byte) 0);

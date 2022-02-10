@@ -4071,8 +4071,150 @@ public class ArgGroupTest {
         assertEquals(obj.argGroup.param2, "b");
     }
 
+
+    /**
+     * Tests issue 1409 https://github.com/remkop/picocli/issues/1409
+     * This specific test supplies values to the group one values, leaving
+     * the group two values uninitialized.
+     * <p>
+     * The test verifies that x, 1A, 1B, 2A, and 2B values are correct after
+     * building the command using CommandLine.java and parsing the arguments.
+     * @author remkop, madfoal
+     */
     @Command(name = "Issue-1409")
-    static class Issue1409 {
+    static class Issue1409 implements Runnable{
+
+        @ArgGroup(exclusive = false, heading = "%nOptions to be used with group 1 OR group 2 options.%n")
+        OptXAndGroupOneOrGroupTwo optXAndGroupOneOrGroupTwo;
+
+        static class OptXAndGroupOneOrGroupTwo {
+            @Option(names = { "-x", "--option-x" }, required = true, defaultValue = "Default X", description = "option X")
+            String x;
+
+            @ArgGroup(exclusive = true)
+            OneOrTwo oneORtwo;
+        }
+
+        static class OneOrTwo {
+            @ArgGroup(exclusive = false, heading = "%nGroup 1%n%n")
+            GroupOne one;
+
+            @ArgGroup(exclusive = false, heading = "%nGroup 2%n%n")
+            GroupTwo two;
+        }
+
+        static class GroupOne {
+            @Option(names = { "-1a", "--option-1a" },required=true,description = "option A of group 1")
+            String a1;
+
+            @Option(names = { "-1b", "--option-1b" },required=true,description = "option B of group 1")
+            String b1;
+        }
+
+        static class GroupTwo {
+            @Option(names = { "-2a", "--option-2a" },required=true, defaultValue = "Default 2A", description = "option A of group 2")
+            private String a2 = "Default 2A";
+
+            @Option(names = { "-2b", "--option-2b" },required=true, defaultValue = "Default 2B", description = "option B of group 2")
+            private String b2 = "Default 2B";
+        }
+        public void run() {
+            if (optXAndGroupOneOrGroupTwo == null) {
+                optXAndGroupOneOrGroupTwo = new OptXAndGroupOneOrGroupTwo();
+            }
+            if (optXAndGroupOneOrGroupTwo.oneORtwo == null) {
+                optXAndGroupOneOrGroupTwo.oneORtwo = new OneOrTwo();
+            }
+            if (optXAndGroupOneOrGroupTwo.oneORtwo.one == null) {
+                optXAndGroupOneOrGroupTwo.oneORtwo.one = new GroupOne();
+            }
+            if (optXAndGroupOneOrGroupTwo.oneORtwo.two == null) {
+                optXAndGroupOneOrGroupTwo.oneORtwo.two = new GroupTwo();
+            }
+
+        }
+    }
+    
+    
+    // String literals for Issue 1409
+    final String sampleX = "ANOTHER VALUE";
+    final String errorX = "Default value for X incorrect";
+    final String errorA1 = "Default value for a1 incorrect";
+    final String errorB1 = "Default value for b1 incorrect";
+    final String errorA2 = "Default value for a2 incorrect";
+    final String errorB2 = "Default value for b2 incorrect";
+
+    /**
+     * Tests issue 1409 https://github.com/remkop/picocli/issues/1409
+     * This specific test supplies values to the group one values, leaving
+     * the group two values uninitialized.
+     * <p>
+     * The test verifies that x, 1A, 1B, 2A, and 2B values are correct after
+     * building the command using CommandLine.java and executing the arguments.
+     * @author remkop, madfoal
+     */
+    @Test
+    public void testIssue1409() {
+        final Issue1409 obj = new Issue1409();
+        new CommandLine(obj).execute("-x", sampleX);
+        assertEquals(errorX,sampleX, obj.optXAndGroupOneOrGroupTwo.x);
+        assertEquals(errorA1,null, obj.optXAndGroupOneOrGroupTwo.oneORtwo.one.a1);
+        assertEquals(errorB1,null, obj.optXAndGroupOneOrGroupTwo.oneORtwo.one.b1);
+        assertEquals(errorA2,"Default 2A", obj.optXAndGroupOneOrGroupTwo.oneORtwo.two.a2);
+        assertEquals(errorB2,"Default 2B", obj.optXAndGroupOneOrGroupTwo.oneORtwo.two.b2);
+    }
+
+    /**
+     * Tests issue 1409 https://github.com/remkop/picocli/issues/1409
+     * This specific test supplies values to the group one values, leaving
+     * the group two values uninitialized.
+     * <p>
+     * The test verifies that x, 1A, 1B, 2A, and 2B values are correct after
+     * building the command using CommandLine.java and executing the arguments.
+     * @author madfoal
+     */
+    @Test
+    public void testIssue1409InitializeGroup1() {
+        final Issue1409 obj = new Issue1409();
+        new CommandLine(obj).execute("-x", sampleX, "-1a=x", "-1b=z");
+        assertEquals(errorX,sampleX, obj.optXAndGroupOneOrGroupTwo.x);
+        assertEquals(errorA1,"x", obj.optXAndGroupOneOrGroupTwo.oneORtwo.one.a1);
+        assertEquals(errorB1,"z", obj.optXAndGroupOneOrGroupTwo.oneORtwo.one.b1);
+        assertEquals(errorA2,"Default 2A", obj.optXAndGroupOneOrGroupTwo.oneORtwo.two.a2);
+        assertEquals(errorB2,"Default 2B", obj.optXAndGroupOneOrGroupTwo.oneORtwo.two.b2);
+    }
+
+    /**
+     * Tests issue 1409 https://github.com/remkop/picocli/issues/1409
+     * This specific test supplies values to the group two values, leaving
+     * the group one values uninitialized.
+     * <p>
+     * The test verifies that x, 1A, 1B, 2A, and 2B values are correct after
+     * building the command using CommandLine.java and executing the arguments.
+     * @author madfoal
+     */
+    @Test
+    public void testIssue1409InitializeGroup2() {
+        final Issue1409 obj = new Issue1409();
+        new CommandLine(obj).execute("-x", sampleX, "-2a=x", "-2b=z");
+        assertEquals(errorX,sampleX, obj.optXAndGroupOneOrGroupTwo.x);
+        assertEquals(errorA1,null, obj.optXAndGroupOneOrGroupTwo.oneORtwo.one.a1);
+        assertEquals(errorB1,null, obj.optXAndGroupOneOrGroupTwo.oneORtwo.one.b1);
+        assertEquals(errorA2,"x", obj.optXAndGroupOneOrGroupTwo.oneORtwo.two.a2);
+        assertEquals(errorB2,"z", obj.optXAndGroupOneOrGroupTwo.oneORtwo.two.b2);
+    }
+
+    /**
+     * Tests issue 1409 https://github.com/remkop/picocli/issues/1409
+     * This specific test supplies values to the group one values, leaving
+     * the group two values uninitialized.
+     * <p>
+     * The test verifies that x, 1A, 1B, 2A, and 2B values are correct after
+     * building the command using CommandLine.java and parsing the arguments.
+     * @author remkop, madfoal
+     */
+    @Command(name = "Issue-1409-Mod")
+    static class Issue1409Mod{
 
         @ArgGroup(exclusive = false, heading = "%nOptions to be used with group 1 OR group 2 options.%n")
         OptXAndGroupOneOrGroupTwo optXAndGroupOneOrGroupTwo = new OptXAndGroupOneOrGroupTwo();
@@ -4086,9 +4228,6 @@ public class ArgGroupTest {
         }
 
         static class OneOrTwo {
-            public OneOrTwo() {
-                new Exception().printStackTrace();
-            }
             @ArgGroup(exclusive = false, heading = "%nGroup 1%n%n")
             GroupOne one = new GroupOne();
 
@@ -4098,32 +4237,80 @@ public class ArgGroupTest {
 
         static class GroupOne {
             @Option(names = { "-1a", "--option-1a" },required=true,description = "option A of group 1")
-            String _1a;
+            String a1;
 
             @Option(names = { "-1b", "--option-1b" },required=true,description = "option B of group 1")
-            String _1b;
+            String b1;
         }
 
         static class GroupTwo {
             @Option(names = { "-2a", "--option-2a" },required=true, defaultValue = "Default 2A", description = "option A of group 2")
-            private String _2a;
+            private String a2 = "Default 2A"; // default value declared
 
             @Option(names = { "-2b", "--option-2b" },required=true, defaultValue = "Default 2B", description = "option B of group 2")
-            private String _2b;
+            private String b2 = "Default 2B"; // default value declared
         }
+
     }
 
-    @Ignore
+    /**
+     * Tests issue 1409 https://github.com/remkop/picocli/issues/1409
+     * This specific test supplies values to the group one values, leaving
+     * the group two values uninitialized.
+     * <p>
+     * The test verifies that x, 1A, 1B, 2A, and 2B values are correct after
+     * building the command using CommandLine.java and parsing the arguments.
+     * @author remkop, madfoal
+     */
     @Test
-    public void testIssue1409() {
-        Issue1409 obj = new Issue1409();
-//        new CommandLine(obj).parseArgs("-x", "ANOTHER_VALUE", "-2a=x", "-2b=z");
-        new CommandLine(obj).parseArgs("-x", "ANOTHER_VALUE");
-        assertEquals("ANOTHER_VALUE", obj.optXAndGroupOneOrGroupTwo.x);
-        assertEquals(null, obj.optXAndGroupOneOrGroupTwo.oneORtwo.one._1a);
-        assertEquals(null, obj.optXAndGroupOneOrGroupTwo.oneORtwo.one._1b);
-        assertEquals("Default 2A", obj.optXAndGroupOneOrGroupTwo.oneORtwo.two._2a);
-        assertEquals("Default 2B", obj.optXAndGroupOneOrGroupTwo.oneORtwo.two._2b);
-
+    public void testIssue1409Mod() {
+        final Issue1409Mod obj = new Issue1409Mod();
+        new CommandLine(obj).parseArgs("-x", sampleX);
+        assertEquals(errorX,sampleX, obj.optXAndGroupOneOrGroupTwo.x);
+        assertEquals(errorA1,null, obj.optXAndGroupOneOrGroupTwo.oneORtwo.one.a1);
+        assertEquals(errorB1,null, obj.optXAndGroupOneOrGroupTwo.oneORtwo.one.b1);
+        assertEquals(errorA2,"Default 2A", obj.optXAndGroupOneOrGroupTwo.oneORtwo.two.a2);
+        assertEquals(errorB2,"Default 2B", obj.optXAndGroupOneOrGroupTwo.oneORtwo.two.b2);
     }
+
+    /**
+     * Tests issue 1409 https://github.com/remkop/picocli/issues/1409
+     * This specific test supplies values to the group one values, leaving
+     * the group two values uninitialized.
+     * <p>
+     * The test verifies that x, 1A, 1B, 2A, and 2B values are correct after
+     * building the command using CommandLine.java and parsing the arguments.
+     * @author madfoal
+     */
+    @Test
+    public void testIssue1409ModInitializeGroup1() {
+        final Issue1409Mod obj = new Issue1409Mod();
+        new CommandLine(obj).parseArgs("-x", sampleX, "-1a=x", "-1b=z");
+        assertEquals(errorX,sampleX, obj.optXAndGroupOneOrGroupTwo.x);
+        assertEquals(errorA1,"x", obj.optXAndGroupOneOrGroupTwo.oneORtwo.one.a1);
+        assertEquals(errorB1,"z", obj.optXAndGroupOneOrGroupTwo.oneORtwo.one.b1);
+        assertEquals(errorA2,"Default 2A", obj.optXAndGroupOneOrGroupTwo.oneORtwo.two.a2);
+        assertEquals(errorB2,"Default 2B", obj.optXAndGroupOneOrGroupTwo.oneORtwo.two.b2);
+    }
+
+    /**
+     * Tests issue 1409 https://github.com/remkop/picocli/issues/1409
+     * This specific test supplies values to the group two values, leaving
+     * the group one values uninitialized.
+     * <p>
+     * The test verifies that x, 1A, 1B, 2A, and 2B values are correct after
+     * building the command using CommandLine.java and parsing the arguments.
+     * @author madfoal
+     */
+    @Test
+    public void testIssue1409ModInitializeGroup2() {
+        final Issue1409Mod obj = new Issue1409Mod();
+        new CommandLine(obj).parseArgs("-x", sampleX, "-2a=x", "-2b=z");
+        assertEquals(errorX,sampleX, obj.optXAndGroupOneOrGroupTwo.x);
+        assertEquals(errorA1,null, obj.optXAndGroupOneOrGroupTwo.oneORtwo.one.a1);
+        assertEquals(errorB1,null, obj.optXAndGroupOneOrGroupTwo.oneORtwo.one.b1);
+        assertEquals(errorA2,"x", obj.optXAndGroupOneOrGroupTwo.oneORtwo.two.a2);
+        assertEquals(errorB2,"z", obj.optXAndGroupOneOrGroupTwo.oneORtwo.two.b2);
+    }
+
 }

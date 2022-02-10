@@ -1,5 +1,7 @@
 package picocli;
 
+import org.hamcrest.Matcher;
+import org.hamcrest.core.StringContains;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.ProvideSystemProperty;
@@ -14,6 +16,7 @@ import picocli.CommandLine.PicocliException;
 import java.lang.reflect.Method;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.Assert.*;
 
 public class ModelMethodBindingTest {
@@ -59,7 +62,7 @@ public class ModelMethodBindingTest {
             ParameterException pex = (ParameterException) ex;
             assertSame(spec, pex.getCommandLine().getCommandSpec());
             assertThat(pex.getCause().getClass().toString(), pex.getCause() instanceof IllegalArgumentException);
-            assertEquals("wrong number of arguments", pex.getCause().getMessage());
+            assertThat(pex.getCause().getMessage(), containsString("wrong number of arguments"));
         }
     }
 

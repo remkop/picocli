@@ -55,7 +55,7 @@ import java.util.jar.Manifest;
         //descriptionHeading = "@|bold %nDescription|@:%n",
         description = {
                 "",
-                "Demonstrates picocli subcommands parsing and usage help.", },
+                "Demonstrates picocli subcommands parsing and usage help." },
         versionProvider = Demo.ManifestVersionProvider.class,
         optionListHeading = "@|bold %nOptions|@:%n",
         footer = {
@@ -430,8 +430,8 @@ public class Demo implements Runnable {
         List<CommandLine> parsed = commandLine.parse(args);
         assert parsed.size() == 2 : "found 2 commands";
 
-        assert parsed.get(0).getCommand().getClass() == Git.class;
-        assert parsed.get(1).getCommand().getClass() == GitStatus.class;
+        assert ((Object) parsed.get(0).getCommand()).getClass() == Git.class;
+        assert ((Object) parsed.get(1).getCommand()).getClass() == GitStatus.class;
 
         Git git = (Git) parsed.get(0).getCommand();
         assert git.gitDir.equals(new File("/home/rpopma/picocli"));
@@ -677,7 +677,7 @@ public class Demo implements Runnable {
 
     static
     // tag::CheckSum[]
-    @Command(description = "Prints the checksum (MD5 by default) of a file to STDOUT.",
+    @Command(description = "Prints the checksum (SHA-1 by default) of a file to STDOUT.",
             name = "checksum", mixinStandardHelpOptions = true, version = "checksum 3.0")
     class CheckSum implements Callable<Integer> {
 
@@ -685,7 +685,7 @@ public class Demo implements Runnable {
         private File file;
 
         @Option(names = {"-a", "--algorithm"}, description = "MD5, SHA-1, SHA-256, ...")
-        private String algorithm = "MD5";
+        private String algorithm = "SHA-1";
 
         public static void main(String[] args) {
             // CheckSum implements Callable,

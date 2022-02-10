@@ -36,6 +36,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -100,11 +101,11 @@ public class CommandMethodTest {
         Method m = CommandLine.getCommandMethods(MethodApp.class, "run0").get(0);
         CommandLine cmd1 = new CommandLine(m);
         assertEquals("run-0", cmd1.getCommandName());
-        assertEquals(Arrays.asList(), cmd1.getCommandSpec().args());
+        assertEquals(Collections.emptyList(), cmd1.getCommandSpec().args());
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         cmd1.parseWithHandler(((IParseResultHandler) null), new PrintStream(baos), new String[]{"--y"});
-        assertEquals(Arrays.asList("--y"), cmd1.getUnmatchedArguments());
+        assertEquals(Collections.singletonList("--y"), cmd1.getUnmatchedArguments());
 
         // test execute
         Object ret = CommandLine.invoke(m.getName(), MethodApp.class, new PrintStream(new ByteArrayOutputStream()));

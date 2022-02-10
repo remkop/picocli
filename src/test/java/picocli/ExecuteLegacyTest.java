@@ -17,14 +17,18 @@ package picocli;
 
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.contrib.java.lang.system.*;
+import org.junit.contrib.java.lang.system.Assertion;
+import org.junit.contrib.java.lang.system.ExpectedSystemExit;
+import org.junit.contrib.java.lang.system.ProvideSystemProperty;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
+import org.junit.contrib.java.lang.system.SystemErrRule;
+import org.junit.contrib.java.lang.system.SystemOutRule;
 import org.junit.rules.TestRule;
 import picocli.CommandLine.Model.CommandSpec;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -32,10 +36,27 @@ import java.util.concurrent.Callable;
 
 import static java.lang.String.format;
 import static org.junit.Assert.*;
-import static picocli.CommandLine.*;
+import static picocli.CommandLine.Command;
+import static picocli.CommandLine.DefaultExceptionHandler;
+import static picocli.CommandLine.ExecutionException;
+import static picocli.CommandLine.Help;
+import static picocli.CommandLine.IExceptionHandler2;
+import static picocli.CommandLine.IParseResultHandler;
+import static picocli.CommandLine.IParseResultHandler2;
+import static picocli.CommandLine.InitializationException;
+import static picocli.CommandLine.Option;
+import static picocli.CommandLine.ParameterException;
+import static picocli.CommandLine.Parameters;
+import static picocli.CommandLine.ParseResult;
+import static picocli.CommandLine.RunAll;
+import static picocli.CommandLine.RunFirst;
+import static picocli.CommandLine.RunLast;
+import static picocli.CommandLine.Spec;
 
 @SuppressWarnings("deprecation")
 public class ExecuteLegacyTest {
+    @Rule
+    public final ExpectedSystemExit exit = ExpectedSystemExit.none();
 
     // allows tests to set any kind of properties they like, without having to individually roll them back
     @Rule
@@ -43,15 +64,13 @@ public class ExecuteLegacyTest {
 
     @Rule
     public final ProvideSystemProperty ansiOFF = new ProvideSystemProperty("picocli.ansi", "false");
-    
+
     @Rule
     public final SystemErrRule systemErrRule = new SystemErrRule().enableLog().muteForSuccessfulTests();
 
     @Rule
     public final SystemOutRule systemOutRule = new SystemOutRule().enableLog().muteForSuccessfulTests();
 
-    @Rule
-    public final ExpectedSystemExit exit = ExpectedSystemExit.none();
 
     interface Factory { Object create(); }
     @Test
@@ -393,6 +412,7 @@ public class ExecuteLegacyTest {
                 "<main command>"), systemErrRule.getLog());
     }
 
+    @SuppressWarnings("deprecation")
     private DefaultExceptionHandler<List<Object>> defaultExceptionHandler() {
         return new DefaultExceptionHandler<List<Object>>();
     }
@@ -412,6 +432,7 @@ public class ExecuteLegacyTest {
         assertEquals(25, handler.exitCode);
     }
 
+    @SuppressWarnings("deprecation")
     static class CustomExceptionHandler<R> extends DefaultExceptionHandler<R> {
         int exitCode;
 
@@ -435,6 +456,8 @@ public class ExecuteLegacyTest {
                 "Usage: <main class>%n"), systemErrRule.getLog());
         assertEquals(25, handler.exitCode);
     }
+
+    @SuppressWarnings("deprecation")
     static class CustomNoThrowExceptionHandler<R> extends DefaultExceptionHandler<R> {
         int exitCode;
         ExecutionException caught;
@@ -572,7 +595,7 @@ public class ExecuteLegacyTest {
             CommandLine.call(new MyCallable(), "-x abc");
             fail("Expected exception");
         } catch (ExecutionException ex) {
-            String cmd = ex.getCommandLine().getCommand().toString();
+            String cmd = ((Object) ex.getCommandLine().getCommand()).toString();
             String msg = "Error while calling command (" + cmd + "): java.lang.IllegalStateException: this is a test";
             assertEquals(msg, ex.getMessage());
         }

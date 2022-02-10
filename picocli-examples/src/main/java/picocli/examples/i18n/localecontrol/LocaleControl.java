@@ -39,7 +39,7 @@ public class LocaleControl implements Callable {
     private File file;
 
     @Option(names = {"-a", "--algorithm"}, descriptionKey = "Algorithms", order = 2)
-    private String algorithm = "MD5";
+    private String algorithm = "SHA-1";
 
     @Override
     public Integer call() throws Exception {

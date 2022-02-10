@@ -1,8 +1,8 @@
 = picocli - a mighty tiny command line interface
 //:author: Remko Popma
 //:email: rpopma@apache.org
-:revnumber: 4.6.3-SNAPSHOT
-:revdate: 2021-11-05
+:revnumber: 4.7.0-SNAPSHOT
+:revdate: 2022-02-09
 :toc: left
 :numbered:
 :toclevels: 2
@@ -86,14 +86,14 @@ import java.security.MessageDigest;
 import java.util.concurrent.Callable;
 
 @Command(name = "checksum", mixinStandardHelpOptions = true, version = "checksum 4.0",
-         description = "Prints the checksum (MD5 by default) of a file to STDOUT.")
+         description = "Prints the checksum (SHA-256 by default) of a file to STDOUT.")
 class CheckSum implements Callable<Integer> {
 
     @Parameters(index = "0", description = "The file whose checksum to calculate.")
     private File file;
 
     @Option(names = {"-a", "--algorithm"}, description = "MD5, SHA-1, SHA-256, ...")
-    private String algorithm = "MD5";
+    private String algorithm = "SHA-256";
 
     @Override
     public Integer call() throws Exception { // your business logic goes here...
@@ -120,7 +120,7 @@ class CheckSum implements Callable<Integer> {
 [[CheckSum-App-Groovy]]
 [source,groovy,role="secondary"]
 ----
-@Grab('info.picocli:picocli-groovy:4.6.3-SNAPSHOT')
+@Grab('info.picocli:picocli-groovy:4.7.0-SNAPSHOT')
 import picocli.CommandLine
 import static picocli.CommandLine.*
 
@@ -128,14 +128,14 @@ import java.security.MessageDigest
 import java.util.concurrent.Callable
 
 @Command(name = 'checksum', mixinStandardHelpOptions = true, version = 'checksum 4.0',
-  description = 'Prints the checksum (MD5 by default) of a file to STDOUT.')
+  description = 'Prints the checksum (SHA-256 by default) of a file to STDOUT.')
 class Checksum implements Callable<Integer> {
 
     @Parameters(index = '0', description = 'The file whose checksum to calculate.')
     File file
 
     @Option(names = ['-a', '--algorithm'], description = 'MD5, SHA-1, SHA-256, ...')
-    String algorithm = 'MD5'
+    String algorithm = 'SHA-256'
 
     Integer call() throws Exception {
         println MessageDigest.getInstance(algorithm).digest(file.bytes).encodeHex().toString()
@@ -152,20 +152,20 @@ class Checksum implements Callable<Integer> {
 [[CheckSum-App-Groovy-Script]]
 [source,groovy,role="secondary"]
 ----
-@Grab('info.picocli:picocli-groovy:4.6.3-SNAPSHOT')
+@Grab('info.picocli:picocli-groovy:4.7.0-SNAPSHOT')
 import static picocli.CommandLine.*
 import groovy.transform.Field
 import java.security.MessageDigest
 
 @Command(name = 'checksum', mixinStandardHelpOptions = true, version = 'checksum 4.0',
-  description = 'Prints the checksum (MD5 by default) of a file to STDOUT.')
+  description = 'Prints the checksum (SHA-256 by default) of a file to STDOUT.')
 @picocli.groovy.PicocliScript
 
 @Parameters(index = '0', description = 'The file whose checksum to calculate.')
 @Field File file
 
 @Option(names = ['-a', '--algorithm'], description = 'MD5, SHA-1, SHA-256, ...')
-@Field String algorithm = 'MD5'
+@Field String algorithm = 'SHA-256'
 
 println MessageDigest.getInstance(algorithm).digest(file.bytes).encodeHex().toString()
 ----
@@ -187,14 +187,14 @@ import java.util.concurrent.Callable
 import kotlin.system.exitProcess
 
 @Command(name = "checksum", mixinStandardHelpOptions = true, version = ["checksum 4.0"],
-    description = ["Prints the checksum (MD5 by default) of a file to STDOUT."])
+    description = ["Prints the checksum (SHA-256 by default) of a file to STDOUT."])
 class Checksum : Callable<Int> {
 
     @Parameters(index = "0", description = ["The file whose checksum to calculate."])
     lateinit var file: File
 
     @Option(names = ["-a", "--algorithm"], description = ["MD5, SHA-1, SHA-256, ..."])
-    var algorithm = "MD5"
+    var algorithm = "SHA-256"
 
     override fun call(): Int {
         val fileContents = Files.readAllBytes(file.toPath())
@@ -221,14 +221,14 @@ import java.security.MessageDigest
 import java.util.concurrent.Callable
 
 @Command(name = "checksum", mixinStandardHelpOptions = true, version = Array("checksum 4.0"),
-  description = Array("Prints the checksum (MD5 by default) of a file to STDOUT."))
+  description = Array("Prints the checksum (SHA-256 by default) of a file to STDOUT."))
 class Checksum extends Callable[Int] {
 
   @Parameters(index = "0", description = Array("The file whose checksum to calculate."))
    private var file: File = null
 
   @Option(names = Array("-a", "--algorithm"), description = Array("MD5, SHA-1, SHA-256, ..."))
-  private var algorithm = "MD5"
+  private var algorithm = "SHA-256"
 
   def call(): Int = {
     val fileContents = Files.readAllBytes(file.toPath)
@@ -273,7 +273,7 @@ Below are examples of configuring Gradle or Maven to use picocli as an external 
 [source,groovy,role="primary"]
 ----
 dependencies {
-    implementation 'info.picocli:picocli:4.6.3-SNAPSHOT'
+    implementation 'info.picocli:picocli:4.7.0-SNAPSHOT'
 }
 ----
 .Maven
@@ -282,7 +282,7 @@ dependencies {
 <dependency>
   <groupId>info.picocli</groupId>
   <artifactId>picocli</artifactId>
-  <version>4.6.3-SNAPSHOT</version>
+  <version>4.7.0-SNAPSHOT</version>
 </dependency>
 ----
 
@@ -319,8 +319,8 @@ https://immutables.github.io/apt.html[This page] shows the steps to configure Ec
 [source,groovy,role="primary"]
 ----
 dependencies {
-    implementation 'info.picocli:picocli:4.6.3-SNAPSHOT'
-    annotationProcessor 'info.picocli:picocli-codegen:4.6.3-SNAPSHOT'
+    implementation 'info.picocli:picocli:4.7.0-SNAPSHOT'
+    annotationProcessor 'info.picocli:picocli-codegen:4.7.0-SNAPSHOT'
 }
 
 
@@ -342,7 +342,7 @@ compileJava {
       <path>
         <groupId>info.picocli</groupId>
         <artifactId>picocli-codegen</artifactId>
-        <version>4.6.3-SNAPSHOT</version>
+        <version>4.7.0-SNAPSHOT</version>
       </path>
     </annotationProcessorPaths>
     <compilerArgs>
@@ -362,7 +362,7 @@ then replace `annotationProcessor` with `kapt`:
 apply plugin: 'kotlin-kapt' // required
 dependencies {
     // ...
-    kapt 'info.picocli:picocli-codegen:4.6.3-SNAPSHOT'
+    kapt 'info.picocli:picocli-codegen:4.7.0-SNAPSHOT'
 }
 ```
 
@@ -393,7 +393,7 @@ Now, assuming we created a jar named `checksum.jar` containing our compiled `Che
 
 [source,bash]
 ----
-java -cp "picocli-4.6.3-SNAPSHOT.jar:checksum.jar" CheckSum --algorithm SHA-1 hello.txt
+java -cp "picocli-4.7.0-SNAPSHOT.jar:checksum.jar" CheckSum --algorithm SHA-1 hello.txt
 ----
 
 You may want to package your application in such a way that end users can invoke it with a short command like this:
@@ -432,7 +432,7 @@ class Tar {
     @Option(names = { "-f", "--file" }, paramLabel = "ARCHIVE", description = "the archive file")
     File archive;
 
-    @Parameters(paramLabel = "FILE", description = "one ore more files to archive")
+    @Parameters(paramLabel = "FILE", description = "one or more files to archive")
     File[] files;
 
     @Option(names = { "-h", "--help" }, usageHelp = true, description = "display a help message")
@@ -450,7 +450,7 @@ class Tar : Runnable {
     @Option(names = ["-f", "--file"], paramLabel = "ARCHIVE", description = ["the archive file"])
     lateinit var archive: File;
 
-    @Parameters(paramLabel = "FILE", description = ["one ore more files to archive"])
+    @Parameters(paramLabel = "FILE", description = ["one or more files to archive"])
     lateinit var files: Array<File>;
 
     @Option(names = ["-h", "--help"], usageHelp = true, description = ["display a help message"])
@@ -3050,11 +3050,11 @@ The <<Default Values,default values>> of options in an argument group are applie
 
 Picocli will not initialize the `@ArgGroup`-annotated field (and so no default values are applied) if none of the group options is specified on the command line.
 
-==== Default Values in Group Usage Help
+==== Showing Default Values in Group Usage Help
 
-When options are used in argument groups, they can only define default values via the `@Option(defaultValue = "...")` annotation (not in the field declaration).
+Options used in argument groups should define default values via the `@Option(defaultValue = "...")` annotation.
 
-When defined this way, the `${DEFAULT-VALUE}` variable can be used to <<Show Default Values,show the default value>> in the description of options in an argument group. For example:
+When default values are defined in the annotation, the `${DEFAULT-VALUE}` variable can be used to <<Show Default Values,show the default value>> in the description of options in an argument group. For example:
 
 .This works correctly: usage help will show the default value.
 
@@ -3154,6 +3154,141 @@ usage help shows the wrong default value
   -x=<x>    Default: null
 ----
 ====
+
+==== Assigning Default Values in Argument Groups
+Applications need to do extra work for argument group options with default values.
+Picocli does not instantiate the group if none of the options in the group is specified on the command line, so applications need to do this manually.
+
+Below are some recommendations for using default values in argument group options and positional parameters:
+
+* specify default values in both the `@Option` annotation, and in the initial value of the `@Option`-annotated field. Yes, that means some duplication. This recommendation also holds for positional `@Parameters`.
+* the application needs to manually instantiate the `@ArgGroup`-annotated field. More details follow below.
+
+The default value in the `@Option` or `@Parameters` annotation means that picocli can <<Showing Default Values in Group Usage Help,show the default value>> in the usage help, and the initial value means that any new instance of the group that contains the option will already have the default value assigned to that option field.
+
+The example below shows an option that defines the default value in the annotation as well as in the initial value of the field:
+
+.Java
+[source,java,role="primary"]
+----
+class MyGroup {
+    // (group options):
+    // specify default values both in the annotation and in the initial value
+    @Option(names = "-x", defaultValue = "XX")
+    String x = "XX"; // yes, some duplication :-(
+}
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+class MyGroup {
+    // (group options):
+    // specify default values both in the annotation and in the initial value
+    @Option(names = "-x", defaultValue = "XX")
+    var x = "XX"; // yes, some duplication :-(
+}
+----
+
+Next, the application needs to manually instantiate the `@ArgGroup`-annotated field.
+There is a trade-off:
+
+* instantiating the `@ArgGroup`-annotated field in the declaration is simple and short but applications cannot easily detect whether a group option was specified on the command line or not
+* leaving the `@ArgGroup`-annotated field `null` in the declaration allows applications to easily detect whether a group option was specified on the command line, but is a bit more code
+
+The example below shows the first idea: instantiating the group object in the declaration.
+This way, the group object is never `null` and (if you followed the previous recommendation) all option fields in this group object will have the default value as their initial value.
+
+.Java
+[source,java,role="primary"]
+----
+// instantiating the group in the declaration:
+// all options in this group now also have their initial (default) value
+@ArgGroup MyGroup myGroup = new MyGroup();
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+// instantiating the group in the declaration:
+// all options in this group now also have their initial (default) value
+@ArgGroup var myGroup = MyGroup();
+----
+
+Alternatively, applications can initialize the group objects in the business logic: in the `run` or `call` method.
+This allows the application to determine whether the user specified a value for any of the options in the group.
+
+The example below demonstrates initializing the group objects in the business logic:
+
+.Java
+[source,java,role="primary"]
+----
+@Command(name = "group-default-demo")
+class MyApp implements Runnable {
+    @ArgGroup Outer outer; // no initial value
+
+    static class Outer {
+        @Option(names = "-x", defaultValue = "XX") String x = "XX";
+
+        @ArgGroup(exclusive = true)
+        Inner inner; // no initial value
+    }
+
+    static class Inner {
+        @Option(names = "-a", defaultValue = "AA") String a = "AA";
+        @Option(names = "-b", defaultValue = "BB") String b = "BB";
+    }
+
+    public void run() {
+        if (outer == null) { // -x option was not specified on command line
+            // perform any logic that needs to happen if -x is missing
+            outer = new Outer(); // assign default values
+        }
+        if (outer.inner == null) { // neither -a nor -b was specified
+            // perform any logic that needs to happen if -a or -b is missing
+            outer.inner = new Inner(); // assign defaults for inner group
+        }
+
+        // remaining business logic...
+    }
+}
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+
+@Command(name = "group-default-demo")
+class MyApp : Runnable {
+    @ArgGroup lateinit var outer: Outer // no initial value
+
+    class Outer {
+        @Option(names = "-x", defaultValue = "XX") var x = "XX";
+
+        @ArgGroup(exclusive = true)
+        lateinit var inner: Inner // no initial value
+    }
+
+    class Inner {
+        @Option(names = "-a", defaultValue = "AA") var a = "AA";
+        @Option(names = "-b", defaultValue = "BB") var b = "BB";
+    }
+
+    override fun run() {
+        if (outer == null) { // -x option was not specified on command line
+            // perform any logic that needs to happen if -x is missing
+            outer = Outer(); // assign default values
+        }
+        if (outer.inner == null) { // neither -a nor -b was specified
+            // perform any logic that needs to happen if -a or -b is missing
+            outer.inner = Inner(); // assign defaults for inner group
+        }
+
+        // remaining business logic...
+    }
+}
+----
+
 
 === Positional Parameters
 
@@ -4588,8 +4723,8 @@ This will throw an `UnmatchedArgumentException` with message:
 ----
 
 
-=== Option Names as Option Values
-Since picocli 4.4, the parser will no longer assign values that match an option name to options that take a parameter, unless the value is in quotes.
+=== Option Names or Subcommands as Option Values
+Since picocli 4.4, the parser will no longer assign values that match a subcommand name or an option name to options that take a parameter, unless the value is in quotes.
 For example:
 
 .Java
@@ -4638,6 +4773,92 @@ This will print the following output:
 [source,bash]
 ----
 x='-y', y='null'
+----
+
+Another idea is to replace or augment picocli's parser by doing <<Custom Parameter Processing,custom parameter processing>> for such options. For example:
+
+.Java
+[source,java,role="primary"]
+----
+class App implements Runnable {
+    @Option(names = "-x", parameterConsumer = App.CustomConsumer.class)
+    String x;
+
+    @Option(names = "-y")
+    String y;
+
+    @Command
+    public void mySubcommand() {}
+
+    static class CustomConsumer implements IParameterConsumer {
+        @Override
+        public void consumeParameters(Stack<String> args, ArgSpec argSpec, CommandSpec cmdSpec) {
+            if (args.isEmpty()) {
+                throw new ParameterException(cmdSpec.commandLine(),
+                        "Error: option '-x' requires a parameter");
+            }
+            String arg = args.pop();
+            argSpec.setValue(arg);
+        }
+    }
+
+    public void run() {
+        System.out.printf("x='%s', y='%s'%n", x, y);
+    }
+
+    public static void main(String... args) {
+        new CommandLine(new App()).execute(args);
+    }
+}
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+class App : Runnable {
+    @Option(names = ["-x"], parameterConsumer = CustomConsumer::class)
+    var x: String? = null
+
+    @Option(names = ["-y"])
+    var y: String? = null
+
+    @Command
+    fun mySubcommand() {}
+
+    internal class CustomConsumer : IParameterConsumer {
+        override fun consumeParameters(args: Stack<String>, argSpec: ArgSpec, cmdSpec: CommandSpec) {
+            if (args.isEmpty()) {
+                throw ParameterException(cmdSpec.commandLine(),
+                        "Error: option '-x' requires a parameter"
+                )
+            }
+            val arg = args.pop()
+            argSpec.setValue(arg)
+        }
+    }
+
+    override fun run() {
+        System.out.printf("x='%s', y='%s'%n", x, y)
+    }
+
+    companion object {
+        @JvmStatic
+        fun main(args: Array<String>) {
+            CommandLine(App()).execute(*args)
+        }
+    }
+}
+----
+
+The above code assigns whatever command line argument that follows the `-x` option to that option,
+and allows input like the following:
+
+[source,bash]
+----
+java App -x=mySubcommand
+java App -x mySubcommand
+java App -x=-y
+java App -x -y -y=123
 ----
 
 
@@ -5860,7 +6081,7 @@ class App {
 ----
 
 === Custom Synopsis
-For even more control of the synopsis, use the `customSynopsis` attribute to specify one ore more synopsis lines. For example:
+For even more control of the synopsis, use the `customSynopsis` attribute to specify one or more synopsis lines. For example:
 ----
 Usage: ln [OPTION]... [-T] TARGET LINK_NAME   (1st form)
   or:  ln [OPTION]... TARGET                  (2nd form)
@@ -7839,7 +8060,7 @@ class ListFiles : Runnable {
 ----
 
 === Subcommand Aliases
-Commands may optionally define an `aliases` attribute to provide alternate names for commands that will be recognized by the parser. Aliases are displayed in the default help output. For example:
+Commands may optionally define an `aliases` attribute to provide alternate names that will be recognized by the parser. Aliases are displayed in the default help output. For example:
 
 .Java
 [source,java,role="primary"]
@@ -9693,7 +9914,7 @@ class GreetingApp : Runnable {
     lateinit var names: Array<String>
 
     private var bundle = ResourceBundle.getBundle("mybundle")
-    
+
     override fun run() { // business logic here
         names.onEach {
             println(MessageFormat.format(bundle.getString("Hello"), it))
@@ -9726,7 +9947,7 @@ Eventually, we are ready to run our application:
 
 [source,bash]
 ----
-java -cp "picocli-4.6.3-SNAPSHOT.jar;myapp.jar" org.myorg.GreetingApp Sarah Lea
+java -cp "picocli-4.7.0-SNAPSHOT.jar;myapp.jar" org.myorg.GreetingApp Sarah Lea
 ----
 
 With no command line parameter `--locale` given, the message texts are printed in the default language (here: English):
@@ -9740,7 +9961,7 @@ In order to control the locale choosen for our output, we have to make use of th
 
 [source,bash]
 ----
-java -cp "picocli-4.6.3-SNAPSHOT.jar;myapp.jar" org.myorg.GreetingApp --locale=es Sarah Lea
+java -cp "picocli-4.7.0-SNAPSHOT.jar;myapp.jar" org.myorg.GreetingApp --locale=es Sarah Lea
 ----
 
 Now our message texts are printed in Spanish:
@@ -10053,6 +10274,49 @@ class ValidationExample : Runnable {
 }
 ----
 
+[WARNING]
+====
+Applications that *reuse a single `CommandLine` instance for multiple `parseArgs` or `execute` invocations* should be aware of the following:
+
+Annotated setter method options that explicitly set `defaultValue = Option.NULL_VALUE` will get a call with a `null` parameter when the command line did not include that option.
+
+If the setter method annotation does _not_ explicitly set `defaultValue = Option.NULL_VALUE`, then this method will not be called when the command line did not include that option. This means that the value will retain the value of the previous `parseArgs` or `execute` invocation, which may not be desirable. (This only happens for applications that reuse a single `CommandLine` instance for multiple `parseArgs` or `execute` invocations.)
+
+.Java
+[source,java,role="primary"]
+----
+class App {
+    String x;
+    String y;
+
+    // reset to null when option not specified
+    @Option(names = "-x", defaultValue = Option.NULL)
+    void setX(String x) { this.x = x; }
+
+    // retains value of previous parseArgs invocation when option not specified
+    @Option(names = "-y")
+    void setY(String y) { this.y = y; }
+}
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+class App {
+    var x
+    var y
+
+    // reset to null when option not specified
+    @Option(names = ["-x"], defaultValue = Option.NULL)
+    fun setX(x: String) { this.x = x }
+
+    // retains value of previous parseArgs invocation when option not specified
+    @Option(names = ["-y"])
+    fun setY(y: String) { this.y = y }
+}
+----
+
+====
 
 [#command-methods]
 === [[_command-methods]] `@Command` Methods
@@ -11011,21 +11275,21 @@ Since picocli dependencies are not available in the Spring Initializr, we have t
 <dependency>
   <groupId>info.picocli</groupId>
   <artifactId>picocli-spring-boot-starter</artifactId>
-  <version>4.6.3-SNAPSHOT</version>
+  <version>4.7.0-SNAPSHOT</version>
 </dependency>
 ----
 .Gradle (Groovy)
 [source,groovy,role="secondary"]
 ----
 dependencies {
-    implementation 'info.picocli:picocli-spring-boot-starter:4.6.3-SNAPSHOT'
+    implementation 'info.picocli:picocli-spring-boot-starter:4.7.0-SNAPSHOT'
 }
 ----
 .Gradle (Kotlin)
 [source,kotlin,role="secondary"]
 ----
 dependencies {
-    implementation("info.picocli:picocli-spring-boot-starter:4.6.3-SNAPSHOT")
+    implementation("info.picocli:picocli-spring-boot-starter:4.7.0-SNAPSHOT")
 }
 ----
 
@@ -11344,7 +11608,7 @@ Alternatively, you can define an <<unmatched-annotation,unmatched>> field to cap
 The https://github.com/remkop/picocli/tree/master/picocli-spring-boot-starter[picocli-spring-boot-starter README] has another example of a picocli app integrated into Spring Boot.
 
 === Micronaut Example
-image:https://micronaut.io/images/micronaut_mini_copy_tm.svg[Micronaut Logo,width=350]
+image:https://avatars.githubusercontent.com/u/36880643?s=200&v=4[Micronaut Logo]
 
 The Micronaut microservices framework provides https://docs.micronaut.io/latest/guide/index.html#picocli[built-in support] for picocli with its `PicocliRunner` class.
 
@@ -11640,7 +11904,7 @@ In a production system, to have to set the boolean configuration value `quarkus.
 Please refer to the Quarkus guide https://quarkus.io/guides/mailer[Sending Emails] for details and additional information.
 ====
 
-As an extra, our command line interface offers the opportunity to specify one ore more custom header lines via the `headers` subcommand, more specifically via the `--header` option (`KEY="MY VALUE STRINGS"`) of this subcommand:
+As an extra, our command line interface offers the opportunity to specify one or more custom header lines via the `headers` subcommand, more specifically via the `--header` option (`KEY="MY VALUE STRINGS"`) of this subcommand:
 ----
 ./mvnw compile quarkus:dev -Dquarkus.args="--from= ... --to ... body message headers \
     --header X-Mailer=Picocli/Quarkus --header X-Mailer-Version=1.0"
@@ -11910,7 +12174,7 @@ class MyApp implements Runnable {
 @Command
 class MyApp : Runnable {
     @Spec lateinit var spec: CommandSpec
-    
+
     override fun run() {
         // make testing easier by printing to the Err and Out streams provided by picocli
         spec.commandLine().out.println("Your output is abc...")
@@ -12051,7 +12315,7 @@ class TestOutput {
 
 === Testing the Exit Code
 Testing the exit code of applications that call `System.exit` can be tricky but is not impossible.
-Depending on your programming language, your environment and your testing framework, you have several options: 
+Depending on your programming language, your environment and your testing framework, you have several options:
 
 * **Java 8**: You can use Stephan Birkner's https://github.com/stefanbirkner/system-lambda[System-Lambda] project for testing the https://github.com/stefanbirkner/system-lambda#systemexit[exit code]
 * **Java/Kotlin + Junit 5**: You can use Todd Ginsberg's https://github.com/tginsberg/junit5-system-exit[System.exit()] extension for Junit 5. The project README mentions common https://github.com/tginsberg/junit5-system-exit#use-cases[use cases].
@@ -12180,7 +12444,7 @@ fun main(args: Array<String>) : Unit = exitProcess(CommandLine(PicocliApp()).exe
 === Testing Environment Variables
 
 Since picocli offers support for using <<Variable Interpolation,environment variables>> in the annotations, you may want to test this.
-Depending on your programming language, your environment and your testing framework, you have several options: 
+Depending on your programming language, your environment and your testing framework, you have several options:
 
 * **Java 8**: You can use Stephan Birkner's https://github.com/stefanbirkner/system-lambda[System-Lambda] project for testing https://github.com/stefanbirkner/system-lambda#environment-variables[environment variables]
 
@@ -12313,7 +12577,7 @@ As mentioned in <<Running the Application>>, earlier in this manual, one way to 
 
 [source,bash]
 ----
-java -cp "picocli-4.6.3-SNAPSHOT.jar;myapp.jar" org.myorg.MyMainClass --option=value arg0 arg1
+java -cp "picocli-4.7.0-SNAPSHOT.jar;myapp.jar" org.myorg.MyMainClass --option=value arg0 arg1
 ----
 
 That is quite verbose. You may want to package your application in such a way that end users can invoke it by its command name like this:
@@ -12332,7 +12596,7 @@ On unix-based operating systems, you can ask your users to define an alias. For 
 
 [source,bash]
 ----
-alias mycommand='java -cp "/path/to/picocli-4.6.3-SNAPSHOT.jar:/path/to/myapp.jar" org.myorg.MainClass'
+alias mycommand='java -cp "/path/to/picocli-4.7.0-SNAPSHOT.jar:/path/to/myapp.jar" org.myorg.MainClass'
 ----
 
 Append the above line to your `~/.bashrc` file to make this alias available in every new shell session.
@@ -12381,7 +12645,7 @@ After installing GraalVM and installing the `native-image` generator utility (wi
 you can then create a native image by invoking the `native-image` command:
 
 ----
-path/to/native-image -cp picocli-4.6.3-SNAPSHOT.jar --static -jar myapp.jar
+path/to/native-image -cp picocli-4.7.0-SNAPSHOT.jar --static -jar myapp.jar
 ----
 
 CAUTION: To create a native image, the compiler toolchain for your platform needs to be installed. See https://www.infoq.com/articles/java-native-cli-graalvm-picocli/[Build Great Native CLI Apps in Java with Graalvm and Picocli] for details.
@@ -12446,11 +12710,11 @@ This https://asciinema.org/a/AVwA19yijKRNKEO0bJENN2ME3?autoplay=true&speed=2[asc
 
 === JReleaser
 
-https://jreleaser.org[JReleaser] enables several packaging options such as https://brew.sh/[Homebrew], https://chocolatey.org/[Chocolatey], 
-https://snapcraft.io/[Snapcraft], https://scoop.sh/[Scoop], https://www.jbang.dev/[jbang], https://www.docker.com/[Docker], among others. 
-Currently two different distribution  types are supported: jlink, and standard zip/tar distributions. The latter can be generated with a 
+https://jreleaser.org[JReleaser] enables several packaging options such as https://brew.sh/[Homebrew], https://chocolatey.org/[Chocolatey],
+https://snapcraft.io/[Snapcraft], https://scoop.sh/[Scoop], https://www.jbang.dev/[jbang], https://www.docker.com/[Docker], among others.
+Currently two different distribution  types are supported: jlink, and standard zip/tar distributions. The latter can be generated with a
 combination of the https://www.mojohaus.org/appassembler/appassembler-maven-plugin/[appassembler-maven-plugin] and
-http://maven.apache.org/plugins/maven-assembly-plugin/[maven-assembly-plugin] plugins if using Maven, or the 
+http://maven.apache.org/plugins/maven-assembly-plugin/[maven-assembly-plugin] plugins if using Maven, or the
 https://docs.gradle.org/current/userguide/application_plugin.html[application] plugin if using Gradle.
 
 == Picocli in Other Languages
@@ -12500,7 +12764,7 @@ The script body is executed if the user input was valid and did not request usag
 
 [source,groovy]
 ----
-@Grab('info.picocli:picocli-groovy:4.6.3-SNAPSHOT')
+@Grab('info.picocli:picocli-groovy:4.7.0-SNAPSHOT')
 @GrabConfig(systemClassLoader=true)
 @Command(name = "myScript",
         mixinStandardHelpOptions = true, // add --help and --version options
@@ -12541,7 +12805,7 @@ The table below compares these two base classes.
 
 
 WARNING: When upgrading scripts from picocli versions older than 4.0, just changing the version number is not enough!
-Scripts should use `@Grab('info.picocli:picocli-groovy:4.6.3-SNAPSHOT')`. The old artifact id `@Grab('info.picocli:picocli:4.6.3-SNAPSHOT')` will not work,
+Scripts should use `@Grab('info.picocli:picocli-groovy:4.7.0-SNAPSHOT')`. The old artifact id `@Grab('info.picocli:picocli:4.7.0-SNAPSHOT')` will not work,
 because the `@picocli.groovy.PicocliScript` annotation class and supporting classes have been moved into a separate module, `picocli-groovy`.
 
 ==== Closures in Annotations
@@ -12598,7 +12862,7 @@ NOTE: When using a Groovy version older than 2.4.7, use this workaround for the 
 
 [source,groovy]
 ----
-@Grab('info.picocli:picocli-groovy:4.6.3-SNAPSHOT')
+@Grab('info.picocli:picocli-groovy:4.7.0-SNAPSHOT')
 @GrabExclude('org.codehaus.groovy:groovy-all') // work around GROOVY-7613
 ...
 ----
@@ -12741,14 +13005,14 @@ You can add picocli as an external dependency to your project, or you can includ
 .Gradle
 [source,groovy,role="primary"]
 ----
-implementation 'info.picocli:picocli:4.6.3-SNAPSHOT'
+implementation 'info.picocli:picocli:4.7.0-SNAPSHOT'
 ----
 
 .Gradle (Kotlin)
 [source,kotlin,role="secondary"]
 ----
 dependencies {
-    implementation("info.picocli:picocli:4.6.3-SNAPSHOT")
+    implementation("info.picocli:picocli:4.7.0-SNAPSHOT")
 }
 ----
 
@@ -12758,50 +13022,50 @@ dependencies {
 <dependency>
   <groupId>info.picocli</groupId>
   <artifactId>picocli</artifactId>
-  <version>4.6.3-SNAPSHOT</version>
+  <version>4.7.0-SNAPSHOT</version>
 </dependency>
 ----
 
 .Scala SBT
 [source,role="secondary"]
 ----
-libraryDependencies += "info.picocli" % "picocli" % "4.6.3-SNAPSHOT"
+libraryDependencies += "info.picocli" % "picocli" % "4.7.0-SNAPSHOT"
 ----
 
 .Ivy
 [source,role="secondary"]
 ----
-<dependency org="info.picocli" name="picocli" rev="4.6.3-SNAPSHOT" />
+<dependency org="info.picocli" name="picocli" rev="4.7.0-SNAPSHOT" />
 ----
 
 .Grape
 [source,role="secondary"]
 ----
 @Grapes(
-    @Grab(group='info.picocli', module='picocli', version='4.6.3-SNAPSHOT')
+    @Grab(group='info.picocli', module='picocli', version='4.7.0-SNAPSHOT')
 )
 ----
 
 .Leiningen
 [source,role="secondary"]
 ----
-[info.picocli/picocli "4.6.3-SNAPSHOT"]
+[info.picocli/picocli "4.7.0-SNAPSHOT"]
 ----
 
 .Buildr
 [source,role="secondary"]
 ----
-'info.picocli:picocli:jar:4.6.3-SNAPSHOT'
+'info.picocli:picocli:jar:4.7.0-SNAPSHOT'
 ----
 
 .JBang
 [source,role="secondary"]
 ----
-//DEPS info.picocli:picocli:4.6.3-SNAPSHOT
+//DEPS info.picocli:picocli:4.7.0-SNAPSHOT
 ----
 
 === Source
 
 By using picocli in source form, you can avoid having an external dependency on picocli.
-Picocli has only one source file: link:https://github.com/remkop/picocli/blob/master/src/main/java/picocli/CommandLine.java[CommandLine.java].
+Picocli has only one source file: link:https://github.com/remkop/picocli/blob/v4.6.3-SNAPSHOT/src/main/java/picocli/CommandLine.java[CommandLine.java].
 This facilitates including picocli in your project: simply copy and paste the code of this file into a file called `CommandLine.java`, add it to your project, and enjoy!

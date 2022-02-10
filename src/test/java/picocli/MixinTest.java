@@ -772,7 +772,7 @@ public class MixinTest {
         assertEquals(1, commandSpec.subcommands().size());
         CommandLine subcommandLine = commandSpec.subcommands().get("mixinsub");
         assertSame(subcommandLine, commandLine.getSubcommands().get("mixinsub"));
-        assertTrue(subcommandLine.getCommand() instanceof MixedInSubCommand);
+        assertTrue(((Object) subcommandLine.getCommand()) instanceof MixedInSubCommand);
     }
 
     @Test

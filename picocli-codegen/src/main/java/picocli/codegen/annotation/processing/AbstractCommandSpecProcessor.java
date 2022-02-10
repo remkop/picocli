@@ -59,6 +59,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static java.lang.String.format;
+import static java.util.Collections.disjoint;
 import static javax.lang.model.element.ElementKind.ENUM;
 
 /**
@@ -228,11 +229,17 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
     }
 
     private CommandSpec buildCommand(Element element, final Context context, final RoundEnvironment roundEnv) {
+        return buildCommand(true, element, context, roundEnv);
+    }
+    private CommandSpec buildCommand(boolean reuseExisting, Element element, final Context context, final RoundEnvironment roundEnv) {
         debugElement(element, "@Command");
 
-        CommandSpec result = context.commands.get(element);
-        if (result != null) {
-            return result;
+        CommandSpec result = null;
+        if (reuseExisting) { // #1440 subcommands should create separate instances
+            result = context.commands.get(element);
+            if (result != null) {
+                return result;
+            }
         }
         result = CommandSpec.wrapWithoutInspection(element);
         result.interpolateVariables(false);
@@ -300,21 +307,21 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
 
     private boolean isSubcommand(ExecutableElement method, RoundEnvironment roundEnv) {
         Element typeElement = method.getEnclosingElement();
-        if (typeElement.getAnnotation(Command.class) != null && typeElement.getAnnotation(Command.class).addMethodSubcommands()) {
-            return true;
-        }
-        if (typeElement.getAnnotation(Command.class) == null) {
-            Set<Element> elements = new HashSet<Element>(typeElement.getEnclosedElements());
+        Command cmd = typeElement.getAnnotation(Command.class);
 
-            // The class is a Command if it has any fields or methods annotated with the below:
-            return roundEnv.getElementsAnnotatedWith(Option.class).removeAll(elements)
-                    || roundEnv.getElementsAnnotatedWith(Parameters.class).removeAll(elements)
-                    || roundEnv.getElementsAnnotatedWith(Mixin.class).removeAll(elements)
-                    || roundEnv.getElementsAnnotatedWith(ArgGroup.class).removeAll(elements)
-                    || roundEnv.getElementsAnnotatedWith(Unmatched.class).removeAll(elements)
-                    || roundEnv.getElementsAnnotatedWith(Spec.class).removeAll(elements);
+        if (cmd != null) {
+            return cmd.addMethodSubcommands();
         }
-        return false;
+
+        List<? extends Element> elements = typeElement.getEnclosedElements();
+
+        // The class is a Command if it has any fields or methods annotated with the below:
+        return !disjoint(roundEnv.getElementsAnnotatedWith(Option.class), elements)
+                || !disjoint(roundEnv.getElementsAnnotatedWith(Parameters.class), elements)
+                || !disjoint(roundEnv.getElementsAnnotatedWith(Mixin.class), elements)
+                || !disjoint(roundEnv.getElementsAnnotatedWith(ArgGroup.class), elements)
+                || !disjoint(roundEnv.getElementsAnnotatedWith(Unmatched.class), elements)
+                || !disjoint(roundEnv.getElementsAnnotatedWith(Spec.class), elements);
     }
 
     private Stack<TypeElement> buildTypeHierarchy(TypeElement typeElement) {
@@ -386,7 +393,7 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
             logger.fine("Processing subcommand: " + subcommandElement);
 
             if (isValidSubcommandHasNameAttribute(subcommandElement)) {
-                CommandSpec commandSpec = buildCommand(subcommandElement, context, roundEnv);
+                CommandSpec commandSpec = buildCommand(false, subcommandElement, context, roundEnv);
                 result.add(commandSpec);
             }
         }
@@ -556,8 +563,8 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
         } else if (element.getKind() == ElementKind.METHOD) {
             return new TypedMember((ExecutableElement) element, AbstractCommandSpecProcessor.this);
         }
-        error(element, "Cannot only process %s annotations on fields, " +
-                "methods and method parameters, not on %s", annotation, element.getKind());
+        error(element, "Can only process %s annotations on fields, " +
+                "methods and @Command-annotated method parameters, not on %s", annotation, element.getKind());
         return null;
     }
 

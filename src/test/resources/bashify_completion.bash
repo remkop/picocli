@@ -51,7 +51,10 @@ elif [ -n "$ZSH_VERSION" ]; then
   alias compopt=complete
 
   # Enable bash completion in zsh (see [7])
-  autoload -U +X compinit && compinit
+  # Only initialize completions module once to avoid unregistering existing completions.
+  if ! type compdef > /dev/null; then
+    autoload -U +X compinit && compinit
+  fi
   autoload -U +X bashcompinit && bashcompinit
 fi
 
@@ -115,6 +118,9 @@ function currentPositionalIndex() {
 # on the command line and delegates to the appropriate function
 # to generate possible options and subcommands for the last specified subcommand.
 function _complete_bashify() {
+  # Edge case: if command line has no space after subcommand, then don't assume this subcommand is selected (remkop/picocli#1468).
+
+  # Find the longest sequence of subcommands and call the bash function for that subcommand.
 
 
   # No subcommands were specified; generate completions for the top-level command.
@@ -132,7 +138,7 @@ function _picocli_bashify() {
   local arg_opts="-x"
   local _AB_C_option_args="1" # -x values
 
-  compopt +o default
+  type compopt &>/dev/null && compopt +o default
 
   case ${prev_word} in
     -x)

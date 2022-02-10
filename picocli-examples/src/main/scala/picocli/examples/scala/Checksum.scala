@@ -13,7 +13,7 @@ import picocli.CommandLine.{Command, HelpCommand, Option, Parameters}
 
 @Command(name = "checksum", version = Array("checksum 4.1.4"),
   mixinStandardHelpOptions = true, subcommands = Array(classOf[HelpCommand]),
-  description = Array("Prints the checksum (MD5 by default) of file(s) to STDOUT."))
+  description = Array("Prints the checksum (SHA-1 by default) of file(s) to STDOUT."))
 class Checksum extends Callable[Int] {
 
   @Parameters(index = "0..*", arity = "1..*", paramLabel = "<file 1> <file 2>",
@@ -22,7 +22,7 @@ class Checksum extends Callable[Int] {
 
   @Option(names = Array("-a", "--algorithm"),
     description = Array("MD5, SHA-1, SHA-256, ..."))
-  private var algorithm = "MD5"
+  private var algorithm = "SHA-1"
 
   def call(): Int = {
     files.forEach {

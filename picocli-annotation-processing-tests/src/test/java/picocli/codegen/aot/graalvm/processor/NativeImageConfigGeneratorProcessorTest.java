@@ -141,6 +141,34 @@ public class NativeImageConfigGeneratorProcessorTest {
     }
 
     @Test
+    public void testOptionVerbose() {
+        runOptionVerboseTest("-A" + AbstractGenerator.OPTION_VERBOSE);
+    }
+
+    @Test
+    public void testOptionVerboseEqTrue() {
+        runOptionVerboseTest("-A" + AbstractGenerator.OPTION_VERBOSE + "=true");
+    }
+
+    private void runOptionVerboseTest(String option) {
+        NativeImageConfigGeneratorProcessor processor = new NativeImageConfigGeneratorProcessor();
+        Compilation compilation =
+            javac()
+                .withProcessors(processor)
+                .withOptions(option)
+                .compile(JavaFileObjects.forResource(
+                    "picocli/examples/subcommands/ParentCommandDemo.java"));
+
+        assertThat(compilation).succeeded();
+        String[][] allParams = {
+            { ReflectConfigGen.class.getSimpleName(),  "reflect-config.json",  "true", "true"},
+            { ResourceConfigGen.class.getSimpleName(), "resource-config.json", "true", "true"},
+            { ProxyConfigGen.class.getSimpleName(),    "proxy-config.json",    "true", "true" },
+        };
+        expectGeneratedWithNotes(compilation, allParams);
+    }
+
+    @Test
     public void testOptionDisableProxyVerbose() {
         NativeImageConfigGeneratorProcessor processor = new NativeImageConfigGeneratorProcessor();
         Compilation compilation =

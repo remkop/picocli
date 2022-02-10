@@ -7,23 +7,21 @@ import picocli.codegen.aot.graalvm.ResourceConfigGenerator;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.SupportedOptions;
 
-import static picocli.codegen.aot.graalvm.processor.ProxyConfigGen.OPTION_INTERFACE_CLASSES;
-import static picocli.codegen.aot.graalvm.processor.ResourceConfigGen.OPTION_BUNDLES;
-import static picocli.codegen.aot.graalvm.processor.ResourceConfigGen.OPTION_RESOURCE_REGEX;
-
 /**
  * @see ReflectionConfigGenerator
  * @see ResourceConfigGenerator
  * @see DynamicProxyConfigGenerator
  * @since 4.0
  */
-@SupportedOptions({NativeImageConfigGeneratorProcessor.OPTION_PROJECT,
-        OPTION_BUNDLES,
-        OPTION_RESOURCE_REGEX,
-        OPTION_INTERFACE_CLASSES,
-        ReflectConfigGen.OPTION_DISABLE,
-        ResourceConfigGen.OPTION_DISABLE,
-        ProxyConfigGen.OPTION_DISABLE,
+@SupportedOptions({
+    AbstractGenerator.OPTION_VERBOSE,
+    NativeImageConfigGeneratorProcessor.OPTION_PROJECT,
+    ReflectConfigGen.OPTION_DISABLE,
+    ResourceConfigGen.OPTION_BUNDLES,
+    ResourceConfigGen.OPTION_DISABLE,
+    ResourceConfigGen.OPTION_RESOURCE_REGEX,
+    ProxyConfigGen.OPTION_DISABLE,
+    ProxyConfigGen.OPTION_INTERFACE_CLASSES,
 })
 public class NativeImageConfigGeneratorProcessor extends AbstractCompositeGeneratorProcessor {
     /**
