@@ -9,6 +9,7 @@ import picocli.CommandLine.ParseResult;
 import picocli.spring.boot.autoconfigure.sample.MyCommand;
 import picocli.spring.boot.autoconfigure.sample.MySpringApp;
 
+import java.lang.reflect.Field;
 import java.util.Arrays;
 
 import static org.junit.Assert.*;
@@ -82,5 +83,54 @@ public class PicocliSpringFactoryTest {
         applicationContext.register(config);
         applicationContext.refresh();
         this.context = applicationContext;
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testConstructorNullAppContext() {
+        new PicocliSpringFactory(null);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testConstructorNullAppContextNullFallbackFactory() {
+        new PicocliSpringFactory(null, null);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testConstructorNullAppContextValidFallbackFactory() {
+        new PicocliSpringFactory(null, CommandLine.defaultFactory());
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testConstructorValidAppContextNullFallbackFactory() {
+        load(MySpringApp.class);
+        new PicocliSpringFactory(context, null);
+    }
+
+    @Test
+    public void testConstructorAppContextUsesDefaultFactory() throws Exception {
+        load(MySpringApp.class);
+        PicocliSpringFactory factory = new PicocliSpringFactory(context);
+        IFactory fallbackFactory = extractFallbackFactory(factory);
+        assertNotNull(fallbackFactory);
+        assertEquals("picocli.CommandLine$DefaultFactory", fallbackFactory.getClass().getName());
+    }
+
+    @Test
+    public void testConstructorAppContextFactoryUsesSpecifiedFactory() throws Exception {
+        load(MySpringApp.class);
+        IFactory myFactory = new IFactory() {
+            @Override public <K> K create(Class<K> cls) {return null;}
+        };
+        PicocliSpringFactory factory = new PicocliSpringFactory(context, myFactory);
+        IFactory fallbackFactory = extractFallbackFactory(factory);
+        assertNotNull(fallbackFactory);
+        assertSame(myFactory, fallbackFactory);
+    }
+
+    private IFactory extractFallbackFactory(PicocliSpringFactory factory) throws NoSuchFieldException, IllegalAccessException {
+        Field fallbackFactoryField = PicocliSpringFactory.class.getDeclaredField("fallbackFactory");
+        fallbackFactoryField.setAccessible(true);
+        IFactory result = (IFactory) fallbackFactoryField.get(factory);
+        return result;
     }
 }
