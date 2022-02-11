@@ -363,6 +363,29 @@ public class DefaultProviderTest {
         assertEquals(null, app1.a);
     }
 
+    @Test
+    public void testDefaultValueWithVariable() {
+        @Command
+        class App {
+            @Option(names = "-a", defaultValue = "${VARIABLE:-555}")
+            int a;
+        }
+        System.setProperty("VARIABLE", "123");
+        App app1 = CommandLine.populateCommand(new App());
+        assertEquals(123, app1.a);
+    }
+
+    @Test
+    public void testDefaultValueWithVariableFallback() {
+        @Command
+        class App {
+            @Option(names = "-a", defaultValue = "${VARIABLE:-555}")
+            int a;
+        }
+        App app1 = CommandLine.populateCommand(new App());
+        assertEquals(555, app1.a);
+    }
+
     static class DefaultProviderWithVariables implements IDefaultValueProvider {
         static String value = "${VARIABLE:-555}";
         public String defaultValue(ArgSpec argSpec) throws Exception {
