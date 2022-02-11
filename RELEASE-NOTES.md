@@ -6,7 +6,7 @@ The picocli community is pleased to announce picocli 4.7.0.
 This release includes bugfixes and enhancements.
 
 
-This is the seventy-nineth public release.
+This is the seventy-ninth public release.
 Picocli follows [semantic versioning](http://semver.org/).
 Artifacts in this release are signed by Remko Popma (6601 E5C0 8DCC BB96).
 
@@ -23,7 +23,7 @@ Artifacts in this release are signed by Remko Popma (6601 E5C0 8DCC BB96).
 * [#1396][#1401] API: Support generic types in containers (e.g. List, Map). Thanks to [Michał Górniewski](https://github.com/mgorniew) for the pull request.
 * [#1380][#1505] API, bugfix: `requiredOptionMarker` should not be displayed on `ArgGroup` options. Thanks to [Ahmed El Khalifa](https://github.com/ahmede41) for the pull request.
 * [#1563] API: Add constructor to `PicocliSpringFactory` to allow custom fallback `IFactory`. Thanks to [Andrew Holland](https://github.com/a1dutch) for raising this.
-
+* [#1571] Enhancement: Variables in values from the default value provider should be interpolated. Thanks to [Bas Passon](https://github.com/bpasson) for raising this.
 
 
 ## <a name="4.7.0-deprecated"></a> Deprecations

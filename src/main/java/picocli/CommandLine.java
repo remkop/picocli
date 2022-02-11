@@ -13329,7 +13329,7 @@ public class CommandLine {
             // Default value provider return value is only used if provider exists and if value
             // is not null otherwise the original default or initial value are used
             String fromProvider = defaultValueProvider == null ? null : defaultValueProvider.defaultValue(arg);
-            String defaultValue = fromProvider == null ? arg.defaultValue() : fromProvider;
+            String defaultValue = fromProvider == null ? arg.defaultValue() : arg.interpolate(fromProvider);
             String provider = defaultValueProvider == null ? "" : (" from " + defaultValueProvider.toString());
 
             if (defaultValue != null && !ArgSpec.NULL_VALUE.equals(defaultValue)) {
