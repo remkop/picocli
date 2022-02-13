@@ -1433,7 +1433,7 @@ public class ArityTest {
         assertEquals("foo", cmd.foo);
         assertEquals(null, cmd.alpha);
         assertEquals(Arrays.asList("xx", "--alpha", "--beta"), cmd.params);
-        assertTrue(systemErrRule.getLog().contains("Parser was configured with stopAtPositional=true, treating remaining arguments as positional parameters."));
+        assertTrue(systemErrRule.getLog(), systemErrRule.getLog().contains("Parser was configured with stopAtPositional=true, treating remaining arguments as positional parameters."));
     }
 
     @Test

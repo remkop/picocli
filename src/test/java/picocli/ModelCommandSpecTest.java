@@ -1237,32 +1237,24 @@ public class ModelCommandSpecTest {
     public void testResemblesOption_WhenUnmatchedArePositional() {
         CommandSpec spec = CommandSpec.wrapWithoutInspection(null);
         spec.parser().unmatchedOptionsArePositionalParams(true);
-        assertFalse(spec.resemblesOption("blah", null));
+        assertFalse(spec.resemblesOption("blah"));
 
-        System.setProperty("picocli.trace", "DEBUG");
-        Tracer tracer = new Tracer();
-        System.clearProperty("picocli.trace");
-        assertFalse(spec.resemblesOption("blah", tracer));
+        assertFalse(spec.resemblesOption("blah"));
 
-        Tracer tracer2 = new Tracer();
-        assertFalse(spec.resemblesOption("blah", tracer2));
+        assertFalse(spec.resemblesOption("blah"));
     }
 
     @Test
     public void testResemblesOption_WithoutOptions() {
         CommandSpec spec = CommandSpec.wrapWithoutInspection(null);
         spec.parser().unmatchedOptionsArePositionalParams(false);
-        assertFalse(spec.resemblesOption("blah", null));
+        assertFalse(spec.resemblesOption("blah"));
 
-        System.setProperty("picocli.trace", "DEBUG");
-        Tracer tracer = new Tracer();
-        System.clearProperty("picocli.trace");
-        assertFalse(spec.resemblesOption("blah", tracer));
-        assertTrue(spec.resemblesOption("-a", tracer));
+        assertFalse(spec.resemblesOption("blah"));
+        assertTrue(spec.resemblesOption("-a"));
 
-        Tracer tracer2 = new Tracer();
-        assertFalse(spec.resemblesOption("blah", tracer2));
-        assertTrue(spec.resemblesOption("-a", tracer));
+        assertFalse(spec.resemblesOption("blah"));
+        assertTrue(spec.resemblesOption("-a"));
     }
 
     @Test
@@ -1271,19 +1263,15 @@ public class ModelCommandSpecTest {
         spec.addOption(OptionSpec.builder("-x").build());
 
         spec.parser().unmatchedOptionsArePositionalParams(false);
-        assertFalse(spec.resemblesOption("blah", null));
+        assertFalse(spec.resemblesOption("blah"));
 
-        System.setProperty("picocli.trace", "DEBUG");
-        Tracer tracer = new Tracer();
-        System.clearProperty("picocli.trace");
-        assertFalse(spec.resemblesOption("blah", tracer));
-        assertTrue(spec.resemblesOption("-a", tracer));
-        assertFalse(spec.resemblesOption("/a", tracer));
+        assertFalse(spec.resemblesOption("blah"));
+        assertTrue(spec.resemblesOption("-a"));
+        assertFalse(spec.resemblesOption("/a"));
 
-        Tracer tracer2 = new Tracer();
-        assertFalse(spec.resemblesOption("blah", tracer2));
-        assertTrue(spec.resemblesOption("-a", tracer));
-        assertFalse(spec.resemblesOption("/a", tracer));
+        assertFalse(spec.resemblesOption("blah"));
+        assertTrue(spec.resemblesOption("-a"));
+        assertFalse(spec.resemblesOption("/a"));
     }
 
     @Test
@@ -1292,19 +1280,15 @@ public class ModelCommandSpecTest {
         spec.addOption(OptionSpec.builder("/x").build());
 
         spec.parser().unmatchedOptionsArePositionalParams(false);
-        assertFalse(spec.resemblesOption("blah", null));
+        assertFalse(spec.resemblesOption("blah"));
 
-        System.setProperty("picocli.trace", "DEBUG");
-        Tracer tracer = new Tracer();
-        System.clearProperty("picocli.trace");
-        assertFalse(spec.resemblesOption("blah", tracer));
-        assertFalse(spec.resemblesOption("-a", tracer));
-        assertTrue(spec.resemblesOption("/a", tracer));
+        assertFalse(spec.resemblesOption("blah"));
+        assertFalse(spec.resemblesOption("-a"));
+        assertTrue(spec.resemblesOption("/a"));
 
-        Tracer tracer2 = new Tracer();
-        assertFalse(spec.resemblesOption("blah", tracer2));
-        assertFalse(spec.resemblesOption("-a", tracer));
-        assertTrue(spec.resemblesOption("/a", tracer));
+        assertFalse(spec.resemblesOption("blah"));
+        assertFalse(spec.resemblesOption("-a"));
+        assertTrue(spec.resemblesOption("/a"));
     }
 
     @Test

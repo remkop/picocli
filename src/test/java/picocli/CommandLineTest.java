@@ -3480,7 +3480,7 @@ public class CommandLineTest {
                 throw new IllegalStateException("booh!");
             }
         });
-        String expected = "[picocli WARN] Could not close picocli.CommandLineTest$2@: java.lang.IllegalStateException: booh!";
+        String expected = String.format("[picocli WARN] Could not close picocli.CommandLineTest$2@: java.lang.IllegalStateException: booh!%n");
         assertEquals(expected, systemErrRule.getLog().replaceAll("@.*: java", "@: java"));
     }
 

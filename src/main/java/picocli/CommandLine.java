@@ -146,8 +146,8 @@ public class CommandLine {
 
     /** This is picocli version {@value}. */
     public static final String VERSION = "4.7.0-SNAPSHOT";
+    private static final Tracer TRACER = new Tracer();
 
-    private final Tracer tracer = new Tracer();
     private CommandSpec commandSpec;
     private final Interpreter interpreter;
     private final IFactory factory;
@@ -1824,7 +1824,7 @@ public class CommandLine {
             if (!UnmatchedArgumentException.printSuggestions(ex, writer)) {
                 ex.getCommandLine().usage(writer, colorScheme);
             }
-            Tracer tracer = new Tracer();
+            Tracer tracer = CommandLine.tracer();
             if (tracer.isDebug()) { // #956 show error details if DEBUG is enabled
                 ex.printStackTrace(tracer.stream);
             }
@@ -3536,9 +3536,9 @@ public class CommandLine {
         try {
             return formatString == null ? "" : String.format(formatString, params);
         } catch (IllegalFormatException ex) {
-            new Tracer().warn("Could not format '%s' (Underlying error: %s). " +
+            CommandLine.tracer().warn("Could not format '%s' (Underlying error: %s). " +
                     "Using raw String: '%%n' format strings have not been replaced with newlines. " +
-                    "Please ensure to escape '%%' characters with another '%%'.%n", formatString, ex.getMessage());
+                    "Please ensure to escape '%%' characters with another '%%'.", formatString, ex.getMessage());
             return formatString;
         }
     }
@@ -6293,15 +6293,15 @@ public class CommandLine {
                     }
                 }
                 String wrongType = "Non-boolean options like %s should not be marked as '%s=true'. Usually a command has one %s boolean flag that triggers display of the %s. Alternatively, consider using @Command(mixinStandardHelpOptions = true) on your command instead.";
-                String multiple = "Multiple options %s are marked as '%s=true'. Usually a command has only one %s option that triggers display of the %s. Alternatively, consider using @Command(mixinStandardHelpOptions = true) on your command instead.%n";
+                String multiple = "Multiple options %s are marked as '%s=true'. Usually a command has only one %s option that triggers display of the %s. Alternatively, consider using @Command(mixinStandardHelpOptions = true) on your command instead.";
                 if (!wrongUsageHelpAttr.isEmpty()) {
                     throw new InitializationException(String.format(wrongType, wrongUsageHelpAttr, "usageHelp", "--help", "usage help message"));
                 }
                 if (!wrongVersionHelpAttr.isEmpty()) {
                     throw new InitializationException(String.format(wrongType, wrongVersionHelpAttr, "versionHelp", "--version", "version information"));
                 }
-                if (usageHelpAttr.size() > 1)   { new Tracer().warn(multiple, usageHelpAttr, "usageHelp", "--help", "usage help message"); }
-                if (versionHelpAttr.size() > 1) { new Tracer().warn(multiple, versionHelpAttr, "versionHelp", "--version", "version information"); }
+                if (usageHelpAttr.size() > 1)   { CommandLine.tracer().warn(multiple, usageHelpAttr, "usageHelp", "--help", "usage help message"); }
+                if (versionHelpAttr.size() > 1) { CommandLine.tracer().warn(multiple, versionHelpAttr, "versionHelp", "--version", "version information"); }
             }
 
             /** Returns the user object associated with this command.
@@ -6340,7 +6340,7 @@ public class CommandLine {
              * @since 4.3 */
             public CommandSpec subcommandsCaseInsensitive(boolean caseInsensitiveSubcommands) {
                 if (subcommandsCaseInsensitive() == caseInsensitiveSubcommands) { return this; } // no change, no action
-                new Tracer().debug("Changing subcommandsCaseInsensitive to %s%n", caseInsensitiveSubcommands);
+                CommandLine.tracer().debug("Changing subcommandsCaseInsensitive to %s", caseInsensitiveSubcommands);
                 commands.setCaseInsensitive(caseInsensitiveSubcommands);
                 return this;
             }
@@ -6355,7 +6355,7 @@ public class CommandLine {
              * @since 4.3 */
             public CommandSpec optionsCaseInsensitive(boolean caseInsensitiveOptions) {
                 if (optionsCaseInsensitive() == caseInsensitiveOptions) { return this; } // no change, no action
-                new Tracer().debug("Changing optionsCaseInsensitive to %s%n", caseInsensitiveOptions);
+                CommandLine.tracer().debug("Changing optionsCaseInsensitive to %s", caseInsensitiveOptions);
                 optionsByNameMap.setCaseInsensitive(caseInsensitiveOptions);
                 negatedOptionsByNameMap.setCaseInsensitive(caseInsensitiveOptions);
                 posixOptionsByKeyMap.setCaseInsensitive(caseInsensitiveOptions);
@@ -6444,8 +6444,8 @@ public class CommandLine {
             public CommandSpec addSubcommand(String name, CommandLine subCommandLine) {
                 CommandSpec subSpec = subCommandLine.getCommandSpec();
                 String actualName = validateSubcommandName(interpolator.interpolateCommandName(name), subSpec);
-                Tracer t = new Tracer();
-                if (t.isDebug()) {t.debug("Adding subcommand '%s' to '%s'%n", actualName, this.qualifiedName());}
+                Tracer t = CommandLine.tracer();
+                if (t.isDebug()) {t.debug("Adding subcommand '%s' to '%s'", actualName, this.qualifiedName());}
                 String previousName = commands.getCaseSensitiveKey(actualName);
                 CommandLine previous = commands.put(actualName, subCommandLine);
                 if (previous != null && previous != subCommandLine) { throw new DuplicateNameException("Another subcommand named '" + previousName + "' already exists for command '" + this.name() + "'"); }
@@ -6474,14 +6474,14 @@ public class CommandLine {
                 return this;
             }
             private void addAlias(String alias, String name, CommandLine subCommandLine, Tracer t) {
-                if (t.isDebug()) {t.debug("Adding alias '%s' for '%s'%n", (parent == null ? "" : parent.qualifiedName() + " ") + alias, qualifiedName());}
+                if (t.isDebug()) {t.debug("Adding alias '%s' for '%s'", (parent == null ? "" : parent.qualifiedName() + " ") + alias, qualifiedName());}
                 CommandLine previous = commands.put(interpolator.interpolate(alias), subCommandLine);
                 if (previous != null && previous != subCommandLine) {
                     throw new DuplicateNameException("Alias '" + alias + "' for subcommand '" + name + "' is already used by another subcommand of '" + name() + "'");
                 }
             }
             private void removeAlias(String alias, CommandLine subCommandLine, Tracer t) {
-                if (t.isDebug()) {t.debug("Removing alias '%s' for '%s'%n", (parent == null ? "" : parent.qualifiedName() + " ") + alias, qualifiedName());}
+                if (t.isDebug()) {t.debug("Removing alias '%s' for '%s'", (parent == null ? "" : parent.qualifiedName() + " ") + alias, qualifiedName());}
                 commands.remove(interpolator.interpolate(alias));
             }
             private void inheritAttributesFrom(CommandSpec root) {
@@ -6525,8 +6525,8 @@ public class CommandLine {
                         removedNames.add(alias);
                     }
                 }
-                Tracer t = new Tracer();
-                if (t.isDebug()) {t.debug("Removed %d subcommand entries %s for key '%s' from '%s'%n",
+                Tracer t = CommandLine.tracer();
+                if (t.isDebug()) {t.debug("Removed %d subcommand entries %s for key '%s' from '%s'",
                         removedNames.size(), removedNames, name, this.qualifiedName());}
                 return result;
             }
@@ -6636,7 +6636,7 @@ public class CommandLine {
              * @return this CommandSpec for method chaining
              * @throws DuplicateOptionAnnotationsException if any of the names of the specified option is the same as the name of another option */
             public CommandSpec addOption(OptionSpec option) {
-                Tracer tracer = new Tracer();
+                Tracer tracer = CommandLine.tracer();
                 for (String name : interpolator.interpolate(option.names())) { // cannot be null or empty
                     String existingName = optionsByNameMap.getCaseSensitiveKey(name);
                     OptionSpec existing = optionsByNameMap.put(name, option);
@@ -6673,9 +6673,9 @@ public class CommandLine {
                     for (String name : interpolator.interpolate(option.names())) { // cannot be null or empty
                         String negatedName = negatableOptionTransformer().makeNegative(name, this);
                         if (name.equals(negatedName)) {
-                            tracer.debug("Option %s is negatable, but has no negative form.%n", name);
+                            tracer.debug("Option %s is negatable, but has no negative form.", name);
                         } else {
-                            tracer.debug("Option %s is negatable, registering negative name %s.%n", name, negatedName);
+                            tracer.debug("Option %s is negatable, registering negative name %s.", name, negatedName);
                             String existingName = negatedOptionsByNameMap.getCaseSensitiveKey(negatedName);
                             OptionSpec existing = negatedOptionsByNameMap.put(negatedName, option);
                             if (existing == null) {
@@ -6691,8 +6691,8 @@ public class CommandLine {
             }
 
             private void resetNegativeOptionNames() {
-                Tracer tracer = new Tracer();
-                tracer.debug("Clearing negatedOptionsByNameMap...%n");
+                Tracer tracer = CommandLine.tracer();
+                tracer.debug("Clearing negatedOptionsByNameMap...");
                 negatedOptionsByNameMap.clear();
                 for (OptionSpec option : options) {
                     addOptionNegative(option, tracer);
@@ -7125,7 +7125,7 @@ public class CommandLine {
                     //remove & add aliases
                     Set<String> addedAliasSet = new LinkedHashSet<String>(this.aliases);
                     addedAliasSet.removeAll(previousAliasSet);
-                    Tracer t = new Tracer();
+                    Tracer t = CommandLine.tracer();
                     for (String alias : addedAliasSet) {
                         parent.addAlias(alias, name, commandLine, t);
                     }
@@ -7229,8 +7229,8 @@ public class CommandLine {
              * @see Option#negatable()
              * @since 4.0 */
             public CommandSpec negatableOptionTransformer(INegatableOptionTransformer newValue) {
-                Tracer tracer = new Tracer();
-                tracer.debug("Replacing negatableOptionTransformer %s with %s%n", negatableOptionTransformer, newValue);
+                Tracer tracer = CommandLine.tracer();
+                tracer.debug("Replacing negatableOptionTransformer %s with %s", negatableOptionTransformer, newValue);
                 negatableOptionTransformer = newValue;
                 resetNegativeOptionNames();
                 return this;
@@ -7393,10 +7393,11 @@ public class CommandLine {
                 return result;
             }
 
-            boolean resemblesOption(String arg, Tracer tracer) {
+            boolean resemblesOption(String arg) {
                 if (arg == null) { return false; }
+                Tracer tracer = tracer();
                 if (arg.length() == 1) {
-                    if (tracer != null && tracer.isDebug()) {tracer.debug("Single-character arguments that don't match known options are considered positional parameters%n", arg);}
+                    if (tracer != null && tracer.isDebug()) {tracer.debug("Single-character arguments that don't match known options are considered positional parameters", arg);}
                     return false;
                 }
                 try { Long.decode(arg);        return false; } catch (NumberFormatException nan) {} // negative numbers are not unknown options
@@ -7404,7 +7405,7 @@ public class CommandLine {
 
                 if (options().isEmpty()) {
                     boolean result = arg.startsWith("-");
-                    if (tracer != null && tracer.isDebug()) {tracer.debug("'%s' %s an option%n", arg, (result ? "resembles" : "doesn't resemble"));}
+                    if (tracer != null && tracer.isDebug()) {tracer.debug("'%s' %s an option", arg, (result ? "resembles" : "doesn't resemble"));}
                     return result;
                 }
                 int count = 0;
@@ -7414,7 +7415,7 @@ public class CommandLine {
                     }
                 }
                 boolean result = count > 0 && count * 10 >= optionsMap().size() * 9; // at least one prefix char in common with 9 out of 10 options
-                if (tracer != null && tracer.isDebug()) {tracer.debug("'%s' %s an option: %d matching prefix chars out of %d option names%n", arg, (result ? "resembles" : "doesn't resemble"), count, optionsMap().size());}
+                if (tracer != null && tracer.isDebug()) {tracer.debug("'%s' %s an option: %d matching prefix chars out of %d option names", arg, (result ? "resembles" : "doesn't resemble"), count, optionsMap().size());}
                 return result;
             }
         }
@@ -7725,12 +7726,12 @@ public class CommandLine {
                 try {
                     int width = Integer.parseInt(userValue);
                     if (width < MINIMUM_USAGE_WIDTH) {
-                        new Tracer().warn("Invalid picocli.usage.width value %d. Using minimum usage width %d.%n", width, MINIMUM_USAGE_WIDTH);
+                        CommandLine.tracer().warn("Invalid picocli.usage.width value %d. Using minimum usage width %d.", width, MINIMUM_USAGE_WIDTH);
                         return MINIMUM_USAGE_WIDTH;
                     }
                     return width;
                 } catch (NumberFormatException ex) {
-                    new Tracer().warn("Invalid picocli.usage.width value '%s'. Using usage width %d.%n", userValue, defaultWidth);
+                    CommandLine.tracer().warn("Invalid picocli.usage.width value '%s'. Using usage width %d.", userValue, defaultWidth);
                     return defaultWidth;
                 }
             }
@@ -7749,7 +7750,7 @@ public class CommandLine {
             }
             private static int detectTerminalWidth() {
                 long start = System.nanoTime();
-                final Tracer tracer = new Tracer();
+                final Tracer tracer = CommandLine.tracer();
                 final AtomicInteger size = new AtomicInteger(-1);
                 final String[] cmd = (Help.Ansi.isWindows() && !Help.Ansi.isPseudoTTY())
                         ? new String[] {"cmd.exe", "/c", "mode con"}
@@ -7762,7 +7763,7 @@ public class CommandLine {
                         BufferedReader reader = null;
                         try {
                             ProcessBuilder pb = new ProcessBuilder(cmd);
-                            tracer.debug("getTerminalWidth() executing command %s%n", pb.command());
+                            tracer.debug("getTerminalWidth() executing command %s", pb.command());
                             //proc = Runtime.getRuntime().exec(new String[] { "sh", "-c", "tput cols 2> /dev/tty" });
                             Class<?> redirectClass = Class.forName("java.lang.ProcessBuilder$Redirect");
                             Object INHERIT = redirectClass.getField("INHERIT").get(null);
@@ -7775,7 +7776,7 @@ public class CommandLine {
                             while ((line = reader.readLine()) != null) {
                                 txt += " " + line;
                             }
-                            tracer.debug("getTerminalWidth() parsing output: %s%n", txt);
+                            tracer.debug("getTerminalWidth() parsing output: %s", txt);
                             Pattern pattern = (Help.Ansi.isWindows() && !Help.Ansi.isPseudoTTY())
                                     ? Pattern.compile(".*?:\\s*(\\d+)\\D.*?:\\s*(\\d+)\\D.*", Pattern.DOTALL)
                                     : (Help.Ansi.isMac()
@@ -7786,7 +7787,7 @@ public class CommandLine {
                                 size.set(Integer.parseInt(matcher.group(2)));
                             }
                         } catch (Exception ignored) { // nothing to do...
-                            tracer.debug("getTerminalWidth() ERROR: %s%n", ignored);
+                            tracer.debug("getTerminalWidth() ERROR: %s", ignored);
                         } finally {
                             if (proc != null) { proc.destroy(); }
                             close(reader);
@@ -7800,7 +7801,7 @@ public class CommandLine {
                     try { Thread.sleep(25); } catch (InterruptedException ignored) {}
                 } while (System.currentTimeMillis() < now + 2000 && t.isAlive());
                 double duration = (System.nanoTime() - start) / 1000000.0;
-                tracer.debug("getTerminalWidth() returning: %s in %,.1fms%n", size, duration);
+                tracer.debug("getTerminalWidth() returning: %s in %,.1fms", size, duration);
                 return size.intValue();
             }
 
@@ -8095,7 +8096,7 @@ public class CommandLine {
                     if (pos >= 0) {
                         result.put(entries[i].substring(0, pos), entries[i].substring(pos + 1));
                     } else {
-                        new Tracer().info("Ignoring line at index %d: cannot split '%s' into 'key:value'%n", i, entries[i]);
+                        CommandLine.tracer().info("Ignoring line at index %d: cannot split '%s' into 'key:value'", i, entries[i]);
                     }
                 }
                 return result;
@@ -8688,16 +8689,17 @@ public class CommandLine {
                 }
             }
 
-            void applyInitialValue(Tracer tracer) {
+            void applyInitialValue() {
+                Tracer tracer = CommandLine.tracer();
                 if (hasInitialValue()) {
                     try {
                         setter().set(initialValue());
-                        tracer.debug("Set initial value for %s of type %s to %s.%n", this, type(), String.valueOf(initialValue()));
+                        tracer.debug("Set initial value for %s of type %s to %s.", this, type(), String.valueOf(initialValue()));
                     } catch (Exception ex) {
-                        tracer.warn("Could not set initial value for %s of type %s to %s: %s%n", this, type(), String.valueOf(initialValue()), ex);
+                        tracer.warn("Could not set initial value for %s of type %s to %s: %s", this, type(), String.valueOf(initialValue()), ex);
                     }
                 } else {
-                    tracer.debug("Initial value not available for %s%n", this);
+                    tracer.debug("Initial value not available for %s", this);
                 }
             }
 
@@ -8962,7 +8964,7 @@ public class CommandLine {
                     defaultValueProvider = commandSpec.defaultValueProvider();
                     fromProvider = defaultValueProvider == null ? null : defaultValueProvider.defaultValue(this);
                 } catch (Exception ex) {
-                    new Tracer().info("Error getting default value for %s from %s: %s%n", this, defaultValueProvider, ex);
+                    CommandLine.tracer().info("Error getting default value for %s from %s: %s", this, defaultValueProvider, ex);
                 }
                 return fromProvider;
             }
@@ -9103,8 +9105,8 @@ public class CommandLine {
                 return debug(splitRespectingQuotedStrings(value, limit, parser, this, splitRegex()), "Split", value);
             }
             private String[] debug(String[] result, String msg, String value) {
-                Tracer t = new Tracer();
-                if (t.isDebug()) {t.debug("%s with regex '%s' resulted in %s parts: %s%n", msg, splitRegex(), result.length, Arrays.asList(result));}
+                Tracer t = CommandLine.tracer();
+                if (t.isDebug()) {t.debug("%s with regex '%s' resulted in %s parts: %s", msg, splitRegex(), result.length, Arrays.asList(result));}
                 return result;
             }
             // @since 3.7
@@ -9137,7 +9139,7 @@ public class CommandLine {
                     current.appendCodePoint(ch);
                 }
                 if (temp.length() > 0) {
-                    new Tracer().warn("Unbalanced quotes in [%s] for %s (value=%s)%n", temp, argSpec, value);
+                    CommandLine.tracer().warn("Unbalanced quotes in [%s] for %s (value=%s)", temp, argSpec, value);
                     quotedValues.add(temp.toString());
                     temp.setLength(0);
                 }
@@ -9147,7 +9149,7 @@ public class CommandLine {
                     result[i] = restoreQuotedValues(result[i], quotedValues, parser);
                 }
                 if (!quotedValues.isEmpty()) {
-                    new Tracer().warn("Unable to respect quotes while splitting value %s for %s (unprocessed remainder: %s)%n", value, argSpec, quotedValues);
+                    CommandLine.tracer().warn("Unable to respect quotes while splitting value %s for %s (unprocessed remainder: %s)", value, argSpec, quotedValues);
                     return value.split(splitRegex, limit);
                 }
                 return result;
@@ -10201,7 +10203,7 @@ public class CommandLine {
                 for (ArgSpec arg : args)           { arg.group = this; }
 
                 if (!validate && builder.exclusive) {
-                    new Tracer().info("Setting exclusive=%s because %s is a non-validating group.%n", exclusive, synopsisUnit());
+                    CommandLine.tracer().info("Setting exclusive=%s because %s is a non-validating group.", exclusive, synopsisUnit());
                 }
                 if (exclusive) {
                     String modifiedArgs = ""; String sep = "";
@@ -10215,7 +10217,7 @@ public class CommandLine {
                         }
                     }
                     if (modifiedArgs.length() > 0) {
-                        new Tracer().info("Made %s required in the group because %s is an exclusive group.%n", modifiedArgs, synopsisUnit());
+                        CommandLine.tracer().info("Made %s required in the group because %s is an exclusive group.", modifiedArgs, synopsisUnit());
                     }
                 }
             }
@@ -10494,7 +10496,7 @@ public class CommandLine {
 
             void initUserObject(CommandLine commandLine) {
                 if (commandLine == null) {
-                    new Tracer().debug("Could not create user object for %s with null CommandLine%n.", this);
+                    CommandLine.tracer().debug("Could not create user object for %s with null CommandLine%n.", this);
                     return;
                 }
                 try {
@@ -10506,33 +10508,33 @@ public class CommandLine {
                 }
             }
             void tryInitUserObject(CommandLine commandLine) throws Exception {
-                Tracer tracer = commandLine.tracer;
+                Tracer tracer = tracer();
                 if (typeInfo() != null) {
-                    tracer.debug("Creating new user object of type %s for group %s%n", typeInfo().getAuxiliaryTypes()[0], synopsis());
+                    tracer.debug("Creating new user object of type %s for group %s", typeInfo().getAuxiliaryTypes()[0], synopsis());
                     Object userObject = DefaultFactory.create(commandLine.factory, typeInfo().getAuxiliaryTypes()[0]);
-                    tracer.debug("Created %s, invoking setter %s with scope %s%n", userObject, setter(), scope());
+                    tracer.debug("Created %s, invoking setter %s with scope %s", userObject, setter(), scope());
                     setUserObject(userObject, commandLine.factory);
                     for (ArgSpec arg : args()) {
-                        tracer.debug("Initializing %s in group %s: setting scope to user object %s and initializing initial and default values%n", ArgSpec.describe(arg, "="), synopsis(), userObject);
+                        tracer.debug("Initializing %s in group %s: setting scope to user object %s and initializing initial and default values", ArgSpec.describe(arg, "="), synopsis(), userObject);
                         arg.scope().set(userObject); // flip the actual user object for the arg (and all other args in this group; they share the same IScope instance)
                         commandLine.interpreter.parseResultBuilder.isInitializingDefaultValues = true;
-                        arg.applyInitialValue(tracer);
+                        arg.applyInitialValue();
                         commandLine.interpreter.applyDefault(commandLine.getCommandSpec().defaultValueProvider(), arg);
                         commandLine.interpreter.parseResultBuilder.isInitializingDefaultValues = false;
                     }
                     for (ArgGroupSpec subgroup : subgroups()) {
-                        tracer.debug("Setting scope for subgroup %s with setter=%s in group %s to user object %s%n", subgroup.synopsis(), subgroup.setter(), synopsis(), userObject);
+                        tracer.debug("Setting scope for subgroup %s with setter=%s in group %s to user object %s", subgroup.synopsis(), subgroup.setter(), synopsis(), userObject);
                         subgroup.scope().set(userObject); // flip the actual user object for the arg (and all other args in this group; they share the same IScope instance)
                     }
                     for (IAnnotatedElement specElement : specElements()) {
-                        tracer.debug("Setting @Spec with setter=%s in user object %s to %s%n", specElement.setter(), userObject, commandLine.getCommandSpec());
+                        tracer.debug("Setting @Spec with setter=%s in user object %s to %s", specElement.setter(), userObject, commandLine.getCommandSpec());
                         specElement.scope().set(userObject);
                         specElement.setter().set(commandLine.getCommandSpec());
                     }
                 } else {
-                    tracer.debug("No type information available for group %s: cannot create new user object. Scope for arg setters is not changed.%n", synopsis());
+                    tracer.debug("No type information available for group %s: cannot create new user object. Scope for arg setters is not changed.", synopsis());
                 }
-                tracer.debug("Initialization complete for group %s%n", synopsis());
+                tracer.debug("Initialization complete for group %s", synopsis());
             }
 
             void setUserObject(Object userObject, IFactory factory) throws Exception {
@@ -10789,7 +10791,7 @@ public class CommandLine {
                 try {
                     initialValue = initialValueHolder.get();
                 } catch (Exception ex) {
-                    new Tracer().debug("Could not obtain initial value for unmatched from %s%n", initialValueHolder);
+                    CommandLine.tracer().debug("Could not obtain initial value for unmatched from %s", initialValueHolder);
                 }
             }
 
@@ -10823,7 +10825,7 @@ public class CommandLine {
                 if (initialValueHolder == null) {
                     if (getter instanceof ISetter) { initialValueHolder = (ISetter) getter; }
                     else {
-                        new Tracer().warn("Unable to clear %s: it does not implement ISetter", getter);
+                        CommandLine.tracer().warn("Unable to clear %s: it does not implement ISetter", getter);
                         return;
                     }
                 }
@@ -11378,7 +11380,7 @@ public class CommandLine {
                 this.rb = rb;
                 this.keys = keys(rb);
                 if (rb != null) {
-                    new Tracer().debug("Created Messages from resourceBundle[base=%s] for command '%s' (%s)%n", baseName, spec.name(), spec);
+                    CommandLine.tracer().debug("Created Messages from resourceBundle[base=%s] for command '%s' (%s)", baseName, spec.name(), spec);
                 }
             }
             private static ResourceBundle createBundle(String baseName) {
@@ -11495,20 +11497,20 @@ public class CommandLine {
             }
             static CommandSpec extractCommandSpec(Object command, IFactory factory, boolean annotationsAreMandatory) {
                 Assert.notNull(command, "command user object");
-                Tracer t = new Tracer();
+                Tracer t = CommandLine.tracer();
                 if (command instanceof CommandSpec) {
-                    t.debug("extractCommandSpec returning existing CommandSpec instance %s%n", command);
+                    t.debug("extractCommandSpec returning existing CommandSpec instance %s", command);
                     return (CommandSpec) command;
                 }
 
                 CommandUserObject userObject = CommandUserObject.create(command, factory);
-                t.debug("Creating CommandSpec for %s with factory %s%n", userObject, factory.getClass().getName());
+                t.debug("Creating CommandSpec for %s with factory %s", userObject, factory.getClass().getName());
                 CommandSpec result = CommandSpec.wrapWithoutInspection(userObject);
 
                 boolean hasCommandAnnotation = false;
                 if (userObject.isMethod()) {
                     Method method = (Method) command;
-                    t.debug("Using method %s as command %n", method);
+                    t.debug("Using method %s as command ", method);
                     method.setAccessible(true);
                     Command cmd = method.getAnnotation(Command.class);
                     result.updateCommandAttributes(cmd, factory);
@@ -11948,21 +11950,21 @@ public class CommandLine {
 
             public Object getInstance() {
                 if (instance == null) {
-                    Tracer t = new Tracer();
+                    Tracer t = CommandLine.tracer();
                     if (type == null) {
-                        t.debug("Returning a null user object instance%n");
+                        t.debug("Returning a null user object instance");
                         return null;
                     }
                     try {
-                        t.debug("Getting a %s instance from factory %s%n", type.getName(), factory);
+                        t.debug("Getting a %s instance from factory %s", type.getName(), factory);
                         instance = DefaultFactory.create(factory, type);
                         type = instance.getClass(); // potentially change interface name to impl type name
-                        t.debug("Factory returned a %s instance (%s)%n", type.getName(), Integer.toHexString(System.identityHashCode(instance)));
+                        t.debug("Factory returned a %s instance (%s)", type.getName(), Integer.toHexString(System.identityHashCode(instance)));
                     } catch (InitializationException ex) {
                         if (type.isInterface()) {
-                            t.debug("%s. Creating Proxy for interface %s%n", ex.getCause(), type.getName());
+                            t.debug("%s. Creating Proxy for interface %s", ex.getCause(), type.getName());
                             instance = Proxy.newProxyInstance(type.getClassLoader(), new Class<?>[]{type}, new PicocliInvocationHandler());
-                            t.debug("Created Proxy instance (%s)%n", Integer.toHexString(System.identityHashCode(instance)));
+                            t.debug("Created Proxy instance (%s)", Integer.toHexString(System.identityHashCode(instance)));
                         } else {
                             throw ex;
                         }
@@ -12466,7 +12468,7 @@ public class CommandLine {
                         argSpec.typedValueAtPosition.put(position, typedValue);
                     } else {
                         GroupMatchContainer groupMatchContainer = this.groupMatchContainer.findLastMatchContainer(argSpec.group());
-                        groupMatchContainer.lastMatch().addMatchedValue(argSpec, position, typedValue, commandSpec.commandLine.tracer);
+                        groupMatchContainer.lastMatch().addMatchedValue(argSpec, position, typedValue, CommandLine.tracer());
                     }
                 }
             }
@@ -12478,7 +12480,7 @@ public class CommandLine {
             void beforeMatchingGroupElement(ArgSpec argSpec) throws Exception {
                 ArgGroupSpec group = argSpec.group();
                 if (group == null || isInitializingDefaultValues) { return; }
-                Tracer tracer = commandSpec.commandLine.tracer;
+                Tracer tracer = CommandLine.tracer();
                 GroupMatchContainer foundGroupMatchContainer = this.groupMatchContainer.findOrCreateMatchingGroup(argSpec, commandSpec.commandLine);
                 GroupMatch match = foundGroupMatchContainer.lastMatch();
                 boolean greedy = true; // commandSpec.parser().greedyMatchMultiValueArgsInGroup(); // or @Option(multiplicity=0..*) to control min/max matches
@@ -12488,11 +12490,11 @@ public class CommandLine {
                         (argSpec.required() || match.matchCount(argSpec) > 0) && !allowMultipleMatchesInGroup) {
                     // we need to create a new match; if maxMultiplicity has been reached, we need to add a new GroupMatchContainer.
                     String previousMatch = argSpec.required() ? "is required" : "has already been matched";
-                    tracer.info("GroupMatch %s is complete: its mandatory elements are all matched. (User object: %s.) %s %s in the group, so it starts a new GroupMatch.%n", foundGroupMatchContainer.lastMatch(), foundGroupMatchContainer.group.userObject(), elementDescription, previousMatch);
+                    tracer.info("GroupMatch %s is complete: its mandatory elements are all matched. (User object: %s.) %s %s in the group, so it starts a new GroupMatch.", foundGroupMatchContainer.lastMatch(), foundGroupMatchContainer.group.userObject(), elementDescription, previousMatch);
                     foundGroupMatchContainer.addMatch(commandSpec.commandLine);
                     this.groupMatchContainer.findOrCreateMatchingGroup(argSpec, commandSpec.commandLine);
                 } else if (match.matchCount(argSpec) > 0 && !allowMultipleMatchesInGroup) {
-                    tracer.info("GroupMatch %s is incomplete: its mandatory elements are not all matched. (User object: %s.) However, %s has already been matched in the group, so it starts a new GroupMatch.%n", foundGroupMatchContainer.lastMatch(), foundGroupMatchContainer.group.userObject(), elementDescription);
+                    tracer.info("GroupMatch %s is incomplete: its mandatory elements are not all matched. (User object: %s.) However, %s has already been matched in the group, so it starts a new GroupMatch.", foundGroupMatchContainer.lastMatch(), foundGroupMatchContainer.group.userObject(), elementDescription);
                     foundGroupMatchContainer.addMatch(commandSpec.commandLine);
                     this.groupMatchContainer.findOrCreateMatchingGroup(argSpec, commandSpec.commandLine);
                 }
@@ -12554,13 +12556,13 @@ public class CommandLine {
             public List<GroupMatch> matches() { return Collections.unmodifiableList(matches); }
 
             void addMatch(CommandLine commandLine) {
-                Tracer tracer = commandLine == null ? new Tracer() : commandLine.tracer;
+                Tracer tracer = CommandLine.tracer();
                 if (group != null && isMaxMultiplicityReached()) {
-                    tracer.info("Completing GroupMatchContainer %s: max multiplicity is reached.%n", this);
+                    tracer.info("Completing GroupMatchContainer %s: max multiplicity is reached.", this);
                     complete(commandLine);
                 } else {
                     if (group != null) {
-                        tracer.info("Adding match to GroupMatchContainer %s (group=%s %s).%n", this, group.id(), group.synopsisUnit());
+                        tracer.info("Adding match to GroupMatchContainer %s (group=%s %s).", this, group.id(), group.synopsisUnit());
                     }
                     matches.add(new GroupMatch(this));
                     if (group == null) { return; }
@@ -13035,30 +13037,30 @@ public class CommandLine {
 
             // #698 use direct calls to Class.forName() and Class.getDeclaredMethod() with constant Strings
             // to allow GraalVM static analysis to resolve the target elements
-            if (!excl("java.sql.Time")) { try { reg(Class.forName("java.sql.Time"), new BuiltIn.ISO8601TimeConverter(Class.forName("java.sql.Time").getDeclaredConstructor(long.class))); } catch (Exception e) {BuiltIn.handle(e, "java.sql.Time", tracer);} }
+            if (!excl("java.sql.Time")) { try { reg(Class.forName("java.sql.Time"), new BuiltIn.ISO8601TimeConverter(Class.forName("java.sql.Time").getDeclaredConstructor(long.class))); } catch (Exception e) {BuiltIn.handle(e, "java.sql.Time");} }
 
-            if (!excl("java.sql.Connection")) { try { reg(Class.forName("java.sql.Connection"), Class.forName("java.sql.DriverManager").getDeclaredMethod("getConnection", String.class), String.class); } catch (Exception e) {BuiltIn.handle(e, "java.sql.Connection", tracer);} }
-            if (!excl("java.sql.Driver"))     { try { reg(Class.forName("java.sql.Driver"),     Class.forName("java.sql.DriverManager").getDeclaredMethod("getDriver",     String.class), String.class); } catch (Exception e) {BuiltIn.handle(e, "java.sql.DriverManager", tracer);} }
-            if (!excl("java.sql.Timestamp"))  { try { reg(Class.forName("java.sql.Timestamp"),  Class.forName("java.sql.Timestamp")    .getDeclaredMethod("valueOf",       String.class), String.class); } catch (Exception e) {BuiltIn.handle(e, "java.sql.Timestamp", tracer);} }
+            if (!excl("java.sql.Connection")) { try { reg(Class.forName("java.sql.Connection"), Class.forName("java.sql.DriverManager").getDeclaredMethod("getConnection", String.class), String.class); } catch (Exception e) {BuiltIn.handle(e, "java.sql.Connection");} }
+            if (!excl("java.sql.Driver"))     { try { reg(Class.forName("java.sql.Driver"),     Class.forName("java.sql.DriverManager").getDeclaredMethod("getDriver",     String.class), String.class); } catch (Exception e) {BuiltIn.handle(e, "java.sql.DriverManager");} }
+            if (!excl("java.sql.Timestamp"))  { try { reg(Class.forName("java.sql.Timestamp"),  Class.forName("java.sql.Timestamp")    .getDeclaredMethod("valueOf",       String.class), String.class); } catch (Exception e) {BuiltIn.handle(e, "java.sql.Timestamp");} }
 
-            if (!excl("java.time.Duration")) {       try { reg(Class.forName("java.time.Duration"),       Class.forName("java.time.Duration")      .getDeclaredMethod("parse", CharSequence.class), CharSequence.class); } catch (Exception e) {BuiltIn.handle(e, "java.time.Duration", tracer);} }
-            if (!excl("java.time.Instant")) {        try { reg(Class.forName("java.time.Instant"),        Class.forName("java.time.Instant")       .getDeclaredMethod("parse", CharSequence.class), CharSequence.class); } catch (Exception e) {BuiltIn.handle(e, "java.time.Instant", tracer);} }
-            if (!excl("java.time.LocalDate")) {      try { reg(Class.forName("java.time.LocalDate"),      Class.forName("java.time.LocalDate")     .getDeclaredMethod("parse", CharSequence.class), CharSequence.class); } catch (Exception e) {BuiltIn.handle(e, "java.time.LocalDate", tracer);} }
-            if (!excl("java.time.LocalDateTime")) {  try { reg(Class.forName("java.time.LocalDateTime"),  Class.forName("java.time.LocalDateTime") .getDeclaredMethod("parse", CharSequence.class), CharSequence.class); } catch (Exception e) {BuiltIn.handle(e, "java.time.LocalDateTime", tracer);} }
-            if (!excl("java.time.LocalTime")) {      try { reg(Class.forName("java.time.LocalTime"),      Class.forName("java.time.LocalTime")     .getDeclaredMethod("parse", CharSequence.class), CharSequence.class); } catch (Exception e) {BuiltIn.handle(e, "java.time.LocalTime", tracer);} }
-            if (!excl("java.time.MonthDay")) {       try { reg(Class.forName("java.time.MonthDay"),       Class.forName("java.time.MonthDay")      .getDeclaredMethod("parse", CharSequence.class), CharSequence.class); } catch (Exception e) {BuiltIn.handle(e, "java.time.MonthDay", tracer);} }
-            if (!excl("java.time.OffsetDateTime")) { try { reg(Class.forName("java.time.OffsetDateTime"), Class.forName("java.time.OffsetDateTime").getDeclaredMethod("parse", CharSequence.class), CharSequence.class); } catch (Exception e) {BuiltIn.handle(e, "java.time.OffsetDateTime", tracer);} }
-            if (!excl("java.time.OffsetTime")) {     try { reg(Class.forName("java.time.OffsetTime"),     Class.forName("java.time.OffsetTime")    .getDeclaredMethod("parse", CharSequence.class), CharSequence.class); } catch (Exception e) {BuiltIn.handle(e, "java.time.OffsetTime", tracer);} }
-            if (!excl("java.time.Period")) {         try { reg(Class.forName("java.time.Period"),         Class.forName("java.time.Period")        .getDeclaredMethod("parse", CharSequence.class), CharSequence.class); } catch (Exception e) {BuiltIn.handle(e, "java.time.Period", tracer);} }
-            if (!excl("java.time.Year")) {           try { reg(Class.forName("java.time.Year"),           Class.forName("java.time.Year")          .getDeclaredMethod("parse", CharSequence.class), CharSequence.class); } catch (Exception e) {BuiltIn.handle(e, "java.time.Year", tracer);} }
-            if (!excl("java.time.YearMonth")) {      try { reg(Class.forName("java.time.YearMonth"),      Class.forName("java.time.YearMonth")     .getDeclaredMethod("parse", CharSequence.class), CharSequence.class); } catch (Exception e) {BuiltIn.handle(e, "java.time.YearMonth", tracer);} }
-            if (!excl("java.time.ZonedDateTime")) {  try { reg(Class.forName("java.time.ZonedDateTime"),  Class.forName("java.time.ZonedDateTime") .getDeclaredMethod("parse", CharSequence.class), CharSequence.class); } catch (Exception e) {BuiltIn.handle(e, "java.time.ZonedDateTime", tracer);} }
-            if (!excl("java.time.ZoneId")) {         try { reg(Class.forName("java.time.ZoneId"),         Class.forName("java.time.ZoneId")        .getDeclaredMethod("of",    String.class),       String.class);       } catch (Exception e) {BuiltIn.handle(e, "java.time.ZoneId", tracer);} }
-            if (!excl("java.time.ZoneOffset")) {     try { reg(Class.forName("java.time.ZoneOffset"),     Class.forName("java.time.ZoneOffset")    .getDeclaredMethod("of",    String.class),       String.class);       } catch (Exception e) {BuiltIn.handle(e, "java.time.ZoneOffset", tracer);} }
+            if (!excl("java.time.Duration")) {       try { reg(Class.forName("java.time.Duration"),       Class.forName("java.time.Duration")      .getDeclaredMethod("parse", CharSequence.class), CharSequence.class); } catch (Exception e) {BuiltIn.handle(e, "java.time.Duration");} }
+            if (!excl("java.time.Instant")) {        try { reg(Class.forName("java.time.Instant"),        Class.forName("java.time.Instant")       .getDeclaredMethod("parse", CharSequence.class), CharSequence.class); } catch (Exception e) {BuiltIn.handle(e, "java.time.Instant");} }
+            if (!excl("java.time.LocalDate")) {      try { reg(Class.forName("java.time.LocalDate"),      Class.forName("java.time.LocalDate")     .getDeclaredMethod("parse", CharSequence.class), CharSequence.class); } catch (Exception e) {BuiltIn.handle(e, "java.time.LocalDate");} }
+            if (!excl("java.time.LocalDateTime")) {  try { reg(Class.forName("java.time.LocalDateTime"),  Class.forName("java.time.LocalDateTime") .getDeclaredMethod("parse", CharSequence.class), CharSequence.class); } catch (Exception e) {BuiltIn.handle(e, "java.time.LocalDateTime");} }
+            if (!excl("java.time.LocalTime")) {      try { reg(Class.forName("java.time.LocalTime"),      Class.forName("java.time.LocalTime")     .getDeclaredMethod("parse", CharSequence.class), CharSequence.class); } catch (Exception e) {BuiltIn.handle(e, "java.time.LocalTime");} }
+            if (!excl("java.time.MonthDay")) {       try { reg(Class.forName("java.time.MonthDay"),       Class.forName("java.time.MonthDay")      .getDeclaredMethod("parse", CharSequence.class), CharSequence.class); } catch (Exception e) {BuiltIn.handle(e, "java.time.MonthDay");} }
+            if (!excl("java.time.OffsetDateTime")) { try { reg(Class.forName("java.time.OffsetDateTime"), Class.forName("java.time.OffsetDateTime").getDeclaredMethod("parse", CharSequence.class), CharSequence.class); } catch (Exception e) {BuiltIn.handle(e, "java.time.OffsetDateTime");} }
+            if (!excl("java.time.OffsetTime")) {     try { reg(Class.forName("java.time.OffsetTime"),     Class.forName("java.time.OffsetTime")    .getDeclaredMethod("parse", CharSequence.class), CharSequence.class); } catch (Exception e) {BuiltIn.handle(e, "java.time.OffsetTime");} }
+            if (!excl("java.time.Period")) {         try { reg(Class.forName("java.time.Period"),         Class.forName("java.time.Period")        .getDeclaredMethod("parse", CharSequence.class), CharSequence.class); } catch (Exception e) {BuiltIn.handle(e, "java.time.Period");} }
+            if (!excl("java.time.Year")) {           try { reg(Class.forName("java.time.Year"),           Class.forName("java.time.Year")          .getDeclaredMethod("parse", CharSequence.class), CharSequence.class); } catch (Exception e) {BuiltIn.handle(e, "java.time.Year");} }
+            if (!excl("java.time.YearMonth")) {      try { reg(Class.forName("java.time.YearMonth"),      Class.forName("java.time.YearMonth")     .getDeclaredMethod("parse", CharSequence.class), CharSequence.class); } catch (Exception e) {BuiltIn.handle(e, "java.time.YearMonth");} }
+            if (!excl("java.time.ZonedDateTime")) {  try { reg(Class.forName("java.time.ZonedDateTime"),  Class.forName("java.time.ZonedDateTime") .getDeclaredMethod("parse", CharSequence.class), CharSequence.class); } catch (Exception e) {BuiltIn.handle(e, "java.time.ZonedDateTime");} }
+            if (!excl("java.time.ZoneId")) {         try { reg(Class.forName("java.time.ZoneId"),         Class.forName("java.time.ZoneId")        .getDeclaredMethod("of",    String.class),       String.class);       } catch (Exception e) {BuiltIn.handle(e, "java.time.ZoneId");} }
+            if (!excl("java.time.ZoneOffset")) {     try { reg(Class.forName("java.time.ZoneOffset"),     Class.forName("java.time.ZoneOffset")    .getDeclaredMethod("of",    String.class),       String.class);       } catch (Exception e) {BuiltIn.handle(e, "java.time.ZoneOffset");} }
 
-            if (!excl("java.nio.file.Path")) {     try { reg(Class.forName("java.nio.file.Path"),  Class.forName("java.nio.file.Paths").getDeclaredMethod("get", String.class, String[].class), String.class, String[].class); } catch (Exception e) {BuiltIn.handle(e, "java.nio.file.Path", tracer);} }
+            if (!excl("java.nio.file.Path")) {     try { reg(Class.forName("java.nio.file.Path"),  Class.forName("java.nio.file.Paths").getDeclaredMethod("get", String.class, String[].class), String.class, String[].class); } catch (Exception e) {BuiltIn.handle(e, "java.nio.file.Path");} }
         }
-        private boolean excl(String fqcn) { return BuiltIn.excluded(fqcn, tracer); }
+        private boolean excl(String fqcn) { return BuiltIn.excluded(fqcn); }
         private void reg(Class<?> cls, Method method, Class<?>... paramTypes) {
             converterRegistry.put(cls, new BuiltIn.ReflectionConverter(method, paramTypes));
         }
@@ -13074,10 +13076,15 @@ public class CommandLine {
          */
         List<CommandLine> parse(String... args) {
             Assert.notNull(args, "argument array");
-            if (tracer.isInfo()) {tracer.info("Picocli version: %s%n", versionString());}
-            if (tracer.isInfo()) {tracer.info("Parsing %d command line args %s%n", args.length, Arrays.toString(args));}
-            if (tracer.isDebug()){tracer.debug("Parser configuration: optionsCaseInsensitive=%s, subcommandsCaseInsensitive=%s, %s%n", commandSpec.optionsCaseInsensitive(), commandSpec.subcommandsCaseInsensitive(), config());}
-            if (tracer.isDebug()){tracer.debug("(ANSI is %s by default: systemproperty[picocli.ansi]=%s, isatty=%s, TERM=%s, OSTYPE=%s, isWindows=%s, JansiConsoleInstalled=%s, ANSICON=%s, ConEmuANSI=%s, NO_COLOR=%s, CLICOLOR=%s, CLICOLOR_FORCE=%s)%n",
+            Tracer tracer = tracer();
+            if (tracer.isInfo()) {
+                tracer.info("Picocli version: %s", versionString());}
+            if (tracer.isInfo()) {
+                tracer.info("Parsing %d command line args %s", args.length, Arrays.toString(args));}
+            if (tracer.isDebug()){
+                tracer.debug("Parser configuration: optionsCaseInsensitive=%s, subcommandsCaseInsensitive=%s, %s", commandSpec.optionsCaseInsensitive(), commandSpec.subcommandsCaseInsensitive(), config());}
+            if (tracer.isDebug()){
+                tracer.debug("(ANSI is %s by default: systemproperty[picocli.ansi]=%s, isatty=%s, TERM=%s, OSTYPE=%s, isWindows=%s, JansiConsoleInstalled=%s, ANSICON=%s, ConEmuANSI=%s, NO_COLOR=%s, CLICOLOR=%s, CLICOLOR_FORCE=%s)",
                     Help.Ansi.AUTO.enabled() ? "enabled" : "disabled", System.getProperty("picocli.ansi"), Help.Ansi.isTTY(), System.getenv("TERM"), System.getenv("OSTYPE"), Help.Ansi.isWindows(), Help.Ansi.isJansiConsoleInstalled(), System.getenv("ANSICON"), System.getenv("ConEmuANSI"), System.getenv("NO_COLOR"), System.getenv("CLICOLOR"), System.getenv("CLICOLOR_FORCE"));}
             List<String> expanded = new ArrayList<String>();
             for (String arg : args) { addOrExpand(arg, expanded, new LinkedHashSet<String>()); }
@@ -13091,10 +13098,11 @@ public class CommandLine {
         private void addOrExpand(String arg, List<String> arguments, Set<String> visited) {
             if (config().expandAtFiles() && !arg.equals("@") && arg.startsWith("@")) {
                 arg = arg.substring(1);
+                Tracer tracer = tracer();
                 if (arg.startsWith("@")) {
-                    if (tracer.isInfo()) { tracer.info("Not expanding @-escaped argument %s (trimmed leading '@' char)%n", arg); }
+                    if (tracer.isInfo()) { tracer.info("Not expanding @-escaped argument %s (trimmed leading '@' char)", arg); }
                 } else {
-                    if (tracer.isInfo()) { tracer.info("Expanding argument file @%s%n", arg); }
+                    if (tracer.isInfo()) { tracer.info("Expanding argument file @%s", arg); }
                     expandArgumentFile(arg, arguments, visited);
                     return;
                 }
@@ -13102,12 +13110,15 @@ public class CommandLine {
             arguments.add(arg);
         }
         private void expandArgumentFile(String fileName, List<String> arguments, Set<String> visited) {
+            Tracer tracer = tracer();
             File file = new File(fileName);
             if (!file.canRead()) {
-                if (tracer.isInfo()) {tracer.info("File %s does not exist or cannot be read; treating argument literally%n", fileName);}
+                if (tracer.isInfo()) {
+                    tracer.info("File %s does not exist or cannot be read; treating argument literally", fileName);}
                 arguments.add("@" + fileName);
             } else if (visited.contains(file.getAbsolutePath())) {
-                if (tracer.isInfo()) {tracer.info("Already visited file %s; ignoring...%n", file.getAbsolutePath());}
+                if (tracer.isInfo()) {
+                    tracer.info("Already visited file %s; ignoring...", file.getAbsolutePath());}
             } else {
                 expandValidArgumentFile(fileName, file, arguments, visited);
             }
@@ -13144,7 +13155,9 @@ public class CommandLine {
             } finally {
                 close(reader);
             }
-            if (tracer.isInfo()) {tracer.info("Expanded file @%s to arguments %s%n", fileName, result);}
+            Tracer tracer = tracer();
+            if (tracer.isInfo()) {
+                tracer.info("Expanded file @%s to arguments %s", fileName, result);}
             arguments.addAll(result);
         }
         private void clear() {
@@ -13164,9 +13177,9 @@ public class CommandLine {
             argSpec.typedValues.clear();
             argSpec.typedValueAtPosition.clear();
             if (argSpec.inherited()) { //inherited args are cleared only at their origin
-                tracer.debug("Not applying initial value for inherited %s%n", optionDescription("", argSpec, -1));
+                tracer().debug("Not applying initial value for inherited %s", optionDescription("", argSpec, -1));
             } else { // groups do their own initialization;
-                if (argSpec.group() == null) { argSpec.applyInitialValue(tracer); }
+                if (argSpec.group() == null) { argSpec.applyInitialValue(); }
             }
         }
         private void clear(ArgGroupSpec group) {
@@ -13187,8 +13200,9 @@ public class CommandLine {
         }
 
         private void parse(List<CommandLine> parsedCommands, Stack<String> argumentStack, String[] originalArgs, List<Object> nowProcessing, Collection<ArgSpec> inheritedRequired, Set<ArgSpec> initialized) {
+            Tracer tracer = CommandLine.tracer();
             if (tracer.isDebug()) {
-                tracer.debug("Initializing %s: %d options, %d positional parameters, %d required, %d groups, %d subcommands.%n",
+                tracer.debug("Initializing %s: %d options, %d positional parameters, %d required, %d groups, %d subcommands.",
                         commandSpec.toString(), new HashSet<ArgSpec>(commandSpec.optionsMap().values()).size(),
                         commandSpec.positionalParameters().size(), commandSpec.requiredArgs().size(),
                         commandSpec.argGroups().size(), commandSpec.subcommands().size());
@@ -13286,7 +13300,8 @@ public class CommandLine {
                     unmatchedArgsBinding.addAll(unmatched.clone());
                 }
                 if (!isUnmatchedArgumentsAllowed()) { maybeThrow(new UnmatchedArgumentException(CommandLine.this, Collections.unmodifiableList(parseResultBuilder.unmatched))); }
-                if (tracer.isInfo()) { tracer.info("Unmatched arguments: %s%n", parseResultBuilder.unmatched); }
+                Tracer tracer = CommandLine.tracer();
+                if (tracer.isInfo()) { tracer.info("Unmatched arguments: %s", parseResultBuilder.unmatched); }
             }
             ParseResult pr = parseResultBuilder.build();
             pr.validateGroups();
@@ -13294,11 +13309,12 @@ public class CommandLine {
 
         private void applyDefaultValues(List<ArgSpec> required, Set<ArgSpec> initialized) throws Exception {
             parseResultBuilder.isInitializingDefaultValues = true;
-            tracer.debug("Applying default values for command '%s'%n", CommandLine.this.commandSpec.qualifiedName());
+            Tracer tracer = CommandLine.tracer();
+            tracer.debug("Applying default values for command '%s'", CommandLine.this.commandSpec.qualifiedName());
             for (ArgSpec arg : commandSpec.args()) {
                 if (arg.group() == null && !initialized.contains(arg)) {
                     if (arg.inherited()) {
-                        tracer.debug("Not applying default value for inherited %s%n", optionDescription("", arg, -1));
+                        tracer.debug("Not applying default value for inherited %s", optionDescription("", arg, -1));
                     } else {
                         if (applyDefault(commandSpec.defaultValueProvider(), arg)) { required.remove(arg); }
                     }
@@ -13310,11 +13326,12 @@ public class CommandLine {
             parseResultBuilder.isInitializingDefaultValues = false;
         }
         private void applyGroupDefaults(IDefaultValueProvider defaultValueProvider, ArgGroupSpec group, List<ArgSpec> required, Set<ArgSpec> initialized) throws Exception {
-            tracer.debug("Applying default values for group '%s'%n", group.synopsis());
+            Tracer tracer = CommandLine.tracer();
+            tracer.debug("Applying default values for group '%s'", group.synopsis());
             for (ArgSpec arg : group.args()) {
                 if (arg.scope().get() != null && !initialized.contains(arg)) {
                     if (arg.inherited()) {
-                        tracer.debug("Not applying default value for inherited %s%n", optionDescription("", arg, -1));
+                        tracer.debug("Not applying default value for inherited %s", optionDescription("", arg, -1));
                     } else {
                         if (applyDefault(defaultValueProvider, arg)) { required.remove(arg); }
                     }
@@ -13332,25 +13349,29 @@ public class CommandLine {
             String defaultValue = fromProvider == null ? arg.defaultValue() : arg.interpolate(fromProvider);
             String provider = defaultValueProvider == null ? "" : (" from " + defaultValueProvider.toString());
 
+            Tracer tracer = CommandLine.tracer();
             if (defaultValue != null && !ArgSpec.NULL_VALUE.equals(defaultValue)) {
-                if (tracer.isDebug()) {tracer.debug("Applying defaultValue (%s)%s to %s on %s%n", defaultValue, provider, arg, arg.scopeString());}
+                if (tracer.isDebug()) {
+                    tracer.debug("Applying defaultValue (%s)%s to %s on %s", defaultValue, provider, arg, arg.scopeString());}
                 Range arity = arg.arity().min(Math.max(1, arg.arity().min));
                 applyOption(arg, false, LookBehind.SEPARATE, false, arity, stack(defaultValue), new HashSet<ArgSpec>(), arg.toString);
             } else {
                 if (arg.typeInfo().isOptional()) {
-                    if (tracer.isDebug()) {tracer.debug("Applying Optional.empty() to %s on %s%n", arg, arg.scopeString());}
+                    if (tracer.isDebug()) {
+                        tracer.debug("Applying Optional.empty() to %s on %s", arg, arg.scopeString());}
                     arg.setValue(getOptionalEmpty());
                 } else if (ArgSpec.UNSPECIFIED.equals(arg.originalDefaultValue)) {
-                    tracer.debug("defaultValue not defined for %s%n", arg);
+                    tracer.debug("defaultValue not defined for %s", arg);
                     return false;
                 } else {
                     if (ArgSpec.NULL_VALUE.equals(arg.originalDefaultValue)) {
                         defaultValue = null;
-                        if (tracer.isDebug()) {tracer.debug("Applying defaultValue (%s)%s to %s on %s%n", defaultValue, provider, arg, arg.scopeString());}
+                        if (tracer.isDebug()) {
+                            tracer.debug("Applying defaultValue (%s)%s to %s on %s", defaultValue, provider, arg, arg.scopeString());}
                         arg.setValue(defaultValue);
                         return true;
                     }
-                    tracer.debug("defaultValue not defined for %s%n", arg);
+                    tracer.debug("defaultValue not defined for %s", arg);
                 }
             }
             return defaultValue != null;
@@ -13382,6 +13403,7 @@ public class CommandLine {
             }
 
             String separator = config().separator();
+            Tracer tracer = CommandLine.tracer();
             while (!args.isEmpty()) {
                 if (endOfOptions) {
                     processRemainderAsPositionalParameters(required, initialized, args);
@@ -13392,14 +13414,14 @@ public class CommandLine {
                 boolean actuallyUnquoted = !originalArg.equals(arg);
                 if (tracer.isDebug()) {
                     int argIndex = originalArgs.length - (args.size() + 1);
-                    if (actuallyUnquoted) { tracer.debug("[%d] Processing argument '%s' (trimmed from '%s'). Remainder=%s%n", argIndex, arg, originalArg, reverse(copy(args))); }
-                    else { tracer.debug("[%d] Processing argument '%s'. Remainder=%s%n", argIndex, arg, reverse(copy(args))); }
+                    if (actuallyUnquoted) { tracer.debug("[%d] Processing argument '%s' (trimmed from '%s'). Remainder=%s", argIndex, arg, originalArg, reverse(copy(args))); }
+                    else { tracer.debug("[%d] Processing argument '%s'. Remainder=%s", argIndex, arg, reverse(copy(args))); }
                 }
 
                 // Double-dash separates options from positional arguments.
                 // If found, then interpret the remaining args as positional parameters.
                 if (commandSpec.parser.endOfOptionsDelimiter().equals(arg)) {
-                    tracer.info("Found end-of-options delimiter '%s'. Treating remainder as positional parameters.%n", commandSpec.parser.endOfOptionsDelimiter());
+                    tracer.info("Found end-of-options delimiter '%s'. Treating remainder as positional parameters.", commandSpec.parser.endOfOptionsDelimiter());
                     endOfOptions = true;
                     processRemainderAsPositionalParameters(required, initialized, args);
                     return; // we are done
@@ -13421,11 +13443,11 @@ public class CommandLine {
                         subcommand = AbbreviationMatcher.match(parent.subcommands(), arg, parent.subcommandsCaseInsensitive(), CommandLine.this).getValue();
                     }
                     if (subcommand != null) {
-                        tracer.debug("'%s' is a repeatable subcommand of %s%n", arg,
+                        tracer.debug("'%s' is a repeatable subcommand of %s", arg,
                             commandSpec.parent().qualifiedName()); // #454 repeatable subcommands
                         Set<ArgSpec> inheritedInitialized = initialized;
                         if (subcommand.interpreter.parseResultBuilder != null) {
-                            tracer.debug("Subcommand '%s' has been matched before. Making a copy...%n",
+                            tracer.debug("Subcommand '%s' has been matched before. Making a copy...",
                                 subcommand.getCommandName());
                             subcommand = subcommand.copy();
                             subcommand.getCommandSpec().parent(commandSpec.parent()); // hook it up with its parent
@@ -13454,18 +13476,21 @@ public class CommandLine {
                     key = AbbreviationMatcher.match(aggregatedOptions, key, commandSpec.optionsCaseInsensitive(), CommandLine.this).getFullName(); //#1159, #1162
                     // be greedy. Consume the whole arg as an option if possible.
                     if (isStandaloneOption(key) && isStandaloneOption(arg)) {
-                        tracer.warn("Both '%s' and '%s' are valid option names in %s. Using '%s'...%n", arg, key, getCommandName(), arg);
+                        tracer.warn("Both '%s' and '%s' are valid option names in %s. Using '%s'...", arg, key, getCommandName(), arg);
                     } else if (isStandaloneOption(key)) {
                         lookBehind = LookBehind.ATTACHED_WITH_SEPARATOR;
                         String optionParam = arg.substring(separatorIndex + separator.length());
                         args.push(optionParam);
                         arg = key;
-                        if (tracer.isDebug()) {tracer.debug("Separated '%s' option from '%s' option parameter%n", key, optionParam);}
+                        if (tracer.isDebug()) {
+                            tracer.debug("Separated '%s' option from '%s' option parameter", key, optionParam);}
                     } else {
-                        if (tracer.isDebug()) {tracer.debug("'%s' contains separator '%s' but '%s' is not a known option%n", arg, separator, key);}
+                        if (tracer.isDebug()) {
+                            tracer.debug("'%s' contains separator '%s' but '%s' is not a known option", arg, separator, key);}
                     }
                 } else {
-                    if (tracer.isDebug()) {tracer.debug("'%s' cannot be separated into <option>%s<option-parameter>%n", arg, separator);}
+                    if (tracer.isDebug()) {
+                        tracer.debug("'%s' cannot be separated into <option>%s<option-parameter>", arg, separator);}
                 }
                 if (isStandaloneOption(arg)) {
                     processStandaloneOption(required, initialized, arg, actuallyUnquoted, args, lookBehind);
@@ -13473,30 +13498,37 @@ public class CommandLine {
                 // Compact (single-letter) options can be grouped with other options or with an argument.
                 // only single-letter options can be combined with other options or with an argument
                 else if (config().posixClusteredShortOptionsAllowed() && arg.length() > 2 && arg.startsWith("-")) {
-                    if (tracer.isDebug()) {tracer.debug("Trying to process '%s' as clustered short options%n", arg, args);}
+                    if (tracer.isDebug()) {
+                        tracer.debug("Trying to process '%s' as clustered short options", arg, args);}
                     processClusteredShortOptions(required, initialized, arg, actuallyUnquoted, args);
                 }
                 // The argument could not be interpreted as an option: process it as a positional argument
                 else {
                     args.push(arg);
-                    if (tracer.isDebug()) {tracer.debug("Could not find option '%s', deciding whether to treat as unmatched option or positional parameter...%n", arg);}
-                    if (tracer.isDebug()) {tracer.debug("No option named '%s' found. Processing as positional parameter%n", arg);}
+                    if (tracer.isDebug()) {
+                        tracer.debug("Could not find option '%s', deciding whether to treat as unmatched option or positional parameter...", arg);}
+                    if (tracer.isDebug()) {
+                        tracer.debug("No option named '%s' found. Processing as positional parameter", arg);}
                     processPositionalParameter(required, initialized, actuallyUnquoted, args);
                 }
             }
         }
 
         private void processSubcommand(CommandLine subcommand, ParseResult.Builder builder, List<CommandLine> parsedCommands, Stack<String> args, Collection<ArgSpec> required, Set<ArgSpec> initialized, String[] originalArgs, List<Object> nowProcessing, String separator, String arg) {
-            if (tracer.isDebug()) {tracer.debug("Found subcommand '%s' (%s)%n", arg, subcommand.commandSpec.toString());}
+            Tracer tracer = CommandLine.tracer();
+            if (tracer.isDebug()) {
+                tracer.debug("Found subcommand '%s' (%s)", arg, subcommand.commandSpec.toString());}
             nowProcessing.add(subcommand.commandSpec);
             updateHelpRequested(subcommand.commandSpec);
             List<ArgSpec> inheritedRequired = new ArrayList<ArgSpec>();
-            if (tracer.isDebug()) {tracer.debug("Checking required args for parent %s...%n", subcommand.commandSpec.parent());}
+            if (tracer.isDebug()) {
+                tracer.debug("Checking required args for parent %s...", subcommand.commandSpec.parent());}
             Iterator<ArgSpec> requiredIter = required.iterator();
             while (requiredIter.hasNext()) {
                 ArgSpec requiredArg = requiredIter.next();
                 if (requiredArg.scopeType() == ScopeType.INHERIT || requiredArg.inherited()) {
-                    if (tracer.isDebug()) {tracer.debug("Postponing validation for required %s: scopeType=%s, inherited=%s%n", optionDescription("", requiredArg, -1), requiredArg.scopeType(), requiredArg.inherited());}
+                    if (tracer.isDebug()) {
+                        tracer.debug("Postponing validation for required %s: scopeType=%s, inherited=%s", optionDescription("", requiredArg, -1), requiredArg.scopeType(), requiredArg.inherited());}
                     if (!inheritedRequired.contains(requiredArg)) {inheritedRequired.add(requiredArg);}
                     requiredIter.remove();
                 }
@@ -13526,18 +13558,22 @@ public class CommandLine {
             }
         }
         private void processPositionalParameter(Collection<ArgSpec> required, Set<ArgSpec> initialized, boolean alreadyUnquoted, Stack<String> args) throws Exception {
+            final Tracer tracer = CommandLine.tracer();
             String arg = args.peek();
-            if (!endOfOptions && commandSpec.resemblesOption(arg, tracer)) {
+            if (!endOfOptions && commandSpec.resemblesOption(arg)) {
                 if (!commandSpec.parser().unmatchedOptionsArePositionalParams()) {
                     handleUnmatchedArgument(args); // #149
                     return;
                 }
-                if (tracer.isDebug()) {tracer.debug("Parser is configured to treat all unmatched options as positional parameter%n", arg);}
+                if (tracer.isDebug()) {
+                    tracer.debug("Parser is configured to treat all unmatched options as positional parameter", arg);}
             }
             int argIndex = parseResultBuilder.originalArgList.size() - args.size();
-            if (tracer.isDebug()) {tracer.debug("[%d] Processing next arg as a positional parameter. Command-local position=%d. Remainder=%s%n", argIndex, position, reverse(copy(args)));}
+            if (tracer.isDebug()) {
+                tracer.debug("[%d] Processing next arg as a positional parameter. Command-local position=%d. Remainder=%s", argIndex, position, reverse(copy(args)));}
             if (config().stopAtPositional()) {
-                if (!endOfOptions && tracer.isDebug()) {tracer.debug("Parser was configured with stopAtPositional=true, treating remaining arguments as positional parameters.%n");}
+                if (!endOfOptions && tracer.isDebug()) {
+                    tracer.debug("Parser was configured with stopAtPositional=true, treating remaining arguments as positional parameters.");}
                 endOfOptions = true;
             }
             int originalInteractiveCount = this.interactiveCount;
@@ -13562,7 +13598,8 @@ public class CommandLine {
                 }
                 Stack<String> argsCopy = copy(args);
                 Range arity = positionalParam.arity();
-                if (tracer.isDebug()) {tracer.debug("Position %s is in index range %s. Trying to assign args to %s, arity=%s%n", positionDesc(positionalParam), indexRange.internalToString(), positionalParam, arity);}
+                if (tracer.isDebug()) {
+                    tracer.debug("Position %s is in index range %s. Trying to assign args to %s, arity=%s", positionDesc(positionalParam), indexRange.internalToString(), positionalParam, arity);}
                 if (!assertNoMissingParameters(positionalParam, arity, argsCopy)) { break; } // #389 collectErrors parsing
                 int originalSize = argsCopy.size();
                 int actuallyConsumed = applyOption(positionalParam, false, LookBehind.SEPARATE, alreadyUnquoted, arity, argsCopy, initialized, "args[" + indexRange.internalToString() + "] at position " + localPosition);
@@ -13580,7 +13617,8 @@ public class CommandLine {
                         public void run() {
                             if (groupMatchContainer != null) {
                                 groupMatchContainer.lastMatch().position = updatedPosition;
-                                if (tracer.isDebug()) {tracer.debug("Updated group position to %s for group %s.%n", groupMatchContainer.lastMatch().position, groupMatchContainer);}
+                                if (tracer.isDebug()) {
+                                    tracer.debug("Updated group position to %s for group %s.", groupMatchContainer.lastMatch().position, groupMatchContainer);}
                             }
                         }
                     });
@@ -13594,7 +13632,8 @@ public class CommandLine {
             int maxConsumed = Math.max(consumedByGroup, argsConsumed);
             for (int i = 0; i < maxConsumed; i++) { args.pop(); }
             position += argsConsumed + interactiveConsumed;
-            if (tracer.isDebug()) {tracer.debug("Consumed %d arguments and %d interactive values, moving command-local position to index %d.%n", argsConsumed, interactiveConsumed, position);}
+            if (tracer.isDebug()) {
+                tracer.debug("Consumed %d arguments and %d interactive values, moving command-local position to index %d.", argsConsumed, interactiveConsumed, position);}
             for (Runnable task : bookKeeping) { task.run(); }
             if (consumedByGroup == 0 && argsConsumed == 0 && interactiveConsumed == 0 && !args.isEmpty()) {
                 handleUnmatchedArgument(args); // this gives error msg: "Unmatched argument at index 1: 'val2'"
@@ -13630,7 +13669,9 @@ public class CommandLine {
             if (lookBehind.isAttached()) {
                 arity = arity.min(Math.max(1, arity.min)); // if key=value, minimum arity is at least 1
             }
-            if (tracer.isDebug()) {tracer.debug("Found option named '%s': %s, arity=%s%n", arg, argSpec, arity);}
+            Tracer tracer = CommandLine.tracer();
+            if (tracer.isDebug()) {
+                tracer.debug("Found option named '%s': %s, arity=%s", arg, argSpec, arity);}
             parseResultBuilder.nowProcessing.add(argSpec);
             applyOption(argSpec, negated, lookBehind, alreadyUnquoted, arity, args, initialized, "option " + arg);
         }
@@ -13644,12 +13685,14 @@ public class CommandLine {
             String cluster = arg.substring(1);
             boolean paramAttachedToOption = true;
             boolean first = true;
+            Tracer tracer = CommandLine.tracer();
             do {
                 if (cluster.length() > 0 && commandSpec.posixOptionsMap().containsKey(cluster.charAt(0))) {
                     ArgSpec argSpec = commandSpec.posixOptionsMap().get(cluster.charAt(0));
                     Range arity = argSpec.arity();
                     String argDescription = "option " + prefix + cluster.charAt(0);
-                    if (tracer.isDebug()) {tracer.debug("Found option '%s%s' in %s: %s, arity=%s%n", prefix, cluster.charAt(0), arg,
+                    if (tracer.isDebug()) {
+                        tracer.debug("Found option '%s%s' in %s: %s, arity=%s", prefix, cluster.charAt(0), arg,
                             argSpec, arity);}
                     required.remove(argSpec);
                     cluster = cluster.substring(1);
@@ -13661,7 +13704,8 @@ public class CommandLine {
                         arity = arity.min(Math.max(1, arity.min)); // if key=value, minimum arity is at least 1
                     }
                     if (arity.min > 0 && !empty(cluster)) {
-                        if (tracer.isDebug()) {tracer.debug("Trying to process '%s' as option parameter%n", cluster);}
+                        if (tracer.isDebug()) {
+                            tracer.debug("Trying to process '%s' as option parameter", cluster);}
                     }
                     // arity may be >= 1, or
                     // arity <= 0 && !cluster.startsWith(separator)
@@ -13691,19 +13735,22 @@ public class CommandLine {
                     if (arg.endsWith(cluster)) {
                         args.push(paramAttachedToOption ? prefix + cluster : cluster);
                         if (args.peek().equals(arg)) { // #149 be consistent between unmatched short and long options
-                            if (tracer.isDebug()) {tracer.debug("Could not match any short options in %s, deciding whether to treat as unmatched option or positional parameter...%n", arg);}
+                            if (tracer.isDebug()) {
+                                tracer.debug("Could not match any short options in %s, deciding whether to treat as unmatched option or positional parameter...", arg);}
                             processPositionalParameter(required, initialized, alreadyUnquoted, args);
                             return;
                         }
                         // remainder was part of a clustered group that could not be completely parsed
-                        if (tracer.isDebug()) {tracer.debug("No option found for %s in %s%n", cluster, arg);}
+                        if (tracer.isDebug()) {
+                            tracer.debug("No option found for %s in %s", cluster, arg);}
                         String tmp = args.pop();
                         tmp = tmp + " (while processing option: '" + arg + "')";
                         args.push(tmp);
                         handleUnmatchedArgument(args);
                     } else {
                         args.push(cluster);
-                        if (tracer.isDebug()) {tracer.debug("%s is not an option parameter for %s%n", cluster, arg);}
+                        if (tracer.isDebug()) {
+                            tracer.debug("%s is not an option parameter for %s", cluster, arg);}
                         processPositionalParameter(required, initialized, alreadyUnquoted, args);
                     }
                     return;
@@ -13785,6 +13832,7 @@ public class CommandLine {
                                                   Stack<String> args,
                                                   Set<ArgSpec> initialized,
                                                   String argDescription) throws Exception {
+            Tracer tracer = CommandLine.tracer();
             boolean noMoreValues = args.isEmpty();
             String value = noMoreValues ? null : args.pop();
             String quotedValue = value;
@@ -13861,8 +13909,8 @@ public class CommandLine {
                 // process the command line value
                 if (!lookBehind.isAttached()) { parseResultBuilder.nowProcessing(argSpec, value); } // update position for Completers
             }
-            String initValueMessage = "Setting %s to '%3$s' (was '%2$s') for %4$s on %5$s%n";
-            String overwriteValueMessage = "Overwriting %s value '%s' with '%s' for %s on %s%n";
+            String initValueMessage = "Setting %s to '%3$s' (was '%2$s') for %4$s on %5$s";
+            String overwriteValueMessage = "Overwriting %s value '%s' with '%s' for %s on %s";
             Object newValue = interactiveValue != null ? interactiveValue : actualValue;
             if (noMoreValues && actualValue == null && interactiveValue == null) {
                 consumed = 0;
@@ -13870,11 +13918,11 @@ public class CommandLine {
                 consumed = 1;
                 if (interactiveValue != null) {
                     if (argSpec.echo()) {
-                        initValueMessage = "Setting %s to %3$s (interactive value) for %4$s on %5$s%n";
-                        overwriteValueMessage = "Overwriting %s value with %3$s (interactive value) for %s on %5$s%n";
+                        initValueMessage = "Setting %s to %3$s (interactive value) for %4$s on %5$s";
+                        overwriteValueMessage = "Overwriting %s value with %3$s (interactive value) for %s on %5$s";
                     } else {
-                        initValueMessage = "Setting %s to *** (masked interactive value) for %4$s on %5$s%n";
-                        overwriteValueMessage = "Overwriting %s value with *** (masked interactive value) for %s on %5$s%n";
+                        initValueMessage = "Setting %s to *** (masked interactive value) for %4$s on %5$s";
+                        overwriteValueMessage = "Overwriting %s value with *** (masked interactive value) for %s on %5$s";
                     }
                 }
                 if (!char[].class.equals(cls) && !char[].class.equals(argSpec.type())) {
@@ -13923,8 +13971,9 @@ public class CommandLine {
                                           String argDescription) throws Exception {
             if (argSpec.auxiliaryTypes().length < 2) { throw new ParameterException(CommandLine.this, argSpec.toString() + " needs two types (one for the map key, one for the value) but only has " + argSpec.auxiliaryTypes().length + " types configured.",argSpec, null); }
             Map<Object, Object> map = argSpec.getValue();
+            Tracer tracer = CommandLine.tracer();
             if (map == null || !initialized.contains(argSpec)) {
-                tracer.debug("Initializing binding for %s on %s with empty %s%n", optionDescription("", argSpec, 0), argSpec.scopeString(), argSpec.type().getSimpleName());
+                tracer.debug("Initializing binding for %s on %s with empty %s", optionDescription("", argSpec, 0), argSpec.scopeString(), argSpec.type().getSimpleName());
                 map = createMap(argSpec.type()); // map class
                 argSpec.setValue(map);
             }
@@ -14004,13 +14053,14 @@ public class CommandLine {
                                            String argDescription) throws Exception {
             if (!lookBehind.isAttached()) { parseResultBuilder.nowProcessing(argSpec, arg); }
             String[] values = unquoteAndSplit(argSpec, lookBehind, alreadyUnquoted, arity, consumed, arg);
+            Tracer tracer = CommandLine.tracer();
             for (String value : values) {
                 String[] keyValue = splitKeyValue(argSpec, value);
                 Object mapKey =   tryConvert(argSpec, index, keyConverter,   keyValue[0], 0);
                 String rawMapValue = keyValue.length == 1 ? argSpec.mapFallbackValue() : keyValue[1];
                 Object mapValue = tryConvert(argSpec, index, valueConverter, rawMapValue, 1);
                 result.put(mapKey, mapValue);
-                if (tracer.isInfo()) { tracer.info("Putting [%s : %s] in %s<%s, %s> %s for %s on %s%n", String.valueOf(mapKey), String.valueOf(mapValue),
+                if (tracer.isInfo()) { tracer.info("Putting [%s : %s] in %s<%s, %s> %s for %s on %s", String.valueOf(mapKey), String.valueOf(mapValue),
                         result.getClass().getSimpleName(), classes[0].getSimpleName(), classes[1].getSimpleName(), argSpec.toString(), argDescription, argSpec.scopeString()); }
                 parseResultBuilder.addStringValue(argSpec, keyValue[0]);
                 parseResultBuilder.addStringValue(argSpec, rawMapValue);
@@ -14038,7 +14088,7 @@ public class CommandLine {
                 }
                 return true;
             } catch (PicocliException ex) {
-                tracer.debug("%s cannot be assigned to %s: type conversion fails: %s.%n", arg, argDescription, ex.getMessage());
+                tracer().debug("%s cannot be assigned to %s: type conversion fails: %s.", arg, argDescription, ex.getMessage());
                 return false;
             }
         }
@@ -14078,7 +14128,7 @@ public class CommandLine {
         private boolean isArgResemblesOptionThereforeDiscontinue(ArgSpec argSpec, Stack<String> args, int i, Range arity) throws Exception {
             boolean result = false;
             String arg = args.peek();
-            if (commandSpec.resemblesOption(arg, tracer)) {
+            if (commandSpec.resemblesOption(arg)) {
                 if (argSpec.isPositional() && !(endOfOptions || commandSpec.parser().unmatchedOptionsArePositionalParams())) { // #1015
                     handleUnmatchedArgument(args);
                     result = true;
@@ -14088,7 +14138,8 @@ public class CommandLine {
                     maybeThrow(new UnmatchedArgumentException(commandSpec.commandLine(), msg));
                     result = true;
                 }
-                if (tracer.isDebug()) {tracer.debug("Parser is configured to allow unmatched option '%s' as option or positional parameter.%n", arg);}
+                if (tracer().isDebug()) {
+                    tracer().debug("Parser is configured to allow unmatched option '%s' as option or positional parameter.", arg);}
             }
             return result;
         }
@@ -14139,7 +14190,7 @@ public class CommandLine {
             int pos = getPosition(argSpec);
             List<Object> converted = consumeArguments(argSpec, negated, lookBehind, alreadyUnquoted, alreadyUnquoted, arity, args, argDescription);
             if (collection == null ||  !initialized.contains(argSpec))  {
-                tracer.debug("Initializing binding for %s on %s with empty %s%n", optionDescription("", argSpec, 0), argSpec.scopeString(), argSpec.type().getSimpleName());
+                tracer().debug("Initializing binding for %s on %s with empty %s", optionDescription("", argSpec, 0), argSpec.scopeString(), argSpec.type().getSimpleName());
                 collection = createCollection(argSpec.type(), argSpec.auxiliaryTypes()); // collection type, element type
                 argSpec.setValue(collection);
             }
@@ -14244,9 +14295,9 @@ public class CommandLine {
         private int addUserInputToList(ArgSpec argSpec, List<Object> result, int consumed, String argDescription) {
             char[] input = readUserInput(argSpec);
             String inputString = new String(input);
-            if (tracer.isInfo()) {
+            if (tracer().isInfo()) {
                 String value = argSpec.echo() ? inputString + " (interactive value)" : "*** (masked interactive value)";
-                tracer.info("Adding %s to %s for %s on %s%n", value, argSpec.toString(), argDescription, argSpec.scopeString());
+                tracer().info("Adding %s to %s for %s on %s", value, argSpec.toString(), argDescription, argSpec.scopeString());
             }
             String maskedValue = getMaskedValue(argSpec, inputString);
             parseResultBuilder.addStringValue(argSpec, maskedValue);
@@ -14277,8 +14328,8 @@ public class CommandLine {
             for (String value : values) {
                 Object stronglyTypedValue = tryConvert(argSpec, index, converter, value, 0);
                 result.add(stronglyTypedValue);
-                if (tracer.isInfo()) {
-                    tracer.info("Adding [%s] to %s for %s on %s%n", String.valueOf(result.get(result.size() - 1)), argSpec.toString(), argDescription, argSpec.scopeString());
+                if (tracer().isInfo()) {
+                    tracer().info("Adding [%s] to %s for %s on %s", String.valueOf(result.get(result.size() - 1)), argSpec.toString(), argDescription, argSpec.scopeString());
                 }
                 parseResultBuilder.addStringValue(argSpec, value);
             }
@@ -14291,7 +14342,7 @@ public class CommandLine {
             try {
                 String[] values = unquoteAndSplit(argSpec, lookBehind, alreadyUnquoted, arity, consumed, arg);
 //                if (!argSpec.acceptsValues(values.length, commandSpec.parser())) {
-//                    tracer.debug("$s would split into %s values but %s cannot accept that many values.%n", arg, values.length, argDescription);
+//                    tracer.debug("$s would split into %s values but %s cannot accept that many values.", arg, values.length, argDescription);
 //                    return false;
 //                }
                 for (String value : values) {
@@ -14299,7 +14350,7 @@ public class CommandLine {
                 }
                 return true;
             } catch (PicocliException ex) {
-                tracer.debug("%s cannot be assigned to %s: type conversion fails: %s.%n", arg, argDescription, ex.getMessage());
+                tracer().debug("%s cannot be assigned to %s: type conversion fails: %s.", arg, argDescription, ex.getMessage());
                 return false;
             }
         }
@@ -14381,7 +14432,8 @@ public class CommandLine {
             }
         }
         private boolean is(ArgSpec p, String attribute, boolean value) {
-            if (value) { if (tracer.isInfo()) {tracer.info("%s has '%s' annotation: not validating required fields%n", p.toString(), attribute); }}
+            if (value) { if (tracer().isInfo()) {
+                tracer().info("%s has '%s' annotation: not validating required fields", p.toString(), attribute); }}
             return value;
         }
         @SuppressWarnings("unchecked")
@@ -14499,9 +14551,12 @@ public class CommandLine {
             String name = argSpec.isOption() ? ((OptionSpec) argSpec).longestName() : "position " + position;
             String prompt = !empty(argSpec.prompt()) ? argSpec.prompt() : String.format("Enter value for %s (%s): ", name, str(argSpec.description(), 0));
             try {
-                if (tracer.isDebug()) {tracer.debug("Reading value for %s from console...%n", name);}
+                Tracer t = tracer();
+                if (t.isDebug()) {
+                    t.debug("Reading value for %s from console...", name);}
                 char[] result = argSpec.echo() ? readUserInputWithEchoing(prompt) : readPassword(prompt);
-                if (tracer.isDebug()) {tracer.debug(createUserInputDebugString(argSpec, result, name));}
+                if (t.isDebug()) {
+                    t.debug(createUserInputDebugString(argSpec, result, name));}
                 return result;
             } finally {
                 interactiveCount++;
@@ -14632,7 +14687,7 @@ public class CommandLine {
         try {
             closeable.close();
         } catch (Exception ex) {
-            new Tracer().warn("Could not close " + closeable + ": " + ex.toString());
+            CommandLine.tracer().warn("Could not close " + closeable + ": " + ex.toString());
         }
     }
     static Charset getStdoutEncoding() {
@@ -14818,17 +14873,19 @@ public class CommandLine {
                 }
             }
         }
-        static void handle(Exception e, String fqcn, Tracer tracer) {
+        static void handle(Exception e, String fqcn) {
+            Tracer tracer = CommandLine.tracer();
             if (!traced.contains(fqcn)) {
-                tracer.debug("Could not register converter for %s: %s%n", fqcn, e.toString());
+                tracer.debug("Could not register converter for %s: %s", fqcn, e.toString());
             }
             traced.add(fqcn);
         }
-        static boolean excluded(String fqcn, Tracer tracer) {
+        static boolean excluded(String fqcn) {
+            Tracer tracer = CommandLine.tracer();
             String[] excludes = System.getProperty("picocli.converters.excludes", "").split(",");
             for (String regex : excludes) {
                 if (fqcn.matches(regex)) {
-                    tracer.debug("BuiltIn type converter for %s is not loaded: (picocli.converters.excludes=%s)%n", fqcn, System.getProperty("picocli.converters.excludes"));
+                    tracer.debug("BuiltIn type converter for %s is not loaded: (picocli.converters.excludes=%s)", fqcn, System.getProperty("picocli.converters.excludes"));
                     return true;
                 }
             }
@@ -17919,24 +17976,75 @@ public class CommandLine {
         }
         private Assert() {} // private constructor: never instantiate
     }
-    private enum TraceLevel { OFF, WARN, INFO, DEBUG;
+
+    /** Enumerates over the trace level values for filtering which internal debug statements should be printed.
+     * @since 4.7.0 */
+    public enum TraceLevel { OFF, WARN, INFO, DEBUG;
+        /** Returns whether messages at the specified {@code other} trace level would be printed for the current trace level. */
         public boolean isEnabled(TraceLevel other) { return ordinal() >= other.ordinal(); }
         private void print(Tracer tracer, String msg, Object... params) {
-            if (tracer.level.isEnabled(this)) { tracer.stream.printf(prefix(msg), params); }
+            if (tracer.level.isEnabled(this)) { tracer.stream.printf(prefix(msg) + "%n", params); }
         }
         private String prefix(String msg) { return "[picocli " + this + "] " + msg; }
         static TraceLevel lookup(String key) { return key == null ? WARN : empty(key) || "true".equalsIgnoreCase(key) ? INFO : valueOf(key.toUpperCase(ENGLISH)); }
     }
-    static class Tracer {
-        TraceLevel level = TraceLevel.lookup(System.getProperty("picocli.trace"));
-        PrintStream stream = System.err;
-        void warn (String msg, Object... params) { TraceLevel.WARN.print(this, msg, params); }
-        void info (String msg, Object... params) { TraceLevel.INFO.print(this, msg, params); }
-        void debug(String msg, Object... params) { TraceLevel.DEBUG.print(this, msg, params); }
-        boolean isWarn()  { return level.isEnabled(TraceLevel.WARN); }
-        boolean isInfo()  { return level.isEnabled(TraceLevel.INFO); }
-        boolean isDebug() { return level.isEnabled(TraceLevel.DEBUG); }
+
+    /** Utility class for printing internal debug statements.
+     * @see CommandLine#tracer()
+     * @since 4.7.0 */
+    public static final class Tracer {
+        private PrintStream stream = System.err;
+        private TraceLevel level = TraceLevel.lookup(System.getProperty("picocli.trace"));
+        boolean modified;
+        private Tracer() {}
+        /** Returns the trace level that needs to be matched or exceeded for internal tracing statements to be printed.
+         * The initial trace level is WARN, unless system property {@code "picocli.trace"} is set to another valid {@code TraceLevel} value.
+         * @return the trace level that needs to be matched or exceeded for tracing statements to be printed
+         */
+        public TraceLevel getLevel() { return level; }
+        /** Sets the trace level that needs to be matched or exceeded for internal tracing statements to be printed.
+         * The initial trace level is WARN, unless system property {@code "picocli.trace"} is set to another valid {@code TraceLevel} value.
+         * @param level the trace level that needs to be matched or exceeded for tracing statements to be printed
+         */
+        public void setLevel(TraceLevel level) { this.level = Assert.notNull(level, "level"); modified = true; }
+        /** Returns whether the current trace level is DEBUG (the highest). */
+        public boolean isDebug() { return level.isEnabled(TraceLevel.DEBUG); }
+        /** Returns whether the current trace level is INFO or higher. */
+        public boolean isInfo()  { return level.isEnabled(TraceLevel.INFO); }
+        /** Returns whether the current trace level is WARN or higher. */
+        public boolean isWarn()  { return level.isEnabled(TraceLevel.WARN); }
+        /** Returns whether the current trace level is OFF (the lowest). */
+        public boolean isOff()  { return level== TraceLevel.OFF; }
+        /** Prints the specified message if the current trace level is WARN or higher.
+         * @param msg the message to print; may use {@link String#format(String, Object...)} syntax
+         * @param params – Arguments referenced by the format specifiers in the format string. If there are more arguments than format specifiers, the extra arguments are ignored. The number of arguments is variable and may be zero.
+         * @see Formatter */
+        public void warn (String msg, Object... params) { TraceLevel.WARN.print(this, msg, params); }
+        /** Prints the specified message if the current trace level is INFO or higher.
+         * @param msg the message to print; may use {@link String#format(String, Object...)} syntax
+         * @param params – Arguments referenced by the format specifiers in the format string. If there are more arguments than format specifiers, the extra arguments are ignored. The number of arguments is variable and may be zero.
+         * @see Formatter */
+        public void info (String msg, Object... params) { TraceLevel.INFO.print(this, msg, params); }
+        /** Prints the specified message if the current trace level is DEBUG or higher.
+         * @param msg the message to print; may use {@link String#format(String, Object...)} syntax
+         * @param params – Arguments referenced by the format specifiers in the format string. If there are more arguments than format specifiers, the extra arguments are ignored. The number of arguments is variable and may be zero.
+         * @see Formatter */
+        public void debug(String msg, Object... params) { TraceLevel.DEBUG.print(this, msg, params); }
+        public String toString() { return "Tracer[" + level + "]"; }
     }
+    /** Returns the {@code Tracer} used internally for printing internal debug statements.
+     * @return the {@code Tracer} used internally for printing internal debug statements
+     * @since 4.7.0 */
+    public static Tracer tracer() {
+        // TRACER is a static variable.
+        // Refresh to pick up changes to the system property after the CommandLine class was loaded.
+        if (!TRACER.modified) {
+            TRACER.level = TraceLevel.lookup(System.getProperty("picocli.trace"));
+            TRACER.stream = System.err;
+        }
+        return TRACER;
+    }
+
     /**
      * Uses cosine similarity to find matches from a candidate set for a specified input.
      * Based on code from http://www.nearinfinity.com/blogs/seth_schroeder/groovy_cosine_similarity_in_grails.html
@@ -18213,7 +18321,7 @@ public class CommandLine {
             String arg = unmatched.get(0);
             String stripped = CommandSpec.stripPrefix(arg);
             CommandSpec spec = getCommandLine().getCommandSpec();
-            if (spec.resemblesOption(arg, null)) {
+            if (spec.resemblesOption(arg)) {
                 return spec.findVisibleOptionNamesWithPrefix(stripped.substring(0, Math.min(2, stripped.length())));
             } else if (!spec.subcommands().isEmpty()) {
                 List<String> visibleSubs = new ArrayList<String>();
@@ -18226,7 +18334,7 @@ public class CommandLine {
             return Collections.emptyList();
         }
         private static boolean isUnknownOption(List<String> unmatch, CommandLine cmd) {
-            return unmatch != null && !unmatch.isEmpty() && cmd.getCommandSpec().resemblesOption(unmatch.get(0), null);
+            return unmatch != null && !unmatch.isEmpty() && cmd.getCommandSpec().resemblesOption(unmatch.get(0));
         }
         private static String describe(List<String> unmatch, CommandLine cmd) {
             String plural = unmatch.size() == 1 ? "" : "s";
@@ -18393,23 +18501,23 @@ public class CommandLine {
             if (file == null) {
                 throw new NullPointerException("file is null");
             }
-            Tracer tracer = new Tracer();
+            Tracer tracer = CommandLine.tracer();
             Properties result = new Properties();
             if (file.exists() && file.canRead()) {
                 InputStream in = null;
                 try {
                     String command = commandSpec == null ? "unknown command" : commandSpec.qualifiedName();
-                    tracer.debug("Reading defaults from %s for %s%n", file.getAbsolutePath(), command);
+                    tracer.debug("Reading defaults from %s for %s", file.getAbsolutePath(), command);
                     in = new FileInputStream(file);
                     result.load(in);
                     result.put("__picocli_internal_location", file);
                 } catch (IOException ioe) {
-                    tracer.warn("could not read defaults from %s: %s%n", file.getAbsolutePath(), ioe);
+                    tracer.warn("could not read defaults from %s: %s", file.getAbsolutePath(), ioe);
                 } finally {
                     close(in);
                 }
             } else {
-                tracer.warn("defaults configuration file %s does not exist or is not readable%n", file.getAbsolutePath());
+                tracer.warn("defaults configuration file %s does not exist or is not readable", file.getAbsolutePath());
             }
             return result;
         }

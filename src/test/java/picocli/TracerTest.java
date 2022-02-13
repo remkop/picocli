@@ -132,13 +132,13 @@ public class TracerTest {
 
         try {
             System.clearProperty(PROPERTY);
-            assertTrue("WARN enabled by default", new CommandLine.Tracer().isWarn());
+            assertTrue("WARN enabled by default", CommandLine.tracer().isWarn());
 
             System.setProperty(PROPERTY, "OFF");
-            assertFalse("WARN can be disabled by setting to OFF", new CommandLine.Tracer().isWarn());
+            assertFalse("WARN can be disabled by setting to OFF", CommandLine.tracer().isWarn());
 
             System.setProperty(PROPERTY, "WARN");
-            assertTrue("WARN can be explicitly enabled", new CommandLine.Tracer().isWarn());
+            assertTrue("WARN can be explicitly enabled", CommandLine.tracer().isWarn());
 
         } finally {
             if (old == null) {
@@ -156,28 +156,28 @@ public class TracerTest {
 
         try {
             System.setProperty(PROPERTY, "off");
-            assertEquals("OFF", String.valueOf(new CommandLine.Tracer().level));
-            assertFalse("!debug", new CommandLine.Tracer().isDebug());
-            assertFalse("!info", new CommandLine.Tracer().isInfo());
-            assertFalse("!warn", new CommandLine.Tracer().isWarn());
+            assertEquals("OFF", String.valueOf(CommandLine.tracer().getLevel()));
+            assertFalse("!debug", CommandLine.tracer().isDebug());
+            assertFalse("!info", CommandLine.tracer().isInfo());
+            assertFalse("!warn", CommandLine.tracer().isWarn());
 
             System.setProperty(PROPERTY, "debug");
-            assertEquals("DEBUG", String.valueOf(new CommandLine.Tracer().level));
-            assertTrue("debug", new CommandLine.Tracer().isDebug());
-            assertTrue("info", new CommandLine.Tracer().isInfo());
-            assertTrue("warn", new CommandLine.Tracer().isWarn());
+            assertEquals("DEBUG", String.valueOf(CommandLine.tracer().getLevel()));
+            assertTrue("debug", CommandLine.tracer().isDebug());
+            assertTrue("info", CommandLine.tracer().isInfo());
+            assertTrue("warn", CommandLine.tracer().isWarn());
 
             System.setProperty(PROPERTY, "info");
-            assertEquals("INFO", String.valueOf(new CommandLine.Tracer().level));
-            assertFalse("!debug", new CommandLine.Tracer().isDebug());
-            assertTrue("info", new CommandLine.Tracer().isInfo());
-            assertTrue("warn", new CommandLine.Tracer().isWarn());
+            assertEquals("INFO", String.valueOf(CommandLine.tracer().getLevel()));
+            assertFalse("!debug", CommandLine.tracer().isDebug());
+            assertTrue("info", CommandLine.tracer().isInfo());
+            assertTrue("warn", CommandLine.tracer().isWarn());
 
             System.setProperty(PROPERTY, "warn");
-            assertEquals("WARN", String.valueOf(new CommandLine.Tracer().level));
-            assertFalse("!debug", new CommandLine.Tracer().isDebug());
-            assertFalse("!info", new CommandLine.Tracer().isInfo());
-            assertTrue("warn", new CommandLine.Tracer().isWarn());
+            assertEquals("WARN", String.valueOf(CommandLine.tracer().getLevel()));
+            assertFalse("!debug", CommandLine.tracer().isDebug());
+            assertFalse("!info", CommandLine.tracer().isInfo());
+            assertTrue("warn", CommandLine.tracer().isWarn());
 
         } finally {
             if (old == null) {
@@ -186,6 +186,35 @@ public class TracerTest {
                 System.setProperty(PROPERTY, old);
             }
         }
+    }
+
+    @Test
+    public void testTraceLevelToInfoViaSetterWithSubCommands() throws Exception {
+        PrintStream originalErr = System.err;
+        ByteArrayOutputStream baos = new ByteArrayOutputStream(2500);
+        System.setErr(new PrintStream(baos));
+        CommandLine.TraceLevel old = CommandLine.tracer().getLevel();
+        CommandLine.tracer().setLevel(CommandLine.TraceLevel.INFO);
+        CommandLine commandLine = Demo.mainCommand();
+        commandLine.setEndOfOptionsDelimiter("$$$");
+        commandLine.parseArgs("--git-dir=/home/rpopma/picocli", "commit", "-m", "\"Fixed typos\"", "$$$", "src1.java", "src2.java", "src3.java");
+        System.setErr(originalErr);
+        CommandLine.tracer().setLevel(old);
+        CommandLine.tracer().modified = false;
+        String expected = format("" +
+                "[picocli INFO] Picocli version: %s%n" +
+                "[picocli INFO] Parsing 8 command line args [--git-dir=/home/rpopma/picocli, commit, -m, \"Fixed typos\", $$$, src1.java, src2.java, src3.java]%n" +
+                "[picocli INFO] Setting field java.io.File picocli.Demo$Git.gitDir to '%s' (was 'null') for option --git-dir%n" +
+                "[picocli INFO] Adding [\"Fixed typos\"] to field java.util.List<String> picocli.Demo$GitCommit.message for option -m%n" +
+                "[picocli INFO] Found end-of-options delimiter '$$$'. Treating remainder as positional parameters.%n" +
+                "[picocli INFO] Adding [src1.java] to field java.util.List<java.io.File> picocli.Demo$GitCommit.files for args[0..*] at position 0%n" +
+                "[picocli INFO] Adding [src2.java] to field java.util.List<java.io.File> picocli.Demo$GitCommit.files for args[0..*] at position 1%n" +
+                "[picocli INFO] Adding [src3.java] to field java.util.List<java.io.File> picocli.Demo$GitCommit.files for args[0..*] at position 2%n",
+            CommandLine.versionString(),
+            new File("/home/rpopma/picocli"));
+        String actual = new String(baos.toByteArray(), "UTF8");
+        //System.out.println(actual);
+        assertEquals(stripAnsiTrace(expected), stripAnsiTrace(actual));
     }
 
     @Test

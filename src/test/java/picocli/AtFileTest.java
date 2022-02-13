@@ -416,7 +416,7 @@ public class AtFileTest {
         File file = findFile("/argfile5-escapedAtValues.txt");
         App app = CommandLine.populateCommand(new App(), "aa", "@" + file.getAbsolutePath(), "bb");
         assertEquals(Arrays.asList("aa", "@val1", "@argfile5-escapedAtValues.txt", "bb"), app.files);
-        assertTrue(this.systemErrRule.getLog().contains("Not expanding @-escaped argument"));
+        assertTrue(systemErrRule.getLog(), systemErrRule.getLog().contains("Not expanding @-escaped argument"));
     }
 
     @Test

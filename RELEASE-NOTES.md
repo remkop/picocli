@@ -18,8 +18,35 @@ Artifacts in this release are signed by Remko Popma (6601 E5C0 8DCC BB96).
 
 ## <a name="4.7.0-new"></a> New and Noteworthy
 
+### Tracing API
+From picocli 4.7.0, applications can programmatically set the trace level, and use tracing in custom components.
+
+In addition to setting system property `picocli.trace`, applications can now change the trace level via the `Tracer::setLevel` method. For example:
+
+```java
+CommandLine.tracer().setLevel(CommandLine.TraceLevel.INFO);
+```
+
+The new public method `CommandLine.tracer()` returns the singleton `Tracer` object that is used internally by picocli, and can also be used by custom component implementations to do tracing. For example:
+
+```java
+class MyIntConverter implements ITypeConverter<Integer> {
+    public Integer convert(String value) {
+        try {
+            return Integer.parseInt(value);
+        } catch (NumberFormatException ex) {
+            CommandLine.tracer().info(
+                    "Could not convert %s to Integer, returning default value -1", value);
+            return -1;
+        }
+    }
+}
+```
+
+
 
 ## <a name="4.7.0-fixes"></a> Fixed issues
+* [#1471] API: Provide a programmatic way to configure Picocli's `TraceLevel`. Thanks to [ekinano](https://github.com/ekinano) for raising this.
 * [#1396][#1401] API: Support generic types in containers (e.g. List, Map). Thanks to [Michał Górniewski](https://github.com/mgorniew) for the pull request.
 * [#1380][#1505] API, bugfix: `requiredOptionMarker` should not be displayed on `ArgGroup` options. Thanks to [Ahmed El Khalifa](https://github.com/ahmede41) for the pull request.
 * [#1563] API: Add constructor to `PicocliSpringFactory` to allow custom fallback `IFactory`. Thanks to [Andrew Holland](https://github.com/a1dutch) for raising this.
