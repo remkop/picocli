@@ -10411,8 +10411,10 @@ public class CommandLine {
             }
 
             private Text synopsisUnitText(Help.ColorScheme colorScheme, Text synopsis) {
-                String prefix = multiplicity().min() > 0 ? "(" : "[";
-                String postfix = multiplicity().min() > 0 ? ")" : "]";
+                String requiredOpen = args().size() > 1 || !subgroups().isEmpty() ? "(" : "";
+                String requiredClose = args().size() > 1 || !subgroups().isEmpty() ? ")" : "";
+                String prefix = multiplicity().min() > 0 ? requiredOpen : "[";
+                String postfix = multiplicity().min() > 0 ? requiredClose : "]";
                 return colorScheme.text(prefix).concat(synopsis).concat(postfix);
             }
 

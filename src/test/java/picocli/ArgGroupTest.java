@@ -253,7 +253,7 @@ public class ArgGroupTest {
             spec.addArgGroup(group);
             fail("Expected exception");
         } catch (CommandLine.DuplicateNameException ex) {
-            assertEquals("An option cannot be in multiple groups but -x is in (-x) and [-x]. " +
+            assertEquals("An option cannot be in multiple groups but -x is in -x and [-x]. " +
                     "Refactor to avoid this. For example, (-a | (-a -b)) can be rewritten " +
                     "as (-a [-b]), and (-a -b | -a -c) can be rewritten as (-a (-b | -c)).", ex.getMessage());
         }
@@ -1776,7 +1776,7 @@ public class ArgGroupTest {
             cmd.parseArgs("-a", "1");
             fail("Expected exception");
         } catch (CommandLine.ParameterException ex) {
-            assertEquals("Error: Group: (-a=<a>) must be specified 2 times but was matched 1 times", ex.getMessage());
+            assertEquals("Error: Group: -a=<a> must be specified 2 times but was matched 1 times", ex.getMessage());
         }
     }
 
@@ -2370,8 +2370,8 @@ public class ArgGroupTest {
     @Test
     public void testIssue722() {
         String expected = String.format("" +
-                "create --level-0 <l0> (--level-1 <l1> (--level-2a <l2a>) (--level-2b <l2b>%n" +
-                "       (--level-3a <l3a>) (--level-3b <l3b>)))%n");
+                "create --level-0 <l0> (--level-1 <l1> --level-2a <l2a> (--level-2b <l2b>%n" +
+                "       --level-3a <l3a> --level-3b <l3b>))%n");
 
         CommandLine cmd = new CommandLine(new Issue722.CreateCommand());
         Help help = new Help(cmd.getCommandSpec(), Help.defaultColorScheme(Help.Ansi.OFF));
@@ -4134,8 +4134,8 @@ public class ArgGroupTest {
 
         }
     }
-    
-    
+
+
     // String literals for Issue 1409
     final String sampleX = "ANOTHER VALUE";
     final String errorX = "Default value for X incorrect";
