@@ -10421,18 +10421,51 @@ public class CommandLine {
             private Text rawSynopsisUnitText(Help.ColorScheme colorScheme, Set<ArgSpec> outparam_groupArgs) {
                 String infix = exclusive() ? " | " : " ";
                 Text synopsis = colorScheme.ansi().new Text(0);
-                for (ArgSpec arg : args()) {
-                    String prefix = synopsis.length > 0 ? infix : "";
-                    if (arg instanceof OptionSpec) {
-                        synopsis = concatOptionText(prefix, synopsis, colorScheme, (OptionSpec) arg);
-                    } else {
-                        synopsis = concatPositionalText(prefix, synopsis, colorScheme, (PositionalParamSpec) arg);
+
+                // if not sorted alphabetically then SortByOrder
+                boolean sortExplicitly = !args.isEmpty()
+                    && args.iterator().next().command() != null
+                    && !args.iterator().next().command().usageMessage().sortOptions();
+                if (sortExplicitly) {
+                    List<IOrdered> sortableComponents = new ArrayList<IOrdered>();
+                    List<PositionalParamSpec> remainder = new ArrayList<PositionalParamSpec>();
+                    for (ArgSpec arg : args()) {
+                        if (arg instanceof OptionSpec) {
+                            sortableComponents.add((IOrdered) arg);
+                        } else {
+                            remainder.add((PositionalParamSpec) arg);
+                        }
                     }
-                    outparam_groupArgs.add(arg);
-                }
-                for (ArgGroupSpec subgroup : subgroups()) {
-                    if (synopsis.length > 0) { synopsis = synopsis.concat(infix); }
-                    synopsis = synopsis.concat(subgroup.synopsisText(colorScheme, outparam_groupArgs));
+                    sortableComponents.addAll(subgroups());
+                    Collections.sort(sortableComponents, new Help.SortByOrder<IOrdered>());
+                    for (IOrdered ordered : sortableComponents) {
+                        String prefix = synopsis.length > 0 ? infix : "";
+                        if (ordered instanceof OptionSpec) {
+                            synopsis = concatOptionText(prefix, synopsis, colorScheme, (OptionSpec) ordered);
+                            outparam_groupArgs.add((OptionSpec) ordered);
+                        } else {
+                            synopsis = synopsis.concat(((ArgGroupSpec) ordered).synopsisText(colorScheme, outparam_groupArgs));
+                        }
+                    }
+                    for (PositionalParamSpec positional : remainder) {
+                        String prefix = synopsis.length > 0 ? infix : "";
+                        synopsis = concatPositionalText(prefix, synopsis, colorScheme, (PositionalParamSpec) positional);
+                        outparam_groupArgs.add(positional);
+                    }
+                } else {
+                    for (ArgSpec arg : args()) {
+                        String prefix = synopsis.length > 0 ? infix : "";
+                        if (arg instanceof OptionSpec) {
+                            synopsis = concatOptionText(prefix, synopsis, colorScheme, (OptionSpec) arg);
+                        } else {
+                            synopsis = concatPositionalText(prefix, synopsis, colorScheme, (PositionalParamSpec) arg);
+                        }
+                        outparam_groupArgs.add(arg);
+                    }
+                    for (ArgGroupSpec subgroup : subgroups()) {
+                        if (synopsis.length > 0) { synopsis = synopsis.concat(infix); }
+                        synopsis = synopsis.concat(subgroup.synopsisText(colorScheme, outparam_groupArgs));
+                    }
                 }
                 return synopsis;
             }
