@@ -21,7 +21,6 @@ import static org.junit.Assert.*;
 // https://github.com/remkop/picocli/issues/761
 public class OrderedOptionsTest {
 
-    // allows tests to set any kind of properties they like, without having to individually roll them back
     @Rule
     public final TestRule restoreSystemProperties = new RestoreSystemProperties();
 
