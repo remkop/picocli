@@ -43,6 +43,13 @@ class MyIntConverter implements ITypeConverter<Integer> {
 }
 ```
 
+### Unsorted Synopsis
+By default, the synopsis displays options in alphabetical order.
+Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis display options in the order they are declared in your class, or sorted by their `order` attribute.
+
+```java
+@Command(sortSynopsis = false)
+```
 
 
 ## <a name="4.7.0-fixes"></a> Fixed issues

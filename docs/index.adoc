@@ -5943,8 +5943,8 @@ The `@Option(order = <int>)` attribute can be used to explicitly control the pos
 Options with a lower number are shown before options with a higher number.
 
 ==== Unsorted Synopsis
-By default the synopsis displays options in alphabetical order. Use the `sortSynopsis = false` attribute to let the synopsis display options in the order they are declared in your class,
-or sorted by their `order` attribute.
+By default, the synopsis displays options in alphabetical order.
+Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis display options in the order they are declared in your class, or sorted by their `order` attribute.
 
 //.Java / Kotlin
 //[source,java,role="primary"]
