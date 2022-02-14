@@ -15340,8 +15340,11 @@ public class CommandLine {
          */
         public String synopsis(int synopsisHeadingLength) {
             if (!empty(commandSpec.usageMessage().customSynopsis())) { return customSynopsis(); }
+            Comparator<OptionSpec> sortStrategy = true // #1574 TODO commandSpec.usageMessage().sortSynopsis()
+                ? createShortOptionArityAndNameComparator() // alphabetic sort
+                : createOrderComparatorIfNecessary(commandSpec.options()); // explicit sort
             return commandSpec.usageMessage().abbreviateSynopsis() ? abbreviatedSynopsis()
-                    : detailedSynopsis(synopsisHeadingLength, createShortOptionArityAndNameComparator(), true);
+                    : detailedSynopsis(synopsisHeadingLength, sortStrategy, true);
         }
 
         /** Generates a generic synopsis like {@code <command name> [OPTIONS] [PARAM1 [PARAM2]...]}, omitting parts
