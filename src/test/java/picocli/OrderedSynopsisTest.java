@@ -10,12 +10,13 @@ import static org.junit.Assert.*;
 // https://github.com/remkop/picocli/issues/1408
 public class OrderedSynopsisTest {
 
-    @Ignore("#1408")
+//    @Ignore("#1408")
     @Test
     public void testIssue1408() {
         @Command(name = "myCommand",
             mixinStandardHelpOptions = true,
             description = "A command with explicitly ordered options.",
+            sortSynopsis = false,
             sortOptions = false)
         class Example {
             @Option(names = { "-d", "--option-d" }, order = -10, description = "Should be first")

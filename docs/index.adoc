@@ -5942,6 +5942,17 @@ When mixing `@Option` methods and `@Option` fields, options do not reliably appe
 The `@Option(order = <int>)` attribute can be used to explicitly control the position in the usage help message at which the option should be shown.
 Options with a lower number are shown before options with a higher number.
 
+==== Unsorted Synopsis
+By default the synopsis displays options in alphabetical order. Use the `sortSynopsis = false` attribute to let the synopsis display options in the order they are declared in your class,
+or sorted by their `order` attribute.
+
+//.Java / Kotlin
+//[source,java,role="primary"]
+[source,java]
+----
+@Command(sortSynopsis = false)
+----
+
 ==== Required-Option Marker
 Required options can be marked in the option list by the character specified with the `requiredOptionMarker` attribute. By default options are not marked because the synopsis shows users which options are required and which are optional. This feature may be useful in combination with the <<Abbreviated Synopsis,`abbreviateSynopsis`>> attribute. For example:
 

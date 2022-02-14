@@ -4621,9 +4621,16 @@ public class CommandLine {
          * @see Help#optionListHeading(Object...)  */
         String optionListHeading() default "";
 
-        /** Specify {@code false} to show Options in declaration order. The default is to sort alphabetically.
+        /** Specify {@code false} to show Options in declaration order (or sorted by their {@linkplain Option#order() order index}).
+         * The default is to sort alphabetically.
          * @return whether options should be shown in alphabetic order. */
         boolean sortOptions() default true;
+
+        /** Specify {@code false} to show the synopsis in declaration order (or sorted by their {@linkplain Option#order() order index}).
+         * The default is to sort alphabetically.
+         * @return whether options in the synopsis should be shown in alphabetic order.
+         * @since 4.7.0 */
+        boolean sortSynopsis() default true;
 
         /** Prefix required options with this character in the options list. The default is no marker: the synopsis
          * indicates which options and parameters are required.
@@ -7608,6 +7615,9 @@ public class CommandLine {
             /** Constant Boolean holding the default setting for whether to sort the options alphabetically: <code>{@value}</code>.*/
             static final Boolean DEFAULT_SORT_OPTIONS = Boolean.TRUE;
 
+            /** Constant Boolean holding the default setting for whether to sort options in the synopsis alphabetically: <code>{@value}</code>.*/
+            static final Boolean DEFAULT_SORT_SYNOPSIS = Boolean.TRUE;
+
             /** Constant Boolean holding the default setting for whether to show an entry for @-files in the usage help message.*/
             static final Boolean DEFAULT_SHOW_AT_FILE = Boolean.FALSE;
 
@@ -7656,6 +7666,7 @@ public class CommandLine {
             private String[] footer;
             private Boolean abbreviateSynopsis;
             private Boolean sortOptions;
+            private Boolean sortSynopsis;
             private Boolean showDefaultValues;
             private Boolean showAtFileInUsageHelp;
             private Boolean showEndOfOptionsDelimiterInUsageHelp;
@@ -8039,6 +8050,10 @@ public class CommandLine {
             /** Returns whether the options list in the usage help message should be sorted alphabetically. */
             public boolean sortOptions() { return (sortOptions == null) ? DEFAULT_SORT_OPTIONS : sortOptions; }
 
+            /** Returns whether the options in the synopsis should be sorted alphabetically.
+             * @since 4.7.0 */
+            public boolean sortSynopsis() { return (sortSynopsis == null) ? DEFAULT_SORT_SYNOPSIS : sortSynopsis; }
+
             /** Returns the character used to prefix required options in the options list. */
             public char requiredOptionMarker() { return (requiredOptionMarker == null) ? DEFAULT_REQUIRED_OPTION_MARKER : requiredOptionMarker; }
 
@@ -8183,6 +8198,11 @@ public class CommandLine {
              * @return this UsageMessageSpec for method chaining */
             public UsageMessageSpec sortOptions(boolean newValue) {sortOptions = newValue; return this;}
 
+            /** Sets whether the options in the synopsis should be sorted alphabetically.
+             * @return this UsageMessageSpec for method chaining
+             * @since 4.7.0 */
+            public UsageMessageSpec sortSynopsis(boolean newValue) {sortSynopsis = newValue; return this;}
+
             /** Sets the character used to prefix required options in the options list.
              * @return this UsageMessageSpec for method chaining */
             public UsageMessageSpec requiredOptionMarker(char newValue) {requiredOptionMarker = newValue; return this;}
@@ -8288,6 +8308,7 @@ public class CommandLine {
                 if (isNonDefault(cmd.showDefaultValues(), DEFAULT_SHOW_DEFAULT_VALUES))       {showDefaultValues = cmd.showDefaultValues();}
                 if (isNonDefault(cmd.showEndOfOptionsDelimiterInUsageHelp(), DEFAULT_SHOW_END_OF_OPTIONS)) {showEndOfOptionsDelimiterInUsageHelp = cmd.showEndOfOptionsDelimiterInUsageHelp();}
                 if (isNonDefault(cmd.sortOptions(), DEFAULT_SORT_OPTIONS))                    {sortOptions = cmd.sortOptions();}
+                if (isNonDefault(cmd.sortSynopsis(), DEFAULT_SORT_SYNOPSIS))                  {sortSynopsis = cmd.sortSynopsis();}
                 if (isNonDefault(cmd.synopsisHeading(), DEFAULT_SYNOPSIS_HEADING))            {synopsisHeading = cmd.synopsisHeading();}
                 if (isNonDefault(cmd.synopsisSubcommandLabel(), DEFAULT_SYNOPSIS_SUBCOMMANDS)){synopsisSubcommandLabel = cmd.synopsisSubcommandLabel();}
                 if (isNonDefault(cmd.usageHelpWidth(), DEFAULT_USAGE_WIDTH))                  {width(cmd.usageHelpWidth());} // validate
@@ -8316,6 +8337,7 @@ public class CommandLine {
                 if (initializable(showDefaultValues, mixin.showDefaultValues(), DEFAULT_SHOW_DEFAULT_VALUES))          {showDefaultValues = mixin.showDefaultValues();}
                 if (initializable(showEndOfOptionsDelimiterInUsageHelp, mixin.showEndOfOptionsDelimiterInUsageHelp(), DEFAULT_SHOW_END_OF_OPTIONS)) {showEndOfOptionsDelimiterInUsageHelp = mixin.showEndOfOptionsDelimiterInUsageHelp();}
                 if (initializable(sortOptions, mixin.sortOptions(), DEFAULT_SORT_OPTIONS))                             {sortOptions = mixin.sortOptions();}
+                if (initializable(sortSynopsis, mixin.sortSynopsis(), DEFAULT_SORT_SYNOPSIS))                          {sortSynopsis = mixin.sortSynopsis();}
                 if (initializable(synopsisHeading, mixin.synopsisHeading(), DEFAULT_SYNOPSIS_HEADING))                 {synopsisHeading = mixin.synopsisHeading();}
                 if (initializable(synopsisSubcommandLabel, mixin.synopsisSubcommandLabel(), DEFAULT_SYNOPSIS_SUBCOMMANDS)) {synopsisSubcommandLabel = mixin.synopsisSubcommandLabel();}
                 if (initializable(width, mixin.width(), DEFAULT_USAGE_WIDTH))                                          {width = mixin.width();}
@@ -8349,6 +8371,7 @@ public class CommandLine {
                 showDefaultValues = settings.showDefaultValues;
                 showEndOfOptionsDelimiterInUsageHelp = settings.showEndOfOptionsDelimiterInUsageHelp;
                 sortOptions = settings.sortOptions;
+                sortSynopsis = settings.sortSynopsis;
                 synopsisAutoIndentThreshold = settings.synopsisAutoIndentThreshold;
                 synopsisHeading = settings.synopsisHeading;
                 synopsisIndent = settings.synopsisIndent;
@@ -10425,7 +10448,7 @@ public class CommandLine {
                 // if not sorted alphabetically then SortByOrder
                 boolean sortExplicitly = !args.isEmpty()
                     && args.iterator().next().command() != null
-                    && !args.iterator().next().command().usageMessage().sortOptions();
+                    && !args.iterator().next().command().usageMessage().sortSynopsis();
                 if (sortExplicitly) {
                     List<IOrdered> sortableComponents = new ArrayList<IOrdered>();
                     List<PositionalParamSpec> remainder = new ArrayList<PositionalParamSpec>();
@@ -15340,7 +15363,7 @@ public class CommandLine {
          */
         public String synopsis(int synopsisHeadingLength) {
             if (!empty(commandSpec.usageMessage().customSynopsis())) { return customSynopsis(); }
-            Comparator<OptionSpec> sortStrategy = true // #1574 TODO commandSpec.usageMessage().sortSynopsis()
+            Comparator<OptionSpec> sortStrategy = commandSpec.usageMessage().sortSynopsis()
                 ? createShortOptionArityAndNameComparator() // alphabetic sort
                 : createOrderComparatorIfNecessary(commandSpec.options()); // explicit sort
             return commandSpec.usageMessage().abbreviateSynopsis() ? abbreviatedSynopsis()

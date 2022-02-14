@@ -21,7 +21,7 @@ public class OrderedArgGroupSynopsisTest {
 	@Rule
 	public final SystemErrRule systemErrRule = new SystemErrRule().enableLog().muteForSuccessfulTests();
 
-	@Command(sortOptions = false)
+	@Command(sortOptions = false, sortSynopsis = false)
 	class SynopsisOrder {
 		class GroupWithOneOption {
 			@Option(names = "--option1", required = true)

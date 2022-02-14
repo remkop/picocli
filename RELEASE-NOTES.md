@@ -51,7 +51,9 @@ class MyIntConverter implements ITypeConverter<Integer> {
 * [#1380][#1505] API, bugfix: `requiredOptionMarker` should not be displayed on `ArgGroup` options. Thanks to [Ahmed El Khalifa](https://github.com/ahmede41) for the pull request.
 * [#1563] API: Add constructor to `PicocliSpringFactory` to allow custom fallback `IFactory`. Thanks to [Andrew Holland](https://github.com/a1dutch) for raising this.
 * [#1571] Enhancement: Variables in values from the default value provider should be interpolated. Thanks to [Bas Passon](https://github.com/bpasson) for raising this.
-* [#964][#1080] Enhancement: ArgGroup synopsis should respect order (if specified). Thanks to [Enderaoe](https://github.com/Lyther) for the pull request with unit tests.
+* [#1574] API: Add annotation API to control whether synopsis should be sorted alphabetically or by explicit `order`.
+* [#1408] Enhancement: Synopsis should respect `order` if specified. Thanks to [Simon](https://github.com/sbernard31) for raising this.
+* [#964][#1080] Enhancement: ArgGroup synopsis should respect `order` (if specified). Thanks to [Enderaoe](https://github.com/Lyther) for the pull request with unit tests.
 * [#1572] Enhancement: Remove redundant braces in ArgGroup synopsis.
 * [#1573] DEP: Bump JLine3 version to 3.21.0 from 3.19.0.
 
