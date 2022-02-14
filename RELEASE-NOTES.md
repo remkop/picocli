@@ -51,7 +51,7 @@ class MyIntConverter implements ITypeConverter<Integer> {
 * [#1380][#1505] API, bugfix: `requiredOptionMarker` should not be displayed on `ArgGroup` options. Thanks to [Ahmed El Khalifa](https://github.com/ahmede41) for the pull request.
 * [#1563] API: Add constructor to `PicocliSpringFactory` to allow custom fallback `IFactory`. Thanks to [Andrew Holland](https://github.com/a1dutch) for raising this.
 * [#1571] Enhancement: Variables in values from the default value provider should be interpolated. Thanks to [Bas Passon](https://github.com/bpasson) for raising this.
-
+* [#1573] DEP: Bump JLine3 version to 3.21.0 from 3.19.0.
 
 ## <a name="4.7.0-deprecated"></a> Deprecations
 No features were deprecated in this release.
