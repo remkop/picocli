@@ -5,6 +5,10 @@ The picocli community is pleased to announce picocli 4.7.0.
 
 This release includes bugfixes and enhancements.
 
+From this release, applications can programmatically set the trace level, and use tracing in custom components.
+
+Also, this release has various fixes and enhancements related to the synopsis of the usage help message.
+
 
 This is the seventy-ninth public release.
 Picocli follows [semantic versioning](http://semver.org/).
@@ -62,6 +66,7 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1408] Enhancement: Synopsis should respect `order` if specified. Thanks to [Simon](https://github.com/sbernard31) for raising this.
 * [#964][#1080] Enhancement: ArgGroup synopsis should respect `order` (if specified). Thanks to [Enderaoe](https://github.com/Lyther) for the pull request with unit tests.
 * [#1572] Enhancement: Remove redundant braces in ArgGroup synopsis.
+* [#1575] Bugfix: Synopsis should not cluster boolean options if `posixClusteredShortOptionsAllowed` is set to false.
 * [#1573] DEP: Bump JLine3 version to 3.21.0 from 3.19.0.
 
 ## <a name="4.7.0-deprecated"></a> Deprecations

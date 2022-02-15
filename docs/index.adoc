@@ -5956,7 +5956,7 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 @Command(sortSynopsis = false)
 ----
 
-NOTE: Regardless of the sorting strategy, boolean short options are shown first as a single clustered group in the synopsis, followed by options that take parameters.
+NOTE: Regardless of the sorting strategy, boolean short options are shown first as a single clustered group in the synopsis, followed by options that take parameters, unless the parser is <<POSIX Clustered Short Options,configured>> to disallow clustered boolean short options.
 
 ==== Required-Option Marker
 Required options can be marked in the option list by the character specified with the `requiredOptionMarker` attribute. By default options are not marked because the synopsis shows users which options are required and which are optional. This feature may be useful in combination with the <<Abbreviated Synopsis,`abbreviateSynopsis`>> attribute. For example:

@@ -15371,8 +15371,9 @@ public class CommandLine {
             Comparator<OptionSpec> sortStrategy = commandSpec.usageMessage().sortSynopsis()
                 ? createShortOptionArityAndNameComparator() // alphabetic sort
                 : createOrderComparatorIfNecessary(commandSpec.options()); // explicit sort
+            boolean clusterBooleanOptions = commandSpec.parser().posixClusteredShortOptionsAllowed();
             return commandSpec.usageMessage().abbreviateSynopsis() ? abbreviatedSynopsis()
-                    : detailedSynopsis(synopsisHeadingLength, sortStrategy, true);
+                    : detailedSynopsis(synopsisHeadingLength, sortStrategy, clusterBooleanOptions);
         }
 
         /** Generates a generic synopsis like {@code <command name> [OPTIONS] [PARAM1 [PARAM2]...]}, omitting parts
