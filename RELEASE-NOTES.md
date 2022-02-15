@@ -65,6 +65,7 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1574] API: Add annotation API to control whether synopsis should be sorted alphabetically or by explicit `order`.
 * [#1408] Enhancement: Synopsis should respect `order` if specified. Thanks to [Simon](https://github.com/sbernard31) for raising this.
 * [#964][#1080] Enhancement: ArgGroup synopsis should respect `order` (if specified). Thanks to [Enderaoe](https://github.com/Lyther) for the pull request with unit tests.
+* [#899][#1578][#1579] Enhancement: improve built-in `Help` command description. Thanks to [Michael L Heuer](https://github.com/heuermh) for the pull request. Thanks to [Garret Wilson](https://github.com/garretwilson) for raising this.
 * [#1572] Enhancement: Remove redundant braces in ArgGroup synopsis.
 * [#1575] Bugfix: Synopsis should not cluster boolean options if `posixClusteredShortOptionsAllowed` is set to false.
 * [#812] DOC: Document how to test a picocli spring-boot application.
