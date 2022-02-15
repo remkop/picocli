@@ -1614,7 +1614,7 @@ public class AutoCompleteTest {
                 "      --apples=<apples>%n" +
                 "      --bbb=<b>%n" +
                 "Commands:%n" +
-                "  help  Displays help information about the specified command%n");
+                "  help  Display help information about the specified command.%n");
         assertEquals(expectedUsage, cmd.getUsageMessage(CommandLine.Help.Ansi.OFF));
 
         StringWriter sw = new StringWriter();

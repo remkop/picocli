@@ -3295,7 +3295,7 @@ public class HelpTest {
                 "  -h, --help      Show this help message and exit.%n" +
                 "  -V, --version   Print version information and exit.%n" +
                 "Commands:%n" +
-                "  help  Displays help information about the specified command%n");
+                "  help  Display help information about the specified command.%n");
         assertEquals(expected, baos.toString());
     }
 
@@ -3315,7 +3315,7 @@ public class HelpTest {
                 "  -h, --help      Show this help message and exit.%n" +
                 "  -V, --version   Print version information and exit.%n" +
                 "Commands:%n" +
-                "  help  Displays help information about the specified command%n");
+                "  help  Display help information about the specified command.%n");
         assertEquals(expected, sw.toString());
     }
 
@@ -5118,7 +5118,7 @@ public class HelpTest {
         String expected = String.format("" +
                 "Usage: <main class> [COMMAND]%n" +
                 "Commands:%n" +
-                "  help  Displays help information about the specified command%n");
+                "  help  Display help information about the specified command.%n");
         String actual = new CommandLine(new MyTool()).getUsageMessage();
         assertEquals(expected, actual);
     }

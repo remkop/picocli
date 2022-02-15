@@ -486,7 +486,7 @@ public class Demo implements Runnable {
             "Commands:%n" +
             "%n" +
             "The most commonly used git commands are:%n" +
-            "  help      Displays help information about the specified command%n" +
+            "  help      Display help information about the specified command.%n" +
             "  status    Show the working tree status.%n" +
             "  commit    Record changes to the repository.%n" +
             "  add       Add file contents to the index.%n" +
@@ -510,7 +510,7 @@ public class Demo implements Runnable {
             "Commands:%n" +
             "%n" +
             "The most commonly used git commands are:%n" +
-            "  \u001B[1mhelp\u001B[21m\u001B[0m      Displays help information about the specified command%n" +
+            "  \u001B[1mhelp\u001B[21m\u001B[0m      Display help information about the specified command.%n" +
             "  \u001B[1mstatus\u001B[21m\u001B[0m    Show the working tree status.%n" +
             "  \u001B[1mcommit\u001B[21m\u001B[0m    Record changes to the repository.%n" +
             "  \u001B[1madd\u001B[21m\u001B[0m       Add file contents to the index.%n" +

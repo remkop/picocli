@@ -72,7 +72,7 @@ public class InterpolatedModelTest {
                 "OPTION HEADING%n" +
                 "  -x+ <x>   option description%n" +
                 "SUBCOMMANDS HEADING%n" +
-                "  help  Displays help information about the specified command%n" +
+                "  help  Display help information about the specified command.%n" +
                 "FOOTER HEADING%n" +
                 "FOOTER 1%n" +
                 "and FOOTER 2%n");
@@ -138,7 +138,7 @@ public class InterpolatedModelTest {
                 "OPTION HEADING%n" +
                 "  -x+ <x>   option description%n" +
                 "SUBCOMMANDS HEADING%n" +
-                "  help  Displays help information about the specified command%n" +
+                "  help  Display help information about the specified command.%n" +
                 "FOOTER HEADING%n" +
                 "FOOTER 1%n" +
                 "and FOOTER 2%n");
