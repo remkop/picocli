@@ -446,7 +446,7 @@ println "done"
                 "  -h, --help      Show this help message and exit.%n" +
                 "  -V, --version   Print version information and exit.%n" +
                 "Commands:%n" +
-                "  help    Displays help information about the specified command%n" +
+                "  help    Display help information about the specified command.%n" +
                 "  commit  Record changes to the repository"
         assertEquals(String.format(expected), baos.toString().trim())
         assertEquals(null, result)

@@ -306,7 +306,7 @@ public class HelpSubCommandTest {
                 "  -V, --version   Print version information and exit.%n" +
                 "Commands:%n" +
                 "  sub   This is a subcommand%n" +
-                "  help  Displays help information about the specified command%n");
+                "  help  Display help information about the specified command.%n");
         assertEquals(expected, sw.toString());
     }
 
@@ -328,7 +328,7 @@ public class HelpSubCommandTest {
                 "  -V, --version   Print version information and exit.%n" +
                 "Commands:%n" +
                 "  sub   This is a subcommand%n" +
-                "  help  Displays help information about the specified command%n");
+                "  help  Display help information about the specified command.%n");
         assertEquals(expected, sw.toString());
     }
 
@@ -344,7 +344,7 @@ public class HelpSubCommandTest {
                 .execute("help", "-h");
 
         String expected = String.format("" +
-                "Displays help information about the specified command%n" +
+                "Display help information about the specified command.%n" +
                 "%n" +
                 "Usage: <main class> help [-h] [COMMAND]%n" +
                 "%n" +
@@ -377,7 +377,7 @@ public class HelpSubCommandTest {
                 "  -V, --version   Print version information and exit.%n" +
                 "Commands:%n" +
                 "  sub   This is a subcommand%n" +
-                "  help  Displays help information about the specified command%n");
+                "  help  Display help information about the specified command.%n");
         assertEquals(expected, sw.toString());
 
         sw = new StringWriter();
@@ -408,7 +408,7 @@ public class HelpSubCommandTest {
                 "Usage: parent [COMMAND]%n" +
                 "the parent command%n" +
                 "Commands:%n" +
-                "  parent  Displays help information about the specified command%n");
+                "  parent  Display help information about the specified command.%n");
         assertEquals(expected, this.systemOutRule.getLog());
     }
 
@@ -427,7 +427,7 @@ public class HelpSubCommandTest {
                 "Usage: parent [COMMAND]%n" +
                 "the parent command%n" +
                 "Commands:%n" +
-                "  parent  Displays help information about the specified command%n");
+                "  parent  Display help information about the specified command.%n");
         assertEquals(expected, this.systemOutRule.getLog());
     }
 
