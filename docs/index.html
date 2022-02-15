@@ -9724,18 +9724,31 @@ For demonstration purposes the above example mixes the all-uppercase (e.g., <cod
 <div class="sect3">
 <h4 id="_unsorted_option_list"><a class="anchor" href="#_unsorted_option_list"></a>14.4.1. Unsorted Option List</h4>
 <div class="paragraph">
-<p>By default the options list displays options in alphabetical order. Use the <code>sortOptions = false</code> attribute to display options in the order they are declared in your class.</p>
+<p>By default, the options list in the usage help message displays options in alphabetical order.
+Use the <code>sortOptions = false</code> attribute to display options in the order they are declared in your class.</p>
 </div>
 <div class="listingblock">
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">sortOptions</span> <span class="o">=</span> <span class="kc">false</span><span class="o">)</span></code></pre>
 </div>
 </div>
+<div class="admonitionblock caution">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-caution" title="Caution"></i>
+</td>
+<td class="content">
+Sorting on declaration order is done on a best effort basis, see the <a href="#_reordering_options">Reordering Options</a> section below.
+</td>
+</tr>
+</table>
+</div>
 </div>
 <div class="sect3">
 <h4 id="_reordering_options"><a class="anchor" href="#_reordering_options"></a>14.4.2. Reordering Options</h4>
 <div class="paragraph">
-<p>When mixing <code>@Option</code> methods and <code>@Option</code> fields, options do not reliably appear in declaration order.</p>
+<p>Note that picocli cannot reliably detect declaration order in commands that have both <code>@Option</code>-annotated methods and <code>@Option</code>-annotated fields.</p>
 </div>
 <div class="paragraph">
 <p>The <code>@Option(order = &lt;int&gt;)</code> attribute can be used to explicitly control the position in the usage help message at which the option should be shown.
