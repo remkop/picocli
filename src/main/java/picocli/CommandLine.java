@@ -15009,7 +15009,7 @@ public class CommandLine {
      * and a {@code COMMAND} positional parameter with {@code descriptionKey = "helpCommand.command"}.
      * @since 3.0
      */
-    @Command(name = "help", header = "Displays help information about the specified command",
+    @Command(name = "help", header = "Display help information about the specified command.",
             synopsisHeading = "%nUsage: ", helpCommand = true,
             description = {"%nWhen no COMMAND is given, the usage help for the main command is displayed.",
                     "If a COMMAND is specified, the help for that command is shown.%n"})
