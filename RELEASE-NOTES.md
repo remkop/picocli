@@ -68,6 +68,7 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1572] Enhancement: Remove redundant braces in ArgGroup synopsis.
 * [#1575] Bugfix: Synopsis should not cluster boolean options if `posixClusteredShortOptionsAllowed` is set to false.
 * [#1573] DEP: Bump JLine3 version to 3.21.0 from 3.19.0.
+* [#1576] DEP: Bump Spring Boot version to 2.6.3 from 2.5.6.
 
 ## <a name="4.7.0-deprecated"></a> Deprecations
 No features were deprecated in this release.
