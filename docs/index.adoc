@@ -5926,8 +5926,9 @@ NOTE: For demonstration purposes the above example mixes the all-uppercase (e.g.
 
 === Option List
 
-==== Unsorted Option List
-By default the options list displays options in alphabetical order. Use the `sortOptions = false` attribute to display options in the order they are declared in your class.
+==== Sorted Option List
+By default, the options list in the usage help message displays options in alphabetical order.
+Use the `sortOptions = false` attribute to display options in the order they are declared in your class.
 
 //.Java / Kotlin
 //[source,java,role="primary"]
@@ -5936,14 +5937,16 @@ By default the options list displays options in alphabetical order. Use the `sor
 @Command(sortOptions = false)
 ----
 
+CAUTION: Sorting on declaration order is done on a best effort basis, see the <<Reordering Options>> section below.
+
 ==== Reordering Options
-When mixing `@Option` methods and `@Option` fields, options do not reliably appear in declaration order.
+Note that picocli cannot reliably detect declaration order in commands that have both `@Option`-annotated methods and `@Option`-annotated fields.
 
 The `@Option(order = <int>)` attribute can be used to explicitly control the position in the usage help message at which the option should be shown.
 Options with a lower number are shown before options with a higher number.
 
-==== Unsorted Synopsis
-By default, the synopsis displays options in alphabetical order.
+==== Sorted Synopsis
+By default, the synopsis of the usage help message displays options in alphabetical order.
 Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis display options in the order they are declared in your class, or sorted by their `order` attribute.
 
 //.Java / Kotlin
@@ -5952,6 +5955,8 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 ----
 @Command(sortSynopsis = false)
 ----
+
+NOTE: Regardless of the sorting strategy, boolean short options are shown first as a single clustered group in the synopsis, followed by options that take parameters.
 
 ==== Required-Option Marker
 Required options can be marked in the option list by the character specified with the `requiredOptionMarker` attribute. By default options are not marked because the synopsis shows users which options are required and which are optional. This feature may be useful in combination with the <<Abbreviated Synopsis,`abbreviateSynopsis`>> attribute. For example:

@@ -55,6 +55,8 @@ import static picocli.CommandLine.Help.Column.Overflow.WRAP;
  * <p>
  * CommandLine interpreter that uses reflection to initialize an annotated user object with values obtained from the
  * command line arguments.
+ * </p><p>
+ * The full user manual is hosted at <a href="https://picocli.info/">https://picocli.info</a>.
  * </p><h2>Example</h2>
  * <p id="checksum_example">
  * An example that implements {@code Callable} and uses the {@link #execute(String...) CommandLine.execute} convenience API to run in a single line of code:
@@ -70,19 +72,19 @@ import static picocli.CommandLine.Help.Column.Overflow.WRAP;
  *     &#064;Option(names = {"-a", "--algorithm"}, description = "MD5, SHA-1, SHA-256, ...")
  *     private String algorithm = "SHA-1";
  *
- *     // CheckSum implements Callable, so parsing, error handling and handling user
- *     // requests for usage help or version help can be done with one line of code.
- *     public static void main(String[] args) {
- *         int exitCode = new CommandLine(new CheckSum()).execute(args);
- *         System.exit(exitCode);
- *     }
- *
  *     &#064;Override
  *     public Integer call() throws Exception { // your business logic goes here...
  *         byte[] fileContents = Files.readAllBytes(file.toPath());
  *         byte[] digest = MessageDigest.getInstance(algorithm).digest(fileContents);
  *         System.out.printf("%0" + (digest.length*2) + "x%n", new BigInteger(1,digest));
  *         return 0;
+ *     }
+ *
+ *     // CheckSum implements Callable, so parsing, error handling and handling user
+ *     // requests for usage help or version help can be done with one line of code.
+ *     public static void main(String[] args) {
+ *         int exitCode = new CommandLine(new CheckSum()).execute(args);
+ *         System.exit(exitCode);
  *     }
  * }
  * </pre>
@@ -174,7 +176,7 @@ public class CommandLine {
     /**
      * Constructs a new {@code CommandLine} interpreter with the specified object (which may be an annotated user object or a {@link CommandSpec CommandSpec}) and a default {@linkplain IFactory factory}.
      * <p>The specified object may be a {@link CommandSpec CommandSpec} object, or it may be a {@code @Command}-annotated
-     * user object with {@code @Option} and {@code @Parameters}-annotated fields, in which case picocli automatically
+     * user object with {@code @Option} and {@code @Parameters}-annotated fields and methods, in which case picocli automatically
      * constructs a {@code CommandSpec} from this user object.
      * </p><p> If the specified command object is an interface {@code Class} with {@code @Option} and {@code @Parameters}-annotated methods,
      * picocli creates a {@link java.lang.reflect.Proxy Proxy} whose methods return the matched command line values.
@@ -198,7 +200,7 @@ public class CommandLine {
     /**
      * Constructs a new {@code CommandLine} interpreter with the specified object (which may be an annotated user object or a {@link CommandSpec CommandSpec}) and object factory.
      * <p>The specified object may be a {@link CommandSpec CommandSpec} object, or it may be a {@code @Command}-annotated
-     * user object with {@code @Option} and {@code @Parameters}-annotated fields, in which case picocli automatically
+     * user object with {@code @Option} and {@code @Parameters}-annotated fields and methods, in which case picocli automatically
      * constructs a {@code CommandSpec} from this user object.
      * </p><p> If the specified command object is an interface {@code Class} with {@code @Option} and {@code @Parameters}-annotated methods,
      * picocli creates a {@link java.lang.reflect.Proxy Proxy} whose methods return the matched command line values.
@@ -3953,6 +3955,7 @@ public class CommandLine {
 
         /**
          * When {@link Command#sortOptions() @Command(sortOptions = false)} is specified, this attribute can be used to control the order in which options are listed in the usage help message.
+         * When {@link Command#sortSynopsis() @Command(sortSynopsis = false)} is specified, this attribute controls the order in which options appear in the synopsis of the usage help message.
          * @return the position in the options list at which this option should be shown. Options with a lower number are shown before options with a higher number. Gaps are allowed.
          * @since 3.9
          */
@@ -4621,13 +4624,15 @@ public class CommandLine {
          * @see Help#optionListHeading(Object...)  */
         String optionListHeading() default "";
 
-        /** Specify {@code false} to show Options in declaration order (or sorted by their {@linkplain Option#order() order index}).
-         * The default is to sort alphabetically.
+        /** Specify {@code false} to show Options in declaration order in the option list of the usage help message (or to sort options by their {@linkplain Option#order() order index} if set).
+         * Note that picocli cannot reliably detect declaration order in commands that have both {@code @Option}-annotated methods and {@code @Option}-annotated fields.
+         * The default ({@code true}) is to sort alphabetically.
          * @return whether options should be shown in alphabetic order. */
         boolean sortOptions() default true;
 
-        /** Specify {@code false} to show the synopsis in declaration order (or sorted by their {@linkplain Option#order() order index}).
-         * The default is to sort alphabetically.
+        /** Specify {@code false} to show options in declaration order in the synopsis of the usage help message (or to sort options by their {@linkplain Option#order() order index} if set).
+         * Note that picocli cannot reliably detect declaration order in commands that have both {@code @Option}-annotated methods and {@code @Option}-annotated fields.
+         * The default ({@code true}) is to sort alphabetically.
          * @return whether options in the synopsis should be shown in alphabetic order.
          * @since 4.7.0 */
         boolean sortSynopsis() default true;

@@ -20,7 +20,7 @@
     to do parsing and error handling in one line of code.
 </p>
 <p>
-    The full user manual is hosted at <a href="https://picocli.info/">http://picocli.info</a>.
+    The full user manual is hosted at <a href="https://picocli.info/">https://picocli.info</a>.
 </p>
 <pre>
 &#064;Command(name = "checksum", mixinStandardHelpOptions = true, version = "Checksum 4.0",
@@ -33,19 +33,19 @@ class CheckSum implements Callable&lt;Integer&gt; {
     &#064;Option(names = {"-a", "--algorithm"}, description = "MD5, SHA-1, SHA-256, ...")
     private String algorithm = "SHA-1";
 
-    // CheckSum implements Callable, so parsing, error handling and handling user
-    // requests for usage help or version help can be done with one line of code.
-    public static void main(String[] args) {
-        int exitCode = new CommandLine(new CheckSum()).execute(args);
-        System.exit(exitCode);
-    }
-
     &#064;Override
     public Integer call() throws Exception { // your business logic goes here
         byte[] fileContents = Files.readAllBytes(file.toPath());
         byte[] digest = MessageDigest.getInstance(algorithm).digest(fileContents);
         System.out.printf("%0" + (digest.length*2) + "x%n", new BigInteger(1, digest));
         return 0;
+    }
+
+    // CheckSum implements Callable, so parsing, error handling and handling user
+    // requests for usage help or version help can be done with one line of code.
+    public static void main(String[] args) {
+        int exitCode = new CommandLine(new CheckSum()).execute(args);
+        System.exit(exitCode);
     }
 }
 </pre>
