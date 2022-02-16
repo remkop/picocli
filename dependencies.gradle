@@ -6,7 +6,7 @@ ext {
     compileTestingVersion          = "0.19"
     gradleBintrayPluginVersion     = "1.+"
     groovyVersion       = "2.4.10"
-    hamcrestCoreVersion = "1.3"
+    hamcrestCoreVersion = "2.2"
     ivyVersion          = "2.4.0"
     jacocoVersion       = "0.8.2"
 
