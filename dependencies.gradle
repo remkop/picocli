@@ -11,7 +11,7 @@ ext {
     jacocoVersion       = "0.8.2"
 
     //# Unable to load jansi native library: java.lang.Exception: No native library found for os.name=Windows, os.arch=x86_64, paths=[/usr/java/packages/lib:/usr/lib64:/lib64:/lib:/usr/lib]
-    jansiVersion        = "2.1.0"
+    jansiVersion        = "2.4.0"
     //#jansiVersion        = "1.18"
     jline2Version       = "2.14.6"
     jline3Version       = "3.21.0"
