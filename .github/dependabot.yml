@@ -1,6 +1,11 @@
 version: 2
 updates:
-  - package-ecosystem: gradle
+  - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: daily
+      # Check for updates to GitHub Actions every weekday
+      interval: "daily"
+  - package-ecosystem: "gradle"
+    directory: "/"
+    schedule:
+      interval: "daily"

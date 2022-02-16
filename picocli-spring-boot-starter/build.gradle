@@ -10,9 +10,9 @@ targetCompatibility = 1.8
 
 dependencies {
     api                 rootProject
-    api                 "org.springframework.boot:spring-boot-starter:$springBootVersion"
-    annotationProcessor "org.springframework.boot:spring-boot-configuration-processor:$springBootVersion"
-    testImplementation  "org.springframework.boot:spring-boot-starter-test:$springBootVersion"
+    api                 supportDependencies.springbootstarter
+    annotationProcessor supportDependencies.springbootannproc
+    testImplementation  supportDependencies.springboottest
 }
 
 jar {

@@ -8,8 +8,7 @@ version "$projectVersion"
 
 dependencies {
     api rootProject
-    api "jline:jline:$jlineVersion"
-    testImplementation "junit:junit:$junitVersion"
+    api supportDependencies.jline2
 }
 
 jar {

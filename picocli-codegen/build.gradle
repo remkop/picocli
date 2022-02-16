@@ -13,7 +13,6 @@ if (org.gradle.api.JavaVersion.current().isJava8Compatible() && !org.gradle.api.
 }
 dependencies {
     api rootProject
-    testImplementation "junit:junit:$junitVersion"
 }
 
 //task generateGraalReflectionConfig(type: JavaExec) {

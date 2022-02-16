@@ -69,6 +69,7 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1572] Enhancement: Remove redundant braces in ArgGroup synopsis.
 * [#1575] Bugfix: Synopsis should not cluster boolean options if `posixClusteredShortOptionsAllowed` is set to false.
 * [#812] DOC: Document how to test a picocli spring-boot application.
+* [#1581] BUILD: Fix dependabot config.
 * [#1573] DEP: Bump JLine3 version to 3.21.0 from 3.19.0.
 * [#1576] DEP: Bump Spring Boot version to 2.6.3 from 2.5.6.
 * [#1580] DEP: Bump asciidoctor to 2.5.3 from 2.5.2. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
