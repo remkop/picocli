@@ -8680,7 +8680,7 @@ internals.
 Commands:
 
 The most commonly used git commands are:
-  help      Displays help information about the specified command
+  help      Display help information about the specified command.
   status    Show the working tree status.
   commit    Record changes to the repository.
   add       Add file contents to the index.
