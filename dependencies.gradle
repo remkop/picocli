@@ -2,6 +2,17 @@
 // See https://www.sameerkulkarni.de/posts/dependabot-with-gradle/
 
 ext {
+    // PICOCLI VERSION
+
+    // projectPreviousPublishedVersion is non-SNAPSHOT, only published releases
+    projectPreviousPublishedVersion = "4\\.6\\.3"      // for task bumpReadmeVersion
+    // projectPreviousVersionRegex may be a SNAPSHOT
+    projectPreviousVersionRegex     = "4\\.6\\.3"      // for task bumpVersion
+    projectVersion                  = "4.7.0-SNAPSHOT" // for all build tasks
+    releaseDate                     = "2022-02-09"     // for task bumpVersion
+    releaseDatePreviousRegex        = "2022\\-02\\-09" // for task bumpVersion
+
+    // DEPENDENCIES
     asciidoctorGradlePluginVersion = "3.3.2"
     compileTestingVersion          = "0.19"
     gradleBintrayPluginVersion     = "1.+"
@@ -19,17 +30,7 @@ ext {
     junitVersion        = "4.13.2"
     log4j2Version       = "2.17.1"
     springBootVersion   = "2.6.3"
-
-    //# projectPreviousPublishedVersion is non-SNAPSHOT, only published releases
-    projectPreviousPublishedVersion = "4\\.6\\.3"
-    //# projectPreviousVersionRegex may be a SNAPSHOT
-    projectPreviousVersionRegex     = "4\\.6\\.3"
-    projectVersion                  = "4.7.0-SNAPSHOT"
-
-    releaseDate              = "2022-02-09"
-    releaseDatePreviousRegex = "2022\\-02\\-09"
-
-    systemRulesVersion = "1.19.0"
+    systemRulesVersion  = "1.19.0"
 
     supportDependencies = [
         junit             : "junit:junit:$junitVersion",
