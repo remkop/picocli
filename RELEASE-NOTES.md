@@ -71,6 +71,8 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#812] DOC: Document how to test a picocli spring-boot application.
 * [#1573] DEP: Bump JLine3 version to 3.21.0 from 3.19.0.
 * [#1576] DEP: Bump Spring Boot version to 2.6.3 from 2.5.6.
+* [#1580] DEP: Bump asciidoctor to 2.5.3 from 2.5.2. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+
 
 ## <a name="4.7.0-deprecated"></a> Deprecations
 No features were deprecated in this release.
