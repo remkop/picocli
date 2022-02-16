@@ -29,7 +29,7 @@ ext {
     releaseDate              = "2022-02-09"
     releaseDatePreviousRegex = "2022\\-02\\-09"
 
-    systemRulesVersion = "1.17.1"
+    systemRulesVersion = "1.19.0"
 
     supportDependencies = [
         junit             : "junit:junit:$junitVersion",
