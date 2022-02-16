@@ -73,7 +73,14 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1573] DEP: Bump JLine3 version to 3.21.0 from 3.19.0.
 * [#1576] DEP: Bump Spring Boot version to 2.6.3 from 2.5.6.
 * [#1580] DEP: Bump asciidoctor to 2.5.3 from 2.5.2. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
-
+* [#1589] DEP: Bump hamcrest-core from 1.3 to 2.2
+* [#1588] DEP: Bump system-rules from 1.17.1 to 1.19.0
+* [#1587] DEP: Bump ivy from 2.4.0 to 2.5.0
+* [#1586] DEP: Bump ossf/scorecard-action from 1.0.2 to 1.0.3
+* [#1585] DEP: Bump github/codeql-action from 1.0.30 to 1.1.0
+* [#1584] DEP: Bump jansi from 2.1.0 to 2.4.0
+* [#1583] DEP: Bump step-security/harden-runner from 1.3.0 to 1.4.0
+* [#1582] DEP: Bump groovy-all from 2.4.10 to 3.0.9
 
 ## <a name="4.7.0-deprecated"></a> Deprecations
 No features were deprecated in this release.
