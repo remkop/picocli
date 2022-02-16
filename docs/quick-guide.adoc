@@ -365,7 +365,7 @@ $ ISOCodeResolver help
 Usage: ISOCodeResolver [COMMAND]
 Resolves ISO country codes (ISO-3166-1) or language codes (ISO-639-1/-2)
 Commands:
-  help      Displays help information about the specified command
+  help      Display help information about the specified command.
   country   Resolves ISO country codes (ISO-3166-1)
   language  Resolves one or more ISO language codes (ISO-639-1 or 639-2)
 ----
@@ -1131,7 +1131,7 @@ internals.
 Commands:
 
 The most commonly used git commands are:
-  help      Displays help information about the specified command
+  help      Display help information about the specified command.
   status    Show the working tree status.
   commit    Record changes to the repository.
   add       Add file contents to the index.
