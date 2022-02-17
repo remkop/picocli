@@ -16,7 +16,7 @@ ext {
     asciidoctorGradlePluginVersion = "3.3.2"
     compileTestingVersion          = "0.19"
     gradleBintrayPluginVersion     = "1.+"
-    groovyVersion       = "3.0.9"
+    groovyVersion       = "2.5.15" // latest Groovy that supports Java 5
     hamcrestCoreVersion = "2.2"
     ivyVersion          = "2.5.0"
     jacocoVersion       = "0.8.2"

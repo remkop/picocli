@@ -80,7 +80,7 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1585] DEP: Bump github/codeql-action from 1.0.30 to 1.1.0
 * [#1584] DEP: Bump jansi from 2.1.0 to 2.4.0
 * [#1583] DEP: Bump step-security/harden-runner from 1.3.0 to 1.4.0
-* [#1582] DEP: Bump groovy-all from 2.4.10 to 3.0.9
+* [#1582] DEP: Bump groovy-all from 2.4.10 to 2.5.15 // latest version of Groovy that supports Java 5
 * [#1590] DEP: Bump junit-dep from 4.11 to 4.11.20120805.1225
 * [#1591] DEP: Bump junit from 4.12 to 4.13.2
 
