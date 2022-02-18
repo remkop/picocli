@@ -15,7 +15,6 @@ ext {
     // DEPENDENCIES
     asciidoctorGradlePluginVersion = "3.3.2"
     compileTestingVersion          = "0.19"
-    gradleBintrayPluginVersion     = "1.+"
     groovyVersion       = "2.4.21"
     hamcrestCoreVersion = "2.2"
     ivyVersion          = "2.5.0"
