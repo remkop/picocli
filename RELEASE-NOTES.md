@@ -77,7 +77,9 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1588] DEP: Bump system-rules from 1.17.1 to 1.19.0
 * [#1587] DEP: Bump ivy from 2.4.0 to 2.5.0
 * [#1586] DEP: Bump ossf/scorecard-action from 1.0.2 to 1.0.3
+* [#1594] DEP: Bump ossf/scorecard-action from 1.0.3 to 1.0.4
 * [#1585] DEP: Bump github/codeql-action from 1.0.30 to 1.1.0
+* [#1593] DEP: Bump github/codeql-action from 1.1.0 to 1.1.2
 * [#1584] DEP: Bump jansi from 2.1.0 to 2.4.0
 * [#1583] DEP: Bump step-security/harden-runner from 1.3.0 to 1.4.0
 * [#1582] DEP: Bump groovy-all from 2.4.10 to 2.5.15 // latest version of Groovy that supports Java 5
