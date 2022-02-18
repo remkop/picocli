@@ -9,3 +9,6 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
+    ignore:
+      # For Groovy, ignore all updates
+      - dependency-name: "org.codehaus.groovy:groovy-all"
