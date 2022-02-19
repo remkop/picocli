@@ -58,11 +58,11 @@ This release introduces two parser configuration options to change this behaviou
 
 When set to `true`, all options in the command (options that take a parameter) can consume values that match option names or subcommand names.
 
-This means that any option will consume the maximum number of arguments possible for its <<Arity,arity>>.
+This means that any option will consume the maximum number of arguments possible for its [arity](https://picocli.info/#_arity).
 
 USE WITH CAUTION!
 
-If an option is defined as `arity = "*"`, this option will consume _all_ remaining command line arguments following this option (until the <<Double dash (`--`),End-of-options delimiter>>) as parameters of this option.
+If an option is defined as `arity = "*"`, this option will consume _all_ remaining command line arguments following this option (until the [End-of-options delimiter](https://picocli.info/#_double_dash)) as parameters of this option.
 
 ### Unsorted Synopsis
 By default, the synopsis displays options in alphabetical order.
