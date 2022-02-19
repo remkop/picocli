@@ -47,6 +47,23 @@ class MyIntConverter implements ITypeConverter<Integer> {
 }
 ```
 
+### Enable Consuming Option Names or Subcommands
+
+By default, options that take a parameter do not consume values that match a subcommand name or an option name.
+
+This release introduces two parser configuration options to change this behaviour:
+
+* `CommandLine::setAllowOptionsAsOptionParameters` allows options to consume option names
+* `CommandLine::setAllowSubcommandsAsOptionParameters` allows options to consume subcommand names
+
+When set to `true`, all options in the command (options that take a parameter) can consume values that match option names or subcommand names.
+
+This means that any option will consume the maximum number of arguments possible for its <<Arity,arity>>.
+
+USE WITH CAUTION!
+
+If an option is defined as `arity = "*"`, this option will consume _all_ remaining command line arguments following this option (until the <<Double dash (`--`),End-of-options delimiter>>) as parameters of this option.
+
 ### Unsorted Synopsis
 By default, the synopsis displays options in alphabetical order.
 Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis display options in the order they are declared in your class, or sorted by their `order` attribute.
@@ -58,6 +75,7 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 
 ## <a name="4.7.0-fixes"></a> Fixed issues
 * [#1471] API: Provide a programmatic way to configure Picocli's `TraceLevel`. Thanks to [ekinano](https://github.com/ekinano) for raising this.
+* [#1125] API: Add parser configuration to allow options to consume values that match subcommand names or option names.
 * [#1396][#1401] API: Support generic types in containers (e.g. List, Map). Thanks to [Michał Górniewski](https://github.com/mgorniew) for the pull request.
 * [#1380][#1505] API, bugfix: `requiredOptionMarker` should not be displayed on `ArgGroup` options. Thanks to [Ahmed El Khalifa](https://github.com/ahmede41) for the pull request.
 * [#1563] API: Add constructor to `PicocliSpringFactory` to allow custom fallback `IFactory`. Thanks to [Andrew Holland](https://github.com/a1dutch) for raising this.

@@ -2491,6 +2491,100 @@ public class SubcommandTests {
         assertTrue(childCount > 0);
         assertTrue(grandChildCount > 0);
     }
+    @Test
+    public void testSetAllowOptionsAsOptionParameters_BeforeSubcommandsAdded() {
+        @Command
+        class TopLevel {}
+        CommandLine commandLine = new CommandLine(new TopLevel());
+        assertFalse(commandLine.isAllowOptionsAsOptionParameters());
+        commandLine.setAllowOptionsAsOptionParameters(true);
+        assertTrue(commandLine.isAllowOptionsAsOptionParameters());
+
+        int childCount = 0;
+        int grandChildCount = 0;
+        commandLine.addSubcommand("main", createNestedCommand());
+        for (CommandLine sub : commandLine.getSubcommands().values()) {
+            childCount++;
+            assertEquals("subcommand added afterwards is not impacted", false, sub.isAllowOptionsAsOptionParameters());
+            for (CommandLine subsub : sub.getSubcommands().values()) {
+                grandChildCount++;
+                assertEquals("subcommand added afterwards is not impacted", false, subsub.isAllowOptionsAsOptionParameters());
+            }
+        }
+        assertTrue(childCount > 0);
+        assertTrue(grandChildCount > 0);
+    }
+
+    @Test
+    public void testSetAllowOptionsAsOptionParameters_AfterSubcommandsAdded() {
+        @Command
+        class TopLevel {}
+        CommandLine commandLine = new CommandLine(new TopLevel());
+        commandLine.addSubcommand("main", createNestedCommand());
+        assertFalse(commandLine.isAllowOptionsAsOptionParameters());
+        commandLine.setAllowOptionsAsOptionParameters(true);
+        assertTrue(commandLine.isAllowOptionsAsOptionParameters());
+
+        int childCount = 0;
+        int grandChildCount = 0;
+        for (CommandLine sub : commandLine.getSubcommands().values()) {
+            childCount++;
+            assertEquals("subcommand added before IS impacted", true, sub.isAllowOptionsAsOptionParameters());
+            for (CommandLine subsub : sub.getSubcommands().values()) {
+                grandChildCount++;
+                assertEquals("subsubcommand added before IS impacted", true, sub.isAllowOptionsAsOptionParameters());
+            }
+        }
+        assertTrue(childCount > 0);
+        assertTrue(grandChildCount > 0);
+    }
+    @Test
+    public void testSetAllowSubcommandsAsOptionParameters_BeforeSubcommandsAdded() {
+        @Command
+        class TopLevel {}
+        CommandLine commandLine = new CommandLine(new TopLevel());
+        assertFalse(commandLine.isAllowSubcommandsAsOptionParameters());
+        commandLine.setAllowSubcommandsAsOptionParameters(true);
+        assertTrue(commandLine.isAllowSubcommandsAsOptionParameters());
+
+        int childCount = 0;
+        int grandChildCount = 0;
+        commandLine.addSubcommand("main", createNestedCommand());
+        for (CommandLine sub : commandLine.getSubcommands().values()) {
+            childCount++;
+            assertEquals("subcommand added afterwards is not impacted", false, sub.isAllowSubcommandsAsOptionParameters());
+            for (CommandLine subsub : sub.getSubcommands().values()) {
+                grandChildCount++;
+                assertEquals("subcommand added afterwards is not impacted", false, subsub.isAllowSubcommandsAsOptionParameters());
+            }
+        }
+        assertTrue(childCount > 0);
+        assertTrue(grandChildCount > 0);
+    }
+
+    @Test
+    public void testSetAllowSubcommandsAsOptionParameters_AfterSubcommandsAdded() {
+        @Command
+        class TopLevel {}
+        CommandLine commandLine = new CommandLine(new TopLevel());
+        commandLine.addSubcommand("main", createNestedCommand());
+        assertFalse(commandLine.isAllowSubcommandsAsOptionParameters());
+        commandLine.setAllowSubcommandsAsOptionParameters(true);
+        assertTrue(commandLine.isAllowSubcommandsAsOptionParameters());
+
+        int childCount = 0;
+        int grandChildCount = 0;
+        for (CommandLine sub : commandLine.getSubcommands().values()) {
+            childCount++;
+            assertEquals("subcommand added before IS impacted", true, sub.isAllowSubcommandsAsOptionParameters());
+            for (CommandLine subsub : sub.getSubcommands().values()) {
+                grandChildCount++;
+                assertEquals("subsubcommand added before IS impacted", true, sub.isAllowSubcommandsAsOptionParameters());
+            }
+        }
+        assertTrue(childCount > 0);
+        assertTrue(grandChildCount > 0);
+    }
 
     @Test
     public void testCommandSpecRoot() {

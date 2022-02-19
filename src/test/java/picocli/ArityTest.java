@@ -392,6 +392,24 @@ public class ArityTest {
     }
 
     @Test
+    public void test1125_ArrayOptionArity2_nConsumesAllArgumentsWhenAllowOptionsAsOptionParameters() {
+        class ArrayOptionsArity2_nAndParameters {
+            @Parameters String[] stringParams;
+            @Option(names = "-s", arity = "2..*") String[] stringOptions;
+            @Option(names = "-v") boolean verbose;
+            @Option(names = "-f") File file;
+        }
+        ArrayOptionsArity2_nAndParameters params = new ArrayOptionsArity2_nAndParameters();
+        new CommandLine(params).setAllowOptionsAsOptionParameters(true)
+            .parseArgs("-s 1.1 2.2 3.3 4.4 -vfFILE 5.5".split(" "));
+        assertArrayEquals(Arrays.toString(params.stringOptions),
+            new String[] {"1.1", "2.2", "3.3", "4.4", "-vfFILE", "5.5"}, params.stringOptions);
+        assertFalse(params.verbose);
+        assertEquals(null, params.file);
+        assertNull(params.stringParams);
+    }
+
+    @Test
     public void testArrayOptionArity2_nConsumesAllArgumentIncludingQuotedSimpleOption() {
         class ArrayOptionArity2_nAndParameters {
             @Parameters String[] stringParams;
@@ -1373,7 +1391,64 @@ public class ArityTest {
         } catch (MissingParameterException ex) {
             assertEquals(expected, ex.getMessage());
         }
+    }
+    @Test
+    public void test1125_ArityValidation() {
+        class Cmd {
+            @Option(names = "-a", arity = "2") String[] a;
+            @Option(names = "-b", arity = "1..2") String[] b;
+            @Option(names = "-c", arity = "2..3") String[] c;
+            @Option(names = "-v") boolean verbose;
+        }
+        assertWithAllowOptions("Unmatched argument at index 3: '2'",
+            new Cmd(), "-a", "1", "-a", "2");
 
+        Cmd bean = new Cmd();
+        new CommandLine(bean).setAllowOptionsAsOptionParameters(true).parseArgs("-a", "1", "-v");
+        assertArrayEquals(new String[]{"1", "-v"}, bean.a);
+
+        bean = new Cmd();
+        new CommandLine(bean).setAllowOptionsAsOptionParameters(true).parseArgs("-b", "-v");
+        assertArrayEquals(new String[]{"-v"}, bean.b);
+
+        assertWithAllowOptions("option '-c' at index 0 (<c>) requires at least 2 values, but only 1 were specified: [-a]",
+            new Cmd(), "-c", "-a");
+
+        bean = new Cmd();
+        new CommandLine(bean).setAllowOptionsAsOptionParameters(true).parseArgs("-c", "-a", "1", "2");
+        assertArrayEquals(new String[]{"-a", "1", "2"}, bean.c);
+
+        bean = new Cmd();
+        new CommandLine(bean).setAllowOptionsAsOptionParameters(true).parseArgs("-c", "1", "-a");
+        assertArrayEquals(new String[]{"1", "-a"}, bean.c);
+    }
+    @Test
+    public void test1125_ArityValidationWithMaps() {
+        class Cmd {
+            @Option(names = "-a", arity = "2") Map<String,String> a;
+            @Option(names = "-b", arity = "1..2") Map<String,String> b;
+            @Option(names = "-c", arity = "2..3") Map<String,String> c;
+            @Option(names = "-v") boolean verbose;
+        }
+        assertWithAllowOptions("Value for option option '-a' at index 0 (<String=String>) should be in KEY=VALUE format but was -a",
+            new Cmd(), "-a", "A=B", "-a", "C=D");
+
+        assertWithAllowOptions("Value for option option '-a' at index 0 (<String=String>) should be in KEY=VALUE format but was -v",
+            new Cmd(), "-a", "A=B", "-v");
+
+        assertWithAllowOptions("Value for option option '-b' at index 0 (<String=String>) should be in KEY=VALUE format but was -v",
+            new Cmd(), "-b", "-v");
+
+        assertWithAllowOptions("Value for option option '-c' at index 0 (<String=String>) should be in KEY=VALUE format but was -a",
+            new Cmd(), "-c", "A=B", "-a");
+    }
+    private void assertWithAllowOptions(String expected, Object command, String... args) {
+        try {
+            new CommandLine(command).setAllowOptionsAsOptionParameters(true).parseArgs(args);
+            fail("Expected unmatched arg exception");
+        } catch (ParameterException ex) {
+            assertEquals(expected, ex.getMessage());
+        }
     }
 
     @Test
@@ -1809,6 +1884,32 @@ public class ArityTest {
 
         app = new App();
         new CommandLine(app).parseArgs("-x", "a", "b", ";", "x", "y");
+        assertEquals(Arrays.asList("a", "b", ";", "x", "y"), app.option);
+    }
+
+    @Test
+    public void test1125_CustomEndOfOptionsDelimiter() {
+        class App {
+            @Option(names = "-x", arity = "*")
+            List<String> option;
+
+            @Unmatched
+            List<String> unmatched;
+        }
+
+        App app = new App();
+        new CommandLine(app).setAllowOptionsAsOptionParameters(true).setEndOfOptionsDelimiter(";")
+            .parseArgs("-x", "a", "b", ";", "x", "y");
+        assertEquals(Arrays.asList("a", "b"), app.option);
+        assertEquals(Arrays.asList("x", "y"), app.unmatched);
+
+        app = new App();
+        new CommandLine(app).setAllowOptionsAsOptionParameters(true).parseArgs("-x", "a", "b", "--", "x", "y");
+        assertEquals(Arrays.asList("a", "b"), app.option);
+        assertEquals(Arrays.asList("x", "y"), app.unmatched);
+
+        app = new App();
+        new CommandLine(app).setAllowOptionsAsOptionParameters(true).parseArgs("-x", "a", "b", ";", "x", "y");
         assertEquals(Arrays.asList("a", "b", ";", "x", "y"), app.option);
     }
 

@@ -974,19 +974,88 @@ public class CommandLine {
         if (newValue) { setUnmatchedArgumentsAllowed(true); }
         return this;
     }
+    /** Returns whether options can have parameter values that match subcommand names or aliases,
+     * or whether such values should be rejected with a missing parameter exception.
+     * The default is {@code false}, so by default input like {@code -x=subcommand} is rejected if {@code -x} is an option that takes a String parameter, and {@code subcommand} is a subcommand of this command.
+     * @return {@code true} when options can have parameter values that match subcommand names or aliases, {@code false} when such values should be rejected with a missing parameter exception
+     * @since 4.7.0
+     * @see ParserSpec#allowSubcommandsAsOptionParameters()
+     */
+    public boolean isAllowSubcommandsAsOptionParameters() {
+        return getCommandSpec().parser().allowSubcommandsAsOptionParameters();
+    }
+    /** Sets whether options can have parameter values that match subcommand names or aliases, or whether such values should be rejected with a missing parameter exception.
+     * The default is {@code false}, so by default
+     * input like {@code -x=subcommand} is rejected if {@code -x} is an option that takes a String parameter, and {@code subcommand} is a subcommand of this command.
+     * <p>The specified setting will be registered with this {@code CommandLine} and the full hierarchy of its
+     * subcommands and nested sub-subcommands <em>at the moment this method is called</em>. Subcommands added
+     * later will have the default setting. To ensure a setting is applied to all
+     * subcommands, call the setter last, after adding subcommands.</p>
+     * @param newValue the new setting. When {@code true}, options can have parameter values that match subcommand names or aliases, when {@code false}, such values are rejected with a missing parameter exception
+     * @return this {@code CommandLine} object, to allow method chaining
+     * @since 4.7.0
+     * @see ParserSpec#allowSubcommandsAsOptionParameters(boolean)
+     */
+    public CommandLine setAllowSubcommandsAsOptionParameters(boolean newValue) {
+        getCommandSpec().parser().allowSubcommandsAsOptionParameters(newValue);
+        for (CommandLine command : getCommandSpec().subcommands().values()) {
+            command.setAllowSubcommandsAsOptionParameters(newValue);
+        }
+        return this;
+    }
+    /** Returns whether options can have parameter values that match the name of an option in this command,
+     * or whether such values should be rejected with a missing parameter exception.
+     * The default is {@code false}, so by default input like {@code -x=--some-option} is rejected if {@code -x} is an option that takes a String parameter, and {@code --some-option} is an option of this command.
+     * <p>This method only considers actual options of this command, as opposed to {@link #isUnmatchedOptionsAllowedAsOptionParameters()}, which considers values that <em>resemble</em> options.</p>
+     * @return {@code true} when options can have parameter values that match the name of an option in this command, {@code false} when such values should be rejected with a missing parameter exception
+     * @since 4.7.0
+     * @see #isUnmatchedOptionsAllowedAsOptionParameters()
+     * @see ParserSpec#allowOptionsAsOptionParameters()
+     */
+    public boolean isAllowOptionsAsOptionParameters() {
+        return getCommandSpec().parser().allowOptionsAsOptionParameters();
+    }
+    /** Sets whether options can have parameter values that match the name of an option in this command, or whether such values should be rejected with a missing parameter exception.
+     * The default is {@code false}, so by default
+     * input like {@code -x=--some-option} is rejected if {@code -x} is an option that takes a String parameter, and {@code --some-option} is an option of this command.
+     * <p>This method only considers actual options of this command, as opposed to {@link #setUnmatchedOptionsAllowedAsOptionParameters(boolean)}, which considers values that <em>resemble</em> options.</p>
+     * <p>Use with caution! When set to {@code true}, any option in the command will consume the maximum number of arguments possible for its arity.
+     * This means that an option with {@code arity = "*"} will consume <em>all</em> command line arguments following that option.
+     * If this is not what you want, consider <a href="https://picocli.info/#_custom_parameter_processing">custom parameter processing</a>.</p>
+     * <p>The specified setting will be registered with this {@code CommandLine} and the full hierarchy of its
+     * subcommands and nested sub-subcommands <em>at the moment this method is called</em>. Subcommands added
+     * later will have the default setting. To ensure a setting is applied to all
+     * subcommands, call the setter last, after adding subcommands.</p>
+     * @param newValue the new setting. When {@code true}, options can have parameter values that match the name of an option in this command, when {@code false}, such values are rejected with a missing parameter exception
+     * @return this {@code CommandLine} object, to allow method chaining
+     * @since 4.7.0
+     * @see #setUnmatchedOptionsAllowedAsOptionParameters(boolean)
+     * @see ParserSpec#allowOptionsAsOptionParameters(boolean)
+     */
+    public CommandLine setAllowOptionsAsOptionParameters(boolean newValue) {
+        getCommandSpec().parser().allowOptionsAsOptionParameters(newValue);
+        for (CommandLine command : getCommandSpec().subcommands().values()) {
+            command.setAllowOptionsAsOptionParameters(newValue);
+        }
+        return this;
+    }
 
     /** Returns whether options can have parameter values that resemble an option, or whether such values should be rejected as unknown options.
      * The default is {@code true}, so by default input like {@code -x=-unknown} is accepted if {@code -x} is an option that takes a String parameter.
+     * <p>This method only considers values that <em>resemble</em> options, as opposed to {@link #isAllowOptionsAsOptionParameters()}, which considers actual options of this command.</p>
      * @return {@code true} when options can have parameter values that resemble an option, {@code false} when such values should be rejected as unknown options
      * @since 4.4
+     * @see #isAllowOptionsAsOptionParameters()
+     * @see ParserSpec#unmatchedOptionsAllowedAsOptionParameters()
      */
     public boolean isUnmatchedOptionsAllowedAsOptionParameters() {
         return getCommandSpec().parser().unmatchedOptionsAllowedAsOptionParameters();
     }
 
     /** Sets whether options can have parameter values that resemble an option, or whether such values should be rejected as unknown options.
-     * The default is {@code false}, so by default
+     * The default is {@code true}, so by default
      * input like {@code -x=-unknown} is accepted if {@code -x} is an option that takes a String parameter.
+     * <p>This method only considers values that <em>resemble</em> options, as opposed to {@link #setAllowOptionsAsOptionParameters(boolean)}, which considers actual options of this command.</p>
      * <p>The specified setting will be registered with this {@code CommandLine} and the full hierarchy of its
      * subcommands and nested sub-subcommands <em>at the moment this method is called</em>. Subcommands added
      * later will have the default setting. To ensure a setting is applied to all
@@ -994,6 +1063,8 @@ public class CommandLine {
      * @param newValue the new setting. When {@code true}, options can have parameter values that resemble an option, when {@code false}, such values are rejected as unknown options
      * @return this {@code CommandLine} object, to allow method chaining
      * @since 4.4
+     * @see #setAllowOptionsAsOptionParameters(boolean)
+     * @see ParserSpec#unmatchedOptionsAllowedAsOptionParameters(boolean)
      */
     public CommandLine setUnmatchedOptionsAllowedAsOptionParameters(boolean newValue) {
         getCommandSpec().parser().unmatchedOptionsAllowedAsOptionParameters(newValue);
@@ -8393,6 +8464,8 @@ public class CommandLine {
             static final String DEFAULT_END_OF_OPTIONS_DELIMITER = "--";
             private boolean abbreviatedOptionsAllowed = false;
             private boolean abbreviatedSubcommandsAllowed = false;
+            private boolean allowOptionsAsOptionParameters = false;
+            private boolean allowSubcommandsAsOptionParameters = false;
             private boolean aritySatisfiedByAttachedOptionParam = false;
             private Character atFileCommentChar = '#';
             private boolean caseInsensitiveEnumValuesAllowed = false;
@@ -8465,6 +8538,14 @@ public class CommandLine {
              * @see CommandLine#isUnmatchedOptionsAllowedAsOptionParameters()
              * @since 4.4 */
             public boolean unmatchedOptionsAllowedAsOptionParameters() { return unmatchedOptionsAllowedAsOptionParameters; }
+            /**
+             * @see CommandLine#isAllowSubcommandsAsOptionParameters()
+             * @since 4.7.0 */
+            public boolean allowSubcommandsAsOptionParameters() { return allowSubcommandsAsOptionParameters; }
+            /**
+             * @see CommandLine#isAllowOptionsAsOptionParameters()
+             * @since 4.7.0 */
+            public boolean allowOptionsAsOptionParameters() { return allowOptionsAsOptionParameters; }
             private boolean splitFirst()                       { return limitSplit(); }
             /** Returns true if arguments should be split first before any further processing and the number of
              * parts resulting from the split is limited to the max arity of the argument. */
@@ -8521,6 +8602,14 @@ public class CommandLine {
             public ParserSpec unmatchedOptionsAllowedAsOptionParameters(boolean unmatchedOptionsAllowedAsOptionParameters) { this.unmatchedOptionsAllowedAsOptionParameters = unmatchedOptionsAllowedAsOptionParameters; return this; }
             /** @see CommandLine#setUnmatchedOptionsArePositionalParams(boolean) */
             public ParserSpec unmatchedOptionsArePositionalParams(boolean unmatchedOptionsArePositionalParams) { this.unmatchedOptionsArePositionalParams = unmatchedOptionsArePositionalParams; return this; }
+            /**
+             * @see CommandLine#setAllowSubcommandsAsOptionParameters(boolean)
+             * @since 4.7.0 */
+            public ParserSpec allowSubcommandsAsOptionParameters(boolean allowSubcommandsAsOptionParameters) { this.allowSubcommandsAsOptionParameters = allowSubcommandsAsOptionParameters; return this; }
+            /**
+             * @see CommandLine#setAllowOptionsAsOptionParameters(boolean)
+             * @since 4.7.0 */
+            public ParserSpec allowOptionsAsOptionParameters(boolean allowOptionsAsOptionParameters) { this.allowOptionsAsOptionParameters = allowOptionsAsOptionParameters; return this; }
             /** Sets whether exceptions during parsing should be collected instead of thrown.
              * Multiple errors may be encountered during parsing. These can be obtained from {@link ParseResult#errors()}.
              * @since 3.2 */
@@ -8542,13 +8631,15 @@ public class CommandLine {
             void initSeparator(String value)   { if (initializable(separator, value, DEFAULT_SEPARATOR)) {separator = value;} }
             void updateSeparator(String value) { if (isNonDefault(value, DEFAULT_SEPARATOR))             {separator = value;} }
             public String toString() {
-                return String.format("abbreviatedOptionsAllowed=%s, abbreviatedSubcommandsAllowed=%s, aritySatisfiedByAttachedOptionParam=%s, atFileCommentChar=%s, " +
+                return String.format("abbreviatedOptionsAllowed=%s, abbreviatedSubcommandsAllowed=%s, allowOptionsAsOptionParameters=%s, " +
+                                "allowSubcommandsAsOptionParameters=%s, aritySatisfiedByAttachedOptionParam=%s, atFileCommentChar=%s, " +
                                 "caseInsensitiveEnumValuesAllowed=%s, collectErrors=%s, endOfOptionsDelimiter=%s, expandAtFiles=%s, " +
                                 "limitSplit=%s, overwrittenOptionsAllowed=%s, posixClusteredShortOptionsAllowed=%s, " +
                                 "separator=%s, splitQuotedStrings=%s, stopAtPositional=%s, stopAtUnmatched=%s, " +
                                 "toggleBooleanFlags=%s, trimQuotes=%s, " +
                                 "unmatchedArgumentsAllowed=%s, unmatchedOptionsAllowedAsOptionParameters=%s, unmatchedOptionsArePositionalParams=%s, useSimplifiedAtFiles=%s",
-                        abbreviatedOptionsAllowed, abbreviatedSubcommandsAllowed, aritySatisfiedByAttachedOptionParam, atFileCommentChar,
+                        abbreviatedOptionsAllowed, abbreviatedSubcommandsAllowed, allowOptionsAsOptionParameters,
+                        allowSubcommandsAsOptionParameters, aritySatisfiedByAttachedOptionParam, atFileCommentChar,
                         caseInsensitiveEnumValuesAllowed, collectErrors, endOfOptionsDelimiter, expandAtFiles,
                         limitSplit, overwrittenOptionsAllowed, posixClusteredShortOptionsAllowed,
                         separator, splitQuotedStrings, stopAtPositional, stopAtUnmatched,
@@ -8559,6 +8650,8 @@ public class CommandLine {
             void initFrom(ParserSpec settings) {
                 abbreviatedOptionsAllowed = settings.abbreviatedOptionsAllowed;
                 abbreviatedSubcommandsAllowed = settings.abbreviatedSubcommandsAllowed;
+                allowOptionsAsOptionParameters = settings.allowOptionsAsOptionParameters;
+                allowSubcommandsAsOptionParameters = settings.allowSubcommandsAsOptionParameters;
                 aritySatisfiedByAttachedOptionParam = settings.aritySatisfiedByAttachedOptionParam;
                 atFileCommentChar = settings.atFileCommentChar;
                 caseInsensitiveEnumValuesAllowed = settings.caseInsensitiveEnumValuesAllowed;
@@ -13945,12 +14038,9 @@ public class CommandLine {
                     }
                 } else { // non-boolean option with optional value #325, #279
                     String fallbackValue = argSpec.isOption() ? ((OptionSpec) argSpec).fallbackValue() : "";
-                    // #828 should we call varargCanConsumeNextValue(argSpec, value)?
-                    if (isOption(value)) { // value is not a parameter
-                        actualValue = fallbackValue;
-                        optionalValueExists = false;
-                        consumed = 0;
-                    } else if (value == null) { // stack is empty, option with arity=0..1 was the last arg
+                    // #828 #1125 use varargCanConsumeNextValue(argSpec, value) to detect if value can be a parameter
+                    if (!varargCanConsumeNextValue(argSpec, value) // not a parameter
+                    || value == null) { // stack is empty, option with arity=0..1 was the last arg
                         actualValue = fallbackValue;
                         optionalValueExists = false;
                         consumed = 0;
@@ -14424,8 +14514,11 @@ public class CommandLine {
          * However, if end-of-options has been reached, positional parameters may consume all remaining arguments. </p>*/
         private boolean varargCanConsumeNextValue(ArgSpec argSpec, String nextValue) {
             if (endOfOptions && argSpec.isPositional()) { return true; }
-            boolean isCommand = commandSpec.subcommands().containsKey(nextValue);
-            return !isCommand && !isOption(nextValue);
+            if (isEndOfOptionsDelimiter(nextValue)) { return false; } // never consume EOO delim, regardless of parser config
+            boolean isCommand = isCommand(nextValue);
+            boolean commandsAllowed = argSpec.isOption() && commandSpec.parser().allowSubcommandsAsOptionParameters();
+            boolean optionsAllowed = argSpec.isOption() && commandSpec.parser().allowOptionsAsOptionParameters();
+            return (!isCommand || commandsAllowed) && (!isOption(nextValue) || optionsAllowed);
         }
 
         /** Returns true if the specified arg is "--", a registered option, or potentially a clustered POSIX option.
@@ -14433,10 +14526,12 @@ public class CommandLine {
          * When an option is encountered, the remainder should not be interpreted as vararg elements.
          * @param arg the string to determine whether it is an option or not
          * @return true if it is an option, false otherwise
+         * @see #isCommand(String)
+         * @see #isEndOfOptionsDelimiter(String)
          */
         private boolean isOption(String arg) {
             if (arg == null)      { return false; }
-            if (commandSpec.parser().endOfOptionsDelimiter().equals(arg)) { return true; }
+            if (isEndOfOptionsDelimiter(arg)) return true;
 
             // not just arg prefix: we may be in the middle of parsing -xrvfFILE
             if (commandSpec.optionsMap().containsKey(arg)) { // -v or -f or --file (not attached to param or other option)
@@ -14444,16 +14539,6 @@ public class CommandLine {
             }
             if (commandSpec.negatedOptionsByNameMap.containsKey(arg)) { // negated option like --no-verbose
                 return true;
-            }
-            // [#828] Subcommands should not be parsed as option values for options with optional parameters.
-            if (commandSpec.subcommands().containsKey(arg)) {
-                return true;
-            }
-            // #454 repeatable subcommands
-            if (commandSpec.parent() != null && commandSpec.parent().subcommandsRepeatable()) {
-                if (commandSpec.parent().subcommands().containsKey(arg)) {
-                    return true;
-                }
             }
             int separatorIndex = arg.indexOf(config().separator());
             if (separatorIndex > 0) { // -f=FILE or --file==FILE (attached to param via separator)
@@ -14463,6 +14548,19 @@ public class CommandLine {
             }
             return (arg.length() > 2 && arg.startsWith("-") && commandSpec.posixOptionsMap().containsKey(arg.charAt(1)));
         }
+
+        private boolean isCommand(String arg) {
+            // [#828] Subcommands should not be parsed as option values for options with optional parameters.
+            if (commandSpec.subcommands().containsKey(arg)) { return true; }
+
+            // #454 repeatable subcommands
+            CommandSpec parent = commandSpec.parent();
+            return parent != null && parent.subcommandsRepeatable() && parent.subcommands().containsKey(arg);
+        }
+        private boolean isEndOfOptionsDelimiter(String arg) {
+            return commandSpec.parser().endOfOptionsDelimiter().equals(arg);
+        }
+
         private Object tryConvert(ArgSpec argSpec, int index, ITypeConverter<?> converter, String value, int typeIndex)
                 throws ParameterException {
             try {

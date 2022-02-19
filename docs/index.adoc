@@ -4748,6 +4748,7 @@ This will throw an `UnmatchedArgumentException` with message:
 
 
 === Option Names or Subcommands as Option Values
+==== By Default Options Do Not Consume Option Names or Subcommands
 Since picocli 4.4, the parser will no longer assign values that match a subcommand name or an option name to options that take a parameter, unless the value is in quotes.
 For example:
 
@@ -4789,7 +4790,7 @@ For example:
 
 [source,bash]
 ----
-java App -x="-y"
+java App -x=\"-y\"
 ----
 
 This will print the following output:
@@ -4799,7 +4800,30 @@ This will print the following output:
 x='-y', y='null'
 ----
 
-Another idea is to replace or augment picocli's parser by doing <<Custom Parameter Processing,custom parameter processing>> for such options. For example:
+==== Enable Consuming Option Names or Subcommands
+
+Picocli 4.7.0 introduces two parser configuration options to change this behaviour:
+
+* `CommandLine::setAllowOptionsAsOptionParameters` allows options to consume option names
+* `CommandLine::setAllowSubcommandsAsOptionParameters` allows options to consume subcommand names
+
+When set to `true`, all options in the command (options that take a parameter) can consume values that match option names or subcommand names.
+
+This means that any option will consume the maximum number of arguments possible for its <<Arity,arity>>.
+
+[CAUTION]
+====
+USE WITH CAUTION!
+
+If an option is defined as `arity = "*"`, this option will consume _all_ remaining command line arguments following this option (until the <<Double dash (`--`),End-of-options delimiter>>) as parameters of this option.
+====
+
+==== Custom Parsing for Option-Specific Behaviour
+The parser configuration options in the previous section apply to _all_ options in the command.
+
+Some applications may want to enable options consuming option names or subcommands for _some_ options, but not for all options in the command.
+Such applications can replace or augment picocli's parser by doing <<Custom Parameter Processing,custom parameter processing>> for such options.
+For example:
 
 .Java
 [source,java,role="primary"]

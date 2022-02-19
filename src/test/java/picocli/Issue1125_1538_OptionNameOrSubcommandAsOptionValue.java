@@ -40,6 +40,9 @@ public class Issue1125_1538_OptionNameOrSubcommandAsOptionValue {
             }
         }
 
+        @Option(names = "-option")
+        File option = new File(".");
+
         @Option(names = "-x") String x;
         @Option(names = "-y") String y;
 
@@ -54,7 +57,7 @@ public class Issue1125_1538_OptionNameOrSubcommandAsOptionValue {
     }
 
     @Test
-    public void testSubcommandAsOptionName() {
+    public void testSubcommandAsOptionNameWithCustomPreprocessor() {
         MyCommand obj = new MyCommand();
         CommandLine cmdLine = new CommandLine(obj);
         int exitCode = cmdLine.execute("-output", "abc", "mySubcommand");
@@ -71,19 +74,66 @@ public class Issue1125_1538_OptionNameOrSubcommandAsOptionValue {
     }
 
     @Test
-    public void testAmbiguousOptions() {
+    public void testSubcommandAsOptionNameMaybeEnabled() {
+        MyCommand obj = new MyCommand();
+        CommandLine cmdLine = new CommandLine(obj).setAllowSubcommandsAsOptionParameters(true);
+        int exitCode = cmdLine.execute("-option", "abc", "mySubcommand");
+        assertEquals(13, exitCode);
+        assertEquals("abc", obj.option.getName());
+
+        exitCode = cmdLine.execute("-option=mySubcommand", "mySubcommand");
+        assertEquals(13, exitCode);
+        assertEquals("mySubcommand", obj.option.getName());
+
+        exitCode = cmdLine.execute("-option", "mySubcommand", "mySubcommand");
+        assertEquals(13, exitCode);
+        assertEquals("mySubcommand", obj.option.getName());
+    }
+
+    @Test
+    public void testSubcommandAsOptionNameDefault() {
+        MyCommand obj = new MyCommand();
+        CommandLine cmdLine = new CommandLine(obj);
+        int exitCode = cmdLine.execute("-option", "abc", "mySubcommand");
+        assertEquals(13, exitCode);
+        assertEquals("abc", obj.option.getName());
+
+        try {
+            cmdLine.parseArgs("-option=mySubcommand", "mySubcommand");
+            fail("expected exception");
+        } catch (CommandLine.MissingParameterException ex) {
+            assertEquals("Expected parameter for option '-option' but found 'mySubcommand'", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void testAmbiguousOptionsDefault() {
         //-x -y=123
         MyCommand obj = new MyCommand();
         CommandLine cmdLine = new CommandLine(obj);
         int exitCode = cmdLine.execute("-x", "-y=123");
         assertEquals(2, exitCode);
-        String expected = String.format("Expected parameter for option '-x' but found '-y=123'%n" +
-            "Usage: mycommand [-output=<output>] [-x=<x>] [-y=<y>] [COMMAND]%n" +
+        String expected = String.format("" +
+            "Expected parameter for option '-x' but found '-y=123'%n" +
+            "Usage: mycommand [-option=<option>] [-output=<output>] [-x=<x>] [-y=<y>]%n" +
+            "                 [COMMAND]%n" +
+            "      -option=<option>%n" +
             "      -output=<output>%n" +
             "  -x=<x>%n" +
             "  -y=<y>%n" +
             "Commands:%n" +
             "  mySubcommand%n");
         assertEquals(expected, systemErrRule.getLog());
+    }
+
+    @Test
+    public void testAmbiguousOptionsWithOptionsAsOptionParametersEnabled() {
+        //-x -y=123
+        MyCommand obj = new MyCommand();
+        CommandLine cmdLine = new CommandLine(obj).setAllowOptionsAsOptionParameters(true);
+        int exitCode = cmdLine.execute("-x", "-y=123");
+        assertEquals(11, exitCode);
+        assertEquals("-y=123", obj.x);
+        assertNull(obj.y);
     }
 }

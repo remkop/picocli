@@ -2149,6 +2149,24 @@ public class ArgGroupTest {
         }
     }
 
+    @Test // https://github.com/remkop/picocli/issues/1125
+    public void testIssue1125Case1a() {
+        //-f -f -w text --> accepted --> wrong: findPattern = "-f", means, the second -f is treated as an option-parameter for the first -f
+        Issue1054 bean = new Issue1054();
+        new CommandLine(bean).setAllowOptionsAsOptionParameters(true).parseArgs("-f -f -w text".split(" "));
+        assertEquals("-f", bean.modifications.get(0).findPattern.pattern());
+        assertEquals("text", bean.modifications.get(0).change.replacement);
+    }
+
+    @Test // https://github.com/remkop/picocli/issues/1125
+    public void testIssue1125Case1b() {
+        //-f pattern -w -d --> wrong: replacement = "-d", means -d is treated as an option-parameter for -w
+        Issue1054 bean = new Issue1054();
+        new CommandLine(bean).setAllowOptionsAsOptionParameters(true).parseArgs("-f pattern -w -d".split(" "));
+        assertEquals("pattern", bean.modifications.get(0).findPattern.pattern());
+        assertEquals("-d", bean.modifications.get(0).change.replacement);
+    }
+
     static class CompositeGroupSynopsisDemo {
 
         @ArgGroup(exclusive = false, multiplicity = "2..*")
