@@ -5218,6 +5218,7 @@ public class CommandLine {
          *             Implementations may modify this map to communicate back to the picocli parser.
          *             Supported values:
          *             <table>
+         *               <caption>Supported values in the info Map</caption>
          *               <tr>
          *                 <th>key</th><th>valid values</th><th>type</th>
          *               </tr>
@@ -5246,7 +5247,7 @@ public class CommandLine {
          *                 <td>java.lang.Boolean</td>
          *               </tr>
          *             </table>
-         * @returns true if the preprocessor consumed the parameter
+         * @return true if the preprocessor consumed the parameter
          *          and picocli should skip further processing of the stack for this option or positional parameter;
          *          false if picocli should continue processing the stack for this option or positional parameter
          * @throws ParameterException if the user input is invalid
