@@ -17497,7 +17497,7 @@ public class CommandLine {
                 }
                 /** Returns the {@code Ansi} setting of this color scheme builder. */
                 public Ansi ansi() { return ansi; }
-                /** Returns the {@code Ansi} setting of this color scheme builder. */
+                /** Set the {@code Ansi} setting of this color scheme builder. */
                 public ColorScheme.Builder ansi(Ansi ansi) { this.ansi = Assert.notNull(ansi, "ansi"); return this; }
                 /** Returns the registered styles for commands in this color scheme builder. */
                 public List<IStyle> commandStyles()     { return commandStyles; }
@@ -17797,7 +17797,7 @@ public class CommandLine {
                 }
                 /** Parses the specified comma-separated sequence of style descriptors and returns the associated
                  *  styles. For each markup, strings starting with {@code "bg("} are delegated to
-                 *  {@link #bg(String)}, others are delegated to {@link #bg(String)}.
+                 *  {@link #bg(String)}, others are delegated to {@link #fg(String)}.
                  * @param commaSeparatedCodes one or more descriptors, e.g. {@code "bg(blue),underline,red"}
                  * @return an array with all styles for the specified descriptors
                  */
