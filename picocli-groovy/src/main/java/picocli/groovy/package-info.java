@@ -1,4 +1,4 @@
 /**
- * Provides classes and annotations to give Groovy scripts convenient access to picocli functionality.
+ * Provides classes and interfaces for integrating picocli with Groovy.
  */
 package picocli.groovy;
