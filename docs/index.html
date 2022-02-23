@@ -4643,7 +4643,8 @@ for example implementations.</p>
 <i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
-If the command has a default provider configured, and the option or positional parameter has a default value configured, then picocli will first try to find the value in the default provider. If the default provider has no value for that option or positional parameter, then the default value configured on the option or positional parameter is used.
+If the command has a default provider configured, and the option or positional parameter has a default value configured, then picocli will first try to find the value in the default provider.
+If the default provider has no value for that option or positional parameter, then the default value configured on the option or positional parameter is used.
 </td>
 </tr>
 </table>
@@ -5562,7 +5563,9 @@ The field&#8217;s type refers to the class containing the options and positional
 </td>
 <td class="content">
 <div class="paragraph">
-<p><a href="#_inherited_options">Inherited Options</a> currently cannot be used in Argument Groups.</p>
+<p><a href="#_inherited_options">Inherited Options</a> currently cannot be used in Argument Groups.
+Applications that want to reuse Argument Groups across subcommands need to use <a href="#_mixins">Mixins</a>.
+See <a href="https://github.com/remkop/picocli/blob/main/picocli-examples/src/main/java/picocli/examples/arggroup/ArgGroupMixinDemo2.java">this example</a> for sharing an Argument Group defining global options between subcommands.</p>
 </div>
 </td>
 </tr>
@@ -12568,7 +12571,9 @@ Applications can define an inherited option on the top-level command, in one pla
 </td>
 <td class="content">
 <div class="paragraph">
-<p>Inherited options currently cannot be used in <a href="#_argument_groups">Argument Groups</a>.</p>
+<p>Inherited options currently cannot be used in <a href="#_argument_groups">Argument Groups</a>.
+Applications that want to reuse Argument Groups across subcommands need to use <a href="#_mixins">Mixins</a>.
+See <a href="https://github.com/remkop/picocli/blob/main/picocli-examples/src/main/java/picocli/examples/arggroup/ArgGroupMixinDemo2.java">this example</a> for sharing an Argument Group defining global options between subcommands.</p>
 </div>
 </td>
 </tr>

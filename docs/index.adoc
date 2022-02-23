@@ -2601,6 +2601,8 @@ Picocli will instantiate this class when needed to capture command line argument
 [CAUTION]
 ====
 <<Inherited Options>> currently cannot be used in Argument Groups.
+Applications that want to reuse Argument Groups across subcommands need to use <<Mixins>>.
+See https://github.com/remkop/picocli/blob/main/picocli-examples/src/main/java/picocli/examples/arggroup/ArgGroupMixinDemo2.java[this example] for sharing an Argument Group defining global options between subcommands.
 ====
 
 === Mutually Exclusive Options
@@ -8245,6 +8247,8 @@ Applications can define an inherited option on the top-level command, in one pla
 [CAUTION]
 ====
 Inherited options currently cannot be used in <<Argument Groups>>.
+Applications that want to reuse Argument Groups across subcommands need to use <<Mixins>>.
+See https://github.com/remkop/picocli/blob/main/picocli-examples/src/main/java/picocli/examples/arggroup/ArgGroupMixinDemo2.java[this example] for sharing an Argument Group defining global options between subcommands.
 ====
 
 Below is an example where an inherited option is used to configure logging.
