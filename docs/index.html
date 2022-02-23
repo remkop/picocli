@@ -5960,10 +5960,10 @@ For optional groups (groups with <code>multiplicity = "0..1"</code> - the defaul
 <div class="sect3">
 <h4 id="_option_section_order"><a class="anchor" href="#_option_section_order"></a>8.3.2. Option Section Order</h4>
 <div class="paragraph">
-<p>Options that are not in any argument group are always displayed before the option sections.</p>
+<p>Options that are not in any argument group are always displayed before any group option sections.</p>
 </div>
 <div class="paragraph">
-<p>The ordering of option sections can be controlled with the <code>order</code> attribute. For example:</p>
+<p>The ordering of group option sections can be controlled with the <code>order</code> attribute. For example:</p>
 </div>
 <div class="listingblock primary">
 <div class="title">Java</div>
@@ -6863,16 +6863,16 @@ or programmatically by calling <code>UsageMessageSpec.exitCodeListHeading</code>
 <p>get/setErr</p>
 </li>
 <li>
-<p>get/setColorScheme</p>
+<p>get/setColorScheme - see <a href="#_color_scheme">Color Scheme example</a></p>
 </li>
 <li>
-<p>get/setExecutionStrategy</p>
+<p>get/setExecutionStrategy - see <a href="#_initialization_before_execution">Initialization Before Execution example</a></p>
 </li>
 <li>
-<p>get/setParameterExceptionHandler</p>
+<p>get/setParameterExceptionHandler - see <a href="#_invalid_user_input">Invalid User Input example</a></p>
 </li>
 <li>
-<p>get/setExecutionExceptionHandler</p>
+<p>get/setExecutionExceptionHandler - see <a href="#_business_logic_exceptions">Business Logic Exceptions example</a></p>
 </li>
 <li>
 <p>get/setExitCodeExceptionMapper</p>
@@ -11046,6 +11046,7 @@ There are no annotations to modify this color scheme, but it can be changed prog
         <span class="o">.</span><span class="na">optionParams</span><span class="o">(</span><span class="nc">Style</span><span class="o">.</span><span class="na">italic</span><span class="o">)</span>
         <span class="o">.</span><span class="na">errors</span>      <span class="o">(</span><span class="nc">Style</span><span class="o">.</span><span class="na">fg_red</span><span class="o">,</span> <span class="nc">Style</span><span class="o">.</span><span class="na">bold</span><span class="o">)</span>
         <span class="o">.</span><span class="na">stackTraces</span> <span class="o">(</span><span class="nc">Style</span><span class="o">.</span><span class="na">italic</span><span class="o">)</span>
+        <span class="o">.</span><span class="na">applySystemProperties</span><span class="o">()</span> <span class="c1">// optional: allow end users to customize</span>
         <span class="o">.</span><span class="na">build</span><span class="o">();</span>
 
 <span class="nc">CommandLine</span><span class="o">.</span><span class="na">usage</span><span class="o">(</span><span class="n">annotatedObject</span><span class="o">,</span> <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">,</span> <span class="n">colorScheme</span><span class="o">);</span>
@@ -11063,6 +11064,7 @@ There are no annotations to modify this color scheme, but it can be changed prog
         <span class="p">.</span><span class="nf">optionParams</span><span class="p">(</span><span class="nc">Style</span><span class="p">.</span><span class="n">italic</span><span class="p">)</span>
         <span class="p">.</span><span class="nf">errors</span>      <span class="p">(</span><span class="nc">Style</span><span class="p">.</span><span class="n">fg_red</span><span class="p">,</span> <span class="nc">Style</span><span class="p">.</span><span class="n">bold</span><span class="p">)</span>
         <span class="p">.</span><span class="nf">stackTraces</span> <span class="p">(</span><span class="nc">Style</span><span class="p">.</span><span class="n">italic</span><span class="p">)</span>
+        <span class="p">.</span><span class="nf">applySystemProperties</span><span class="p">()</span> <span class="c1">// optional: allow end users to customize</span>
         <span class="p">.</span><span class="nf">build</span><span class="p">()</span>
 
 <span class="nc">CommandLine</span><span class="p">.</span><span class="nf">usage</span><span class="p">(</span><span class="n">annotatedObject</span><span class="p">,</span> <span class="nc">System</span><span class="p">.</span><span class="k">out</span><span class="p">,</span> <span class="n">colorScheme</span><span class="p">)</span></code></pre>

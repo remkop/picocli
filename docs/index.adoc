@@ -3649,10 +3649,10 @@ The following methods can be used to configure the behaviour of the `execute` me
 
 * get/setOut
 * get/setErr
-* get/setColorScheme
-* get/setExecutionStrategy
-* get/setParameterExceptionHandler
-* get/setExecutionExceptionHandler
+* get/setColorScheme - see <<Color Scheme,Color Scheme example>>
+* get/setExecutionStrategy - see <<Initialization Before Execution,Initialization Before Execution example>>
+* get/setParameterExceptionHandler - see <<Invalid User Input,Invalid User Input example>>
+* get/setExecutionExceptionHandler - see <<Business Logic Exceptions,Business Logic Exceptions example>>
 * get/setExitCodeExceptionMapper
 
 CAUTION: The above methods are not applicable with (and ignored by) other entry points like `parse`, `parseArgs`, `populateCommand`, `run`, `call`, `invoke`, `parseWithHandler` and `parseWithHandlers`.
@@ -6993,6 +6993,7 @@ ColorScheme colorScheme = new ColorScheme.Builder()
         .optionParams(Style.italic)
         .errors      (Style.fg_red, Style.bold)
         .stackTraces (Style.italic)
+        .applySystemProperties() // optional: allow end users to customize
         .build();
 
 CommandLine.usage(annotatedObject, System.out, colorScheme);
@@ -7010,6 +7011,7 @@ val colorScheme: Help.ColorScheme = ColorScheme.Builder()
         .optionParams(Style.italic)
         .errors      (Style.fg_red, Style.bold)
         .stackTraces (Style.italic)
+        .applySystemProperties() // optional: allow end users to customize
         .build()
 
 CommandLine.usage(annotatedObject, System.out, colorScheme)
