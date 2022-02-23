@@ -2920,9 +2920,9 @@ if none of the group options is specified on the command line.
 For optional groups (groups with `multiplicity = "0..1"` - the default) this means that the `@ArgGroup`-annotated field may remain `null`.
 
 ==== Option Section Order
-Options that are not in any argument group are always displayed before the option sections.
+Options that are not in any argument group are always displayed before any group option sections.
 
-The ordering of option sections can be controlled with the `order` attribute. For example:
+The ordering of group option sections can be controlled with the `order` attribute. For example:
 
 .Java
 [source, java,role="primary"]
