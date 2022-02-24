@@ -26,4 +26,5 @@
 
 module info.picocli {
     exports picocli;
+    requires static java.sql;
 }
