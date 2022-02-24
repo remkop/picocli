@@ -18183,17 +18183,17 @@ public class CommandLine {
         public boolean isOff()  { return level== TraceLevel.OFF; }
         /** Prints the specified message if the current trace level is WARN or higher.
          * @param msg the message to print; may use {@link String#format(String, Object...)} syntax
-         * @param params – Arguments referenced by the format specifiers in the format string. If there are more arguments than format specifiers, the extra arguments are ignored. The number of arguments is variable and may be zero.
+         * @param params Arguments referenced by the format specifiers in the format string. If there are more arguments than format specifiers, the extra arguments are ignored. The number of arguments is variable and may be zero.
          * @see Formatter */
         public void warn (String msg, Object... params) { TraceLevel.WARN.print(this, msg, params); }
         /** Prints the specified message if the current trace level is INFO or higher.
          * @param msg the message to print; may use {@link String#format(String, Object...)} syntax
-         * @param params – Arguments referenced by the format specifiers in the format string. If there are more arguments than format specifiers, the extra arguments are ignored. The number of arguments is variable and may be zero.
+         * @param params Arguments referenced by the format specifiers in the format string. If there are more arguments than format specifiers, the extra arguments are ignored. The number of arguments is variable and may be zero.
          * @see Formatter */
         public void info (String msg, Object... params) { TraceLevel.INFO.print(this, msg, params); }
         /** Prints the specified message if the current trace level is DEBUG or higher.
          * @param msg the message to print; may use {@link String#format(String, Object...)} syntax
-         * @param params – Arguments referenced by the format specifiers in the format string. If there are more arguments than format specifiers, the extra arguments are ignored. The number of arguments is variable and may be zero.
+         * @param params Arguments referenced by the format specifiers in the format string. If there are more arguments than format specifiers, the extra arguments are ignored. The number of arguments is variable and may be zero.
          * @see Formatter */
         public void debug(String msg, Object... params) { TraceLevel.DEBUG.print(this, msg, params); }
         public String toString() { return "Tracer[" + level + "]"; }
