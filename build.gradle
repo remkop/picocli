@@ -16,7 +16,7 @@ buildscript {
     dependencies {
         classpath "org.asciidoctor:asciidoctor-gradle-jvm:$asciidoctorGradlePluginVersion"
         classpath 'org.asciidoctor:asciidoctorj-pdf:1.6.2'
-        classpath "gradle.plugin.org.beryx:badass-jar:1.2.0"
+        classpath "org.beryx:badass-jar:2.0.0"
         classpath 'biz.aQute.bnd:biz.aQute.bnd.gradle:6.1.0'
         classpath "io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.30.0"
     }
@@ -105,19 +105,25 @@ allprojects {
     }
 }
 
-sourceSets.main.java.srcDirs = ['src/main/java', 'src/main/java9']
+//sourceSets.main.java.srcDirs = ['src/main/java', 'src/main/java9']
 compileJava {
     inputs.property("moduleName", moduleName)
-    doFirst {
-        if (JavaVersion.current().isJava9Compatible()) {
-            options.compilerArgs = [
-                    '--module-path', classpath.asPath,
-            ]
-        }
-        classpath = files()
-    }
+//    doFirst {
+//        if (JavaVersion.current().isJava9Compatible()) {
+//            options.compilerArgs = [
+//                    '--module-path', classpath.asPath,
+//            ]
+//        }
+//        classpath = files()
+//    }
 }
-
+moduleConfig {
+    // copy module-info.class to META-INF/versions/9
+    multiReleaseVersion = 9
+    moduleInfoPath = 'src/main/java9/module-info.java'
+    version = project.version
+    neverCompileModuleInfo = true
+}
 jar {
     manifest {
         attributes 'Specification-Title'   : 'picocli',
@@ -128,10 +134,38 @@ jar {
                    'Implementation-Version': archiveVersion.get(),
                    'Main-Class'            : 'picocli.AutoComplete'
     }
-    // copy module-info.class to META-INF/versions/9
-    multiRelease = true
 }
-
+configurations {
+    apiElements {
+        canBeConsumed = true
+        canBeResolved = false
+        attributes {
+            attribute(Category.CATEGORY_ATTRIBUTE, objects.named(Category, Category.LIBRARY))
+            attribute(Usage.USAGE_ATTRIBUTE, objects.named(Usage, Usage.JAVA_RUNTIME))
+            attribute(Bundling.BUNDLING_ATTRIBUTE, objects.named(Bundling, Bundling.EXTERNAL))
+            // not sure why the below is needed, but when building with Java 8, using VERSION_1_5 gives this error:
+            //
+            // Could not determine the dependencies of task ':picocli-codegen:compileTestJava'.
+            //> Could not resolve all task dependencies for configuration ':picocli-codegen:testCompileClasspath'.
+            //   > Could not resolve project :.
+            //     Required by:
+            //         project :picocli-codegen
+            //      > The consumer was configured to find an API of a library compatible with Java 6,
+            //        preferably in the form of class files, preferably optimized for standard JVMs, and its dependencies declared externally.
+            //        However we cannot choose between the following variants of project ::
+            //          - apiElements
+            //          - runtimeElements
+            //        All of them match the consumer attributes:
+            //          - Variant 'apiElements' capability info.picocli:picocli:4.7.0-SNAPSHOT declares a runtime of a library compatible with Java 5, packaged as a jar, and its dependencies declared externally:
+            //              - Unmatched attribute:
+            //                  - Doesn't say anything about its target Java environment (preferred optimized for standard JVMs)
+            //          - Variant 'runtimeElements' capability info.picocli:picocli:4.7.0-SNAPSHOT declares a runtime of a library compatible with Java 5, packaged as a jar, and its dependencies declared externally:
+            //              - Unmatched attribute:
+            //                  - Doesn't say anything about its target Java environment (preferred optimized for standard JVMs)
+            attribute(TargetJvmVersion.TARGET_JVM_VERSION_ATTRIBUTE, new Integer(JavaVersion.VERSION_1_6.majorVersion))
+        }
+    }
+}
 // jacoco 0.8.2 does not work with Java 13; gradle 4.x has no JavaVersion enum value for Java 12
 if (JavaVersion.current().isJava11Compatible()) {
     project.logger.lifecycle("skipping jacoco test for Java version ${JavaVersion.current()}")

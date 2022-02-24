@@ -74,6 +74,7 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 
 
 ## <a name="4.7.0-fixes"></a> Fixed issues
+* [#1599] API: The `picocli-codegen` artifact is now a named JPMS module with a `module-info.class`.
 * [#1471] API: Provide a programmatic way to configure Picocli's `TraceLevel`. Thanks to [ekinano](https://github.com/ekinano) for raising this.
 * [#1125] API: Add parser configuration to allow options to consume values that match subcommand names or option names.
 * [#1396][#1401] API: Support generic types in containers (e.g. List, Map). Thanks to [Michał Górniewski](https://github.com/mgorniew) for the pull request.
