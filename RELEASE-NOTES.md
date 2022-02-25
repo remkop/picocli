@@ -92,21 +92,24 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1596] DOC: fix javadoc typos and incorrect links.
 * [#1597] DOC: Add examples to Execution Configuration section in user manual.
 * [#1581] BUILD: Fix dependabot config.
+* [#1607] DEP: Bump actions/setup-java from 2.5.0 to 3
+* [#1585] DEP: Bump github/codeql-action from 1.0.30 to 1.1.0
+* [#1593] DEP: Bump github/codeql-action from 1.1.0 to 1.1.2
+* [#1601] DEP: Bump github/codeql-action from 1.1.2 to 1.1.3
+* [#1586] DEP: Bump ossf/scorecard-action from 1.0.2 to 1.0.3
+* [#1594] DEP: Bump ossf/scorecard-action from 1.0.3 to 1.0.4
 * [#1573] DEP: Bump JLine3 version to 3.21.0 from 3.19.0.
 * [#1576] DEP: Bump Spring Boot version to 2.6.3 from 2.5.6.
 * [#1580] DEP: Bump asciidoctor to 2.5.3 from 2.5.2. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1589] DEP: Bump hamcrest-core from 1.3 to 2.2
 * [#1588] DEP: Bump system-rules from 1.17.1 to 1.19.0
 * [#1587] DEP: Bump ivy from 2.4.0 to 2.5.0
-* [#1586] DEP: Bump ossf/scorecard-action from 1.0.2 to 1.0.3
-* [#1594] DEP: Bump ossf/scorecard-action from 1.0.3 to 1.0.4
-* [#1585] DEP: Bump github/codeql-action from 1.0.30 to 1.1.0
-* [#1593] DEP: Bump github/codeql-action from 1.1.0 to 1.1.2
 * [#1584] DEP: Bump jansi from 2.1.0 to 2.4.0
 * [#1583] DEP: Bump step-security/harden-runner from 1.3.0 to 1.4.0
 * [#1582] DEP: Bump groovy-all from 2.4.10 to 2.5.15 // latest version of Groovy that supports Java 5
 * [#1590] DEP: Bump junit-dep from 4.11 to 4.11.20120805.1225
 * [#1591] DEP: Bump junit from 4.12 to 4.13.2
+* [#1606] DEP: Bump springBootVersion from 2.6.3 to 2.6.4
 
 
 ## <a name="4.7.0-deprecated"></a> Deprecations
