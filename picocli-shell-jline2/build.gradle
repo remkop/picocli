@@ -5,6 +5,7 @@ plugins {
 group 'info.picocli'
 description 'Picocli Shell JLine2 - easily build interactive shell applications with JLine 2 and picocli.'
 version "$projectVersion"
+ext.moduleName = 'info.picocli.shell.jline2'
 
 dependencies {
     api rootProject
@@ -18,8 +19,7 @@ jar {
                     'Specification-Version' : archiveVersion.get(),
                     'Implementation-Title'  : 'Picocli Shell JLine2',
                     'Implementation-Vendor' : 'Remko Popma',
-                    'Implementation-Version': archiveVersion.get(),
-                    'Automatic-Module-Name' : 'info.picocli.shell.jline2'
+                    'Implementation-Version': archiveVersion.get()
     }
 }
 
