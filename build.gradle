@@ -103,28 +103,30 @@ allprojects {
         into 'build/docs/apidocs'
         include '**/doc-files/*.*'
     }
-    //sourceSets.main.java.srcDirs = ['src/main/java', 'src/main/java9']
-    compileJava {
-        inputs.property("moduleName", moduleName)
-    //    doFirst {
-    //        logger.info("Java version is " + JavaVersion.current())
-    //        if (JavaVersion.current().isJava9Compatible()) {
-    //            options.compilerArgs = [
-    //                '--module-path', classpath.asPath,
-    //            ]
-    //        }
-    //        // classpath = files()
-    //        classpath = sourceSets.main.runtimeClasspath
-    //        logger.info("options.compilerArgs is " + options.compilerArgs)
-    //        logger.info("classpath is " + classpath.files)
-    //    }
-    }
-    moduleConfig {
-        // copy module-info.class to META-INF/versions/9
-        multiReleaseVersion = 9
-        moduleInfoPath = 'src/main/java9/module-info.java'
-        version = project.version
-        neverCompileModuleInfo = true
+    if (!project.name in ['picocli-examples', 'picocli-annotation-processing-tests']) {
+        //sourceSets.main.java.srcDirs = ['src/main/java', 'src/main/java9']
+        compileJava {
+            inputs.property("moduleName", moduleName)
+            //    doFirst {
+            //        logger.info("Java version is " + JavaVersion.current())
+            //        if (JavaVersion.current().isJava9Compatible()) {
+            //            options.compilerArgs = [
+            //                '--module-path', classpath.asPath,
+            //            ]
+            //        }
+            //        // classpath = files()
+            //        classpath = sourceSets.main.runtimeClasspath
+            //        logger.info("options.compilerArgs is " + options.compilerArgs)
+            //        logger.info("classpath is " + classpath.files)
+            //    }
+        }
+        moduleConfig {
+            // copy module-info.class to META-INF/versions/9
+            multiReleaseVersion = 9
+            moduleInfoPath = 'src/main/java9/module-info.java'
+            version = project.version
+            neverCompileModuleInfo = true
+        }
     }
 }
 
