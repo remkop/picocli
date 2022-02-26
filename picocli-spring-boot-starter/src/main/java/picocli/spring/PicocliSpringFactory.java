@@ -1,7 +1,6 @@
 package picocli.spring;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.logging.Logger;
 import org.springframework.context.ApplicationContext;
 import picocli.CommandLine;
 
@@ -18,7 +17,7 @@ import java.util.Objects;
  * @since 4.0.0
  */
 public class PicocliSpringFactory implements CommandLine.IFactory {
-    private static final Logger logger = LoggerFactory.getLogger(PicocliSpringFactory.class);
+    private static final Logger logger = Logger.getLogger(PicocliSpringFactory.class.getName());
 
     private final ApplicationContext applicationContext;
     private final CommandLine.IFactory fallbackFactory;
@@ -52,8 +51,9 @@ public class PicocliSpringFactory implements CommandLine.IFactory {
         try {
             return getBeanOrCreate(clazz);
         } catch (Exception e) {
-            logger.warn("Unable to get bean of class {}, using fallback factory {} ({})",
-                clazz, fallbackFactory.getClass().getName(), e.toString());
+            logger.warning(String.format(
+                "Unable to get bean of class %s, using fallback factory %s (%s)",
+                clazz, fallbackFactory.getClass().getName(), e.toString()));
             return fallbackFactory.create(clazz);
         }
     }
