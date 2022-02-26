@@ -24,6 +24,12 @@
 //     File > Project Structure... > Modules > picocli_main > Sources:
 //     select the 'java9' folder and click 'Mark as: Excluded'.
 
+/**
+ * Defines a picocli annotation processor API and implementation,
+ * and tools for generating GraalVM configuration files and man-page documentation.
+ *
+ * @since 4.7.0
+ */
 module info.picocli.codegen {
     requires info.picocli;
     requires java.compiler;
