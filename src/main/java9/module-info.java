@@ -24,6 +24,11 @@
 //     File > Project Structure... > Modules > picocli_main > Sources:
 //     select the 'java9' folder and click 'Mark as: Excluded'.
 
+/**
+ * Defines API and implementation for creating command line (CLI) applications.
+ *
+ * @since 4.0.0
+ */
 module info.picocli {
     exports picocli;
     requires static java.sql;
