@@ -6,6 +6,7 @@ plugins {
 group 'info.picocli'
 description 'Picocli Groovy - easily use picocli in Groovy scripts.'
 version "$projectVersion"
+ext.moduleName = 'info.picocli.groovy'
 
 configurations {
     ivy
@@ -35,8 +36,7 @@ jar {
                     'Specification-Version' : archiveVersion.get(),
                     'Implementation-Title'  : 'Picocli Groovy',
                     'Implementation-Vendor' : 'Remko Popma',
-                    'Implementation-Version': archiveVersion.get(),
-                    'Automatic-Module-Name' : 'info.picocli.groovy'
+                    'Implementation-Version': archiveVersion.get()
     }
 }
 

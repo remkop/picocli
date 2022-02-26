@@ -22,7 +22,6 @@ buildscript {
     }
 }
 
-apply plugin: "org.beryx.jar"
 apply plugin: 'io.codearte.nexus-staging'
 
 if (System.getenv('MAVEN_OSS_USER')) { // on home system
@@ -61,6 +60,7 @@ pluginManager.withPlugin('biz.aQute.bnd.builder') { // if plugin applied, execut
 allprojects {
     apply plugin: 'java'
     apply plugin: 'java-library' // to avoid https://github.com/gradle/gradle/issues/1118
+    apply plugin: "org.beryx.jar" // for compiling module-info on Java 8
 
     sourceCompatibility = !JavaVersion.current().isJava9Compatible() ?
             1.5 : JavaVersion.current().isJava11Compatible() ? 1.7 : 1.6
@@ -102,6 +102,29 @@ allprojects {
         from('src/main/java')
         into 'build/docs/apidocs'
         include '**/doc-files/*.*'
+    }
+    //sourceSets.main.java.srcDirs = ['src/main/java', 'src/main/java9']
+    compileJava {
+        inputs.property("moduleName", moduleName)
+    //    doFirst {
+    //        logger.info("Java version is " + JavaVersion.current())
+    //        if (JavaVersion.current().isJava9Compatible()) {
+    //            options.compilerArgs = [
+    //                '--module-path', classpath.asPath,
+    //            ]
+    //        }
+    //        // classpath = files()
+    //        classpath = sourceSets.main.runtimeClasspath
+    //        logger.info("options.compilerArgs is " + options.compilerArgs)
+    //        logger.info("classpath is " + classpath.files)
+    //    }
+    }
+    moduleConfig {
+        // copy module-info.class to META-INF/versions/9
+        multiReleaseVersion = 9
+        moduleInfoPath = 'src/main/java9/module-info.java'
+        version = project.version
+        neverCompileModuleInfo = true
     }
 }
 
@@ -163,6 +186,7 @@ configurations {
             //              - Unmatched attribute:
             //                  - Doesn't say anything about its target Java environment (preferred optimized for standard JVMs)
             attribute(TargetJvmVersion.TARGET_JVM_VERSION_ATTRIBUTE, new Integer(JavaVersion.VERSION_1_6.majorVersion))
+
         }
     }
 }
