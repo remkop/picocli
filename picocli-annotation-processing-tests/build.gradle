@@ -5,9 +5,14 @@ plugins {
 group 'info.picocli'
 description 'Picocli Annotation Processing Tests - Tests Annotation Processors for picocli Annotations.'
 version "$projectVersion"
+
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
-
+tasks.withType(JavaCompile).configureEach {
+    javaCompiler = javaToolchains.compilerFor {
+        languageVersion = JavaLanguageVersion.of(8)
+    }
+}
 dependencies {
     implementation rootProject
     implementation project(':picocli-codegen')
