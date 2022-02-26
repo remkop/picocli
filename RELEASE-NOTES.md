@@ -78,6 +78,7 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1611] API: The `picocli-groovy` artifact is now a named JPMS module with a `module-info.class`.
 * [#1610] API: The `picocli-shell-jline2` is now a named JPMS module with a `module-info.class`.
 * [#1609] API: The `picocli-shell-jline3` is now a named JPMS module with a `module-info.class`.
+* [#1608] API: The `picocli-spring-boot-starter` is now a named JPMS module with a `module-info.class`. NOTE: its module name changed to `info.picocli.spring.boot` from `info.picocli.spring`.
 * [#1600] API: Add `requires static java.sql` to picocli `module-info`.
 * [#1471] API: Provide a programmatic way to configure Picocli's `TraceLevel`. Thanks to [ekinano](https://github.com/ekinano) for raising this.
 * [#1125] API: Add parser configuration to allow options to consume values that match subcommand names or option names.

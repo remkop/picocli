@@ -5,6 +5,8 @@ plugins {
 group 'info.picocli'
 description 'Picocli Spring Boot Starter - Enables Spring Dependency Injection and Spring Boot AutoConfiguration in Picocli Commands.'
 version "$projectVersion"
+ext.moduleName = 'info.picocli.spring.boot'
+
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
@@ -22,8 +24,8 @@ jar {
                     'Specification-Version' : archiveVersion.get(),
                     'Implementation-Title'  : 'Picocli Spring Boot Starter',
                     'Implementation-Vendor' : 'Remko Popma',
-                    'Implementation-Version': archiveVersion.get(),
-                    'Automatic-Module-Name' : 'info.picocli.spring'
+                    'Implementation-Version': archiveVersion.get()
+//                    'Automatic-Module-Name' : 'info.picocli.spring'
     }
 }
 
