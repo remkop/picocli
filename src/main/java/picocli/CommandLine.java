@@ -7950,16 +7950,16 @@ public class CommandLine {
              * @since 4.0 */
             public UsageMessageSpec autoWidth(boolean detectTerminalSize) { autoWidth = detectTerminalSize; return this; }
             /**
-             * Given a character, is this character considered to be a CJK character?
+             * Given a codePoint, is this codePoint considered to be a CJK character?
              * Shamelessly stolen from
              * <a href="http://stackoverflow.com/questions/1499804/how-can-i-detect-japanese-text-in-a-java-string">StackOverflow</a>
              * where it was contributed by user Rakesh N. (Upvote! :-) )
-             * @param c Character to test
+             * @param codePoint code point to test
              * @return {@code true} if the character is a CJK character
              */
-            static boolean isCharCJK(char c) {
-                Character.UnicodeBlock unicodeBlock = Character.UnicodeBlock.of(c);
-                return (c == 0x00b1
+            static boolean isCodePointCJK(int codePoint) {
+                Character.UnicodeBlock unicodeBlock = Character.UnicodeBlock.of(codePoint);
+                return (codePoint == 0x00b1
                         || unicodeBlock == Character.UnicodeBlock.HIRAGANA)
                         || (unicodeBlock == Character.UnicodeBlock.KATAKANA)
                         || (unicodeBlock == Character.UnicodeBlock.KATAKANA_PHONETIC_EXTENSIONS)
@@ -7975,7 +7975,7 @@ public class CommandLine {
                         || (unicodeBlock == Character.UnicodeBlock.CJK_SYMBOLS_AND_PUNCTUATION)
                         || (unicodeBlock == Character.UnicodeBlock.ENCLOSED_CJK_LETTERS_AND_MONTHS)
                         //The magic number here is the separating index between full-width and half-width
-                        || (unicodeBlock == Character.UnicodeBlock.HALFWIDTH_AND_FULLWIDTH_FORMS && c < 0xFF61);
+                        || (unicodeBlock == Character.UnicodeBlock.HALFWIDTH_AND_FULLWIDTH_FORMS && codePoint < 0xFF61);
             }
 
             /** Returns the help section renderers for the predefined section keys. see: {@link #sectionKeys()} */
@@ -18135,10 +18135,27 @@ public class CommandLine {
                  * @return the number of columns that the specified portion of this Text will occupy on the console, adjusted for wide CJK characters
                  * @since 4.0 */
                 public int getCJKAdjustedLength(int fromPosition, int charCount) {
+                    String lengthOf = plain.substring(from, from + charCount);
+
                     int result = 0;
-                    for (int i = fromPosition; i < fromPosition + charCount; i++) {
-                        result += UsageMessageSpec.isCharCJK(plain.charAt(i)) ? 2 : 1;
+                    int i = 0;
+                    while (i < lengthOf.length()) {
+                        int codePoint;
+                        char c1 = lengthOf.charAt(i++);
+                        if (!Character.isHighSurrogate(c1) || i >= length) {
+                            codePoint = c1;
+                        } else {
+                            char c2 = lengthOf.charAt(i);
+                            if (Character.isLowSurrogate(c2)) {
+                                i++;
+                                codePoint = Character.toCodePoint(c1, c2);
+                            } else {
+                                codePoint = c1;
+                            }
+                        }
+                        result += UsageMessageSpec.isCodePointCJK(codePoint) ? 2 : 1;
                     }
+
                     return result;
                 }
             }
