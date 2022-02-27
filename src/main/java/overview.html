@@ -1,53 +1,35 @@
 <html>
 <body>
+
 <p>
-    Picocli is a one-file framework for creating Java command line applications with almost zero code.
-    It supports a variety of command line syntax styles including POSIX, GNU, MS-DOS and more.
-    Generates highly customizable usage help messages with <a href="https://picocli.info/#_ansi_colors_and_styles">ANSI colors and styles</a>.
-    Picocli-based applications can have <a href="https://picocli.info/autocomplete.html">command line TAB completion</a>
-    showing available options, option parameters and subcommands, for any level of nested subcommands.
+    Picocli is a framework for creating Java command line applications with almost zero code.
 </p>
 <p>
-    How it works: annotate your class and pass it to the <code>CommandLine</code> constructor.
-    Then invoke <code>CommandLine.parseArgs</code> or <code>CommandLine.execute</code> with
-    the command line parameters, and picocli parses the command line arguments and converts them
-    to strongly typed values, which are then injected in the annotated fields and methods of your class.
+    Most application will only need the main <code>picocli</code> module, but
+    we recommend also <a href="https://picocli.info/#_annotation_processor">configuring</a>
+    the <code>picocli-codegen</code> module as an annotation processor for your project.
+    This provides compile-time error checking and
+    generates <a href="https://www.graalvm.org/reference-manual/native-image/BuildConfiguration/">GraalVM
+    configuration files</a> under
+    <code>META-INF/native-image/picocli-generated/$project</code> during compilation,
+    to be included in the application jar.
+    This in turn facilitates converting your command line application to a <a href="https://www.graalvm.org/22.0/reference-manual/native-image/">native image</a>.
 </p>
 <p>
-    Picocli provides an <a href="https://picocli.info/#execute">execute method</a>
-    that allows applications to omit error handling and other boilerplate code for common use cases.
-    Here is a small example application that uses the <code>CommandLine.execute</code> method
-    to do parsing and error handling in one line of code.
+    The <code>picocli-groovy</code> module allows
+    <a href="https://picocli.info/#_groovy_scripts">Groovy scripts</a> to use picocli
+    annotations for even more compact code.
 </p>
 <p>
-    The full user manual is hosted at <a href="https://picocli.info/">https://picocli.info</a>.
+    The <code>picocli-shell-jline2</code> and <code>picocli-shell-jline3</code> modules
+    are of interest to applications that want to provide an interactive shell-like console.
 </p>
-<pre>
-&#064;Command(name = "checksum", mixinStandardHelpOptions = true, version = "Checksum 4.0",
-         description = "Prints the checksum (SHA-1 by default) of a file to STDOUT.")
-class CheckSum implements Callable&lt;Integer&gt; {
-
-    &#064;Parameters(index = "0", description = "The file whose checksum to calculate.")
-    private File file;
-
-    &#064;Option(names = {"-a", "--algorithm"}, description = "MD5, SHA-1, SHA-256, ...")
-    private String algorithm = "SHA-1";
-
-    &#064;Override
-    public Integer call() throws Exception { // your business logic goes here
-        byte[] fileContents = Files.readAllBytes(file.toPath());
-        byte[] digest = MessageDigest.getInstance(algorithm).digest(fileContents);
-        System.out.printf("%0" + (digest.length*2) + "x%n", new BigInteger(1, digest));
-        return 0;
-    }
-
-    // CheckSum implements Callable, so parsing, error handling and handling user
-    // requests for usage help or version help can be done with one line of code.
-    public static void main(String[] args) {
-        int exitCode = new CommandLine(new CheckSum()).execute(args);
-        System.exit(exitCode);
-    }
-}
-</pre>
+<p>
+    The <code>picocli-spring-boot-starter</code> module provides <a href="https://picocli.info/#_spring_boot_example">Spring integration</a>.
+    Particularly, it allows for <code>@Autowired</code> or
+    <code>@javax.inject</code>-annotated program elements in picocli components
+    (commands, subcommands, type converters, default providers, etc.)
+    to be injected with values from Spring's Application Context.
+</p>
 </body>
 </html>
