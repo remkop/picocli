@@ -12,9 +12,9 @@ configurations {
     ivy
 }
 dependencies {
-    api                rootProject
-    compileOnly        supportDependencies.groovy
-    ivy                supportDependencies.ivy // for Gradle
+    api            rootProject
+    api            supportDependencies.groovy
+    ivy            supportDependencies.ivy // for Gradle
 }
 tasks.withType(GroovyCompile) {
     // this, and the `configurations {ivy}` section, are a workaround for the dreaded
