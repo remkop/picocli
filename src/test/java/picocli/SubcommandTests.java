@@ -59,6 +59,7 @@ public class SubcommandTests {
     @Rule
     public final ProvideSystemProperty ansiOFF = new ProvideSystemProperty("picocli.ansi", "false");
 
+    @Command(name = "top")
     static class MainCommand { @Option(names = "-a") boolean a; public boolean equals(Object o) { return getClass().equals(o.getClass()); }}
     static class ChildCommand1 { @Option(names = "-b") boolean b; public boolean equals(Object o) { return getClass().equals(o.getClass()); }}
     static class ChildCommand2 { @Option(names = "-c") boolean c; public boolean equals(Object o) { return getClass().equals(o.getClass()); }}
@@ -85,7 +86,7 @@ public class SubcommandTests {
             cmd.addSubcommand(new ChildCommand1());
             fail("Expected exception");
         } catch (InitializationException ex) {
-            assertEquals("Cannot add subcommand with null name to <main class>", ex.getMessage());
+            assertEquals("Cannot add subcommand with null name to top", ex.getMessage());
         }
     }
 
@@ -302,8 +303,27 @@ public class SubcommandTests {
         assertEquals(0, cmd.getCommandSpec().subcommands().size());
         assertSame(sub, removed);
 
-        String line = String.format("[picocli DEBUG] Removed 4 subcommand entries [alias1, alias2, bobobo, main] for key 'BO' from '<main class>'%n");
+        String line = String.format("[picocli DEBUG] Removed 4 subcommand entries [alias1, alias2, bobobo, main] for key 'BO' from 'top'%n");
         assertEquals(line, systemErrRule.getLog());
+    }
+
+    @Test
+    public void testAddSubcommandAliasTrace() {
+        TestUtil.setTraceLevel("DEBUG");
+        MainCommand top = new MainCommand();
+        CommandLine cmd = new CommandLine(top);
+        SubcommandWithAliases sub = new SubcommandWithAliases();
+        cmd.addSubcommand("sub", sub);
+
+        String expected = String.format("" +
+            "[picocli DEBUG] Creating CommandSpec for picocli.SubcommandTests$MainCommand@%s with factory picocli.CommandLine$DefaultFactory%n" +
+            "[picocli DEBUG] Creating CommandSpec for picocli.SubcommandTests$SubcommandWithAliases@%s with factory picocli.CommandLine$DefaultFactory%n" +
+            "[picocli DEBUG] Adding subcommand 'sub' to 'top'%n" +
+            "[picocli DEBUG] Adding alias 'top alias1' for 'top sub'%n" +
+            "[picocli DEBUG] Adding alias 'top alias2' for 'top sub'%n" +
+            "[picocli DEBUG] Adding alias 'top bobobo' for 'top sub'%n",
+            Integer.toHexString(top.hashCode()), Integer.toHexString(sub.hashCode()));
+        assertEquals(expected, systemErrRule.getLog());
     }
 
     private static CommandLine createNestedCommand() {

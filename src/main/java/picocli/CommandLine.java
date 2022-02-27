@@ -6558,14 +6558,16 @@ public class CommandLine {
                 return this;
             }
             private void addAlias(String alias, String name, CommandLine subCommandLine, Tracer t) {
-                if (t.isDebug()) {t.debug("Adding alias '%s' for '%s'", (parent == null ? "" : parent.qualifiedName() + " ") + alias, qualifiedName());}
+                CommandSpec subSpec = subCommandLine.getCommandSpec();
+                if (t.isDebug()) {t.debug("Adding alias '%s' for '%s'", (subSpec.parent() == null ? "" : subSpec.parent().qualifiedName() + " ") + alias, subSpec.qualifiedName());}
                 CommandLine previous = commands.put(interpolator.interpolate(alias), subCommandLine);
                 if (previous != null && previous != subCommandLine) {
                     throw new DuplicateNameException("Alias '" + alias + "' for subcommand '" + name + "' is already used by another subcommand of '" + name() + "'");
                 }
             }
             private void removeAlias(String alias, CommandLine subCommandLine, Tracer t) {
-                if (t.isDebug()) {t.debug("Removing alias '%s' for '%s'", (parent == null ? "" : parent.qualifiedName() + " ") + alias, qualifiedName());}
+                CommandSpec subSpec = subCommandLine.getCommandSpec();
+                if (t.isDebug()) {t.debug("Removing alias '%s' for '%s'", (subSpec.parent() == null ? "" : subSpec.parent().qualifiedName() + " ") + alias, subSpec.qualifiedName());}
                 commands.remove(interpolator.interpolate(alias));
             }
             private void inheritAttributesFrom(CommandSpec root) {
