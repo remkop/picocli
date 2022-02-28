@@ -122,7 +122,8 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1590] DEP: Bump junit-dep from 4.11 to 4.11.20120805.1225
 * [#1591] DEP: Bump junit from 4.12 to 4.13.2
 * [#1606] DEP: Bump springBootVersion from 2.6.3 to 2.6.4
-
+* [#1618] DEP: Bump biz.aQute.bnd.gradle from 6.1.0 to 6.2.0
+* [#1617] DEP: Bump log4j2Version from 2.17.1 to 2.17.2
 
 ## <a name="4.7.0-deprecated"></a> Deprecations
 No features were deprecated in this release.
