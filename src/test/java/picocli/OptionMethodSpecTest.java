@@ -266,7 +266,7 @@ public class OptionMethodSpecTest {
 
     @Test
     public void testObjectsWithoutDefaultAreNotReset() {
-        //TestUtil.setTraceLevel("DEBUG");
+        //TestUtil.setTraceLevel(CommandLine.TraceLevel.DEBUG);
         String[] args = "-b -y1 -s2 -i3 -l4 -f5 -d6 -bigint=7 -string abc -list a -list b -map 1=2.0 -set 33 -set 22".split(" ");
         CommandLine cmd = new CommandLine(Objects.class);
         cmd.parseArgs(args);

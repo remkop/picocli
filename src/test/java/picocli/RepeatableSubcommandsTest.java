@@ -120,7 +120,7 @@ public class RepeatableSubcommandsTest {
 
     @Test
     public void testParseResult() {
-        //TestUtil.setTraceLevel("DEBUG");
+        //TestUtil.setTraceLevel(CommandLine.TraceLevel.DEBUG);
         CommandLine cl = new CommandLine(new A());
         String[] args = "B B C D B E F G E E F F".split(" ");
         ParseResult parseResult = cl.parseArgs(args);
@@ -791,7 +791,7 @@ public class RepeatableSubcommandsTest {
         };
         ResourceBundle rb = new PropertyResourceBundle(new ByteArrayInputStream(new byte[0]));
 
-        //TestUtil.setTraceLevel("DEBUG");
+        //TestUtil.setTraceLevel(CommandLine.TraceLevel.DEBUG);
 
         Issue1007CommandWithCustomConverter cmd = new Issue1007CommandWithCustomConverter();
         CommandLine line = new CommandLine(cmd);

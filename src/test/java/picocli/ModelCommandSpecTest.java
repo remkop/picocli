@@ -74,7 +74,7 @@ public class ModelCommandSpecTest {
 
     @Test
     public void testEmptyModelParse() {
-        setTraceLevel("OFF");
+        setTraceLevel(CommandLine.TraceLevel.OFF);
         CommandSpec spec = CommandSpec.create();
         CommandLine commandLine = new CommandLine(spec);
         commandLine.setUnmatchedArgumentsAllowed(true);
@@ -684,7 +684,7 @@ public class ModelCommandSpecTest {
 
     @Test
     public void testMultipleUsageHelpOptions() {
-        setTraceLevel("WARN");
+        setTraceLevel(CommandLine.TraceLevel.WARN);
         CommandSpec cmd = CommandSpec.create()
                 .add(OptionSpec.builder("-x").type(boolean.class).usageHelp(true).build())
                 .add(OptionSpec.builder("-h").type(boolean.class).usageHelp(true).build());
@@ -698,7 +698,7 @@ public class ModelCommandSpecTest {
 
     @Test
     public void testMultipleVersionHelpOptions() {
-        setTraceLevel("WARN");
+        setTraceLevel(CommandLine.TraceLevel.WARN);
         CommandSpec cmd = CommandSpec.create()
                 .add(OptionSpec.builder("-x").type(boolean.class).versionHelp(true).build())
                 .add(OptionSpec.builder("-V").type(boolean.class).versionHelp(true).build());

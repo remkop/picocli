@@ -3602,9 +3602,9 @@ public class HelpTest {
         Method detectTerminalWidth = UsageMessageSpec.class.getDeclaredMethod("detectTerminalWidth");
         detectTerminalWidth.setAccessible(true);
 
-        TestUtil.setTraceLevel("DEBUG");
+        TestUtil.setTraceLevel(CommandLine.TraceLevel.DEBUG);
         int width = (Integer) detectTerminalWidth.invoke(null);
-        TestUtil.setTraceLevel("WARN");
+        TestUtil.setTraceLevel(CommandLine.TraceLevel.WARN);
 
         assertTrue(systemErrRule.getLog(), systemErrRule.getLog().startsWith("[picocli DEBUG] getTerminalWidth() executing command ["));
         //assertTrue(systemErrRule.getLog(),

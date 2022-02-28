@@ -832,7 +832,7 @@ public class ExecuteTest {
             @Option(names = "-x") int x;
             public void run() { }
         }
-        TestUtil.setTraceLevel("DEBUG");
+        TestUtil.setTraceLevel(CommandLine.TraceLevel.DEBUG);
         CommandLine cmd = new CommandLine(new App());
         cmd.execute("-x=abc");
 
@@ -918,7 +918,7 @@ public class ExecuteTest {
 
             public void run() { }
         }
-        TestUtil.setTraceLevel("DEBUG");
+        TestUtil.setTraceLevel(CommandLine.TraceLevel.DEBUG);
         CommandLine cmd = new CommandLine(new App());
         cmd.execute("abc");
 
@@ -1416,7 +1416,7 @@ public class ExecuteTest {
 
     @Test
     public void testKeyValuesMapIgnoresInvalidEntries() {
-        TestUtil.setTraceLevel("INFO");
+        TestUtil.setTraceLevel(CommandLine.TraceLevel.INFO);
         Map<String, String> map = keyValuesMap(" 0:Normal Execution",
                 "INVALID ENTRY",
                 "70:Internal error");

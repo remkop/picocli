@@ -389,7 +389,7 @@ public class RangeTest {
             @Parameters String artifact; // assigned index = "1"
             @Parameters String version;  // assigned index = "2"
         }
-        //TestUtil.setTraceLevel("DEBUG");
+        //TestUtil.setTraceLevel(CommandLine.TraceLevel.DEBUG);
         String[] args = { "info.picocli", "picocli", "4.3.0" };
         AutomaticIndex params = CommandLine.populateCommand(new AutomaticIndex(), args);
 

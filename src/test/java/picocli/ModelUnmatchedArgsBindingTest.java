@@ -40,7 +40,7 @@ public class ModelUnmatchedArgsBindingTest {
 
     @Test
     public void testUnmatchedArgsBinding_forStringArrayConsumer() {
-        setTraceLevel("OFF");
+        setTraceLevel(CommandLine.TraceLevel.OFF);
         class ArrayBinding implements ISetter {
             String[] array;
             @SuppressWarnings("unchecked") public <T> T set(T value) {
@@ -66,7 +66,7 @@ public class ModelUnmatchedArgsBindingTest {
 
     @Test
     public void testUnmatchedArgsBinding_forStringCollectionSupplier() {
-        setTraceLevel("OFF");
+        setTraceLevel(CommandLine.TraceLevel.OFF);
         class ArrayBinding implements IGetter {
             List<String> list = new ArrayList<String>();
             @SuppressWarnings("unchecked") public <T> T get() {
@@ -90,7 +90,7 @@ public class ModelUnmatchedArgsBindingTest {
 
     @Test
     public void testUnmatchedArgsBinding_forStringArrayConsumer_withInvalidBinding() {
-        setTraceLevel("OFF");
+        setTraceLevel(CommandLine.TraceLevel.OFF);
         class ListBinding implements ISetter {
             List<String> list = new ArrayList<String>();
             @SuppressWarnings("unchecked") public <T> T set(T value) {
@@ -111,7 +111,7 @@ public class ModelUnmatchedArgsBindingTest {
 
     @Test
     public void testUnmatchedArgsBinding_forStringCollectionSupplier_withInvalidBinding() {
-        setTraceLevel("OFF");
+        setTraceLevel(CommandLine.TraceLevel.OFF);
         class ListBinding implements IGetter {
             @SuppressWarnings("unchecked") public <T> T get() {
                 return (T) new Object();

@@ -697,7 +697,7 @@ public class ArityTest {
     }
     @Test
     public void testBooleanOptionsArity0_nShortFormFailsIfAttachedParamNotABooleanWithUnmatchedArgsAllowed() { // ignores varargs
-        setTraceLevel("OFF");
+        setTraceLevel(CommandLine.TraceLevel.OFF);
         CommandLine cmd = new CommandLine(new BooleanOptionsArity0_nAndParameters()).setUnmatchedArgumentsAllowed(true);
         cmd.parseArgs("-rv234 -bool".split(" "));
         assertEquals(Arrays.asList("-234"), cmd.getUnmatchedArguments());

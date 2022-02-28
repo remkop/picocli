@@ -699,7 +699,7 @@ public class I18nTest {
 
     @Test
     public void testTracingWithResourceBundle() {
-        TestUtil.setTraceLevel("DEBUG");
+        TestUtil.setTraceLevel(CommandLine.TraceLevel.DEBUG);
         ByteArrayOutputStream err = new ByteArrayOutputStream();
         PrintStream oldErr = System.err;
 

@@ -119,7 +119,7 @@ public class InheritedOptionTest {
             resourceBundle = "picocli.InheritedOptionTest$MyBundle") //MyBundle.class.getName()
     static class Ext extends Base{
     }
-    
+
     @Command(name = "sub")
     static class ExtSub {
         @Command void subsub() {}
@@ -127,7 +127,7 @@ public class InheritedOptionTest {
 
     @Test
     public void testGlobalOptionInBaseClass() {
-        //TestUtil.setTraceLevel("DEBUG");
+        //TestUtil.setTraceLevel(CommandLine.TraceLevel.DEBUG);
         // both top-level command and subcommand extend from a base class where global option is defined
         Ext ext = new Ext();
         CommandLine cmd = new CommandLine(ext);

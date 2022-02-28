@@ -1450,7 +1450,7 @@ public class ArgGroupTest {
                 "      <f1>%n" +
                 "  -a=<a>%n");
 
-        //TestUtil.setTraceLevel("DEBUG");
+        //TestUtil.setTraceLevel(CommandLine.TraceLevel.DEBUG);
         CommandLine cmd = new CommandLine(new App(), new InnerClassFactory(this));
         String actual = cmd.getUsageMessage(Help.Ansi.OFF);
         assertEquals(expected, actual);
@@ -1484,7 +1484,7 @@ public class ArgGroupTest {
                 "      <f1>%n" +
                 "  -a=<a>%n");
 
-        TestUtil.setTraceLevel("DEBUG");
+        TestUtil.setTraceLevel(CommandLine.TraceLevel.DEBUG);
         CommandLine cmd = new CommandLine(new App(), new InnerClassFactory(this));
         String actual = cmd.getUsageMessage(Help.Ansi.OFF);
         assertEquals(expected, actual);
@@ -1518,7 +1518,7 @@ public class ArgGroupTest {
                 "      <f1>%n" +
                 "  -a=<a>%n");
 
-        //TestUtil.setTraceLevel("INFO");
+        //TestUtil.setTraceLevel(CommandLine.TraceLevel.INFO);
         CommandLine cmd = new CommandLine(new App(), new InnerClassFactory(this));
         String actual = cmd.getUsageMessage(Help.Ansi.OFF);
         assertEquals(expected, actual);
@@ -1568,7 +1568,7 @@ public class ArgGroupTest {
             @ArgGroup(exclusive = true, multiplicity = "0..3")
             Composite[] composite;
         }
-        //TestUtil.setTraceLevel("DEBUG");
+        //TestUtil.setTraceLevel(CommandLine.TraceLevel.DEBUG);
         App app = new App();
         CommandLine cmd = new CommandLine(app, new InnerClassFactory(this));
         String synopsis = new Help(cmd.getCommandSpec(), Help.defaultColorScheme(Help.Ansi.OFF)).synopsis(0);
@@ -1768,7 +1768,7 @@ public class ArgGroupTest {
 
     @Test
     public void testRepeatingGroupsValidation() {
-        //TestUtil.setTraceLevel("DEBUG");
+        //TestUtil.setTraceLevel(CommandLine.TraceLevel.DEBUG);
 
         RepeatingApp app = new RepeatingApp();
         CommandLine cmd = new CommandLine(app);
@@ -2071,7 +2071,7 @@ public class ArgGroupTest {
     public void testIssue1054() {
         //-f pattern1 -f pattern2 -d --> accepted --> wrong: findPattern = "pattern2", "pattern1" is lost/ignored
         try {
-            //TestUtil.setTraceLevel("DEBUG");
+            //TestUtil.setTraceLevel(CommandLine.TraceLevel.DEBUG);
             Issue1054 bean3 = new Issue1054();
             new CommandLine(bean3).parseArgs("-f pattern1 -f pattern2 -d".split(" "));
             //System.out.println(bean3);
@@ -2489,7 +2489,7 @@ public class ArgGroupTest {
     @Test
     // https://github.com/remkop/picocli/issues/746
     public void test746DefaultValue() {
-        //TestUtil.setTraceLevel("DEBUG");
+        //TestUtil.setTraceLevel(CommandLine.TraceLevel.DEBUG);
         CommandWithDefaultValue bean = new CommandWithDefaultValue();
         CommandLine cmd = new CommandLine(bean);
 
@@ -2608,7 +2608,7 @@ public class ArgGroupTest {
     @Test
     // https://github.com/remkop/picocli/issues/742
     public void testIssue742FalseErrorMessage() {
-        //TestUtil.setTraceLevel("DEBUG");
+        //TestUtil.setTraceLevel(CommandLine.TraceLevel.DEBUG);
         CommandLine cmd = new CommandLine(new Issue742());
         ParseResult parseResult = cmd.parseArgs("-g=2", "-g=3");
         List<ParseResult.GroupMatch> multiples = parseResult.getGroupMatches();
@@ -2760,7 +2760,7 @@ public class ArgGroupTest {
 
     @Test
     public void testIssue829NPE_inSubcommandWithArgGroup() {
-        //TestUtil.setTraceLevel("DEBUG");
+        //TestUtil.setTraceLevel(CommandLine.TraceLevel.DEBUG);
         ParseResult parseResult = new CommandLine(new Issue829TopCommand()).parseArgs("-x=1", "sub", "-y=2");
         assertEquals(1, ((Issue829TopCommand)parseResult.commandSpec().userObject()).group.x);
 
@@ -2784,7 +2784,7 @@ public class ArgGroupTest {
     }
     @Test
     public void testIssue815() {
-        //TestUtil.setTraceLevel("DEBUG");
+        //TestUtil.setTraceLevel(CommandLine.TraceLevel.DEBUG);
         Issue815 userObject = new Issue815();
         new CommandLine(userObject).parseArgs("--id=123", "--id=456");
         assertNotNull(userObject.group);
@@ -3951,7 +3951,7 @@ public class ArgGroupTest {
         class App {
             @ArgGroup CriteriaWithEnvironment criteria;
         }
-        //TestUtil.setTraceLevel("DEBUG");
+        //TestUtil.setTraceLevel(CommandLine.TraceLevel.DEBUG);
         CommandLine cmd = new CommandLine(new App());
         try {
             cmd.parseArgs("-e", "X");
@@ -3978,7 +3978,7 @@ public class ArgGroupTest {
             @ArgGroup
             Issue1260GetterMethod group;
         }
-        //TestUtil.setTraceLevel("DEBUG");
+        //TestUtil.setTraceLevel(CommandLine.TraceLevel.DEBUG);
         App app = new App();
         CommandLine cmd = new CommandLine(app);
         cmd.parseArgs("-x", "123");
@@ -4010,7 +4010,7 @@ public class ArgGroupTest {
             @ArgGroup
             Issue1260SetterMethod group;
         }
-        //TestUtil.setTraceLevel("DEBUG");
+        //TestUtil.setTraceLevel(CommandLine.TraceLevel.DEBUG);
         App app = new App();
         CommandLine cmd = new CommandLine(app);
         cmd.parseArgs("-x", "3");
@@ -4051,7 +4051,7 @@ public class ArgGroupTest {
         PrintStream capture = new PrintStream(baos, true);
         System.setErr(capture);
 
-        //TestUtil.setTraceLevel("DEBUG");
+        //TestUtil.setTraceLevel(CommandLine.TraceLevel.DEBUG);
         CommandLine cmd = new CommandLine(new Issue1300());
         cmd.getUsageMessage(); // this causes initial values of all options to be cached
 

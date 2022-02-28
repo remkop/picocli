@@ -124,7 +124,7 @@ public class PropertiesDefaultProviderTest {
         expected.store(new FileOutputStream(f), "exported from test");
 
         MyApp myApp = new MyApp();
-        //TestUtil.setTraceLevel("DEBUG");
+        //TestUtil.setTraceLevel(CommandLine.TraceLevel.DEBUG);
         CommandLine.ParseResult parseResult = new CommandLine(myApp).parseArgs("999", "888", "providersub");
         f.delete();
 
@@ -156,7 +156,7 @@ public class PropertiesDefaultProviderTest {
         expected.store(new FileOutputStream(parent), "exported from test");
 
         MyApp myApp = new MyApp();
-        //TestUtil.setTraceLevel("DEBUG");
+        //TestUtil.setTraceLevel(CommandLine.TraceLevel.DEBUG);
         CommandLine.ParseResult parseResult = null;
         try {
             parseResult = new CommandLine(myApp).parseArgs("999", "888", "providersub");
@@ -220,7 +220,7 @@ public class PropertiesDefaultProviderTest {
 
     @Test
     public void testNonExistingFile() {
-        TestUtil.setTraceLevel("DEBUG");
+        TestUtil.setTraceLevel(CommandLine.TraceLevel.DEBUG);
         new PropertiesDefaultProvider(new File("nosuchfile"));
         assertTrue(systemErrRule.getLog().startsWith("[picocli WARN] defaults configuration file "));
         assertTrue(systemErrRule.getLog().endsWith(String.format("nosuchfile does not exist or is not readable%n")));

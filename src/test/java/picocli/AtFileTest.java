@@ -397,7 +397,7 @@ public class AtFileTest {
             @Parameters
             private List<String> files;
         }
-        setTraceLevel("OFF");
+        setTraceLevel(CommandLine.TraceLevel.OFF);
         File file = findFile("/argfile4-quotedValuesContainingWhitespace.txt");
         App app = CommandLine.populateCommand(new App(), "-f", "fVal1", "@" + file.getAbsolutePath(), "-f", "fVal2");
         assertTrue(app.verbose);
@@ -412,7 +412,7 @@ public class AtFileTest {
             @Parameters
             private List<String> files;
         }
-        setTraceLevel("INFO");
+        setTraceLevel(CommandLine.TraceLevel.INFO);
         File file = findFile("/argfile5-escapedAtValues.txt");
         App app = CommandLine.populateCommand(new App(), "aa", "@" + file.getAbsolutePath(), "bb");
         assertEquals(Arrays.asList("aa", "@val1", "@argfile5-escapedAtValues.txt", "bb"), app.files);
@@ -425,7 +425,7 @@ public class AtFileTest {
             @Parameters
             private List<String> files;
         }
-        setTraceLevel("OFF");
+        setTraceLevel(CommandLine.TraceLevel.OFF);
         File file = findFile("/argfile1.txt");
         App app = CommandLine.populateCommand(new App(), "aa", "@@" + file.getAbsolutePath(), "bb");
         assertEquals(Arrays.asList("aa", "@" + file.getAbsolutePath(), "bb"), app.files);
@@ -449,7 +449,7 @@ public class AtFileTest {
         File file = findFile("/argfile1.txt");
         File file2 = findFile("/argfile2.txt");
 
-        setTraceLevel("OFF");
+        setTraceLevel(CommandLine.TraceLevel.OFF);
         App app = new App();
         CommandLine commandLine = new CommandLine(app).setOverwrittenOptionsAllowed(true);
         commandLine.setToggleBooleanFlags(true);
@@ -482,7 +482,7 @@ public class AtFileTest {
         assertFalse("does not exist yet", nested.exists());
         copyFile(file2, nested);
 
-        setTraceLevel("OFF");
+        setTraceLevel(CommandLine.TraceLevel.OFF);
         App app = new App();
         CommandLine commandLine = new CommandLine(app).setOverwrittenOptionsAllowed(true);
         commandLine.parseArgs("-f", "fVal1", "@" + file.getAbsolutePath(),  "-f", "fVal2");
@@ -514,7 +514,7 @@ public class AtFileTest {
         assertFalse("does not exist yet", localCopy.exists());
         copyFile(file, localCopy);
 
-        setTraceLevel("INFO");
+        setTraceLevel(CommandLine.TraceLevel.INFO);
         App app = new App();
         CommandLine commandLine = new CommandLine(app).setOverwrittenOptionsAllowed(true);
         commandLine.parseArgs("-f", "fVal1", "@" + localCopy.getAbsolutePath(),  "-f", "fVal2");
@@ -551,7 +551,7 @@ public class AtFileTest {
         nested.delete();
         assertFalse(nested + " does not exist", nested.exists());
 
-        setTraceLevel("INFO");
+        setTraceLevel(CommandLine.TraceLevel.INFO);
         App app = new App();
         CommandLine commandLine = new CommandLine(app).setOverwrittenOptionsAllowed(true);
         commandLine.parseArgs("-f", "fVal1", "@" + file.getAbsolutePath(),  "-f", "fVal2");

@@ -97,7 +97,7 @@ public class CommandMethodTest {
     @SuppressWarnings("deprecation")
     @Test
     public void testAnnotateMethod_noArg() throws Exception {
-        setTraceLevel("OFF");
+        setTraceLevel(CommandLine.TraceLevel.OFF);
         Method m = CommandLine.getCommandMethods(MethodApp.class, "run0").get(0);
         CommandLine cmd1 = new CommandLine(m);
         assertEquals("run-0", cmd1.getCommandName());
@@ -111,7 +111,7 @@ public class CommandMethodTest {
         Object ret = CommandLine.invoke(m.getName(), MethodApp.class, new PrintStream(new ByteArrayOutputStream()));
         assertNull("return value", ret);
 
-        setTraceLevel("WARN");
+        setTraceLevel(CommandLine.TraceLevel.WARN);
     }
     @Test
     public void testAnnotateMethod_unannotatedPositional() throws Exception {
@@ -451,7 +451,7 @@ public class CommandMethodTest {
     }
     @Test
     public void testAnnotateMethod_matchesAnnotatedClass() throws Exception {
-        setTraceLevel("OFF");
+        setTraceLevel(CommandLine.TraceLevel.OFF);
         CommandLine classCmd = new CommandLine(new CompactFields());
         Method m = CompactFieldsMethod.class.getDeclaredMethod("run", new Class<?>[] {boolean.class, boolean.class, File.class, File[].class});
         CommandLine methodCmd = new CommandLine(m);
@@ -462,7 +462,7 @@ public class CommandMethodTest {
             Model.ArgSpec methodArg = methodCmd.getCommandSpec().args().get(i);
             assertEquals("arg #" + i, classArg, methodArg);
         }
-        setTraceLevel("WARN");
+        setTraceLevel(CommandLine.TraceLevel.WARN);
     }
     /** replicate {@link CommandLineTest#testCompactFieldsAnyOrder()} but using
      * {@link CompactFieldsMethod#run(boolean, boolean, File, File[])}
