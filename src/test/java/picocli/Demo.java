@@ -367,7 +367,7 @@ public class Demo implements Runnable {
             header = "Record changes to the repository.",
             description = "Stores the current contents of the index in a new commit " +
                     "along with a log message from the user describing the changes.")
-    class GitCommit { // end::GitCommit-declaration[]
+    class GitCommit implements Runnable { // end::GitCommit-declaration[]
         @Option(names = {"-a", "--all"},
                 description = "Tell the command to automatically stage files that have been modified " +
                         "and deleted, but new files you have not told Git about are not affected.")
@@ -407,6 +407,10 @@ public class Demo implements Runnable {
 
         @Parameters(paramLabel = "<files>", description = "the files to commit")
         List<File> files = new ArrayList<File>();
+
+        public void run() {
+            // business logic here...
+        }
     }
     // end::GitCommit[]
 

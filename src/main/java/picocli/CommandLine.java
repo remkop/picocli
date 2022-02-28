@@ -1983,32 +1983,45 @@ public class CommandLine {
     }
     /** @since 4.0 */
     static Integer executeHelpRequest(List<CommandLine> parsedCommands) {
+        Tracer t = CommandLine.tracer();
         for (CommandLine parsed : parsedCommands) {
             Help.ColorScheme colorScheme = parsed.getColorScheme();
             PrintWriter out = parsed.getOut();
             if (parsed.isUsageHelpRequested()) {
+                t.debug("Printing usage help for '%s' as requested.", parsed.commandSpec.qualifiedName());
                 parsed.usage(out, colorScheme);
                 return parsed.getCommandSpec().exitCodeOnUsageHelp();
             } else if (parsed.isVersionHelpRequested()) {
+                t.debug("Printing version info for '%s' as requested.", parsed.commandSpec.qualifiedName());
                 parsed.printVersionHelp(out, colorScheme.ansi);
                 return parsed.getCommandSpec().exitCodeOnVersionHelp();
             } else if (parsed.getCommandSpec().helpCommand()) {
+                String fullName = parsed.commandSpec.qualifiedName();
                 PrintWriter err = parsed.getErr();
                 if (((Object) parsed.getCommand()) instanceof IHelpCommandInitializable2) {
+                    t.debug("Initializing helpCommand '%s' (IHelpCommandInitializable2::init)...", fullName);
                     ((IHelpCommandInitializable2) parsed.getCommand()).init(parsed, colorScheme, out, err);
                 } else if (((Object) parsed.getCommand()) instanceof IHelpCommandInitializable) {
+                    t.debug("Initializing helpCommand '%s' (IHelpCommandInitializable::init)...", fullName);
                     ((IHelpCommandInitializable) parsed.getCommand()).init(parsed, colorScheme.ansi, System.out, System.err);
+                } else {
+                    t.debug("helpCommand '%s' does not implement IHelpCommandInitializable2 or IHelpCommandInitializable...", fullName);
                 }
+                t.debug("Executing helpCommand '%s'...", fullName);
                 executeUserObject(parsed, new ArrayList<Object>());
                 return parsed.getCommandSpec().exitCodeOnUsageHelp();
             }
         }
+        t.debug("Help was not requested. Continuing to process ParseResult...");
         return null;
     }
     private static List<Object> executeUserObject(CommandLine parsed, List<Object> executionResultList) {
+        Tracer tracer = CommandLine.tracer();
+
         Object command = parsed.getCommand();
         if (command instanceof Runnable) {
             try {
+                tracer.debug("Invoking Runnable::run on user object %s@%s...", command.getClass().getName(), Integer.toHexString(command.hashCode()));
                 ((Runnable) command).run();
                 parsed.setExecutionResult(null); // 4.0
                 executionResultList.add(null); // for compatibility with picocli 2.x
@@ -2022,6 +2035,7 @@ public class CommandLine {
             }
         } else if (command instanceof Callable) {
             try {
+                tracer.debug("Invoking Callable::call on user object %s@%s...", command.getClass().getName(), Integer.toHexString(command.hashCode()));
                 @SuppressWarnings("unchecked") Callable<Object> callable = (Callable<Object>) command;
                 Object executionResult = callable.call();
                 parsed.setExecutionResult(executionResult);
@@ -2040,11 +2054,15 @@ public class CommandLine {
                 Object[] parsedArgs = parsed.getCommandSpec().commandMethodParamValues();
                 Object executionResult;
                 if (Modifier.isStatic(method.getModifiers())) {
+                    tracer.debug("Invoking static method %s with parameters %s", method, Arrays.toString(parsedArgs));
                     executionResult = method.invoke(null, parsedArgs); // invoke static method
-                } else if (parsed.getCommandSpec().parent() != null) {
-                    executionResult = method.invoke(parsed.getCommandSpec().parent().userObject(), parsedArgs);
                 } else {
-                    executionResult = method.invoke(parsed.factory.create(method.getDeclaringClass()), parsedArgs);
+                    Object instance = (parsed.getCommandSpec().parent() != null)
+                        ? parsed.getCommandSpec().parent().userObject()
+                        : parsed.factory.create(method.getDeclaringClass());
+                    tracer.debug("Invoking method %s on %s@%s with parameters %s",
+                        method, instance.getClass().getName(), Integer.toHexString(instance.hashCode()), Arrays.toString(parsedArgs));
+                    executionResult = method.invoke(instance, parsedArgs);
                 }
                 parsed.setExecutionResult(executionResult);
                 executionResultList.add(executionResult);
@@ -2249,8 +2267,11 @@ public class CommandLine {
             Integer helpExitCode = executeHelpRequest(parseResult);
             if (helpExitCode != null) { return helpExitCode; }
 
+            Tracer t = CommandLine.tracer();
+            t.debug("%s: handling ParseResult...", getClass().getSimpleName());
             R executionResult = handle(parseResult);
             List<IExitCodeGenerator> exitCodeGenerators = extractExitCodeGenerators(parseResult);
+            t.debug("%s: ParseResult has %s exit code generators", getClass().getSimpleName(), exitCodeGenerators.size());
             return resolveExitCode(parseResult.commandSpec().exitCodeOnSuccess(), executionResult, exitCodeGenerators);
         }
 
@@ -2268,6 +2289,8 @@ public class CommandLine {
                     ex.printStackTrace();
                 }
             }
+            Tracer t = CommandLine.tracer();
+            t.debug("resolveExitCode: exit code generators resulted in exit code=%d", result);
             if (executionResult instanceof List) {
                 List<?> resultList = (List<?>) executionResult;
                 for (Object obj : resultList) {
@@ -2279,6 +2302,8 @@ public class CommandLine {
                     }
                 }
             }
+            t.debug("resolveExitCode: execution results resulted in exit code=%d", result);
+            t.debug("resolveExitCode: returning exit code=%d", result == 0 ? exitCodeOnSuccess : result);
             return result == 0 ? exitCodeOnSuccess : result;
         }
 
@@ -2334,6 +2359,8 @@ public class CommandLine {
          *      {@link ExecutionException#getCommandLine()} to get the command or subcommand where processing failed
          * @since 3.0 */
         protected List<Object> handle(ParseResult parseResult) throws ExecutionException {
+            Tracer t = CommandLine.tracer();
+            t.debug("RunFirst: executing user object for '%s'...", parseResult.commandSpec().qualifiedName());
             return executeUserObject(parseResult.commandSpec().commandLine(), new ArrayList<Object>()); // first
         }
 
@@ -2425,9 +2452,11 @@ public class CommandLine {
             return executeUserObjectOfLastSubcommandWithSameParent(parseResult.asCommandLineList());
         }
         private static List<Object> executeUserObjectOfLastSubcommandWithSameParent(List<CommandLine> parsedCommands) {
+            Tracer t = CommandLine.tracer();
             int start = indexOfLastSubcommandWithSameParent(parsedCommands);
             List<Object> result = new ArrayList<Object>();
             for (int i = start; i < parsedCommands.size(); i++) {
+                t.debug("RunLast: executing user object for '%s'...", parsedCommands.get(i).commandSpec.qualifiedName());
                 executeUserObject(parsedCommands.get(i), result);
             }
             return result;
@@ -2498,12 +2527,14 @@ public class CommandLine {
          *      {@link ExecutionException#getCommandLine()} to get the command or subcommand where processing failed
          * @since 3.0 */
         protected List<Object> handle(ParseResult parseResult) throws ExecutionException {
-            return returnResultOrExit(recursivelyExecuteUserObject(parseResult, new ArrayList<Object>()));
+            Tracer t = CommandLine.tracer();
+            return returnResultOrExit(recursivelyExecuteUserObject(parseResult, new ArrayList<Object>(), t));
         }
-        private List<Object> recursivelyExecuteUserObject(ParseResult parseResult, List<Object> result) throws ExecutionException {
+        private List<Object> recursivelyExecuteUserObject(ParseResult parseResult, List<Object> result, Tracer t) throws ExecutionException {
+            t.debug("%s: executing user object for '%s'...", getClass().getSimpleName(), parseResult.commandSpec.qualifiedName());
             executeUserObject(parseResult.commandSpec().commandLine(), result);
             for (ParseResult pr : parseResult.subcommands()) {
-                recursivelyExecuteUserObject(pr, result);
+                recursivelyExecuteUserObject(pr, result, t);
             }
             return result;
         }

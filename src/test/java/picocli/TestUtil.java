@@ -36,9 +36,18 @@ public class TestUtil {
     /**
      * Set the trace level to one of "DEBUG", "INFO", "WARN", "OFF".
      * @param level one of "DEBUG", "INFO", "WARN", "OFF".
+     * @deprecated use {@link #setTraceLevel(CommandLine.TraceLevel)} instead
      */
     public static void setTraceLevel(String level) {
         System.setProperty("picocli.trace", level);
+    }
+
+    /**
+     * Set the trace level to one of "DEBUG", "INFO", "WARN", "OFF".
+     * @param level the trace level to set.
+     */
+    public static void setTraceLevel(CommandLine.TraceLevel level) {
+        System.setProperty("picocli.trace", String.valueOf(level));
     }
 
     public static String usageString(Object annotatedObject, Ansi ansi) {

@@ -4,6 +4,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.ProvideSystemProperty;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
+import org.junit.contrib.java.lang.system.SystemErrRule;
 import org.junit.rules.TestRule;
 
 import java.io.ByteArrayOutputStream;
@@ -22,6 +23,9 @@ import static picocli.TestUtil.stripHashcodes;
 
 public class TracerTest {
     @Rule
+    public final SystemErrRule systemErrRule = new SystemErrRule().enableLog().muteForSuccessfulTests();
+
+    @Rule
     public final TestRule restoreSystemProperties = new RestoreSystemProperties();
 
     @Rule
@@ -36,19 +40,8 @@ public class TracerTest {
     @Test
     public void testDebugOutputForDoubleDashSeparatesPositionalParameters() throws Exception {
         clearBuiltInTracingCache();
-        PrintStream originalErr = System.err;
-        ByteArrayOutputStream baos = new ByteArrayOutputStream(2500);
-        System.setErr(new PrintStream(baos));
-        final String PROPERTY = "picocli.trace";
-        String old = System.getProperty(PROPERTY);
-        System.setProperty(PROPERTY, "DEBUG");
+        TestUtil.setTraceLevel(CommandLine.TraceLevel.DEBUG);
         CommandLine.populateCommand(new CommandLineTest.CompactFields(), "-oout -- -r -v p1 p2".split(" "));
-        System.setErr(originalErr);
-        if (old == null) {
-            System.clearProperty(PROPERTY);
-        } else {
-            System.setProperty(PROPERTY, old);
-        }
         String prefix8 = format("" +
                 "[picocli DEBUG] Could not register converter for java.time.Duration: java.lang.ClassNotFoundException: java.time.Duration%n" +
                 "[picocli DEBUG] Could not register converter for java.time.Instant: java.lang.ClassNotFoundException: java.time.Instant%n" +
@@ -114,7 +107,7 @@ public class TracerTest {
                 CommandLineTest.class.getName(),
                 new File("/home/rpopma/picocli"),
                 CommandLine.versionString());
-        String actual = new String(baos.toByteArray(), "UTF8");
+        String actual = systemErrRule.getLog();
         //System.out.println(actual);
         if (System.getProperty("java.version").compareTo("1.7.0") < 0) {
             expected = prefix7 + expected;
@@ -190,15 +183,11 @@ public class TracerTest {
 
     @Test
     public void testTraceLevelToInfoViaSetterWithSubCommands() throws Exception {
-        PrintStream originalErr = System.err;
-        ByteArrayOutputStream baos = new ByteArrayOutputStream(2500);
-        System.setErr(new PrintStream(baos));
         CommandLine.TraceLevel old = CommandLine.tracer().getLevel();
         CommandLine.tracer().setLevel(CommandLine.TraceLevel.INFO);
         CommandLine commandLine = Demo.mainCommand();
         commandLine.setEndOfOptionsDelimiter("$$$");
         commandLine.parseArgs("--git-dir=/home/rpopma/picocli", "commit", "-m", "\"Fixed typos\"", "$$$", "src1.java", "src2.java", "src3.java");
-        System.setErr(originalErr);
         CommandLine.tracer().setLevel(old);
         CommandLine.tracer().modified = false;
         String expected = format("" +
@@ -212,23 +201,19 @@ public class TracerTest {
                 "[picocli INFO] Adding [src3.java] to field java.util.List<java.io.File> picocli.Demo$GitCommit.files for args[0..*] at position 2%n",
             CommandLine.versionString(),
             new File("/home/rpopma/picocli"));
-        String actual = new String(baos.toByteArray(), "UTF8");
+        String actual = systemErrRule.getLog();
         //System.out.println(actual);
         assertEquals(stripAnsiTrace(expected), stripAnsiTrace(actual));
     }
 
     @Test
     public void testTracingInfoWithSubCommands() throws Exception {
-        PrintStream originalErr = System.err;
-        ByteArrayOutputStream baos = new ByteArrayOutputStream(2500);
-        System.setErr(new PrintStream(baos));
         final String PROPERTY = "picocli.trace";
         String old = System.getProperty(PROPERTY);
         System.setProperty(PROPERTY, "");
         CommandLine commandLine = Demo.mainCommand();
         commandLine.setEndOfOptionsDelimiter("$$$");
         commandLine.parseArgs("--git-dir=/home/rpopma/picocli", "commit", "-m", "\"Fixed typos\"", "$$$", "src1.java", "src2.java", "src3.java");
-        System.setErr(originalErr);
         if (old == null) {
             System.clearProperty(PROPERTY);
         } else {
@@ -245,22 +230,18 @@ public class TracerTest {
                         "[picocli INFO] Adding [src3.java] to field java.util.List<java.io.File> picocli.Demo$GitCommit.files for args[0..*] at position 2%n",
                 CommandLine.versionString(),
                 new File("/home/rpopma/picocli"));
-        String actual = new String(baos.toByteArray(), "UTF8");
+        String actual = systemErrRule.getLog();
         //System.out.println(actual);
         assertEquals(stripAnsiTrace(expected), stripAnsiTrace(actual));
     }
     @Test
     public void testTracingDebugWithSubCommands() throws Exception {
         clearBuiltInTracingCache();
-        PrintStream originalErr = System.err;
-        ByteArrayOutputStream baos = new ByteArrayOutputStream(2500);
-        System.setErr(new PrintStream(baos));
         final String PROPERTY = "picocli.trace";
         String old = System.getProperty(PROPERTY);
         System.setProperty(PROPERTY, "DEBUG");
         CommandLine commandLine = Demo.mainCommand();
-        commandLine.parseArgs("--git-dir=/home/rpopma/picocli", "commit", "-m", "\"Fixed typos\"", "--", "src1.java", "src2.java", "src3.java");
-        System.setErr(originalErr);
+        commandLine.execute("--git-dir=/home/rpopma/picocli", "commit", "-m", "\"Fixed typos\"", "--", "src1.java", "src2.java", "src3.java");
         if (old == null) {
             System.clearProperty(PROPERTY);
         } else {
@@ -370,11 +351,19 @@ public class TracerTest {
                         "[picocli DEBUG] defaultValue not defined for field java.io.File picocli.Demo$GitCommit.file%n" +
                         "[picocli DEBUG] Applying default values for command 'git'%n" +
                         "[picocli DEBUG] defaultValue not defined for field boolean picocli.CommandLine$AutoHelpMixin.helpRequested%n" +
-                        "[picocli DEBUG] defaultValue not defined for field boolean picocli.CommandLine$AutoHelpMixin.versionRequested%n",
+                        "[picocli DEBUG] defaultValue not defined for field boolean picocli.CommandLine$AutoHelpMixin.versionRequested%n" +
+                "[picocli DEBUG] Help was not requested. Continuing to process ParseResult...%n" +
+                "[picocli DEBUG] RunLast: handling ParseResult...%n" +
+                "[picocli DEBUG] RunLast: executing user object for 'git git-commit'...%n" +
+                "[picocli DEBUG] Invoking Runnable::run%n" +
+                "[picocli DEBUG] RunLast: ParseResult has 0 exit code generators%n" +
+                "[picocli DEBUG] resolveExitCode: exit code generators resulted in exit code=0%n" +
+                "[picocli DEBUG] resolveExitCode: execution results resulted in exit code=0%n" +
+                "[picocli DEBUG] resolveExitCode: returning exit code=0%n",
                 Demo.class.getName(),
                 new File("/home/rpopma/picocli"),
                 CommandLine.versionString());
-        String actual = new String(baos.toByteArray(), "UTF8");
+        String actual = systemErrRule.getLog();
         String actualSafe = stripHashcodes(actual);
         //System.out.println(actual);
         if (System.getProperty("java.version").compareTo("1.7.0") < 0) {
@@ -418,11 +407,8 @@ public class TracerTest {
 
     @Test
     public void testTraceWarningIfOptionOverwrittenWhenOverwrittenOptionsAllowed() throws Exception {
-        PrintStream originalErr = System.err;
-        ByteArrayOutputStream baos = new ByteArrayOutputStream(2500);
-        System.setErr(new PrintStream(baos));
 
-        setTraceLevel("INFO");
+        setTraceLevel(CommandLine.TraceLevel.INFO);
         class App {
             @CommandLine.Option(names = "-f") String field = null;
             @CommandLine.Option(names = "-p") int primitive = 43;
@@ -431,7 +417,6 @@ public class TracerTest {
         cmd.parseArgs("-f", "111", "-f", "222", "-f", "333");
         App ff = cmd.getCommand();
         assertEquals("333", ff.field);
-        System.setErr(originalErr);
 
         String expected = format("" +
                         "[picocli INFO] Picocli version: %s%n" +
@@ -441,25 +426,20 @@ public class TracerTest {
                         "[picocli INFO] Overwriting field String %2$s.field value '222' with '333' for option -f%n",
                 CommandLine.versionString(),
                 App.class.getName());
-        String actual = new String(baos.toByteArray(), "UTF8");
+        String actual = systemErrRule.getLog();
         assertEquals(stripAnsiTrace(expected), stripAnsiTrace(actual));
-        setTraceLevel("WARN");
+        setTraceLevel(CommandLine.TraceLevel.WARN);
     }
     @SuppressWarnings("deprecation")
     @Test
     public void testTraceWarningIfUnmatchedArgsWhenUnmatchedArgumentsAllowed() throws Exception {
-        PrintStream originalErr = System.err;
-        ByteArrayOutputStream baos = new ByteArrayOutputStream(2500);
-        System.setErr(new PrintStream(baos));
-
-        setTraceLevel("INFO");
+        setTraceLevel(CommandLine.TraceLevel.INFO);
         class App {
             @CommandLine.Parameters(index = "0", arity = "2", split = "\\|", type = {Integer.class, String.class})
             Map<Integer,String> message;
         }
         CommandLine cmd = new CommandLine(new App()).setUnmatchedArgumentsAllowed(true).parse("1=a", "2=b", "3=c", "4=d").get(0);
         assertEquals(Arrays.asList("3=c", "4=d"), cmd.getUnmatchedArguments());
-        System.setErr(originalErr);
 
         String expected = format("" +
                         "[picocli INFO] Picocli version: %s%n" +
@@ -470,9 +450,9 @@ public class TracerTest {
                 CommandLine.versionString(),
                 App.class.getName(),
                 App.class.getName());
-        String actual = new String(baos.toByteArray(), "UTF8");
+        String actual = systemErrRule.getLog();
         //System.out.println(actual);
         assertEquals(stripAnsiTrace(expected), stripAnsiTrace(actual));
-        setTraceLevel("WARN");
+        setTraceLevel(CommandLine.TraceLevel.WARN);
     }
 }
