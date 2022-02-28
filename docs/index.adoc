@@ -2183,6 +2183,40 @@ fun main(args: Array<String>) {
 }
 ----
 
+=== Null Default Values
+To assign `null` as default value, applications can use the value `Option.NULL_VALUE` in the annotations for `defaultValue` and `fallbackValue`.
+
+If the type of the option or positional parameter is `Optional<T>`, then picocli assigns the default value `Optional.empty()` instead of `null`.
+
+For example:
+
+.Java
+[source,java,role="primary"]
+----
+@Option(names = "-x", defaultValue = Option.NULL_VALUE)
+Integer x; // default value is null
+
+@Option(names = "-y", defaultValue = Option.NULL_VALUE)
+Optional<Integer> y; // default value is Optional.empty()
+
+@Option(names = "-D", mapFallbackValue = Option.NULL_VALUE)
+Map<String, Optional<Integer>> map; // "-Dkey" results in ["key" : Optional.empty()]
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Option(names = ["-x"], defaultValue = Option.NULL_VALUE)
+lateinit var x: Int // default value is null
+
+@Option(names = ["-y"], defaultValue = Option.NULL_VALUE)
+lateinit var y: Optional<Int> // default value is Optional.empty()
+
+@Option(names = ["-D"], mapFallbackValue = Option.NULL_VALUE)
+lateinit var map: Map<String, Optional<Int>> // "-Dkey" results in ["key" : Optional.empty()]
+----
+
+
 == Multiple Values
 Multi-valued options and positional parameters are annotated fields that can capture multiple values from the command line.
 
