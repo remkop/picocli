@@ -647,6 +647,48 @@ The https://github.com/remkop/picocli/blob/master/picocli-examples[`picocli-exam
 Interactive options do not work in conjunction with JLine 2's `ConsoleReader`. Either implement a <<Custom Parameter Processing,`IParameterConsumer`>> which uses JLine2's `ConsoleReader` directly or use https://github.com/remkop/picocli/tree/master/picocli-shell-jline3[`picocli-shell-jline3`].
 ====
 
+
+==== Forcing Interactive Input
+
+Be aware that picocli only prompts the user when the interactive option is specified without parameter:
+
+----
+$ myprogram                             # option not specified: no prompting
+You provided value 'null'
+
+$ myprogram --interactive-option=abc    # option specified with parameter: no prompting
+You provided value 'abc'
+
+$ myprogram --interactive-option        # option specified WITHOUT parameter: prompt for input
+Enter value for --interactive-option (...):    #  <--- type xxx and hit Enter
+You provided value 'xxx'
+----
+
+Applications that also need the user to be prompted when the option is not specified, need to do this in the business logic.
+For example:
+
+.Java
+[source,java,role="primary"]
+----
+@Command
+public class Main implements Runnable {
+    @Option(names = "--interactive", interactive = true)
+    String value;
+
+    public void run() {
+        if (value == null && System.console() != null) {
+            // alternatively, use Console::readPassword
+            value = System.console().readLine("Enter value for --interactive: ");
+        }
+        System.out.println("You provided value '" + value + "'");
+    }
+
+    public static void main(String[] args) {
+        new CommandLine(new Main()).execute(args);
+    }
+}
+----
+
 === Short (POSIX) Options
 Picocli supports http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html#tag_12_02[POSIX clustered short options]:
 one or more single-character options without option-arguments, followed by at most one option with an option-argument, can be grouped behind one '-' delimiter.

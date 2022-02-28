@@ -99,6 +99,7 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#812] DOC: Document how to test a picocli spring-boot application.
 * [#1596] DOC: fix javadoc typos and incorrect links.
 * [#1597] DOC: Add examples to Execution Configuration section in user manual.
+* [#1140] DOC: Add subsection Forcing Interactive Input to user manual Interactive Options section. Thanks to [smalirizvi](https://github.com/smalirizvi) for raising this.
 * [#1581] BUILD: Fix dependabot config.
 * [#1613] DEP: The `picocli-groovy` module now declares `groovy-all` as dependency.
 * [#1604] DEP: Remove dependency on `slf4j` from `picocli-spring-boot-starter`.
