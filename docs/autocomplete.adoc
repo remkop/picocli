@@ -287,8 +287,8 @@ the fully qualified class name of the annotated command object.
 $ java -cp "picocli-1.0.0.jar;myproject.jar" picocli.AutoComplete com.myproject.CheckSum
 ----
 
-This will instantiate your command, and inspect it for http://picocli.info/apidocs/picocli/CommandLine.Option.html[`@Option`]
-and http://picocli.info/apidocs/picocli/CommandLine.Command.html[`@Command`] annotations.
+This will instantiate your command, and inspect it for http://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.Option.html[`@Option`]
+and http://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.Command.html[`@Command`] annotations.
 Based on these annotations it will generate a completion script in the current directory.
 
 Because of this, the command class needs to be on the classpath when running the `picocli.AutoComplete` class.

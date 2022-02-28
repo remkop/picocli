@@ -53,14 +53,14 @@ Below we show a small but fully functional example picocli-based command line ap
 .Invoking the command
 ----
 $ java -cp "myapp.jar;picocli-4.7.0-SNAPSHOT.jar" ASCIIArt --font-size=9 Hello picocli
-       #   #       #  #                 #                  #  #                                                                                 
-       #   #       #  #                                    #                                                                                    
-       #   #  ***  #  #  ****     #***  #  **#  ****  **#  #  #                                                                                 
-       #####  ***  #  #  ****     #***  #  **   ****  **   #  #                                                                                 
-       #   #  *#*  #  #  *  *     #  *  #  *    *  *  *    #  #                                                                                 
-       #   #  **   #  #  ****     #***  #  **   ****  **   #  #                                                                                 
-       #   #  **#  #  #  ****     #***  #  **#  ****  **#  #  #                                                                                 
-                                  #                                                                                                             
+       #   #       #  #                 #                  #  #
+       #   #       #  #                                    #
+       #   #  ***  #  #  ****     #***  #  **#  ****  **#  #  #
+       #####  ***  #  #  ****     #***  #  **   ****  **   #  #
+       #   #  *#*  #  #  *  *     #  *  #  *    *  *  *    #  #
+       #   #  **   #  #  ****     #***  #  **   ****  **   #  #
+       #   #  **#  #  #  ****     #***  #  **#  ****  **#  #  #
+                                  #
                                   *
 ----
 
@@ -338,7 +338,7 @@ Let's break it down into small steps:
 <1> When the top-level command does not implement `Runnable` or `Callable`, users must specify a subcommand (subcommands become mandatory).
     This is optional: simply implement `Runnable` or `Callable` if the parent command can be executed by itself without subcommands in your application.
 <2> Annotate the class with `@Command` and give it a name.
-    Note that we also specify the https://picocli.info/apidocs/picocli/CommandLine.HelpCommand.html[CommandLine.HelpCommand] class as subcommand in the annotation, to add the built-in `help` subcommand.
+    Note that we also specify the https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.HelpCommand.html[CommandLine.HelpCommand] class as subcommand in the annotation, to add the built-in `help` subcommand.
 <3> Custom subcommands can be added to the top-level command in two ways.
     The easiest way is to add a `@Command`-annotated method to the command class.
     For each option and positional parameter of the subcommand, add a method argument, and annotate these method arguments with the `@Option` or `@Parameters` annotation.

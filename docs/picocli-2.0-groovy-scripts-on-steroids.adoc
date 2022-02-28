@@ -135,13 +135,13 @@ fields with the results. The run method does the following:
 
 * Otherwise, the script body is executed.
 
-This behavior can be customized, see the http://picocli.info/apidocs/picocli/groovy/PicocliBaseScript.html#run--[PicocliBaseScript javadoc] for more details.
+This behavior can be customized, see the http://picocli.info/apidocs-all/info.picocli.groovy/picocli/groovy/PicocliBaseScript.html#run--[PicocliBaseScript javadoc] for more details.
 
 In addition to changing the script base class, the `@PicocliScript` annotation also allows Groovy
 scripts to use the `@Command` annotation directly, without introducing a helper class.
 The picocli parser will look for this annotation on the
 class containing the `@Option` and `@Parameters`-annotated fields. The same custom
-http://picocli.info/apidocs/picocli/groovy/PicocliScriptASTTransformation.html[AST transformation]
+http://picocli.info/apidocs-all/info.picocli.groovy/picocli/groovy/PicocliScriptASTTransformation.html[AST transformation]
 that changes the script's base class also moves any `@Command` annotation in the script to this
 transformed class so the picocli parser can pick it up.
 

@@ -39,7 +39,7 @@ What are the benefits for you as developer?
 
 Generally a picocli application will have a lot *less code* than the Commons CLI equivalent. The picocli annotations allow applications to define options and positional parameters in a *declarative* way where all information is in one place. Also, picocli offers a number of *conveniences* like type conversion and automatic help that take care of some mechanics so the application can focus more on the business logic. The rest of this article will show this in more detail.
 
-*Documentation*: picocli has an extensive https://picocli.info[user manual] and detailed https://picocli.info/apidocs/[javadoc].
+*Documentation*: picocli has an extensive https://picocli.info[user manual] and detailed https://picocli.info/apidocs-all/[javadoc].
 
 *Troubleshooting*. Picocli has a built-in https://picocli.info/#_tracing[tracing] facility to facilitate troubleshooting. End users can use system property `picocli.trace` to control the trace level. Supported levels are `OFF`, `WARN`, `INFO`, and `DEBUG`. The default trace level is `WARN`.
 
