@@ -101,6 +101,9 @@ task bumpVersion {
         }
     }
 }
+// tasks for generating modular (JPMS) aggregated javadoc for all modules
+apply from: "${rootProject.projectDir}/gradle/modular-javadoc.gradle"
+
 task copyCodeGenDocs(type: Copy) {
     from('build/docs/man/') { include 'index.html' }
     from('picocli-codegen/build/docs/html5/') { include '*.html' }
@@ -108,6 +111,7 @@ task copyCodeGenDocs(type: Copy) {
 }
 task copyDocs(type: Copy) {
     dependsOn(copyCodeGenDocs)
+    dependsOn(generateJavadocAllModules)
     from('build/docs/')
     into 'docs'
 }

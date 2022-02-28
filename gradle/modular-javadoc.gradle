@@ -1,0 +1,117 @@
+
+task makeModuleSourcePath {
+    doLast {
+        var targetDir = 'build/tmp/modules'
+        logger.info("Writing into $targetDir")
+        copy {
+            from('src/main/java')
+            into "${targetDir}/info.picocli"
+        }
+        copy {
+            from('src/main/java9')
+            into "${targetDir}/info.picocli"
+        }
+        copy {
+            from('picocli-codegen/src/main/java')
+            into "${targetDir}/info.picocli.codegen"
+        }
+        copy {
+            from('picocli-codegen/src/main/java9')
+            into "${targetDir}/info.picocli.codegen"
+        }
+        copy {
+            from('picocli-groovy/src/main/java')
+            into "${targetDir}/info.picocli.groovy"
+        }
+        copy {
+            from('picocli-groovy/src/main/java9')
+            into "${targetDir}/info.picocli.groovy"
+        }
+        copy {
+            from('picocli-shell-jline2/src/main/java')
+            into "${targetDir}/info.picocli.shell.jline2"
+        }
+        copy {
+            from('picocli-shell-jline2/src/main/java9')
+            into "${targetDir}/info.picocli.shell.jline2"
+        }
+        copy {
+            from('picocli-shell-jline3/src/main/java')
+            into "${targetDir}/info.picocli.shell.jline3"
+        }
+        copy {
+            from('picocli-shell-jline3/src/main/java9')
+            into "${targetDir}/info.picocli.shell.jline3"
+        }
+        copy {
+            from('picocli-spring-boot-starter/src/main/java')
+            into "${targetDir}/info.picocli.spring.boot"
+        }
+        copy {
+            from('picocli-spring-boot-starter/src/main/java9')
+            into "${targetDir}/info.picocli.spring.boot"
+        }
+    }
+}
+
+def makeModulePath() {
+    var result = ""
+    project.subprojects {
+        if (['picocli-codegen', 'picocli-groovy', 'picocli-shell-jline2', 'picocli-shell-jline3', 'picocli-spring-boot-starter'].contains(it.name)) {
+            logger.info("makeModulePath: listing dependencies for ${it}")
+            it.sourceSets.main.runtimeClasspath.each {
+                if (it.isFile() && !it.name.startsWith('picocli')) {
+                    logger.info("${it}")
+                    result += it.absolutePath + System.getProperty('path.separator')
+                }
+            }
+        }
+    }
+    result
+}
+
+task generateJavadocOptions {
+    dependsOn(makeModuleSourcePath)
+    doLast {
+        var moduleSourcePath = new File(project.buildDir, "tmp/modules")
+        var outputDirectory = new File(project.buildDir, "docs/apidocs-all")
+        var overviewPath = new File(project.getRootDir(), "src/main/java/overview.html")
+        var modulePath = makeModulePath()
+
+
+        var javadocOptions = """
+--frames
+--module-path '${modulePath}'
+--module-source-path '${moduleSourcePath}'
+-d '${outputDirectory}'
+-charset 'UTF-8'
+-docencoding 'UTF-8'
+-encoding 'UTF-8'
+-doctitle 'picocli ${project.version} API'
+-windowtitle 'picocli ${project.version} API'
+-link 'https://docs.groovy-lang.org/2.4.21/html/gapi/'
+-link 'https://docs.oracle.com/en/java/javase/11/docs/api/'
+-notimestamp
+-overview '${overviewPath}'
+-splitindex
+-quiet
+-use
+"""
+        moduleSourcePath.eachFileRecurse(groovy.io.FileType.FILES) {
+            if (it.name.endsWith(".java")) {
+                javadocOptions += "'${it.absolutePath}'" + System.getProperty("line.separator")
+            }
+        }
+
+        File javadocOptionsFile = new File(project.buildDir, "tmp/javadocOptions")
+        logger.info("${javadocOptions}")
+        logger.info("Writing javadoc options to ${javadocOptionsFile}")
+        javadocOptionsFile.write(javadocOptions.replaceAll("\\\\", "\\\\\\\\"))
+    }
+}
+task generateJavadocAllModules(type: Exec) {
+    dependsOn(generateJavadocOptions)
+    String javadocPath = System.getenv('JDK11') ? "${System.getenv('JDK11')}/bin" : 'C:\\apps\\jdk-11\\bin'
+    logger.info("javadocPath=$javadocPath")
+    commandLine "$javadocPath/javadoc", '--release', '9', '@' + new File(project.buildDir, "tmp/javadocOptions").absolutePath
+}
