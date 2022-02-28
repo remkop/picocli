@@ -100,7 +100,7 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1596] DOC: fix javadoc typos and incorrect links.
 * [#1597] DOC: Add examples to Execution Configuration section in user manual.
 * [#1581] BUILD: Fix dependabot config.
-* [#1613] DEP: The `picocli-groovy` module should declare `groovy-all` as dependency.
+* [#1613] DEP: The `picocli-groovy` module now declares `groovy-all` as dependency.
 * [#1604] DEP: Remove dependency on `slf4j` from `picocli-spring-boot-starter`.
 * [#1607] DEP: Bump actions/setup-java from 2.5.0 to 3
 * [#1585] DEP: Bump github/codeql-action from 1.0.30 to 1.1.0
@@ -126,7 +126,10 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 No features were deprecated in this release.
 
 ## <a name="4.7.0-breaking-changes"></a> Potential breaking changes
-This release has no breaking changes.
+
+* The JPMS module name of `picocli-spring-boot-starter` has been changed to `info.picocli.spring.boot` from `info.picocli.spring`.
+* The `picocli-groovy` module now declares `groovy-all` as dependency.
+* Redundant braces are now omitted in ArgGroup synopsis in usage help messages.
 
 
 # <a name="4.6.3"></a> Picocli 4.6.3
