@@ -1,0 +1,1 @@
+moduleSearchIndex = [{"l":"info.picocli"},{"l":"info.picocli.codegen"},{"l":"info.picocli.groovy"},{"l":"info.picocli.shell.jline2"},{"l":"info.picocli.shell.jline3"},{"l":"info.picocli.spring.boot"}]

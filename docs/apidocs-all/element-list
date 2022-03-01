@@ -1,0 +1,17 @@
+module:info.picocli
+picocli
+module:info.picocli.codegen
+picocli.codegen.annotation.processing
+picocli.codegen.aot.graalvm
+picocli.codegen.aot.graalvm.processor
+picocli.codegen.docgen.manpage
+picocli.codegen.util
+module:info.picocli.groovy
+picocli.groovy
+module:info.picocli.shell.jline2
+picocli.shell.jline2
+module:info.picocli.shell.jline3
+picocli.shell.jline3
+module:info.picocli.spring.boot
+picocli.spring
+picocli.spring.boot.autoconfigure
