@@ -102,15 +102,24 @@ The user manual has examples of integrating with [Guice](https://picocli.info/#_
 
 ### Articles & Presentations
 #### English
+* [6 things you can do with JBang but you can’t with Shell](http://www.mastertheboss.com/java/jbang-vs-jshell/) (2022-02-28) by [F.Marchioni](http://www.mastertheboss.com/author/admin/).
+* [VIDEO][Kotlin, CLIs and StarWars! - An introduction to creating CLI applications with Kotlin using Picocli](https://fosdem.org/2022/schedule/event/kotlin_clis_and_starwars/?utm_medium=social&utm_source=twitter&utm_campaign=postfity&utm_content=postfity77511) (2022-02-05) by [Julien Lengrand-Lambert](https://fosdem.org/2022/schedule/speaker/julien_lengrand_lambert/).
+* [VIDEO][Autocomplete Java CLI using Picocli](https://www.youtube.com/watch?v=tCrQqgOYszQ) (2022-01-24) by [raksrahul](https://www.youtube.com/channel/UCpYkDrjOq3xtt0Uyg9tEqvw).
+* [Picocli – Easiness for CLI arguments in Java](https://blog.adamgamboa.dev/picocli-easiness-for-cli-arguments-in-java/) (2021-10-27) by [agamboa](https://blog.adamgamboa.dev/author/agamboa/).
+* [Building Command Line Interfaces with Kotlin using picoCLI](https://foojay.io/today/building-command-line-interfaces-with-kotlin-using-picocli/) (2021-09-23) by [Julien Lengrand-Lambert](https://foojay.io/today/author/jlengrand/).
+* [VIDEO][Create Java CLI applications with picocli](https://www.youtube.com/watch?v=PaxBXABJIzY) (2021-09-14) by [coder4life](https://www.youtube.com/channel/UCt9lHt5bMpafypEDwj6J2WQ).
+* [PICOCLI](https://www.linkedin.com/pulse/picocli-sybren-boland/) (2021-06-30) by [Sybren Boland](https://www.linkedin.com/in/sybrenboland/).
+* [Picocli | Create your first Kotlin /JVM CLI application with GraalVM](https://manserpatrice.medium.com/picocli-create-your-first-kotlin-jvm-cli-application-with-graalvm-a7fea4da7e2) (2021-02-13) by [manserpatrice](https://manserpatrice.medium.com/).
 * [VIDEO] [Building kubectl plugins with Quarkus, picocli, fabric8io and jbang](https://www.youtube.com/watch?v=ZL29qrpk_Kc) (2021-01-22) by [Sébastien Blanc](https://twitter.com/sebi2706).
 * [VIDEO] [J-Fall Virtual 2020: Julien Lengrand - An introduction to creating CLI applications using picoCLI](https://www.youtube.com/watch?v=Rc_D4OTKidU&list=PLpQuPreMkT6D36w9d13uGpIPi5nf9I_0c&index=13) (2020-12-07) by [Julien Lengrand-Lambert](https://twitter.com/jlengrand). This was the top rated talk for [@nljug](https://twitter.com/nljug) #jfall virtual 2020! Congrats, Julien!
 * [Paginate results in a command line application using picoCLI](https://lengrand.fr/paginate-results-in-a-jvm-cli-application-using-picocli/) (2020-11-17) by [Julien Lengrand-Lambert](https://twitter.com/jlengrand).
 * [CLI applications with GraalVM Native Image](https://medium.com/graalvm/cli-applications-with-graalvm-native-image-d629a40aa0be) (2020-11-13) by [Oleg Šelajev](https://twitter.com/shelajev).
 * [Picocli subcommands - One program, many purposes](https://aragost.com/blog/java/picocli-subcommands.html) (2020-09-22) by [Jonas Andersen](https://twitter.com/PrimusAlgo).
+* [Native CLI with Picocli and GraalVM](https://dev.to/jbebar/native-cli-with-picocli-and-graalvm-566m) (2020-08-20) by [jbebar](https://dev.to/jbebar).
 * [How to build a CLI app in Java using jbang and picocli](https://www.twilio.com/blog/cli-app-java-jbang-picocli) (2020-08-13) by [Matthew Gilliard](https://twitter.com/MaximumGilliard).
 * [Building a GitHub Dependents Scraper with Quarkus and Picocli](https://blog.marcnuri.com/github-dependents-scraper-quarkus-picocli/) (2020-07-31) by [Marc Nuri](https://twitter.com/MarcNuri).
 * [Building a decent Java CLI](https://atextor.de/2020/07/27/building-a-decent-java-cli.html) (2020-07-27) by [Andreas Textor](https://twitter.com/atextor).
-* [VIDEO] (Another very well-produced video by Szymon Stepniak) [OAuth 2.0 in a Java command-line app | #micronaut #picocli #oauth2](https://www.youtube.com/watch?v=js5H9UbmmMY) (2020-07-23) by [Szymon Stepniak](https://e.printstacktrace.blog/) ([YouTube channel](https://www.youtube.com/channel/UCEf8e5YAYnowq-2deW4tpsw)).
+* [VIDEO] (Another very well-produced video by Szymon Stepniak) [Implementing OAuth 2.0 in a Java command-line app using Micronaut, Picocli, and GraalVM](https://www.youtube.com/watch?v=js5H9UbmmMY) (2020-07-23) by [Szymon Stepniak](https://e.printstacktrace.blog/) ([YouTube channel](https://www.youtube.com/channel/UCEf8e5YAYnowq-2deW4tpsw)).
 * [Micronaut, Picocli, and GraalVM](https://e.printstacktrace.blog/building-stackoverflow-cli-with-java-11-micronaut-picocli-and-graalvm/) (2020-07-08) by [Szymon Stepniak](https://e.printstacktrace.blog/).
 * [VIDEO] (Extremely well-produced and informative, recommended!) [Building command-line app with Java 11, Micronaut, Picocli, and GraalVM](https://www.youtube.com/watch?v=Xdcg4Drg1hc) (2020-07-01) by [Szymon Stepniak](https://e.printstacktrace.blog/) ([YouTube channel](https://www.youtube.com/channel/UCEf8e5YAYnowq-2deW4tpsw)).
 * [AUDIO] [Scala Valentines #2](https://scala.love/scala-valentines-2/) (2020-06-21) Podcast talks about picocli (from 18:11).
@@ -141,6 +150,7 @@ The user manual has examples of integrating with [Guice](https://picocli.info/#_
 * [Announcing picocli 1.0](https://picocli.info/announcing-picocli-1.0.html) (also on: [DZone](https://dzone.com/articles/announcing-picocli-10))
 
 #### русский
+* [Выбор необходимых опций Picocli на основе основного варианта](https://coderoad.ru/61665865/%D0%92%D1%8B%D0%B1%D0%BE%D1%80-%D0%BD%D0%B5%D0%BE%D0%B1%D1%85%D0%BE%D0%B4%D0%B8%D0%BC%D1%8B%D1%85-%D0%BE%D0%BF%D1%86%D0%B8%D0%B9-Picocli-%D0%BD%D0%B0-%D0%BE%D1%81%D0%BD%D0%BE%D0%B2%D0%B5-%D0%BE%D1%81%D0%BD%D0%BE%D0%B2%D0%BD%D0%BE%D0%B3%D0%BE-%D0%B2%D0%B0%D1%80%D0%B8%D0%B0%D0%BD%D1%82%D0%B0) (2020-05-07)
 * [Интерфейсы командной строки Java: picocli](https://habr.com/ru/company/otus/blog/419401/) (2018-08-06): Russian translation by [MaxRokatansky](https://habr.com/ru/users/MaxRokatansky/) of Dustin Marx' blog post.
 
 #### Español
@@ -159,14 +169,17 @@ The user manual has examples of integrating with [Guice](https://picocli.info/#_
 #### 日本語
 * [CLI applications with GraalVM Native Image](https://logico-jp.io/2020/11/21/cli-applications-with-graalvm-native-image/) (2020-11-21) translation by [Logico_jp](https://logico-jp.io/who-is-logico/) of Oleg Šelajev's [post](https://medium.com/graalvm/cli-applications-with-graalvm-native-image-d629a40aa0be).
 * [Picocli + Kotlin + graalvm-native-image plugin でネイティブツールを作る](https://mike-neck.hatenadiary.com/entry/2020/04/24/090000) (2020-04-24) blog post by [mike-neck](https://mike-neck.hatenadiary.com/about) ([引きこもり持田](https://twitter.com/mike_neck) on Twitter).
+* [pythonのArgumentParserような使い心地！picocliのご紹介](https://lab.astamuse.co.jp/entry/2020/04/15/115000) (2020-04-15) by [@astamuseLab](https://lab.astamuse.co.jp/)
 * [Javaのコマンドラインアプリケーション向けのフレームワーク、picocliで遊ぶ](https://kazuhira-r.hatenablog.com/entry/2020/03/07/013626) (2020-03-07) blog post by [かずひら](https://twitter.com/kazuhira_r).
 * [KuromojiのCLIコマンドとpicocliとGraalVM](https://blog.johtani.info/blog/2020/02/28/kuromoji-cli/) (2020-02-28) blog post by [@johtani](https://twitter.com/johtani).
 * [GraalVM, PicocliとJavaでときめくネイティブコマンドラインアプリを作ろう](https://remkop.github.io/presentations/20191123/) (2019-11-23) Slides for my presentation at Japan Java User Group's [JJUG CCC 2019 Fall](https://ccc2019fall.java-users.jp/) conference.
+* [Picocliを使用してJavaコマンドラインプログラムを作成する - 開発者ドキュメント](https://ja.getdocs.org/java-picocli-create-command-line-program/) (2019-10-18)
 * [GraalVM と Picocliで Javaのネイティブコマンドラインアプリを作ろう](https://remkop.github.io/presentations/20190906/) (2019-09-06) Slides for my lightning talk presentation at [【東京】JJUG ナイトセミナー: ビール片手にLT大会 9/6（金）](https://jjug.doorkeeper.jp/events/95987)
 * [Picocli＋Spring Boot でコマンドラインアプリケーションを作成してみる](https://ksby.hatenablog.com/entry/2019/07/20/092721) (2019-07-20) by [かんがるーさんの日記](https://ksby.hatenablog.com/).
 * [GraalVM の native image を使って Java で爆速 Lambda の夢を見る](https://qiita.com/kencharos/items/69e43965515f368bc4a3) (2019-05-02) by [@kencharos](https://qiita.com/kencharos)
 
 #### 中文
+* [Java命令行界面（第10部分）：picocli](https://blog.csdn.net/dnc8371/article/details/106702365) (2020-06-07) tranlation by [dnc8371](https://blog.csdn.net/dnc8371).
 * [如何借助 Graalvm 和 Picocli 构建 Java 编写的原生 CLI 应用](https://www.infoq.cn/article/4RRJuxPRE80h7YsHZJtX) (2020-03-26): Chinese translation of [Build Great Native CLI Apps in Java with Graalvm and Picocli](https://www.infoq.com/articles/java-native-cli-graalvm-picocli/), thanks to [张卫滨](https://www.infoq.cn/profile/1067660).
 * [从Commons CLI迁移到Picocli](https://blog.csdn.net/genghaihua/article/details/88529409) (2019-03-13): Chinese translation of Migrating from Commons CLI to picocli, thanks to [genghaihua](https://me.csdn.net/genghaihua).
 * [Picocli 2.0: Steroids上的Groovy脚本](https://picocli.info/zh/picocli-2.0-groovy-scripts-on-steroids.html)
@@ -220,7 +233,8 @@ Join the [picocli Google group](https://groups.google.com/d/forum/picocli) if yo
 
 
 * Picocli is now part of Groovy. From Groovy 2.5, all Groovy command line tools are picocli-based, and picocli is the underlying parser for Groovy's [CliBuilder DSL](http://groovy-lang.org/dsls.html#_clibuilder).
-* Picocli is now part of Micronaut. The Micronaut CLI has been rewritten with picocli, and Micronaut has dedicated support for running microservices [standalone with picocli](https://docs.micronaut.io/snapshot/guide/index.html#commandLineApps).
+* Picocli is now part of Micronaut. The Micronaut CLI has been rewritten with picocli, and Micronaut has dedicated support for running microservices [standalone with picocli](https://docs.micronaut.io/snapshot/guide/index.html#commandLineApps). See also [Micronaut Picocli Guide](https://micronaut-projects.github.io/micronaut-picocli/latest/guide/).
+* Quarkus now offers [Command mode with picocli](https://quarkus.io/guides/picocli).
 * Picocli is now part of JUnit 5. JUnit 5.3 migrated its `ConsoleLauncher` from jopt-simple to picocli to support @-files (argument files); this helps users who need to specify many tests on the command line and run into system limitations.
 * Debian now offers a [libpicocli-java package](https://tracker.debian.org/pkg/picocli). Thanks to [Miroslav Kravec](https://udd.debian.org/dmd/?kravec.miroslav%40gmail.com).
 * Picocli is used in the Intuit [Karate](https://github.com/intuit/karate) standalone JAR / executable.
@@ -241,17 +255,24 @@ Join the [picocli Google group](https://groups.google.com/d/forum/picocli) if yo
 
 Glad to see more people are using picocli. We must be doing something right. :-)
 
-### Help to promote picocli
-If you like picocli, there are a few things you can do to help:
-* Give picocli a star on GitHub!
-* Tweet about picocli! What do you like about it? How has it helped you? How is it different from the alternatives?
-* Upvote my [Quora answer](https://www.quora.com/What-is-the-best-way-to-parse-command-line-arguments-with-Java/answer/Remko-Popma) to "What is the best way to parse command-line arguments with Java?"
-* Upvote my [StackOverflow answer](https://stackoverflow.com/a/43780433/1446916) to "How do I parse command line arguments in Java?"
+### Contribute by helping to promote picocli
+If you like picocli, help others discover picocli:
 
-If you like picocli and your project is on GitHub, consider adding this badge to your README.md: [![picocli](https://img.shields.io/badge/picocli-4.6.3-green.svg)](https://github.com/remkop/picocli)
+#### Easy and impactful :sweat_smile:
+* Give picocli a star on GitHub!
+* Upvote my [StackOverflow answer](https://stackoverflow.com/a/43780433/1446916) to "How do I parse command line arguments in Java?"
+* Upvote my [Quora answer](https://www.quora.com/What-is-the-best-way-to-parse-command-line-arguments-with-Java/answer/Remko-Popma) to "What is the best way to parse command-line arguments with Java?"
+
+#### Spread the joy! :tada:
+* Tweet about picocli! What do you like about it? How has it helped you? How is it different from the alternatives?
+* Mention that your project uses picocli in the documentation of your project.
+* Show that your GitHub project uses picocli, with this badge in your README.md: [![picocli](https://img.shields.io/badge/picocli-4.6.3-green.svg)](https://github.com/remkop/picocli)
 ```
 [![picocli](https://img.shields.io/badge/picocli-4.6.3-green.svg)](https://github.com/remkop/picocli)
 ```
+
+#### Preach it! :muscle:
+* Perhaps the most impactful way to show people how picocli can make their life easier is to write a blog post or article, or even do a video!
 
 
 ## Example
