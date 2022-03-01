@@ -29,6 +29,9 @@ jobs:
           java-version: ${{ matrix.java-version }}
           cache: gradle
 
+      - name: ShowToolChains
+        run: ./gradlew -q javaToolchains
+
       - name: Build
         run: ./gradlew build --no-daemon
 
