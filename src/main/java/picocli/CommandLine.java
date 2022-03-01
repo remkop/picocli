@@ -5022,8 +5022,8 @@ public class CommandLine {
     }
 
     /**
-     * Converter which can be used in case when picocli should use default convert. For example this can be used in maps:
-     *
+     * Converter that can be used to signal to picocli that it should use the default converter.
+     * This can be useful with maps:
      * <pre>
      *   class App {
      *       &#064;Option(names = "-D", converter = {UseDefaultConverter.class, GenericValueConverter.class})
@@ -5031,16 +5031,14 @@ public class CommandLine {
      *  }
      * </pre>
      *
-     * Instances of this class will throw UnsupportedOperationException for {@link #convert(String)} method.
+     * The {@link #convert(String)} method of this class always throws an UnsupportedOperationException.
+     * @since 4.7.0
      */
     public static final class UseDefaultConverter implements ITypeConverter<Object> {
-
-        /**
-         * Always throws UnsupportedOperationException.
-         * @throws UnsupportedOperationException always
-         */
+        /** Always throws UnsupportedOperationException.
+         * @throws UnsupportedOperationException always */
         public Object convert(String value) throws Exception {
-            throw new UnsupportedOperationException("This convert should never be called.");
+            throw new UnsupportedOperationException("This method should never be called.");
         }
     }
 
