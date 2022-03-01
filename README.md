@@ -87,6 +87,7 @@ The user manual has examples of integrating with [Guice](https://picocli.info/#_
 * [4.x User manual: https://picocli.info](https://picocli.info)
 * [4.x Quick Guide](https://picocli.info/quick-guide.html)
 * [4.x API Javadoc](https://picocli.info/apidocs/)
+* [PREVIEW: Modular Javadoc for all artifacts (4.7.0-SNAPSHOT)](https://picocli.info/apidocs-all/)
 * [Command line autocompletion](https://picocli.info/autocomplete.html)
 * [Programmatic API](https://picocli.info/picocli-programmatic-api.html)
 * [FAQ](https://github.com/remkop/picocli/wiki/FAQ)
