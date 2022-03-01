@@ -179,7 +179,7 @@ The user manual has examples of integrating with [Guice](https://picocli.info/#_
 * [GraalVM の native image を使って Java で爆速 Lambda の夢を見る](https://qiita.com/kencharos/items/69e43965515f368bc4a3) (2019-05-02) by [@kencharos](https://qiita.com/kencharos)
 
 #### 中文
-* [Java命令行界面（第10部分）：picocli](https://blog.csdn.net/dnc8371/article/details/106702365) (2020-06-07) tranlation by [dnc8371](https://blog.csdn.net/dnc8371).
+* [Java命令行界面（第10部分）：picocli](https://blog.csdn.net/dnc8371/article/details/106702365) (2020-06-07) translation by [dnc8371](https://blog.csdn.net/dnc8371).
 * [如何借助 Graalvm 和 Picocli 构建 Java 编写的原生 CLI 应用](https://www.infoq.cn/article/4RRJuxPRE80h7YsHZJtX) (2020-03-26): Chinese translation of [Build Great Native CLI Apps in Java with Graalvm and Picocli](https://www.infoq.com/articles/java-native-cli-graalvm-picocli/), thanks to [张卫滨](https://www.infoq.cn/profile/1067660).
 * [从Commons CLI迁移到Picocli](https://blog.csdn.net/genghaihua/article/details/88529409) (2019-03-13): Chinese translation of Migrating from Commons CLI to picocli, thanks to [genghaihua](https://me.csdn.net/genghaihua).
 * [Picocli 2.0: Steroids上的Groovy脚本](https://picocli.info/zh/picocli-2.0-groovy-scripts-on-steroids.html)
@@ -191,7 +191,7 @@ Join the [picocli Google group](https://groups.google.com/d/forum/picocli) if yo
 ### Credit
 <img src="https://picocli.info/images/logo/horizontal-400x150.png" height="100">
 
-[Reallinfo](https://github.com/reallinfo) designed the new picocli logo! Many thanks!
+[Reallinfo](https://github.com/reallinfo) designed the picocli logo! Many thanks!
 
 ### Commitments
 
@@ -245,7 +245,7 @@ Join the [picocli Google group](https://groups.google.com/d/forum/picocli) if yo
 * Picocli is listed on [StackShare](https://stackshare.io/picocli). Please add it to your stack and add/upvote reasons why you like picocli!
 * Picocli is used in Pinterest [ktlint](https://ktlint.github.io/).
 * Picocli is used in Spring IO [nohttp-cli](https://github.com/spring-io/nohttp/tree/master/nohttp-cli).
-* The [MinecraftPicocli](https://github.com/Rubydesic/MinecraftPicocli) library allows the use of picocli in [Minecraft Forge](https://files.minecraftforge.net/).
+* The [MinecraftPicocli](https://github.com/Rubydesic/MinecraftPicocli) library facilitates the use of picocli in [Minecraft Forge](https://files.minecraftforge.net/).
 * [Simple Java Mail](http://www.simplejavamail.org/) now offers a picocli-based [CLI](http://www.simplejavamail.org/cli.html#navigation).
 * [jbang](https://github.com/maxandersen/jbang) not only uses picocli internally, but also has a CLI template to generate an initial script: use `jbang --init=cli helloworld.java` to generate a sample picocli-enabled jbang script. See [asciinema](https://asciinema.org/a/AVwA19yijKRNKEO0bJENN2ME3?autoplay=true&speed=2).
 * Picocli is the main library used in the CookieTemple [cli-java template](https://cookietemple.readthedocs.io/en/latest/available_templates/available_templates.html#cli-java) for building GraalVM native CLI executables in Java. See [this preview](https://user-images.githubusercontent.com/21954664/86740903-474a3000-c037-11ea-9ae3-1a8f7bf1743f.gif).
