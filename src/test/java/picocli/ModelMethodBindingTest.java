@@ -78,7 +78,7 @@ public class ModelMethodBindingTest {
 
         binding.set(41);
         assertEquals(41, bean.publicGetX());
-        assertEquals(41, binding.get());
+        assertEquals(new Integer(41), binding.get());
     }
 
     @Test
@@ -103,7 +103,7 @@ public class ModelMethodBindingTest {
 
         binding.set(987);
         assertEquals(987, value.publicGetX());
-        assertEquals(987, binding.get());
+        assertEquals(new Integer(987), binding.get());
     }
 
     @Test

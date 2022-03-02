@@ -40,7 +40,7 @@ public class ModelFieldBindingTest {
         f.setAccessible(true);
 
         FieldBinding binding = new FieldBinding(new ModelMethodBindingBean(), f);
-        assertEquals("initial value", 7, binding.get());
+        assertEquals("initial value", new Integer(7), binding.get());
     }
 
     @Test
@@ -53,7 +53,7 @@ public class ModelFieldBindingTest {
 
         binding.set(987);
         assertEquals(987, value.publicGetX());
-        assertEquals(987, binding.get());
+        assertEquals(new Integer(987), binding.get());
     }
 
     @Test
