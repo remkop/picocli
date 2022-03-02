@@ -62,10 +62,19 @@ allprojects {
     apply plugin: 'java-library' // to avoid https://github.com/gradle/gradle/issues/1118
     apply plugin: "org.beryx.jar" // for compiling module-info on Java 8
 
-    sourceCompatibility = !JavaVersion.current().isJava9Compatible() ?
-            1.5 : JavaVersion.current().isJava11Compatible() ? 1.7 : 1.6
-    targetCompatibility = !JavaVersion.current().isJava9Compatible() ?
-            1.5 : JavaVersion.current().isJava11Compatible() ? 1.7 : 1.6
+    if (!JavaVersion.current().isJava9Compatible()) {
+        sourceCompatibility = 1.5
+        targetCompatibility = 1.5
+    } else if (!JavaVersion.current().isJava11Compatible()) {
+        sourceCompatibility = 1.6
+        targetCompatibility = 1.6
+    } else { // from Java 11 and up
+        tasks.withType(JavaCompile).configureEach {
+            javaCompiler = javaToolchains.compilerFor {
+                languageVersion = JavaLanguageVersion.of(JavaVersion.current().majorVersion)
+            }
+        }
+    }
 
     compileJava.options.encoding = "UTF-8"
     compileTestJava.options.encoding = "UTF-8"
