@@ -94,6 +94,7 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1572] Enhancement: Remove redundant braces in ArgGroup synopsis.
 * [#1602] Enhancement: Fix incorrect debug output for add/removeAlias.
 * [#1603] Enhancement: Improve debug tracing information for help requests and command execution.
+* [#1615][#1616] Bugfix: `getCJKAdjustedLength()` no longer miscalculates for supplementary code points. Thanks to [gwalbran](https://github.com/gwalbran) for the pull request.
 * [#1575] Bugfix: Synopsis should not cluster boolean options if `posixClusteredShortOptionsAllowed` is set to false.
 * [#1298] DOC: Publish all-in-one javadoc for all picocli modules.
 * [#812] DOC: Document how to test a picocli spring-boot application.
