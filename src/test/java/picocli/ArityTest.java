@@ -1715,7 +1715,7 @@ public class ArityTest {
             private String destination;
         }
 
-        //setTraceLevel("DEBUG");
+        //setTraceLevel(CommandLine.TraceLevel.DEBUG);
         App app = new App();
         new CommandLine(app)
                 .setOverwrittenOptionsAllowed(true)

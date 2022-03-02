@@ -922,7 +922,7 @@ public class MixinTest {
 
     @Test
     public void testIssue619MethodSubcommandInSubclassAddedTwice() {
-        //setTraceLevel("DEBUG");
+        //setTraceLevel(CommandLine.TraceLevel.DEBUG);
         CommandLine commandLine = new CommandLine(new Main());
         assertEquals(2, commandLine.getSubcommands().size());
 

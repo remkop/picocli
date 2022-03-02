@@ -2739,7 +2739,7 @@ public class CommandLineTest {
         app = CommandLine.populateCommand(new App(), "-a", "-a", "-a");
         assertArrayEquals(new boolean[]{true, true, true}, app.array);
 
-        setTraceLevel("DEBUG");
+        setTraceLevel(CommandLine.TraceLevel.DEBUG);
         app = CommandLine.populateCommand(new App(), "-aaa");
         assertArrayEquals(new boolean[]{true, true, true}, app.array);
     }

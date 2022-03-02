@@ -42,7 +42,7 @@ public class Issue1225UnmatchedArgBadIndex {
 
     @Test
     public void testIssue1225() {
-        //TestUtil.setTraceLevel("DEBUG");
+        //TestUtil.setTraceLevel(CommandLine.TraceLevel.DEBUG);
         CommandLine cmd = new CommandLine(new App());
 
         StringWriter sw = new StringWriter();

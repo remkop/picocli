@@ -296,7 +296,7 @@ public class SubcommandTests {
         cmd.setSubcommandsCaseInsensitive(true);
         cmd.setAbbreviatedSubcommandsAllowed(true);
 
-        TestUtil.setTraceLevel("DEBUG");
+        TestUtil.setTraceLevel(CommandLine.TraceLevel.DEBUG);
 
         CommandLine removed = cmd.getCommandSpec().removeSubcommand("BO");
         assertEquals(0, cmd.getSubcommands().size());
@@ -309,7 +309,7 @@ public class SubcommandTests {
 
     @Test
     public void testAddSubcommandAliasTrace() {
-        TestUtil.setTraceLevel("DEBUG");
+        TestUtil.setTraceLevel(CommandLine.TraceLevel.DEBUG);
         MainCommand top = new MainCommand();
         CommandLine cmd = new CommandLine(top);
         SubcommandWithAliases sub = new SubcommandWithAliases();
@@ -568,7 +568,7 @@ public class SubcommandTests {
     @SuppressWarnings("deprecation")
     @Test
     public void testParseNestedSubCommandsAllowingUnmatchedArguments() {
-        setTraceLevel("OFF");
+        setTraceLevel(CommandLine.TraceLevel.OFF);
         List<CommandLine> result1 = createNestedCommand().setUnmatchedArgumentsAllowed(true)
                 .parse("-a", "-b", "cmd1");
         assertEquals(Arrays.asList("-b"), result1.get(0).getUnmatchedArguments());

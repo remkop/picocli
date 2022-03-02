@@ -40,7 +40,7 @@ public class Issue1531ResetOptionMethods {
     @Test
     public void testResetOptionMethodsOnReuse() {
 
-        //TestUtil.setTraceLevel("DEBUG");
+        //TestUtil.setTraceLevel(CommandLine.TraceLevel.DEBUG);
 
         MyCommand myCommand = new MyCommand();
         CommandLine cmd = new CommandLine(myCommand);
