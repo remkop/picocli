@@ -9,17 +9,7 @@ ext.moduleName = 'info.picocli.codegen'
 
 sourceCompatibility = 1.6
 targetCompatibility = 1.6
-//if (!org.gradle.api.JavaVersion.current().isJava11Compatible()) {
-//    sourceCompatibility = 1.6
-//    targetCompatibility = 1.6
-//} else {
-//    // Java 13 cannot compile to target Java 6
-//    tasks.withType(JavaCompile).configureEach {
-//        javaCompiler = javaToolchains.compilerFor {
-//            languageVersion = JavaLanguageVersion.of(JavaVersion.current().majorVersion)
-//        }
-//    }
-//}
+
 dependencies {
     api rootProject
 }
