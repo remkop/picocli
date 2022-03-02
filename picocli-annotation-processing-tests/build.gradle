@@ -14,8 +14,8 @@ tasks.withType(JavaCompile).configureEach {
     }
 }
 dependencies {
-    implementation rootProject
-    implementation project(':picocli-codegen')
+    api rootProject
+    api project(':picocli-codegen')
     testImplementation  supportDependencies.compileTesting,
                         supportDependencies.log4j2api,
                         supportDependencies.log4j2core
