@@ -65,10 +65,7 @@ allprojects {
     if (!JavaVersion.current().isJava9Compatible()) {
         sourceCompatibility = 1.5
         targetCompatibility = 1.5
-    } else if (!JavaVersion.current().isJava11Compatible()) {
-        sourceCompatibility = 1.6
-        targetCompatibility = 1.6
-    } else { // from Java 11 and up
+    } else { // from Java 9 and up
         sourceCompatibility = 1.8
         targetCompatibility = 1.8
 //        tasks.withType(JavaCompile).configureEach {
