@@ -80,6 +80,7 @@ public class GenericTest {
         }
         @SuppressWarnings("rawtypes")
         class GenericConverter implements ITypeConverter<GenericValue> {
+            @SuppressWarnings("unchecked")
             public GenericValue convert(String value) throws Exception {
                 return new GenericValue("abc");
             }

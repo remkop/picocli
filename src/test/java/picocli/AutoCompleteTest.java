@@ -15,6 +15,7 @@
  */
 package picocli;
 
+import org.hamcrest.MatcherAssert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.Assertion;
@@ -55,6 +56,7 @@ import java.util.concurrent.TimeUnit;
 import static java.lang.String.format;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.*;
 
 /**
@@ -1286,7 +1288,7 @@ public class AutoCompleteTest {
             @Option(names = "-B") Boolean object;
         }
         String actual = AutoComplete.bash("booltest", new CommandLine(new App()));
-        assertThat(actual, containsString("local flag_opts=\"-b -B\""));
+        MatcherAssert.assertThat(actual, containsString("local flag_opts=\"-b -B\""));
     }
 
     @Test

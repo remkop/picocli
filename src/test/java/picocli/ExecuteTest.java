@@ -50,6 +50,7 @@ import java.util.concurrent.TimeUnit;
 import static java.lang.String.format;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.startsWith;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.*;
 import static picocli.CommandLine.*;
 import static picocli.CommandLine.Model.UsageMessageSpec.keyValuesMap;

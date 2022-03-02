@@ -20,6 +20,7 @@ import java.util.concurrent.Callable;
 import static java.lang.String.format;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.*;
 
 public class InteractiveArgTest {

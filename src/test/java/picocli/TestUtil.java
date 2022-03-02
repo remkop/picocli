@@ -24,6 +24,7 @@ import java.io.PrintStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -160,9 +161,7 @@ public class TestUtil {
     }
 
     public static <T> Set<T> setOf(T... elements) {
-        Set<T> result = new HashSet<T>();
-        for (T t : elements) { result.add(t); }
-        return result;
+        return new HashSet<T>(Arrays.asList(elements));
     }
 
     public static <K, V> Map<K, V> mapOf(K k1, V v1) {
