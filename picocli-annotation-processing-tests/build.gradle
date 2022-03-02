@@ -6,16 +6,19 @@ group 'info.picocli'
 description 'Picocli Annotation Processing Tests - Tests Annotation Processors for picocli Annotations.'
 version "$projectVersion"
 
-if (!JavaVersion.current().isJava11Compatible()) {
-    sourceCompatibility = 1.8
-    targetCompatibility = 1.8
-} else { // from Java 11 and up
-    tasks.withType(JavaCompile).configureEach {
-        javaCompiler = javaToolchains.compilerFor {
-            languageVersion = JavaLanguageVersion.of(JavaVersion.current().majorVersion)
-        }
-    }
-}
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+//if (!JavaVersion.current().isJava11Compatible()) {
+//    sourceCompatibility = 1.8
+//    targetCompatibility = 1.8
+//} else { // from Java 11 and up
+//    tasks.withType(JavaCompile).configureEach {
+//        javaCompiler = javaToolchains.compilerFor {
+//            languageVersion = JavaLanguageVersion.of(JavaVersion.current().majorVersion)
+//        }
+//    }
+//}
 
 dependencies {
     api rootProject

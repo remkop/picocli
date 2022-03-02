@@ -15,16 +15,18 @@ apply plugin: 'kotlin'
 apply plugin: 'scala'
 apply plugin: 'java-library'
 
-if (!JavaVersion.current().isJava11Compatible()) {
-    sourceCompatibility = 1.8 // for the JSR-380 BeanValidation example
-    targetCompatibility = 1.8
-} else { // from Java 11 and up
-    tasks.withType(JavaCompile).configureEach {
-        javaCompiler = javaToolchains.compilerFor {
-            languageVersion = JavaLanguageVersion.of(JavaVersion.current().majorVersion)
-        }
-    }
-}
+sourceCompatibility = 1.8 // for the JSR-380 BeanValidation example
+targetCompatibility = 1.8
+//if (!JavaVersion.current().isJava9Compatible()) {
+//    sourceCompatibility = 1.8 // for the JSR-380 BeanValidation example
+//    targetCompatibility = 1.8
+//} else { // from Java 11 and up
+//    tasks.withType(JavaCompile).configureEach {
+//        javaCompiler = javaToolchains.compilerFor {
+//            languageVersion = JavaLanguageVersion.of(JavaVersion.current().majorVersion)
+//        }
+//    }
+//}
 
 configurations {
     ivy

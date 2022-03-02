@@ -69,11 +69,13 @@ allprojects {
         sourceCompatibility = 1.6
         targetCompatibility = 1.6
     } else { // from Java 11 and up
-        tasks.withType(JavaCompile).configureEach {
-            javaCompiler = javaToolchains.compilerFor {
-                languageVersion = JavaLanguageVersion.of(JavaVersion.current().majorVersion)
-            }
-        }
+        sourceCompatibility = 1.8
+        targetCompatibility = 1.8
+//        tasks.withType(JavaCompile).configureEach {
+//            javaCompiler = javaToolchains.compilerFor {
+//                languageVersion = JavaLanguageVersion.of(JavaVersion.current().majorVersion)
+//            }
+//        }
     }
 
     compileJava.options.encoding = "UTF-8"
