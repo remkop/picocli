@@ -385,13 +385,13 @@ public class ModelCommandSpecTest {
 
         List<CommandLine> parsed2 = new CommandLine(new Sample()).parse("--foo");// specified without value
         OptionSpec option2 = parsed2.get(0).getCommandSpec().optionsMap().get("--foo");
-        assertEquals("optional option is fallback when specified without args", new Integer(123), option2.getValue());
+        assertEquals("optional option is fallback when specified without args", Integer.valueOf(123), option2.getValue());
         assertEquals("optional option string fallback value when specified without args", "123", option2.stringValues().get(0));
         assertEquals("optional option typed value when specified without args", 123, option2.typedValues().get(0));
 
         List<CommandLine> parsed3 = new CommandLine(new Sample()).parse("--foo", "999");// specified with value
         OptionSpec option3 = parsed3.get(0).getCommandSpec().optionsMap().get("--foo");
-        assertEquals("optional option is empty string when specified with args", new Integer(999), option3.getValue());
+        assertEquals("optional option is empty string when specified with args", Integer.valueOf(999), option3.getValue());
         assertEquals("optional option string value when specified with args", "999", option3.stringValues().get(0));
         assertEquals("optional option typed value when specified with args", 999, option3.typedValues().get(0));
     }
@@ -429,7 +429,7 @@ public class ModelCommandSpecTest {
         Sample sample = new Sample();
         List<CommandLine> parsed3 = new CommandLine(sample).parse("--foo", "-x");// specified without value
         OptionSpec option3 = parsed3.get(0).getCommandSpec().optionsMap().get("--foo");
-        assertEquals("optional option is fallback typed value when specified without args", new Long(-1L), option3.getValue());
+        assertEquals("optional option is fallback typed value when specified without args", Long.valueOf(-1L), option3.getValue());
         assertEquals("optional option fallback string value when specified without args", "-1", option3.stringValues().get(0));
         assertEquals("optional option fallback typed value when specified without args", -1L, option3.typedValues().get(0));
         assertEquals(Long.valueOf(-1L), sample.foo);
