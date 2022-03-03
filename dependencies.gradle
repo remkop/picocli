@@ -49,8 +49,10 @@ ext {
         validation_api    : "javax.validation:validation-api:2.0.1.Final",
         el_api            : "javax.el:javax.el-api:3.0.0",
         el_impl           : "org.glassfish.web:javax.el:2.2.6",
+
+        hibernate_validator_annproc: "org.hibernate.validator:hibernate-validator-annotation-processor:7.0.3.Final",
         hibernate_validator        : "org.hibernate.validator:hibernate-validator:7.0.3.Final",
-        hibernate_validator_annproc: "org.hibernate.validator:hibernate-validator-annotation-processor:7.0.2.Final",
+        
         kotlin_script_runtime      : "org.jetbrains.kotlin:kotlin-script-runtime:1.6.10",
     ]
 }
