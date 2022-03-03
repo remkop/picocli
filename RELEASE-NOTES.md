@@ -125,6 +125,8 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1606] DEP: Bump springBootVersion from 2.6.3 to 2.6.4
 * [#1618] DEP: Bump biz.aQute.bnd.gradle from 6.1.0 to 6.2.0
 * [#1617] DEP: Bump log4j2Version from 2.17.1 to 2.17.2
+* [#1621] DEP: Bump hibernate-validator from 7.0.2.Final to 7.0.3.Final
+* [#1622] DEP: Bump hibernate-validator-annotation-processor from 7.0.2.Final to 7.0.3.Final
 
 ## <a name="4.7.0-deprecated"></a> Deprecations
 No features were deprecated in this release.
