@@ -231,6 +231,7 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
     private CommandSpec buildCommand(Element element, final Context context, final RoundEnvironment roundEnv) {
         return buildCommand(true, element, context, roundEnv);
     }
+    @SuppressWarnings("deprecation")
     private CommandSpec buildCommand(boolean reuseExisting, Element element, final Context context, final RoundEnvironment roundEnv) {
         debugElement(element, "@Command");
 

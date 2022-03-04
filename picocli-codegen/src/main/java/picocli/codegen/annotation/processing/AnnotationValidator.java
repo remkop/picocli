@@ -61,6 +61,7 @@ class AnnotationValidator {
         //validateUnmatchedFieldTypeIsStringArrayOrListOfString(roundEnv);
     }
 
+    @SuppressWarnings("deprecation")
     private void validateOptions(Set<? extends Element> optionElements) {
         final Map<Element, Integer> usageHelpOptions = new HashMap<Element, Integer>();
         final Map<Element, Integer> versionHelpOptions = new HashMap<Element, Integer>();
@@ -120,6 +121,7 @@ class AnnotationValidator {
         }
     }
 
+    @SuppressWarnings("deprecation")
     private void validatePositionalParameters(Set<? extends Element> positionalElements) {
         for (Element element : positionalElements) {
             element.accept(new SimpleElementVisitor6<Void, Parameters>() {

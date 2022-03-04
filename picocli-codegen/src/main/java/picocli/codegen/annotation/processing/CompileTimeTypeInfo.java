@@ -210,6 +210,7 @@ class CompileTimeTypeInfo implements CommandLine.Model.ITypeInfo {
      * @return the fully qualified class name of the type
      */
     @Override
+    @SuppressWarnings("deprecation")
     public String getClassName() {
         if (typeElement == null) {
             return typeMirror.toString();
