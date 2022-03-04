@@ -106,6 +106,7 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1613] DEP: The `picocli-groovy` module now declares `groovy-all` as dependency.
 * [#1604] DEP: Remove dependency on `slf4j` from `picocli-spring-boot-starter`.
 * [#1607] DEP: Bump actions/setup-java from 2.5.0 to 3
+* [#1624] DEP: Bump actions/upload-artifact from 2.3.1 to 3
 * [#1585] DEP: Bump github/codeql-action from 1.0.30 to 1.1.0
 * [#1593] DEP: Bump github/codeql-action from 1.1.0 to 1.1.2
 * [#1601] DEP: Bump github/codeql-action from 1.1.2 to 1.1.3
