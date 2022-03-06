@@ -72,7 +72,7 @@ implement [custom parameter processing](https://picocli.info/#_custom_parameter_
 
 Picocli-based applications can easily [integrate](https://picocli.info/#_dependency_injection) with Dependency Injection containers.
 The [Micronaut](https://micronaut.io/) microservices framework has [built-in support](https://docs.micronaut.io/latest/guide/index.html#commandLineApps) for picocli.
-Picocli ships with a [`picocli-spring-boot-starter` module](https://github.com/remkop/picocli/tree/master/picocli-spring-boot-starter)
+Picocli ships with a [`picocli-spring-boot-starter` module](https://github.com/remkop/picocli/tree/main/picocli-spring-boot-starter)
 that includes a `PicocliSpringFactory` and Spring Boot auto-configuration to use Spring dependency injection in your picocli command line application.
 The user manual has examples of integrating with [Guice](https://picocli.info/#_guice_example), [Spring Boot](https://picocli.info/#_spring_boot_example), [Micronaut](https://picocli.info/#_micronaut_example), [Quarkus](https://picocli.info/#_quarkus_example) and with containers that comply to [CDI 2.0 specification](https://picocli.info/#_cdi_2_0_jsr_365) (JSR 365).
 
@@ -196,7 +196,7 @@ Join the [picocli Google group](https://groups.google.com/d/forum/picocli) if yo
 
 ### Commitments
 
-| This project follows [semantic versioning](http://semver.org/) and adheres to the **[Zero Bugs Commitment](https://github.com/classgraph/classgraph/blob/master/Zero-Bugs-Commitment.md)**. |
+| This project follows [semantic versioning](http://semver.org/) and adheres to the **[Zero Bugs Commitment](https://github.com/classgraph/classgraph/blob/latest/Zero-Bugs-Commitment.md)**. |
 |------------------------|
 
 ## Adoption
@@ -245,7 +245,7 @@ Join the [picocli Google group](https://groups.google.com/d/forum/picocli) if yo
 * Picocli is used in the Apache Hadoop Ozone/HDDS command line tools, the Apache Hive benchmark CLI, Apache [Ignite TensorFlow](https://github.com/apache/ignite), and Apache Sling [Feature Model Converter](https://github.com/apache/sling-org-apache-sling-feature-modelconverter).
 * Picocli is listed on [StackShare](https://stackshare.io/picocli). Please add it to your stack and add/upvote reasons why you like picocli!
 * Picocli is used in Pinterest [ktlint](https://ktlint.github.io/).
-* Picocli is used in Spring IO [nohttp-cli](https://github.com/spring-io/nohttp/tree/master/nohttp-cli).
+* Picocli is used in Spring IO [nohttp-cli](https://github.com/spring-io/nohttp/tree/main/nohttp-cli).
 * The [MinecraftPicocli](https://github.com/Rubydesic/MinecraftPicocli) library facilitates the use of picocli in [Minecraft Forge](https://files.minecraftforge.net/).
 * [Simple Java Mail](http://www.simplejavamail.org/) now offers a picocli-based [CLI](http://www.simplejavamail.org/cli.html#navigation).
 * [jbang](https://github.com/maxandersen/jbang) not only uses picocli internally, but also has a CLI template to generate an initial script: use `jbang --init=cli helloworld.java` to generate a sample picocli-enabled jbang script. See [asciinema](https://asciinema.org/a/AVwA19yijKRNKEO0bJENN2ME3?autoplay=true&speed=2).
@@ -352,11 +352,11 @@ For example, your application can generate help like this with a custom layout:
 
 ![Usage help message with two options per row](docs/images/UsageHelpWithCustomLayout.png?raw=true)
 
-See the [source code](https://github.com/remkop/picocli/blob/master/src/test/java/picocli/CustomLayoutDemo.java#L61).
+See the [source code](https://github.com/remkop/picocli/blob/main/src/test/java/picocli/CustomLayoutDemo.java#L61).
 
 ## Download
 You can add picocli as an external dependency to your project, or you can include it as source.
-See the [source code](https://github.com/remkop/picocli/blob/master/src/main/java/picocli/CommandLine.java). Copy and paste it into a file called `CommandLine.java`, add it to your project, and enjoy!
+See the [source code](https://github.com/remkop/picocli/blob/main/src/main/java/picocli/CommandLine.java). Copy and paste it into a file called `CommandLine.java`, add it to your project, and enjoy!
 
 ### Gradle
 ```

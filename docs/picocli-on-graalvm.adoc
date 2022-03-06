@@ -22,7 +22,7 @@ https://picocli.info/#option-parameters-methods[methods] or
 https://picocli.info/#command-methods[method parameters] annotated with `@Option` and `@Parameters` and other picocli annotations. A future picocli release may include an annotation processor to do this work at compile time, but as it stands, it uses reflection.
 
 == ReflectionConfigGenerator Tool
-Picocli 3.7.0 includes a https://github.com/remkop/picocli/tree/master/picocli-codegen[`picocli-codegen` module], with a tool that generates a GraalVM configuration file.
+Picocli 3.7.0 includes a https://github.com/remkop/picocli/tree/main/picocli-codegen[`picocli-codegen` module], with a tool that generates a GraalVM configuration file.
 
 `ReflectionConfigGenerator` generates a JSON String with the program elements that will be accessed reflectively in a picocli-based application, in order to compile this application ahead-of-time into a native executable with GraalVM.
 

@@ -27,7 +27,7 @@ Let's look at how picocli tries to address these issues.
 
 How often have you chosen to write custom code to parse command line arguments instead of using a library because you didn’t want to burden your users with the extra dependency?
 
-Picocli offers a way to let users run picocli-based applications without requiring the picocli library as an external dependency: all the source code lives in a https://github.com/remkop/picocli/blob/master/src/main/java/picocli/CommandLine.java[single file], to encourage application authors to include it in source form. This is convenient for utility-like single-jar applications.
+Picocli offers a way to let users run picocli-based applications without requiring the picocli library as an external dependency: all the source code lives in a https://github.com/remkop/picocli/blob/main/src/main/java/picocli/CommandLine.java[single file], to encourage application authors to include it in source form. This is convenient for utility-like single-jar applications.
 
 There are other ways to accomplish this, like JAR shading, but this is an alternative. It is easy to understand, easy to do, and it doesn’t require any special tooling. Application authors can upgrade to newer versions of picocli by replacing a single source file.
 
