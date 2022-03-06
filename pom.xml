@@ -24,7 +24,7 @@
     </developer>
   </developers>
   <scm>
-    <url>https://github.com/remkop/picocli/tree/master</url>
+    <url>https://github.com/remkop/picocli/tree/main</url>
     <connection>scm:git:https://github.com/remkop/picocli.git</connection>
     <developerConnection>scm:git:ssh://github.com:remkop/picocli.git</developerConnection>
   </scm>

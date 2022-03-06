@@ -423,7 +423,7 @@ Star icon:star-o[] or fork icon:code-fork[] this project on GitHub if you like i
 Please use the https://github.com/remkop/picocli/issues[Issue Tracker] to report bugs or request features.
 
 == License
-Picocli is licensed under the https://github.com/remkop/picocli/blob/master/LICENSE[Apache License 2.0].
+Picocli is licensed under the https://github.com/remkop/picocli/blob/main/LICENSE[Apache License 2.0].
 
 == Releases
 Previous versions are available from the GitHub project https://github.com/remkop/picocli/releases[Releases].

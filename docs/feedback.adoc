@@ -122,7 +122,7 @@ picocli便利でした! / KuromojiのCLIコマンドとpicocliとGraalVM-
 [quote, wreulicke (@wreulicke), https://twitter.com/wreulicke/status/1232488166910648321]
 picocliならspring-boot-starterもあるので
 spring bootとのintegrationも簡単ですね
-https://github.com/remkop/picocli/tree/master/picocli-spring-boot-starter
+https://github.com/remkop/picocli/tree/main/picocli-spring-boot-starter
 
 ---
 [quote, Eduardo Gonzalez (@wm_eddie), https://twitter.com/wm_eddie/status/1228302473032429568]

@@ -2,7 +2,7 @@
  * Picocli: Custom converter demo
  * Explanation: <a href="https://picocli.info/#_handling_invalid_input">Picocli user manual</a>
  * Discussion: <a href="https://github.com/remkop/picocli/issues/972">GitHub issue</a>
- * Origin of source code: <a href="https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/java/picocli/examples/typeconverter">GitHub</a>
+ * Origin of source code: <a href="https://github.com/remkop/picocli/tree/main/picocli-examples/src/main/java/picocli/examples/typeconverter">GitHub</a>
  * @author Remko Popma
  */
 package picocli.examples.typeconverter;

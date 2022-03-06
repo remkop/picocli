@@ -1799,7 +1799,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 This release adds a new class `picocli.codegen.docgen.manpage.ManPageGenerator` to the `picocli-codegen` module that generates AsciiDoc documentation for picocli-based applications using the `manpage` doctype and manpage document structure.
 The generated AsciiDoc files can be converted to HTML, PDF and unix man pages with the [asciidoctor](https://asciidoctor.org/docs/user-manual/#man-pages) tool.
 
-The [`picocli-codegen` README](https://github.com/remkop/picocli/blob/master/picocli-codegen/README.adoc) has more details.
+The [`picocli-codegen` README](https://github.com/remkop/picocli/blob/main/picocli-codegen/README.adoc) has more details.
 
 ### <a name="4.2.0-repeatable-subcommands"></a> Repeatable Subcommands
 From picocli 4.2, it is possible to specify that a command's subcommands can be specified multiple times by marking it with `@Command(subcommandsRepeatable = true)`.
@@ -2125,7 +2125,7 @@ JLine has had some interesting improvements in its 3.12 release.
 
 This version of picocli requires JLine 3.13.2 or higher and adds a `PicocliCommands` class that provides command descriptions that can be displayed in the terminal status bar via the new JLine `TailTipWidgets` functionality.
 
-See the `picocli-shell-jline3` [README](https://github.com/remkop/picocli/tree/master/picocli-shell-jline3) for details.
+See the `picocli-shell-jline3` [README](https://github.com/remkop/picocli/tree/main/picocli-shell-jline3) for details.
 
 ### <a name="4.1.2-completion"></a> Completion
 The built-in `picocli.AutoComplete.GenerateCompletion` (`generate-completion`) subcommand now omits validation of mandatory options in the parent command.
@@ -2598,7 +2598,7 @@ In most cases no further configuration is needed when generating a native image.
 
 #### Processor option: `project`
 
-The picocli annotation processor supports a number of [options](https://github.com/remkop/picocli/tree/master/picocli-codegen#picocli-processor-options), most important of which is the `project` option to control the output subdirectory: the generated files are written to `META-INF/native-image/picocli-generated/${project}`. A good convention is to use the Maven `${groupId}/${artifactId}` as the value; a unique subdirectory ensures your jar can be shaded with other jars that may also contain generated configuration files.
+The picocli annotation processor supports a number of [options](https://github.com/remkop/picocli/tree/main/picocli-codegen#picocli-processor-options), most important of which is the `project` option to control the output subdirectory: the generated files are written to `META-INF/native-image/picocli-generated/${project}`. A good convention is to use the Maven `${groupId}/${artifactId}` as the value; a unique subdirectory ensures your jar can be shaded with other jars that may also contain generated configuration files.
 
 To configure this option, pass the `-Aproject=<some value>` to the javac compiler. The examples below show how to do this for Maven and Gradle.
 
@@ -2633,7 +2633,7 @@ In Maven, use `annotationProcessorPaths` in the `configuration` of the `maven-co
 </plugin>
 ```
 
-See the [`picocli-codegen` README](https://github.com/remkop/picocli/tree/master/picocli-codegen) for more details.
+See the [`picocli-codegen` README](https://github.com/remkop/picocli/tree/main/picocli-codegen) for more details.
 
 
 ##### Gradle
@@ -2653,7 +2653,7 @@ compileJava {
 }
 ```
 
-See the [`picocli-codegen` README](https://github.com/remkop/picocli/tree/master/picocli-codegen) for more details.
+See the [`picocli-codegen` README](https://github.com/remkop/picocli/tree/main/picocli-codegen) for more details.
 
 
 
@@ -4890,7 +4890,7 @@ This release contains the `picocli.shell.jline3.PicocliJLineCompleter` class.
 `PicocliJLineCompleter` is a small component that generates completion candidates to allow users to get command line TAB auto-completion for a picocli-based application running in a JLine 3 shell.
 It is similar to the class with the same name in the `picocli.shell.jline2` package in the `picocli-shell-jline2` module.
 
-See the module's [README](https://github.com/remkop/picocli/blob/master/picocli-shell-jline3/README.md) for more details.
+See the module's [README](https://github.com/remkop/picocli/blob/main/picocli-shell-jline3/README.md) for more details.
 
 ### <a name="3.9.0-ANSI-heuristics"></a> Improved ANSI Heuristics
 This release has improved heuristics to decide whether ANSI escape codes should be emitted or not.
@@ -5171,7 +5171,7 @@ The output of `ReflectionConfigGenerator` is intended to be passed to the `-H:Re
 
 See [Picocli on GraalVM: Blazingly Fast Command Line Apps](https://github.com/remkop/picocli/wiki/Picocli-on-GraalVM:-Blazingly-Fast-Command-Line-Apps) for details.
 
-The module's [README](https://github.com/remkop/picocli/blob/master/picocli-codegen/README.md) explains how to configure your build to generate the configuration file automatically as part of your build.
+The module's [README](https://github.com/remkop/picocli/blob/main/picocli-codegen/README.md) explains how to configure your build to generate the configuration file automatically as part of your build.
 
 
 ### <a name="3.7.0-picocli-shell-jline2"></a> New Module `picocli-shell-jline2`
@@ -5182,7 +5182,7 @@ This release contains the `PicocliJLineCompleter` class.
 `PicocliJLineCompleter` is a small component that generates completion candidates to allow users to
 get command line TAB auto-completion for a picocli-based application running in a JLine 2 shell.
 
-See the module's [README](https://github.com/remkop/picocli/blob/master/picocli-shell-jline2/README.md) for more details.
+See the module's [README](https://github.com/remkop/picocli/blob/main/picocli-shell-jline2/README.md) for more details.
 
 ## <a name="3.7.0-fixes"></a> Fixed issues
 - [#503] Build: Upgrade to gradle 4.10.2.
@@ -7698,7 +7698,7 @@ public interface IVersionProvider {
 }
 ```
 
-The GitHub project has a manifest file-based [example](https://github.com/remkop/picocli/blob/master/examples/src/main/java/picocli/examples/VersionProviderDemo2.java) and a build-generated version properties file-based [example](https://github.com/remkop/picocli/blob/master/examples/src/main/java/picocli/examples/VersionProviderDemo1.java) version provider implementation.
+The GitHub project has a manifest file-based [example](https://github.com/remkop/picocli/blob/main/examples/src/main/java/picocli/examples/VersionProviderDemo2.java) and a build-generated version properties file-based [example](https://github.com/remkop/picocli/blob/main/examples/src/main/java/picocli/examples/VersionProviderDemo1.java) version provider implementation.
 
 ### Custom factory
 Declaratively registered subcommands, type converters and version providers must be instantiated somehow. From this release, a custom factory can be specified when constructing a `CommandLine` instance. This allows full control over object creation and opens possibilities for Inversion of Control and Dependency Injection. For example:

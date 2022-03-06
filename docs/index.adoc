@@ -287,7 +287,7 @@ dependencies {
 ----
 
 === Add as Source
-To include as source, get the source code from the link:https://github.com/remkop/picocli/blob/master/src/main/java/picocli/CommandLine.java[GitHub file]. Copy and paste it into a file called `CommandLine.java`, add it to your project, and enjoy!
+To include as source, get the source code from the link:https://github.com/remkop/picocli/blob/main/src/main/java/picocli/CommandLine.java[GitHub file]. Copy and paste it into a file called `CommandLine.java`, add it to your project, and enjoy!
 
 === Annotation Processor
 
@@ -304,7 +304,7 @@ In most cases no further configuration is needed when generating a native image.
 
 ==== Processor option: `project`
 
-The picocli annotation processor supports a number of https://github.com/remkop/picocli/tree/master/picocli-codegen#picocli-processor-options[options], most important of which is the `project` option to control the output subdirectory: the generated files are written to `META-INF/native-image/picocli-generated/${project}`. A good convention is to use the Maven `${project.groupId}/${project.artifactId}` as the value; a unique subdirectory ensures your jar can be shaded with other jars that may also contain generated configuration files.
+The picocli annotation processor supports a number of https://github.com/remkop/picocli/tree/main/picocli-codegen#picocli-processor-options[options], most important of which is the `project` option to control the output subdirectory: the generated files are written to `META-INF/native-image/picocli-generated/${project}`. A good convention is to use the Maven `${project.groupId}/${project.artifactId}` as the value; a unique subdirectory ensures your jar can be shaded with other jars that may also contain generated configuration files.
 
 To configure this option, pass the `-Aproject=<some value>` to the javac compiler. The examples below show how to do this for Maven and Gradle.
 
@@ -352,7 +352,7 @@ compileJava {
 </plugin>
 ----
 
-See the https://github.com/remkop/picocli/tree/master/picocli-codegen[`picocli-codegen` README] for more details.
+See the https://github.com/remkop/picocli/tree/main/picocli-codegen[`picocli-codegen` README] for more details.
 
 ===== Kotlin Projects Using Gradle
 Kotlin projects should add the `kotlin-kapt` plugin to enable the Kotlin Annotation processing tool (https://kotlinlang.org/docs/reference/kapt.html[kapt]),
@@ -374,7 +374,7 @@ kapt {
     }
 }
 ```
-See the https://github.com/remkop/picocli/tree/master/picocli-codegen[`picocli-codegen` README] for more details.
+See the https://github.com/remkop/picocli/tree/main/picocli-codegen[`picocli-codegen` README] for more details.
 
 === Running the Application
 
@@ -638,13 +638,13 @@ Another idea is to add a separate different option (that could be named `--passw
 
 A command that combines either of these with an interactive `--password` option (with the default `arity = "0"`) allows end users to provide a password without specifying it in plain text on the command line. Such a command can be executed both interactively and in batch mode.
 
-The https://github.com/remkop/picocli/blob/master/picocli-examples[`picocli-examples`] module has an example, coded both in https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/interactive/PasswordDemo.java[Java] and https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/kotlin/picocli/examples/kotlin/interactive/PasswordDemo.kt[Kotlin].
+The https://github.com/remkop/picocli/blob/main/picocli-examples[`picocli-examples`] module has an example, coded both in https://github.com/remkop/picocli/blob/main/picocli-examples/src/main/java/picocli/examples/interactive/PasswordDemo.java[Java] and https://github.com/remkop/picocli/tree/main/picocli-examples/src/main/kotlin/picocli/examples/kotlin/interactive/PasswordDemo.kt[Kotlin].
 ====
 
 [CAUTION]
 .Interactive options and shell applications with JLine 2
 ====
-Interactive options do not work in conjunction with JLine 2's `ConsoleReader`. Either implement a <<Custom Parameter Processing,`IParameterConsumer`>> which uses JLine2's `ConsoleReader` directly or use https://github.com/remkop/picocli/tree/master/picocli-shell-jline3[`picocli-shell-jline3`].
+Interactive options do not work in conjunction with JLine 2's `ConsoleReader`. Either implement a <<Custom Parameter Processing,`IParameterConsumer`>> which uses JLine2's `ConsoleReader` directly or use https://github.com/remkop/picocli/tree/main/picocli-shell-jline3[`picocli-shell-jline3`].
 ====
 
 
@@ -1120,7 +1120,7 @@ See for example the documentation for https://docs.oracle.com/en/java/javase/14/
 [TIP]
 ====
 If you think your users may find this feature (@files) useful, you could consider adding an option to your application that generates an @file for the specified arguments.
-The `picocli-examples` module on GitHub has an https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/atfile/AtFileGenerator.java[example] to get you started.
+The `picocli-examples` module on GitHub has an https://github.com/remkop/picocli/blob/main/picocli-examples/src/main/java/picocli/examples/atfile/AtFileGenerator.java[example] to get you started.
 ====
 
 ==== @-files Usage Help
@@ -1440,7 +1440,7 @@ class InetSocketAddressConverter : ITypeConverter<InetSocketAddress> {
 }
 ----
 
-The `picocli-examples` module on GitHub has a minimal working https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/typeconverter/InetSocketAddressConverterDemo.java[example] which you can run in our https://www.jdoodle.com/embed/v0/2mxo?stdin=1&arg=1[online-editor^].
+The `picocli-examples` module on GitHub has a minimal working https://github.com/remkop/picocli/blob/main/picocli-examples/src/main/java/picocli/examples/typeconverter/InetSocketAddressConverterDemo.java[example] which you can run in our https://www.jdoodle.com/embed/v0/2mxo?stdin=1&arg=1[online-editor^].
 
 === Option-specific Type Converters
 Picocli 2.2 added a `converter` attribute to the `@Option` and `@Parameter` annotations. This allows a specific option or positional parameter to use a different converter than would be used by default based on the type of the field.
@@ -1957,7 +1957,7 @@ public interface IDefaultValueProvider {
 ----
 
 See the
-https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/defaultprovider/[default provider examples]
+https://github.com/remkop/picocli/blob/main/picocli-examples/src/main/java/picocli/examples/defaultprovider/[default provider examples]
 for example implementations.
 
 NOTE: If the command has a default provider configured, and the option or positional parameter has a default value configured, then picocli will first try to find the value in the default provider.
@@ -4550,7 +4550,7 @@ This is the case regardless of case sensitivity, but be aware that with case sen
 For example, if a command has POSIX options `-a`, `-b`, and `-c`, and a long option `-ABC`, then, when the user specifies `-abc`, picocli will recognize it as the long option `-ABC`, not as the POSIX options.
 ====
 
-See the https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/java/picocli/examples/casesensitivity[casesensitivity] package in `picocli-examples` for some examples.
+See the https://github.com/remkop/picocli/tree/main/picocli-examples/src/main/java/picocli/examples/casesensitivity[casesensitivity] package in `picocli-examples` for some examples.
 
 === Abbreviated Options and Subcommands
 
@@ -5831,9 +5831,9 @@ public interface IVersionProvider {
 Version providers declared with the `versionProvider` attribute need to have a public no-argument constructor to be instantiated, unless a <<Custom Factory>> is installed to instantiate classes.
 
 The GitHub project has a manifest file-based
-https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/VersionProviderDemo2.java[example]
+https://github.com/remkop/picocli/blob/main/picocli-examples/src/main/java/picocli/examples/VersionProviderDemo2.java[example]
 and a build-generated version properties file-based
-https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/VersionProviderDemo1.java[example] version provider implementation.
+https://github.com/remkop/picocli/blob/main/picocli-examples/src/main/java/picocli/examples/VersionProviderDemo1.java[example] version provider implementation.
 
 ==== Dynamic Version Info with Variables
 The version strings returned from the `IVersionProvider` may contain <<Variable Interpolation,system properties and environment variables>>.
@@ -6106,7 +6106,7 @@ applications can give a subtle hint to end users that an option is common and en
 Conversely, the absence of a short option can signal that the option is unusual or perhaps should be used with care.
 
 TIP: It is possible to left-align all options by using a custom layout.
-See https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/leftalign/LeftAlignOptions.java[LeftAlignOptions.java] in the `picocli-examples` module for an example.
+See https://github.com/remkop/picocli/blob/main/picocli-examples/src/main/java/picocli/examples/leftalign/LeftAlignOptions.java[LeftAlignOptions.java] in the `picocli-examples` module for an example.
 
 
 ==== Long Option Column Width
@@ -7502,7 +7502,7 @@ keys.add(index + 1, SECTION_KEY_ENV_DETAILS)
 cmd.helpSectionKeys = keys
 ----
 
-More examples for customizing the usage help message are https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/java/picocli/examples/customhelp[here].
+More examples for customizing the usage help message are https://github.com/remkop/picocli/tree/main/picocli-examples/src/main/java/picocli/examples/customhelp[here].
 
 
 === Custom Layout
@@ -7545,7 +7545,7 @@ zip [-options] [-b path] [-t mmddyyyy] [-n suffixes] [zipfile list] [-xi list]
 ----
 
 This can be achieved in picocli by subclassing the Help.Layout class.
-See the https://github.com/remkop/picocli/blob/master/src/test/java/picocli/CustomLayoutDemo.java[CustomLayoutDemo] class in the picocli tests for how to achieve this.
+See the https://github.com/remkop/picocli/blob/main/src/test/java/picocli/CustomLayoutDemo.java[CustomLayoutDemo] class in the picocli tests for how to achieve this.
 
 
 == Subcommands
@@ -7559,8 +7559,8 @@ If you want to jump ahead and see some examples first, these resources may be he
 
 * The <<Executing Subcommands>> section below has an example that uses both the `@Command(subcommands = <class>)` syntax and the `@Command`-annotated method syntax.
 * The Quick Guide has an https://picocli.info/quick-guide.html#_subcommands_example_iso_code_resolver[example application] featuring subcommands, with a detailed explanation.
-* The `picocli-examples` code module has a https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/java/picocli/examples/subcommands[subcommand section] with several minimal code samples, explaining the use of subcommands both via https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/subcommands/SubCmdsViaMethods.java[methods] and when defined in their own https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/subcommands/SubcommandDemo.java[class].
-* The `picocli-examples` code module also shows subcommand examples in other languages, like https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/scala/picocli/examples/scala/subcommands[Scala] and https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/kotlin/picocli/examples/kotlin/subcommands[Kotlin], as well as https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/java/picocli/examples/subcommands[Java].
+* The `picocli-examples` code module has a https://github.com/remkop/picocli/tree/main/picocli-examples/src/main/java/picocli/examples/subcommands[subcommand section] with several minimal code samples, explaining the use of subcommands both via https://github.com/remkop/picocli/blob/main/picocli-examples/src/main/java/picocli/examples/subcommands/SubCmdsViaMethods.java[methods] and when defined in their own https://github.com/remkop/picocli/blob/main/picocli-examples/src/main/java/picocli/examples/subcommands/SubcommandDemo.java[class].
+* The `picocli-examples` code module also shows subcommand examples in other languages, like https://github.com/remkop/picocli/tree/main/picocli-examples/src/main/scala/picocli/examples/scala/subcommands[Scala] and https://github.com/remkop/picocli/tree/main/picocli-examples/src/main/kotlin/picocli/examples/kotlin/subcommands[Kotlin], as well as https://github.com/remkop/picocli/tree/main/picocli-examples/src/main/java/picocli/examples/subcommands[Java].
 
 
 === Registering Subcommands Declaratively
@@ -7661,7 +7661,7 @@ As of picocli 3.6 it is possible to register subcommands in a very compact manne
 The methods are automatically <<Subcommand Methods, registered as subcommands>> of the enclosing `@Command` class.
 See the <<command-methods, command methods>> section for more details and examples.
 
-The https://github.com/remkop/picocli/blob/master/picocli-examples[`picocli-examples`] module has an  minimal example application, demonstrating the definition of subcommands via methods. This example was coded in https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/subcommands/SubCmdsViaMethods.java[Java], https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/kotlin/picocli/examples/kotlin/subcommands/SubCmdsViaMethods.kt[Kotlin] and https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/scala/picocli/examples/scala/subcommands/SubCmdsViaMethods.scala[Scala].
+The https://github.com/remkop/picocli/blob/main/picocli-examples[`picocli-examples`] module has an  minimal example application, demonstrating the definition of subcommands via methods. This example was coded in https://github.com/remkop/picocli/blob/main/picocli-examples/src/main/java/picocli/examples/subcommands/SubCmdsViaMethods.java[Java], https://github.com/remkop/picocli/blob/main/picocli-examples/src/main/kotlin/picocli/examples/kotlin/subcommands/SubCmdsViaMethods.kt[Kotlin] and https://github.com/remkop/picocli/blob/main/picocli-examples/src/main/scala/picocli/examples/scala/subcommands/SubCmdsViaMethods.scala[Scala].
 
 === Registering Subcommands Programmatically
 Subcommands can be registered with the `CommandLine.addSubcommand` method.
@@ -8076,7 +8076,7 @@ object MyApp {
 
 This ensures the `init` method is called _after_ the command line is parsed (so all options and positional parameters are assigned) but _before_ the user-specified subcommand is executed.
 
-The https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/java/picocli/examples/logging_mixin_advanced[logging example] in `picocli-examples` shows how this can be used to configure the Log4j log level based on a `--verbose` option, prior to execution.
+The https://github.com/remkop/picocli/tree/main/picocli-examples/src/main/java/picocli/examples/logging_mixin_advanced[logging example] in `picocli-examples` shows how this can be used to configure the Log4j log level based on a `--verbose` option, prior to execution.
 
 [#parentcommand-annotation]
 === `@ParentCommand` Annotation
@@ -8620,7 +8620,7 @@ val commandLine = CommandLine(MainCommand())
 
 By default, the usage help message only shows the subcommands of the specified command,
 and not the nested sub-subcommands. This can be customized by specifying your own <<Reordering Sections,`IHelpSectionRenderer`>> for the command list section.
-The `picocli-examples` module has an https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/customhelp/ShowCommandHierarchy.java[example] that shows how to accomplish this.
+The `picocli-examples` module has an https://github.com/remkop/picocli/blob/main/picocli-examples/src/main/java/picocli/examples/customhelp/ShowCommandHierarchy.java[example] that shows how to accomplish this.
 
 To get usage help for nested subcommands, either set `mixinStandardHelpOptions = true` in all commands in the hierarchy, and/or add `picocli.CommandLine.HelpCommand` to the subcommands of all commands. Then you can get help message for a nested (sub-)subcommand like this:
 
@@ -9193,7 +9193,7 @@ assert(cmd.myMixin.verbosity.size == 3)
 
 Mixins added with the `@Mixin` annotation can also be accessed via the map returned by `CommandLine.getMixins`.
 
-The GitHub project has a https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/java/picocli/examples/mixin[full working example].
+The GitHub project has a https://github.com/remkop/picocli/tree/main/picocli-examples/src/main/java/picocli/examples/mixin[full working example].
 
 ==== Mixin Example: Logger
 
@@ -9739,7 +9739,7 @@ java MyApp sub -v subsubmethod
 java MyApp sub subsubmethod -vv
 ----
 
-See also the https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/java/picocli/examples/logging_mixin_advanced[logging] example in `picocli-examples` for a way to modify only the Log4j ConsoleAppenders' log level from the specified verbosity.
+See also the https://github.com/remkop/picocli/tree/main/picocli-examples/src/main/java/picocli/examples/logging_mixin_advanced[logging] example in `picocli-examples` for a way to modify only the Log4j ConsoleAppenders' log level from the specified verbosity.
 
 === Sharing Options in Subcommands
 
@@ -9768,7 +9768,7 @@ Command attributes may be defined multiple times, but only one value is preserve
 As of version 3.6, usage help message sections and the description for options and positional parameters can be specified in a resource bundle.
 A resource bundle can be set via annotations and programmatically.
 
-In order to get you started quickly, the https://github.com/remkop/picocli/blob/master/picocli-examples[`picocli-examples`] module has a minimal i18n example, coded both in https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/i18n/I18NDemo.java[Java] and https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/kotlin/picocli/examples/kotlin/i18n/I18NDemo.kt[Kotlin].
+In order to get you started quickly, the https://github.com/remkop/picocli/blob/main/picocli-examples[`picocli-examples`] module has a minimal i18n example, coded both in https://github.com/remkop/picocli/blob/main/picocli-examples/src/main/java/picocli/examples/i18n/I18NDemo.java[Java] and https://github.com/remkop/picocli/tree/main/picocli-examples/src/main/kotlin/picocli/examples/kotlin/i18n/I18NDemo.kt[Kotlin].
 
 === Configuration
 
@@ -10118,7 +10118,7 @@ Now our message texts are printed in Spanish:
 ----
 
 Using the command line parameter `--locale`, one can also determine the language of the help output of your application.
-The https://github.com/remkop/picocli/blob/master/picocli-examples[`picocli-examples`] module has examples with fully implemented, localized help output, coded both in https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/i18n/localecontrol/LocaleControl.java[Java] and https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/kotlin/picocli/examples/kotlin/i18n/localecontrol/LocaleControl.kt[Kotlin].
+The https://github.com/remkop/picocli/blob/main/picocli-examples[`picocli-examples`] module has examples with fully implemented, localized help output, coded both in https://github.com/remkop/picocli/blob/main/picocli-examples/src/main/java/picocli/examples/i18n/localecontrol/LocaleControl.java[Java] and https://github.com/remkop/picocli/tree/main/picocli-examples/src/main/kotlin/picocli/examples/kotlin/i18n/localecontrol/LocaleControl.kt[Kotlin].
 
 == Variable Interpolation
 
@@ -11751,7 +11751,7 @@ Alternatively, you can define an <<unmatched-annotation,unmatched>> field to cap
 ----
 ====
 
-The https://github.com/remkop/picocli/tree/master/picocli-spring-boot-starter[picocli-spring-boot-starter README] has another example of a picocli app integrated into Spring Boot.
+The https://github.com/remkop/picocli/tree/main/picocli-spring-boot-starter[picocli-spring-boot-starter README] has another example of a picocli app integrated into Spring Boot.
 
 === Micronaut Example
 image:https://avatars.githubusercontent.com/u/36880643?s=200&v=4[Micronaut Logo]
@@ -12255,7 +12255,7 @@ See the link:autocomplete.html[Autocomplete for Java Command Line Applications] 
 From picocli 4.2, the `picocli-codegen` module has a `ManPageGenerator` tool that can generate AsciiDoc documentation using the `manpage` doctype and manpage document structure.
 The generated AsciiDoc files can be converted to HTML, PDF and unix man pages with the wonderful https://asciidoctor.org/docs/user-manual/#man-pages[asciidoctor] tool.
 
-See the link:https://github.com/remkop/picocli/tree/master/picocli-codegen#generate-documentation[Generate Documentation] section of the link:https://github.com/remkop/picocli/tree/master/picocli-codegen[picocli-codegen README] for details on how to generate and customize this documentation.
+See the link:https://github.com/remkop/picocli/tree/main/picocli-codegen#generate-documentation[Generate Documentation] section of the link:https://github.com/remkop/picocli/tree/main/picocli-codegen[picocli-codegen README] for details on how to generate and customize this documentation.
 
 To see some examples, the man pages for the picocli built-in tools were created with this tool:
 
@@ -12809,7 +12809,7 @@ to be able to use features like https://www.graalvm.org/reference-manual/native-
 ==== How do I Create a Native Image for my Application?
 The `picocli-codegen` module contains an annotation processor that generates the necessary configuration files
 under `META-INF/native-image/picocli-generated/$project` during compilation,
-to be included in the application jar. The <<Annotation Processor>> section of the manual has details on configuring the annotation processor, and further information can be found in the https://github.com/remkop/picocli/tree/master/picocli-codegen[picocli-codegen README]
+to be included in the application jar. The <<Annotation Processor>> section of the manual has details on configuring the annotation processor, and further information can be found in the https://github.com/remkop/picocli/tree/main/picocli-codegen[picocli-codegen README]
 file.
 
 By embedding these configuration files, your jar is instantly Graal-enabled: the
@@ -13043,7 +13043,7 @@ NOTE: When using a Groovy version older than 2.4.7, use this workaround for the 
 ...
 ----
 
-In order to get you started quickly, you may have a look at the https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/groovy/picocli/examples[Groovy examples] folder of the picocli code repository.
+In order to get you started quickly, you may have a look at the https://github.com/remkop/picocli/tree/main/picocli-examples/src/main/groovy/picocli/examples[Groovy examples] folder of the picocli code repository.
 
 === Kotlin
 
@@ -13110,7 +13110,7 @@ class MyApp : Callable<Int> {
 fun main(args: Array<String>) = System.exit(CommandLine(MyApp()).execute(*args))
 ----
 
-In order to get you started quickly, you may have a look at the https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/kotlin/picocli/examples/kotlin[Kotlin examples] folder of the picocli code repository.
+In order to get you started quickly, you may have a look at the https://github.com/remkop/picocli/tree/main/picocli-examples/src/main/kotlin/picocli/examples/kotlin[Kotlin examples] folder of the picocli code repository.
 
 === Scala
 Scala does not allow specifying array annotation attribute as a single value,
@@ -13141,7 +13141,7 @@ object MyApp {
 }
 ----
 
-In order to get you started quickly, you may have a look at the https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/scala/picocli/examples/scala[Scala examples] folder of the picocli code repository.
+In order to get you started quickly, you may have a look at the https://github.com/remkop/picocli/tree/main/picocli-examples/src/main/scala/picocli/examples/scala[Scala examples] folder of the picocli code repository.
 
 == API Javadoc
 Picocli API Javadoc can be found link:apidocs-all/[here].
@@ -13168,7 +13168,7 @@ The GitHub https://github.com/remkop/picocli/issues[Issue Tracker] can be used t
 Join the https://groups.google.com/d/forum/picocli[picocli Google group] if you are interested in discussing anything picocli-related and receiving announcements on new releases.
 
 == License
-Picocli is licensed under the https://github.com/remkop/picocli/blob/master/LICENSE[Apache License 2.0].
+Picocli is licensed under the https://github.com/remkop/picocli/blob/main/LICENSE[Apache License 2.0].
 
 == Releases
 Previous versions are available from the GitHub project https://github.com/remkop/picocli/releases[Releases].
