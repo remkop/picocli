@@ -5,6 +5,41 @@
     Picocli is a framework for creating Java command line applications with almost zero code.
 </p>
 <p>
+    The project contains multiple modules, but most applications only need a few of them.
+    The table below shows the JPMS module name and the Maven coordinates for all modules in the project.
+</p>
+<table border="1">
+    <caption>Picocli project modules: JPMS module name and their Maven coordinates</caption>
+    <tr>
+        <th>JPMS module name</th>
+        <th>Maven coordinates (without version)</th>
+    </tr>
+    <tr>
+        <td><code>info.picocli</code></td>
+        <td><code>info.picocli:picocli</code></td>
+    </tr>
+    <tr>
+        <td><code>info.picocli.codegen</code></td>
+        <td><code>info.picocli:picocli-codegen</code></td>
+    </tr>
+    <tr>
+        <td><code>info.picocli.groovy</code></td>
+        <td><code>info.picocli:picocli-groovy</code></td>
+    </tr>
+    <tr>
+        <td><code>info.picocli.shell.jline2</code></td>
+        <td><code>info.picocli:picocli-shell-jline2</code></td>
+    </tr>
+    <tr>
+        <td><code>info.picocli.shell.jline3</code></td>
+        <td><code>info.picocli:picocli-shell-jline3</code></td>
+    </tr>
+    <tr>
+        <td><code>info.picocli.spring.boot</code></td>
+        <td><code>info.picocli:picocli-spring-boot-starter</code></td>
+    </tr>
+</table>
+<p>
     Most application will only need the main <code>picocli</code> module, but
     we recommend also <a href="https://picocli.info/#_annotation_processor">configuring</a>
     the <code>picocli-codegen</code> module as an annotation processor for your project.
