@@ -117,6 +117,31 @@ public class InteractiveArgTest {
     }
 
     @Test
+    public void testInteractiveOptionWithoutDescriptionStandardPrompt() {
+        class App {
+            @Option(names = "-x", interactive = true) int x;
+        }
+
+        PrintStream out = System.out;
+        InputStream in = System.in;
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            System.setOut(new PrintStream(baos));
+            System.setIn(new ByteArrayInputStream("123".getBytes()));
+
+            App app = new App();
+            CommandLine cmd = new CommandLine(app);
+            cmd.parseArgs("-x");
+
+            assertEquals("Enter value for -x: ", baos.toString());
+            assertEquals(123, app.x);
+        } finally {
+            System.setOut(out);
+            System.setIn(in);
+        }
+    }
+
+    @Test
     public void testInteractiveOptionReadsFromStdInWithCustomPrompt() {
         class App {
             @Option(names = "-x", description = {"Pwd", "line2"}, interactive = true, prompt = "[Customized]Enter your X: ") int x;

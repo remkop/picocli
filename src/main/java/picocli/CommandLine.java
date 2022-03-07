@@ -14742,7 +14742,9 @@ public class CommandLine {
 
         char[] readUserInput(ArgSpec argSpec) {
             String name = argSpec.isOption() ? ((OptionSpec) argSpec).longestName() : "position " + position;
-            String prompt = !empty(argSpec.prompt()) ? argSpec.prompt() : String.format("Enter value for %s (%s): ", name, str(argSpec.description(), 0));
+            String desc = str(argSpec.description(), 0);
+            String standardPrompt = empty(desc) ? String.format("Enter value for %s: ", name) : String.format("Enter value for %s (%s): ", name, desc);
+            String prompt = empty(argSpec.prompt()) ? standardPrompt : argSpec.prompt();
             try {
                 Tracer t = tracer();
                 if (t.isDebug()) {
