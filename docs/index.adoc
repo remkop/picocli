@@ -689,6 +689,25 @@ public class Main implements Runnable {
 }
 ----
 
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Command
+class Main : Runnable {
+    @Option(names = ["--interactive"], description = ["unattended run"], interactive = true)
+    var value: String? = null
+    override fun run() {
+        if (value == null && System.console() != null) {
+            // alternatively, use console::readPassword
+            value = System.console().readLine("Enter value for --interactive: ")
+        }
+        println("You provided value '$value'")
+    }
+}
+
+fun main(args: Array<String>) : Unit = exitProcess(CommandLine(Main()).execute(*args))
+----
+
 === Short (POSIX) Options
 Picocli supports http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html#tag_12_02[POSIX clustered short options]:
 one or more single-character options without option-arguments, followed by at most one option with an option-argument, can be grouped behind one '-' delimiter.
