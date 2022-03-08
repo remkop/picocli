@@ -104,6 +104,7 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1140] DOC: Add subsection Forcing Interactive Input to user manual Interactive Options section. Thanks to [smalirizvi](https://github.com/smalirizvi) for raising this.
 * [#967] DOC: User manual now shows how to configure `null` as `defaultValue` and `fallbackValue`.
 * [#1625] DOC: Fix broken links after renaming default branch to `main` from `master`. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+* [#1628][#1630] DOC: Fix broken link in `picocli-codegen` `README`. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1627] DOC: User guide, chapter 3.2.3. Forcing Interactive Input: code sample: add Kotlin version. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1581] BUILD: Fix dependabot config.
 * [#1613] DEP: The `picocli-groovy` module now declares `groovy-all` as dependency.
