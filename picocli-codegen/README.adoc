@@ -158,7 +158,7 @@ Add an execution of the `kapt` goal from `kotlin-maven-plugin` before `compile`:
 </plugin>
 ```
 
-JetBrains' https://github.com/JetBrains/kotlin-examples/tree/master/maven/dagger-maven-example[Kotlin Examples repository] has a complete example complete sample project showing the use of Kotlin, Maven and Dagger.
+JetBrains' https://github.com/JetBrains/kotlin/tree/master/libraries/tools/kotlin-maven-plugin-test/src/it/test-dagger-maven-example[Kotlin repository] has a complete sample project showing the use of Kotlin, Maven and Dagger.
 
 ==== Kotlin Projects Using Gradle
 Kotlin projects should add the `kotlin-kapt` plugin to enable the Kotlin Annotation processing tool (kapt),
