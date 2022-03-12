@@ -117,22 +117,24 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1631] DEP: Bump github/codeql-action from 1.1.3 to 1.1.4
 * [#1586] DEP: Bump ossf/scorecard-action from 1.0.2 to 1.0.3
 * [#1594] DEP: Bump ossf/scorecard-action from 1.0.3 to 1.0.4
-* [#1573] DEP: Bump JLine3 version to 3.21.0 from 3.19.0.
-* [#1576] DEP: Bump Spring Boot version to 2.6.3 from 2.5.6.
+* [#1583] DEP: Bump step-security/harden-runner from 1.3.0 to 1.4.0
 * [#1580] DEP: Bump asciidoctor to 2.5.3 from 2.5.2. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+* [#1618] DEP: Bump biz.aQute.bnd.gradle from 6.1.0 to 6.2.0
+* [#1582] DEP: Bump groovy-all from 2.4.10 to 2.5.15 // latest version of Groovy that supports Java 5
 * [#1589] DEP: Bump hamcrest-core from 1.3 to 2.2
-* [#1588] DEP: Bump system-rules from 1.17.1 to 1.19.0
 * [#1587] DEP: Bump ivy from 2.4.0 to 2.5.0
 * [#1584] DEP: Bump jansi from 2.1.0 to 2.4.0
-* [#1583] DEP: Bump step-security/harden-runner from 1.3.0 to 1.4.0
-* [#1582] DEP: Bump groovy-all from 2.4.10 to 2.5.15 // latest version of Groovy that supports Java 5
+* [#1573] DEP: Bump JLine3 version to 3.21.0 from 3.19.0.
 * [#1590] DEP: Bump junit-dep from 4.11 to 4.11.20120805.1225
 * [#1591] DEP: Bump junit from 4.12 to 4.13.2
-* [#1606] DEP: Bump springBootVersion from 2.6.3 to 2.6.4
-* [#1618] DEP: Bump biz.aQute.bnd.gradle from 6.1.0 to 6.2.0
 * [#1617] DEP: Bump log4j2Version from 2.17.1 to 2.17.2
 * [#1621] DEP: Bump hibernate-validator from 7.0.2.Final to 7.0.3.Final
+* [#1633] DEP: Bump hibernate-validator from 7.0.3.Final to 7.0.4.Final
 * [#1622] DEP: Bump hibernate-validator-annotation-processor from 7.0.2.Final to 7.0.3.Final
+* [#1634] DEP: Bump hibernate-validator-annotation-processor from 7.0.3.Final to 7.0.4.Final
+* [#1576] DEP: Bump Spring Boot version to 2.6.3 from 2.5.6.
+* [#1606] DEP: Bump Spring Boot version to 2.6.4 from 2.6.3
+* [#1588] DEP: Bump system-rules from 1.17.1 to 1.19.0
 
 ## <a name="4.7.0-deprecated"></a> Deprecations
 No features were deprecated in this release.
