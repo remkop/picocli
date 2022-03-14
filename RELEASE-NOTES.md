@@ -129,7 +129,7 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1591] DEP: Bump junit from 4.12 to 4.13.2
 * [#1617] DEP: Bump log4j2Version from 2.17.1 to 2.17.2
 * [#1621] DEP: Bump hibernate-validator from 7.0.2.Final to 7.0.3.Final
-* [#1633] DEP: Bump hibernate-validator from 7.0.3.Final to 7.0.4.Final
+* [#1633][#1635] DEP: Bump hibernate-validator from 7.0.3.Final to 7.0.4.Final
 * [#1622] DEP: Bump hibernate-validator-annotation-processor from 7.0.2.Final to 7.0.3.Final
 * [#1634] DEP: Bump hibernate-validator-annotation-processor from 7.0.3.Final to 7.0.4.Final
 * [#1576] DEP: Bump Spring Boot version to 2.6.3 from 2.5.6.
