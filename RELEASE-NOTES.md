@@ -116,9 +116,11 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1601] DEP: Bump github/codeql-action from 1.1.2 to 1.1.3
 * [#1631] DEP: Bump github/codeql-action from 1.1.3 to 1.1.4
 * [#1636] DEP: Bump github/codeql-action from 1.1.4 to 1.1.5
+* [#1643] DEP: Bump github/codeql-action from 1.1.5 to 2.1.6
 * [#1586] DEP: Bump ossf/scorecard-action from 1.0.2 to 1.0.3
 * [#1594] DEP: Bump ossf/scorecard-action from 1.0.3 to 1.0.4
 * [#1583] DEP: Bump step-security/harden-runner from 1.3.0 to 1.4.0
+* [#1639] DEP: Bump step-security/harden-runner from 1.4.0 to 1.4.1
 * [#1580] DEP: Bump asciidoctor to 2.5.3 from 2.5.2. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1618] DEP: Bump biz.aQute.bnd.gradle from 6.1.0 to 6.2.0
 * [#1582] DEP: Bump groovy-all from 2.4.10 to 2.5.15 // latest version of Groovy that supports Java 5
@@ -133,8 +135,9 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1633][#1635] DEP: Bump hibernate-validator from 7.0.3.Final to 7.0.4.Final
 * [#1622] DEP: Bump hibernate-validator-annotation-processor from 7.0.2.Final to 7.0.3.Final
 * [#1634] DEP: Bump hibernate-validator-annotation-processor from 7.0.3.Final to 7.0.4.Final
-* [#1576] DEP: Bump Spring Boot version to 2.6.3 from 2.5.6.
-* [#1606] DEP: Bump Spring Boot version to 2.6.4 from 2.6.3
+* [#1576] DEP: Bump Spring Boot version from 2.5.6 to 2.6.3
+* [#1606] DEP: Bump Spring Boot version from 2.6.3 to 2.6.4
+* [#1641] DEP: Bump Spring Boot version from 2.6.4 to 2.6.5
 * [#1588] DEP: Bump system-rules from 1.17.1 to 1.19.0
 
 ## <a name="4.7.0-deprecated"></a> Deprecations
