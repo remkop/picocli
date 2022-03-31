@@ -571,4 +571,20 @@ public class NegatableOptionTest {
             assertEquals("Option name '--NO-verbose' is used by both field boolean " + cls + ".verbose and field boolean " + cls + ".noVerbose", ex.getMessage());
         }
     }
+
+    @Test
+    public void testIssue1642NegatableWithParameter() {
+        class TestNegation {
+            @Option(names = {"--flag"}, negatable = true)
+            boolean flag;
+        }
+        TestNegation obj = new TestNegation();
+        new CommandLine(obj).parseArgs("--no-flag=true");
+        assertFalse(obj.flag);
+
+        obj = new TestNegation();
+        new CommandLine(obj).parseArgs("--no-flag=true");
+        assertFalse(obj.flag);
+    }
+
 }

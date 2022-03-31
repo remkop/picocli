@@ -97,6 +97,7 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1629] Enhancement: Omit empty braces in standard prompt for interactive options without description. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
 * [#1615][#1616] Bugfix: `getCJKAdjustedLength()` no longer miscalculates for supplementary code points. Thanks to [gwalbran](https://github.com/gwalbran) for the pull request.
 * [#1575] Bugfix: Synopsis should not cluster boolean options if `posixClusteredShortOptionsAllowed` is set to false.
+* [#1642] Bugfix: Negatable options should negate explicit values. Thanks to [Nat Burns](https://github.com/burnnat) for raising this.
 * [#1298] DOC: Publish all-in-one javadoc for all picocli modules.
 * [#812] DOC: Document how to test a picocli spring-boot application.
 * [#1596] DOC: fix javadoc typos and incorrect links.

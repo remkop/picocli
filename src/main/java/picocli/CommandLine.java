@@ -14110,6 +14110,16 @@ public class CommandLine {
                         overwriteValueMessage = "Overwriting %s value with *** (masked interactive value) for %s on %5$s";
                     }
                 }
+                // #1642 Negatable options should negate explicit values
+                if ((cls == Boolean.class || cls == Boolean.TYPE) && arity.min >= 1) {
+                    Boolean boolValue = booleanValue(argSpec, value);
+                    // note: we ignore commandSpec.parser().toggleBooleanFlags() for explicit non-optional params
+                    if (argSpec.isOption() && ((OptionSpec) argSpec).negatable() && negated) {
+                        actualValue = String.valueOf(!boolValue);
+                    } else {
+                        actualValue = String.valueOf(boolValue);
+                    }
+                }
                 if (!char[].class.equals(cls) && !char[].class.equals(argSpec.type())) {
                     if (interactiveValue != null) {
                         actualValue = new String(interactiveValue);
@@ -14712,13 +14722,7 @@ public class CommandLine {
             String stringValue = String.valueOf(value);
             if (empty(stringValue) || "null".equals(stringValue) || "Optional.empty".equals(value)) { return false; }
             ITypeConverter<?> converter = getTypeConverter(new Class<?>[]{Boolean.class}, argSpec, 0);
-            try {
-                return (Boolean) converter.convert(stringValue);
-            } catch (TypeConversionException e) {
-                throw e;
-            } catch (Exception e) {
-                throw new TypeConversionException("Could not convert '" + value + "' to a boolean: " + e.getMessage());
-            }
+            return (Boolean) tryConvert(argSpec, -1, converter, stringValue, 0);
         }
 
         private boolean assertNoMissingParameters(ArgSpec argSpec, Range arity, Stack<String> args) {
