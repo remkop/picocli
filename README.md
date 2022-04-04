@@ -202,7 +202,8 @@ Join the [picocli Google group](https://groups.google.com/d/forum/picocli) if yo
 
 ## Adoption
 
-<img src="https://picocli.info/images/groovy-logo.png" height="50">  <img src="https://picocli.info/images/1x1.png" width="10"> <img src="https://objectcomputing.com/files/3416/2275/4315/micronaut_horizontal_black.svg" height="50">  <img src="https://picocli.info/images/1x1.png" width="10"><div style="background-color:#33475b"><img src="https://quarkus.io/assets/images/quarkus_logo_horizontal_rgb_reverse.svg height="50"></div>  <img src="https://picocli.info/images/1x1.png" width="10"><img src="https://picocli.info/images/junit5logo-172x50.png" height="50"> <img src="https://picocli.info/images/1x1.png" width="10"> <img src="https://picocli.info/images/debian-logo-192x50.png" height="50"> <img src="https://picocli.info/images/1x1.png" width="10">
+<div>
+<img src="https://picocli.info/images/groovy-logo.png" height="50">  <img src="https://picocli.info/images/1x1.png" width="10"> <img src="https://objectcomputing.com/files/3416/2275/4315/micronaut_horizontal_black.svg" height="50"><img src="https://picocli.info/images/1x1.png" width="10"><img src="https://quarkus.io/assets/images/quarkus_logo_horizontal_rgb_reverse.svg" style="background-color:#33475b" height="50"><img src="https://picocli.info/images/1x1.png" width="10"><img src="https://picocli.info/images/junit5logo-172x50.png" height="50"> <img src="https://picocli.info/images/1x1.png" width="10"> <img src="https://picocli.info/images/debian-logo-192x50.png" height="50"> <img src="https://picocli.info/images/1x1.png" width="10">
 <img src="https://spring.io/images/spring-logo.svg" height="50">
 <img src="https://avatars0.githubusercontent.com/u/3299148?s=200&v=4" height="50">
 <img src="https://avatars3.githubusercontent.com/u/39734771?s=200&v=4" height="50">
@@ -232,6 +233,7 @@ Join the [picocli Google group](https://groups.google.com/d/forum/picocli) if yo
 <img src="https://res-3.cloudinary.com/crunchbase-production/image/upload/c_lpad,h_120,w_120,f_auto,b_white,q_auto:eco/etxip1k2sx4sphvwgkdu" height="50">
 <img src="https://www.minecraftforge.net/forum/uploads/set_resources_2/4eeef9d314eb4c008c0f37dacad2cdd5_logo.svg" height="50">
 
+</div>
 
 
 * Picocli is now part of Groovy. From Groovy 2.5, all Groovy command line tools are picocli-based, and picocli is the underlying parser for Groovy's [CliBuilder DSL](http://groovy-lang.org/dsls.html#_clibuilder).
