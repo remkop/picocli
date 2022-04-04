@@ -202,9 +202,7 @@ Join the [picocli Google group](https://groups.google.com/d/forum/picocli) if yo
 
 ## Adoption
 
-<img src="https://picocli.info/images/groovy-logo.png" height="50">  <img src="https://picocli.info/images/1x1.png" width="10"> <img src="https://objectcomputing.com/files/3416/2275/4315/micronaut_horizontal_black.svg" height="50">  <img src="https://picocli.info/images/1x1.png" width="10">
-<div style="background-color:#33475b"><img src="https://github.com/quarkusio/quarkusio.github.io/blob/develop/assets/images/quarkus_logo_horizontal_rgb_reverse.svg height="50"></div>  <img src="https://picocli.info/images/1x1.png" width="10">
-<img src="https://picocli.info/images/junit5logo-172x50.png" height="50"> <img src="https://picocli.info/images/1x1.png" width="10"> <img src="https://picocli.info/images/debian-logo-192x50.png" height="50"> <img src="https://picocli.info/images/1x1.png" width="10">
+<img src="https://picocli.info/images/groovy-logo.png" height="50">  <img src="https://picocli.info/images/1x1.png" width="10"> <img src="https://objectcomputing.com/files/3416/2275/4315/micronaut_horizontal_black.svg" height="50">  <img src="https://picocli.info/images/1x1.png" width="10"><div style="background-color:#33475b"><img src="https://quarkus.io/assets/images/quarkus_logo_horizontal_rgb_reverse.svg height="50"></div>  <img src="https://picocli.info/images/1x1.png" width="10"><img src="https://picocli.info/images/junit5logo-172x50.png" height="50"> <img src="https://picocli.info/images/1x1.png" width="10"> <img src="https://picocli.info/images/debian-logo-192x50.png" height="50"> <img src="https://picocli.info/images/1x1.png" width="10">
 <img src="https://spring.io/images/spring-logo.svg" height="50">
 <img src="https://avatars0.githubusercontent.com/u/3299148?s=200&v=4" height="50">
 <img src="https://avatars3.githubusercontent.com/u/39734771?s=200&v=4" height="50">
