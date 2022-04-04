@@ -66,12 +66,13 @@ option [sections](https://picocli.info/#_option_sections_in_usage_help) in the u
 and [repeating composite arguments](https://picocli.info/#_repeating_composite_argument_groups) like
 `([-a=<a> -b=<b> -c=<c>] (-x | -y | -z))...`.
 For advanced use cases, applications can access the picocli command object model with the
-[`@Spec` annotation](https://picocli.info/#_spec_annotation), and
+[`@Spec` annotation](https://picocli.info/#spec-annotation), and
 implement [custom parameter processing](https://picocli.info/#_custom_parameter_processing) for option parameters if the built-in logic is insufficient.
 
 
 Picocli-based applications can easily [integrate](https://picocli.info/#_dependency_injection) with Dependency Injection containers.
 The [Micronaut](https://micronaut.io/) microservices framework has [built-in support](https://docs.micronaut.io/latest/guide/index.html#commandLineApps) for picocli.
+[Quarkus](https://quarkus.io/) has a [Command Mode with Picocli](https://quarkus.io/guides/picocli) extension for facilitating the creation of picocli-based CLI applications with Quarkus.
 Picocli ships with a [`picocli-spring-boot-starter` module](https://github.com/remkop/picocli/tree/main/picocli-spring-boot-starter)
 that includes a `PicocliSpringFactory` and Spring Boot auto-configuration to use Spring dependency injection in your picocli command line application.
 The user manual has examples of integrating with [Guice](https://picocli.info/#_guice_example), [Spring Boot](https://picocli.info/#_spring_boot_example), [Micronaut](https://picocli.info/#_micronaut_example), [Quarkus](https://picocli.info/#_quarkus_example) and with containers that comply to [CDI 2.0 specification](https://picocli.info/#_cdi_2_0_jsr_365) (JSR 365).
@@ -201,7 +202,9 @@ Join the [picocli Google group](https://groups.google.com/d/forum/picocli) if yo
 
 ## Adoption
 
-<img src="https://picocli.info/images/groovy-logo.png" height="50">  <img src="https://picocli.info/images/1x1.png" width="10"> <img src="https://objectcomputing.com/files/3416/2275/4315/micronaut_horizontal_black.svg" height="50">  <img src="https://picocli.info/images/1x1.png" width="10"><img src="https://picocli.info/images/junit5logo-172x50.png" height="50"> <img src="https://picocli.info/images/1x1.png" width="10"> <img src="https://picocli.info/images/debian-logo-192x50.png" height="50"> <img src="https://picocli.info/images/1x1.png" width="10">
+<img src="https://picocli.info/images/groovy-logo.png" height="50">  <img src="https://picocli.info/images/1x1.png" width="10"> <img src="https://objectcomputing.com/files/3416/2275/4315/micronaut_horizontal_black.svg" height="50">  <img src="https://picocli.info/images/1x1.png" width="10">
+<div style="background-color:#33475b"><img src="https://github.com/quarkusio/quarkusio.github.io/blob/develop/assets/images/quarkus_logo_horizontal_rgb_reverse.svg height="50"></div>  <img src="https://picocli.info/images/1x1.png" width="10">
+<img src="https://picocli.info/images/junit5logo-172x50.png" height="50"> <img src="https://picocli.info/images/1x1.png" width="10"> <img src="https://picocli.info/images/debian-logo-192x50.png" height="50"> <img src="https://picocli.info/images/1x1.png" width="10">
 <img src="https://spring.io/images/spring-logo.svg" height="50">
 <img src="https://avatars0.githubusercontent.com/u/3299148?s=200&v=4" height="50">
 <img src="https://avatars3.githubusercontent.com/u/39734771?s=200&v=4" height="50">
