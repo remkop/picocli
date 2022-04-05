@@ -127,6 +127,10 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1618] DEP: Bump biz.aQute.bnd.gradle from 6.1.0 to 6.2.0
 * [#1582] DEP: Bump groovy-all from 2.4.10 to 2.5.15 // latest version of Groovy that supports Java 5
 * [#1589] DEP: Bump hamcrest-core from 1.3 to 2.2
+* [#1621] DEP: Bump hibernate-validator from 7.0.2.Final to 7.0.3.Final
+* [#1633][#1635] DEP: Bump hibernate-validator from 7.0.3.Final to 7.0.4.Final
+* [#1622] DEP: Bump hibernate-validator-annotation-processor from 7.0.2.Final to 7.0.3.Final
+* [#1634] DEP: Bump hibernate-validator-annotation-processor from 7.0.3.Final to 7.0.4.Final
 * [#1587] DEP: Bump ivy from 2.4.0 to 2.5.0
 * [#1584] DEP: Bump jansi from 2.1.0 to 2.4.0
 * [#1573] DEP: Bump JLine3 version to 3.21.0 from 3.19.0.
@@ -135,14 +139,10 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1649] DEP: Bump kotlin-gradle-plugin from 1.6.10 to 1.6.20
 * [#1648] DEP: Bump kotlin-script-runtime from 1.6.10 to 1.6.20
 * [#1617] DEP: Bump log4j2Version from 2.17.1 to 2.17.2
-* [#1621] DEP: Bump hibernate-validator from 7.0.2.Final to 7.0.3.Final
-* [#1633][#1635] DEP: Bump hibernate-validator from 7.0.3.Final to 7.0.4.Final
-* [#1622] DEP: Bump hibernate-validator-annotation-processor from 7.0.2.Final to 7.0.3.Final
-* [#1634] DEP: Bump hibernate-validator-annotation-processor from 7.0.3.Final to 7.0.4.Final
 * [#1576] DEP: Bump Spring Boot version from 2.5.6 to 2.6.3
 * [#1606] DEP: Bump Spring Boot version from 2.6.3 to 2.6.4
 * [#1641] DEP: Bump Spring Boot version from 2.6.4 to 2.6.5
-* [#1645] DEP: Bump springBootVersion from 2.6.5 to 2.6.6
+* [#1645] DEP: Bump Spring Boot version from 2.6.5 to 2.6.6
 * [#1588] DEP: Bump system-rules from 1.17.1 to 1.19.0
 
 ## <a name="4.7.0-deprecated"></a> Deprecations
