@@ -132,6 +132,8 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1573] DEP: Bump JLine3 version to 3.21.0 from 3.19.0.
 * [#1590] DEP: Bump junit-dep from 4.11 to 4.11.20120805.1225
 * [#1591] DEP: Bump junit from 4.12 to 4.13.2
+* [#1649] DEP: Bump kotlin-gradle-plugin from 1.6.10 to 1.6.20
+* [#1648] DEP: Bump kotlin-script-runtime from 1.6.10 to 1.6.20
 * [#1617] DEP: Bump log4j2Version from 2.17.1 to 2.17.2
 * [#1621] DEP: Bump hibernate-validator from 7.0.2.Final to 7.0.3.Final
 * [#1633][#1635] DEP: Bump hibernate-validator from 7.0.3.Final to 7.0.4.Final
