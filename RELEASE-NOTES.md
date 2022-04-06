@@ -119,6 +119,7 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1631] DEP: Bump github/codeql-action from 1.1.3 to 1.1.4
 * [#1636] DEP: Bump github/codeql-action from 1.1.4 to 1.1.5
 * [#1643] DEP: Bump github/codeql-action from 1.1.5 to 2.1.6
+* [#1652] DEP: Bump github/codeql-action from 2.1.6 to 2.1.7
 * [#1586] DEP: Bump ossf/scorecard-action from 1.0.2 to 1.0.3
 * [#1594] DEP: Bump ossf/scorecard-action from 1.0.3 to 1.0.4
 * [#1583] DEP: Bump step-security/harden-runner from 1.3.0 to 1.4.0
