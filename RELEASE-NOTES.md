@@ -107,6 +107,7 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1625] DOC: Fix broken links after renaming default branch to `main` from `master`. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1628][#1630] DOC: Fix broken link in `picocli-codegen` `README`. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1627] DOC: User guide, chapter 3.2.3. Forcing Interactive Input: code sample: add Kotlin version. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+* [#1650] DOC: User guide, Spring Boot section: add warning about dynamic proxies. Thanks to [Ernst Plüss](https://github.com/pluess) for raising this.
 * [#1581] BUILD: Fix dependabot config.
 * [#1613] DEP: The `picocli-groovy` module now declares `groovy-all` as dependency.
 * [#1604] DEP: Remove dependency on `slf4j` from `picocli-spring-boot-starter`.

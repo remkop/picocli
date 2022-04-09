@@ -11748,6 +11748,17 @@ mvnw compile spring-boot:dev -Dspring-boot.run.arguments="--to hans@mustermann.d
 
 With all options and parameters specified, a mail is sent successfully.
 
+[IMPORTANT]
+====
+Depending on your configuration, Spring may use dynamic proxies for managed instances.
+This is definitely the case when using features like https://docs.spring.io/spring-framework/docs/6.0.x/reference/html/data-access.html#tx-decl-explained[`@Transactional`], https://docs.spring.io/spring-framework/docs/6.0.x/reference/html/integration.html#cache[Caching] and Spring https://docs.spring.io/spring-framework/docs/6.0.x/reference/html/core.html#aop-understanding-aop-proxies[Aspect Oriented Programming] (AOP), but may happen in other configurations also.
+
+The safest thing to do in Spring applications is to use public <<option-parameters-methods,annotated **setter methods**>> for picocli's `@Option` and `@Parameters`, `@Spec`, and other annotations.
+Using picocli annotations on fields or on non-public methods may result in picocli-injected values not being available in the proxied instance.
+====
+
+The https://github.com/remkop/picocli/tree/main/picocli-spring-boot-starter[picocli-spring-boot-starter README] has another example of a picocli app integrated into Spring Boot.
+
 [TIP]
 ====
 It may be a good idea to define an option `--spring.config.location` in your command.
@@ -11769,8 +11780,6 @@ Alternatively, you can define an <<unmatched-annotation,unmatched>> field to cap
 @Unmatched lateinit var unmatched: List<String>
 ----
 ====
-
-The https://github.com/remkop/picocli/tree/main/picocli-spring-boot-starter[picocli-spring-boot-starter README] has another example of a picocli app integrated into Spring Boot.
 
 === Micronaut Example
 image:https://avatars.githubusercontent.com/u/36880643?s=200&v=4[Micronaut Logo]
