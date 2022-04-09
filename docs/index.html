@@ -16574,6 +16574,28 @@ We have to pass in command line arguments into our command line call, we can use
 <div class="paragraph">
 <p>With all options and parameters specified, a mail is sent successfully.</p>
 </div>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-important" title="Important"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Depending on your configuration, Spring may use dynamic proxies for managed instances.
+This is definitely the case when using features like <a href="https://docs.spring.io/spring-framework/docs/6.0.x/reference/html/data-access.html#tx-decl-explained"><code>@Transactional</code></a>, <a href="https://docs.spring.io/spring-framework/docs/6.0.x/reference/html/integration.html#cache">Caching</a> and Spring <a href="https://docs.spring.io/spring-framework/docs/6.0.x/reference/html/core.html#aop-understanding-aop-proxies">Aspect Oriented Programming</a> (AOP), but may happen in other configurations also.</p>
+</div>
+<div class="paragraph">
+<p>The safest thing to do in Spring applications is to use public <a href="#option-parameters-methods">annotated <strong>setter methods</strong></a> for picocli&#8217;s <code>@Option</code> and <code>@Parameters</code>, <code>@Spec</code>, and other annotations.
+Using picocli annotations on fields or on non-public methods may result in picocli-injected values not being available in the proxied instance.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>The <a href="https://github.com/remkop/picocli/tree/main/picocli-spring-boot-starter">picocli-spring-boot-starter README</a> has another example of a picocli app integrated into Spring Boot.</p>
+</div>
 <div class="admonitionblock tip">
 <table>
 <tr>
@@ -16605,9 +16627,6 @@ You can make it a <code>hidden</code> option so it is not shown in the usage hel
 </td>
 </tr>
 </table>
-</div>
-<div class="paragraph">
-<p>The <a href="https://github.com/remkop/picocli/tree/master/picocli-spring-boot-starter">picocli-spring-boot-starter README</a> has another example of a picocli app integrated into Spring Boot.</p>
 </div>
 </div>
 <div class="sect2">
