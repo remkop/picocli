@@ -115,6 +115,7 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1646] DEP: Bump actions/setup-java from 3.0.0 to 3.1.0
 * [#1655] DEP: Bump actions/setup-java from 3.1.0 to 3.1.1
 * [#1667] DEP: Bump actions/setup-java from 3.1.1 to 3.2.0
+* [#1674] DEP: Bump actions/setup-java from 3.2.0 to 3.3.0
 * [#1624] DEP: Bump actions/upload-artifact from 2.3.1 to 3
 * [#1585] DEP: Bump github/codeql-action from 1.0.30 to 1.1.0
 * [#1593] DEP: Bump github/codeql-action from 1.1.0 to 1.1.2
