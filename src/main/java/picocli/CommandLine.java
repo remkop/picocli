@@ -14997,7 +14997,7 @@ public class CommandLine {
         static class ISO8601TimeConverter implements ITypeConverter<Object> {
             // Implementation note: use reflection so that picocli only requires the java.base module in Java 9.
             private final Constructor<?> constructor;
-            ISO8601TimeConverter(Constructor<?> constructor) throws NoSuchMethodException {
+            ISO8601TimeConverter(Constructor<?> constructor) {
                 this.constructor = Assert.notNull(constructor, "time class constructor");
             }
             public Object convert(String value) {
