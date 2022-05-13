@@ -77,7 +77,7 @@ jchecksum_completion  myproject.jar  picocli-1.0.0.jar
 ----
 
 === Install Completion Script
-Finally, http://tldp.org/HOWTO/Bash-Prompt-HOWTO/x237.html[source] the completion script:
+Finally, https://tldp.org/HOWTO/Bash-Prompt-HOWTO/x237.html[source] the completion script:
 
 .Bash or ZSH
 [source,bash]

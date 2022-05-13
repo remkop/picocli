@@ -180,8 +180,8 @@ public class TypeConversionTest {
                 "-double", "3.45", "-Double", "4.56", //
                 "-String", "abc", "-StringBuilder", "bcd", "-CharSequence", "xyz", //
                 "-File", "abc.txt", //
-                "-URL", "http://pico-cli.github.io", //
-                "-URI", "http://pico-cli.github.io/index.html", //
+                "-URL", "https://picocli.info", //
+                "-URI", "https://picocli.info/index.html", //
                 "-Date", "2017-01-30", //
                 "-Time", "23:59:59", //
                 "-BigDecimal", "12345678901234567890.123", //
@@ -221,8 +221,8 @@ public class TypeConversionTest {
         assertEquals("StringBuilder", "bcd", bean.aStringBuilderField.toString());
         assertEquals("CharSequence", "xyz", bean.aCharSequenceField);
         assertEquals("File", new File("abc.txt"), bean.aFileField);
-        assertEquals("URL", new URL("http://pico-cli.github.io"), bean.anURLField);
-        assertEquals("URI", new URI("http://pico-cli.github.io/index.html"), bean.anURIField);
+        assertEquals("URL", new URL("https://picocli.info"), bean.anURLField);
+        assertEquals("URI", new URI("https://picocli.info/index.html"), bean.anURIField);
         assertEquals("Date", new SimpleDateFormat("yyyy-MM-dd").parse("2017-01-30"), bean.aDateField);
         assertEquals("Time", new Time(new SimpleDateFormat("HH:mm:ss").parse("23:59:59").getTime()), bean.aTimeField);
         assertEquals("BigDecimal", new BigDecimal("12345678901234567890.123"), bean.aBigDecimalField);

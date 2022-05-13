@@ -2799,7 +2799,7 @@ public class CommandLine {
     /**
      * Prints version information from the {@link Command#version()} annotation to the specified {@code PrintStream}.
      * Each element of the array of version strings is printed on a separate line. Version strings may contain
-     * <a href="http://picocli.info/#_usage_help_with_styles_and_colors">markup for colors and style</a>.
+     * <a href="https://picocli.info/#_usage_help_with_styles_and_colors">markup for colors and style</a>.
      * @param out the printStream to print to
      * @param ansi whether the usage message should include ANSI escape codes or not
      * @see Command#version()
@@ -2817,7 +2817,7 @@ public class CommandLine {
      * Prints version information from the {@link Command#version()} annotation to the specified {@code PrintStream}.
      * Each element of the array of version strings is {@linkplain String#format(String, Object...) formatted} with the
      * specified parameters, and printed on a separate line. Both version strings and parameters may contain
-     * <a href="http://picocli.info/#_usage_help_with_styles_and_colors">markup for colors and style</a>.
+     * <a href="https://picocli.info/#_usage_help_with_styles_and_colors">markup for colors and style</a>.
      * @param out the printStream to print to
      * @param ansi whether the usage message should include ANSI escape codes or not
      * @param params Arguments referenced by the format specifiers in the version strings
@@ -2841,7 +2841,7 @@ public class CommandLine {
      * Prints version information from the {@link Command#version()} annotation to the specified {@code PrintWriter}.
      * Each element of the array of version strings is {@linkplain String#format(String, Object...) formatted} with the
      * specified parameters, and printed on a separate line. Both version strings and parameters may contain
-     * <a href="http://picocli.info/#_usage_help_with_styles_and_colors">markup for colors and style</a>.
+     * <a href="https://picocli.info/#_usage_help_with_styles_and_colors">markup for colors and style</a>.
      * @param out the PrintWriter to print to
      * @param ansi whether the usage message should include ANSI escape codes or not
      * @param params Arguments referenced by the format specifiers in the version strings
@@ -3790,7 +3790,7 @@ public class CommandLine {
 
         /**
          * Set {@code usageHelp=true} for the {@code --help} option that triggers display of the usage help message.
-         * The <a href="http://picocli.info/#_printing_help_automatically">convenience methods</a> {@code Commandline.call},
+         * The <a href="https://picocli.info/#_printing_help_automatically">convenience methods</a> {@code Commandline.call},
          * {@code Commandline.run}, and {@code Commandline.parseWithHandler(s)} will automatically print usage help
          * when an option with {@code usageHelp=true} was specified on the command line.
          * <p>
@@ -3814,7 +3814,7 @@ public class CommandLine {
 
         /**
          * Set {@code versionHelp=true} for the {@code --version} option that triggers display of the version information.
-         * The <a href="http://picocli.info/#_printing_help_automatically">convenience methods</a> {@code Commandline.call},
+         * The <a href="https://picocli.info/#_printing_help_automatically">convenience methods</a> {@code Commandline.call},
          * {@code Commandline.run}, and {@code Commandline.parseWithHandler(s)} will automatically print version information
          * when an option with {@code versionHelp=true} was specified on the command line.
          * <p>

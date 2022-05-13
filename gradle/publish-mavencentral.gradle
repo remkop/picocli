@@ -92,7 +92,7 @@ publishing {
                 packaging = 'jar'
                 name = project.name
                 description = project.description
-                url = 'http://picocli.info'
+                url = 'https://picocli.info'
                 inceptionYear = '2018'
                 licenses {
                     license {
