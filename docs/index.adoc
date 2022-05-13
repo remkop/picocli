@@ -35,7 +35,7 @@ Every main method deserves picocli!
 
 image:logo/horizontal.png[picocli the Mighty Tiny Command Line Interface,width=800]
 
-The user manual for the latest release is at http://picocli.info.
+The user manual for the latest release is at https://picocli.info.
 For the busy and impatient: there is also a link:quick-guide.html[Quick Guide].
 
 == Introduction
@@ -709,7 +709,7 @@ fun main(args: Array<String>) : Unit = exitProcess(CommandLine(Main()).execute(*
 ----
 
 === Short (POSIX) Options
-Picocli supports http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html#tag_12_02[POSIX clustered short options]:
+Picocli supports https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html#tag_12_02[POSIX clustered short options]:
 one or more single-character options without option-arguments, followed by at most one option with an option-argument, can be grouped behind one '-' delimiter.
 
 
@@ -1158,7 +1158,7 @@ See <<Show At Files>> for details.
 From picocli 3.8.1, a simpler argument file format is also supported where every line (except empty lines and comment lines)
 is interpreted as a single argument. Arguments containing whitespace do not need to be quoted,
 but it is not possible to have arguments with embedded newlines or to have empty string arguments without quotes.
-From picocli 3.9, this simpler argument format is fully compatible with http://jcommander.org/#_syntax[JCommander]'s `@-file` argument file format.
+From picocli 3.9, this simpler argument format is fully compatible with https://jcommander.org/#_syntax[JCommander]'s `@-file` argument file format.
 
 You can tell picocli to use the simplified argument file format programmatically with `CommandLine.setUseSimplifiedAtFiles(true)`,
 or by setting system property `picocli.useSimplifiedAtFiles` without a value or with value `"true"`
@@ -7177,7 +7177,7 @@ On Windows, when picocli detects it is running under a Unix variant like Cygwin 
 
 Displaying colors on Windows Command Console and PowerShell requires a bit of extra work.
 
-The easiest way to accomplish this is to use the http://fusesource.github.io/jansi/[Jansi] library in your application.
+The easiest way to accomplish this is to use the https://fusesource.github.io/jansi/[Jansi] library in your application.
 
 NOTE: None of the below is mandatory. If not supported, picocli will simply not emit ANSI escape codes, and everything will work without colors.
 
@@ -7265,7 +7265,7 @@ Picocli-based applications will show ANSI colors in WSL by default.
 
 ===== For Reference: 3rd Party Software
 In Windows version prior to 10, the Windows command console doesn't support output coloring by default.
-One option is for end users to install either http://cmder.net/[Cmder], http://sourceforge.net/projects/conemu/[ConEmu], https://github.com/adoxa/ansicon/[ANSICON] or https://mintty.github.io/[Mintty] (used by default in GitBash and Cygwin) to add coloring support to their Windows command console.
+One option is for end users to install either https://cmder.net/[Cmder], https://sourceforge.net/projects/conemu/[ConEmu], https://github.com/adoxa/ansicon/[ANSICON] or https://mintty.github.io/[Mintty] (used by default in GitBash and Cygwin) to add coloring support to their Windows command console.
 
 
 
@@ -7305,12 +7305,12 @@ Below is the exact sequence of steps picocli uses to determine whether or not to
 . ANSI is enabled when system property `os.name` starts with `"Windows"` and JAnsi Console is https://github.com/fusesource/jansi[installed].
 . ANSI is disabled when environment variable https://bixense.com/clicolors/[`CLICOLOR == 0`].
 . ANSI is disabled when environment variable https://conemu.github.io/en/AnsiEscapeCodes.html#Environment_variable[`ConEmuANSI == OFF`].
-. ANSI is disabled when Picocli https://stackoverflow.com/questions/1403772/how-can-i-check-if-a-java-programs-input-output-streams-are-connected-to-a-term[_guesses_] the program's output stream is not connected to a terminal: when `System.console()` returns `null`. This check is omitted if picocli _guesses_ the program is running in a Windows https://www.cygwin.com/[Cygwin], http://www.mingw.org/wiki/MSYS[MSYS] or https://www.msys2.org/[MSYS2] environment: when system property `os.name` starts with `"Windows"` and either environment variable `TERM` contains `cygwin` or starts with `xterm` or environment variable `OSTYPE` is defined.
+. ANSI is disabled when Picocli https://stackoverflow.com/questions/1403772/how-can-i-check-if-a-java-programs-input-output-streams-are-connected-to-a-term[_guesses_] the program's output stream is not connected to a terminal: when `System.console()` returns `null`. This check is omitted if picocli _guesses_ the program is running in a Windows https://www.cygwin.com/[Cygwin], https://mingw.osdn.io/[MSYS] or https://www.msys2.org/[MSYS2] environment: when system property `os.name` starts with `"Windows"` and either environment variable `TERM` contains `cygwin` or starts with `xterm` or environment variable `OSTYPE` is defined.
 . ANSI is enabled when environment variable https://github.com/adoxa/ansicon/blob/master/readme.txt[`ANSICON`] is defined.
 . ANSI is enabled when environment variable https://bixense.com/clicolors/[`CLICOLOR == 1`].
 . ANSI is enabled when environment variable https://conemu.github.io/en/AnsiEscapeCodes.html#Environment_variable[`ConEmuANSI == ON`].
 . ANSI is enabled when picocli detects the program is running in a non-Windows OS (system property `os.name` does not start with `"Windows"`).
-. ANSI is enabled when picocli _guesses_ the program is running in a https://www.cygwin.com/[Cygwin], http://www.mingw.org/wiki/MSYS[MSYS] or https://www.msys2.org/[MSYS2] environment (either environment variable `TERM` contains `cygwin` or starts with `xterm` or environment variable `OSTYPE` is defined).
+. ANSI is enabled when picocli _guesses_ the program is running in a https://www.cygwin.com/[Cygwin], https://mingw.osdn.io/[MSYS] or https://www.msys2.org/[MSYS2] environment (either environment variable `TERM` contains `cygwin` or starts with `xterm` or environment variable `OSTYPE` is defined).
 
 ANSI escape codes are not emitted if none of the above apply.
 
@@ -10277,7 +10277,7 @@ The programmatic API allows applications to dynamically create command line opti
 It also makes it possible to use picocli in other JVM languages that do not support annotations.
 
 Another use case is creating idiomatic domain-specific languages for processing command line arguments.
-For example, Groovy's http://groovy-lang.org/dsls.html#_clibuilder[CliBuilder DSL] is implemented using picocli's programmatic API.
+For example, Groovy's https://groovy-lang.org/dsls.html#_clibuilder[CliBuilder DSL] is implemented using picocli's programmatic API.
 
 [#option-parameters-methods]
 === `@Option` and `@Parameters` Methods
@@ -11275,7 +11275,7 @@ assertEquals("output.txt", optionArg.file)
 Picocli makes it easy to follow this new and modern set of https://clig.dev/#guidelines[Command Line Interface Guidelines].
 
 Slightly older, but a classic: when designing your command line application,
-the https://www.gnu.org/prep/standards/html_node/Command_002dLine-Interfaces.html#Command_002dLine-Interfaces[GNU recommendations] for command line interfaces and http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html#tag_12_02[POSIX Utility Guidelines] may be useful.
+the https://www.gnu.org/prep/standards/html_node/Command_002dLine-Interfaces.html#Command_002dLine-Interfaces[GNU recommendations] for command line interfaces and https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html#tag_12_02[POSIX Utility Guidelines] may be useful.
 
 Generally, many applications use options for optional values and parameters for mandatory values.
 However, picocli lets you make options required if you want to, see <<Required Arguments>>.
@@ -12911,7 +12911,7 @@ This https://www.infoq.com/news/2019/03/jep-343-jpackage/[InfoQ article] may be 
 === jbang
 
 https://github.com/maxandersen/jbang[jbang] allows you to write scripts in Java that use external dependencies.
-You use it with a `//DEPS` comment, similar to the http://groovy-lang.org/grape.html[`@Grab`] annotation in Groovy.
+You use it with a `//DEPS` comment, similar to the https://groovy-lang.org/grape.html[`@Grab`] annotation in Groovy.
 
 Use `jbang --init=cli helloworld.java` to create an initial script with a picocli template.
 This https://asciinema.org/a/AVwA19yijKRNKEO0bJENN2ME3?autoplay=true&speed=2[asciinema presentation] shows what is possible.
@@ -12922,7 +12922,7 @@ https://jreleaser.org[JReleaser] enables several packaging options such as https
 https://snapcraft.io/[Snapcraft], https://scoop.sh/[Scoop], https://www.jbang.dev/[jbang], https://www.docker.com/[Docker], among others.
 Currently two different distribution  types are supported: jlink, and standard zip/tar distributions. The latter can be generated with a
 combination of the https://www.mojohaus.org/appassembler/appassembler-maven-plugin/[appassembler-maven-plugin] and
-http://maven.apache.org/plugins/maven-assembly-plugin/[maven-assembly-plugin] plugins if using Maven, or the
+https://maven.apache.org/plugins/maven-assembly-plugin/[maven-assembly-plugin] plugins if using Maven, or the
 https://docs.gradle.org/current/userguide/application_plugin.html[application] plugin if using Gradle.
 
 == Picocli in Other Languages
@@ -13080,7 +13080,7 @@ In order to get you started quickly, you may have a look at the https://github.c
 === Kotlin
 
 ==== Kotlin Annotation Syntax
-Kotlin 1.2 (released Nov 28, 2017) officially supports http://kotlinlang.org/docs/reference/whatsnew12.html#array-literals-in-annotations[array literals in annotations], allowing a more compact notation:
+Kotlin 1.2 (released Nov 28, 2017) officially supports https://kotlinlang.org/docs/reference/whatsnew12.html#array-literals-in-annotations[array literals in annotations], allowing a more compact notation:
 
 [source,kotlin]
 ----

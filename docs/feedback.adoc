@@ -1,6 +1,6 @@
 [quote, Jakub Korab (@jakekorab), https://twitter.com/jakekorab/status/1273644747639357447]
 Picocli is PFM.
-http://picocli.info
+https://picocli.info
 
 ---
 

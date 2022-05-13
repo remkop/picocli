@@ -7,7 +7,7 @@
   <packaging>jar</packaging>
   <name>picocli - a mighty tiny Command Line Interface</name>
   <description>Java command line parser with both an annotations API and a programmatic API. Usage help with ANSI styles and colors. Autocomplete. Nested subcommands. Easily included as source to avoid adding a dependency.</description>
-  <url>http://picocli.info</url>
+  <url>https://picocli.info</url>
   <inceptionYear>2017</inceptionYear>
   <licenses>
     <license>

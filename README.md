@@ -36,7 +36,7 @@ converting the input to strongly typed data. Supports git-like [subcommands](htt
 (and nested [sub-subcommands](https://picocli.info/#_nested_sub_subcommands)),
 any option prefix style, POSIX-style [grouped short options](https://picocli.info/#_short_posix_options),
 custom [type converters](https://picocli.info/#_custom_type_converters),
-[password options](http://picocli.info/#_interactive_password_options) and more.
+[password options](https://picocli.info/#_interactive_password_options) and more.
 
 Picocli distinguishes between [named options](https://picocli.info/#_options) and
 [positional parameters](https://picocli.info/#_positional_parameters) and allows _both_ to be
@@ -145,8 +145,8 @@ The user manual has examples of integrating with [Guice](https://picocli.info/#_
 * [Migrating from Commons CLI to picocli](https://picocli.info/migrating-from-commons-cli.html). You won't regret it! :-) (also on: [DZone](https://dzone.com/articles/migrating-from-commons-cli-to-picocli) and [Java Code Geeks](https://www.javacodegeeks.com/2018/11/migrating-commons-cli-picocli.html)).
 * [Groovy 2.5 CliBuilder Renewal](https://picocli.info/groovy-2.5-clibuilder-renewal.html) (also on [blogs.apache.org](https://blogs.apache.org/logging/entry/groovy-2-5-clibuilder-renewal)). In two parts: [Part 1](https://picocli.info/groovy-2.5-clibuilder-renewal-part1.html) (also on: [DZone](https://dzone.com/articles/groovy-25-clibuilder-renewal), [Java Code Geeks](https://www.javacodegeeks.com/2018/06/groovy-clibuilder-renewal-part-1.html)), [Part 2](https://picocli.info/groovy-2.5-clibuilder-renewal-part2.html) (also on: [DZone](https://dzone.com/articles/groovy-25-clibuilder-renewal-part-2), [Java Code Geeks](https://www.javacodegeeks.com/2018/06/groovy-clibuilder-renewal-part-2.html)).
 * Micronaut user manual for running microservices [standalone with picocli](https://docs.micronaut.io/snapshot/guide/index.html#commandLineApps).
-* [Java Command-Line Interfaces (Part 30): Observations](http://marxsoftware.blogspot.jp/2017/11/java-cmd-line-observations.html) by Dustin Marx about picocli 2.0.1 (also on: [DZone](https://dzone.com/articles/java-command-line-interfaces-part-30-finale-observations), [Java Code Geeks](https://www.javacodegeeks.com/2017/11/java-command-line-interfaces-part-30-observations.html))
-* [Java Command-Line Interfaces (Part 10): Picocli](http://marxsoftware.blogspot.jp/2017/08/picocli.html) by Dustin Marx about picocli 0.9.7 (also on: [DZone](https://dzone.com/articles/java-command-line-interfaces-part-10-picocli), [Java Code Geeks](https://www.javacodegeeks.com/2017/08/java-command-line-interfaces-part-10-picocli.html))
+* [Java Command-Line Interfaces (Part 30): Observations](https://marxsoftware.blogspot.jp/2017/11/java-cmd-line-observations.html) by Dustin Marx about picocli 2.0.1 (also on: [DZone](https://dzone.com/articles/java-command-line-interfaces-part-30-finale-observations), [Java Code Geeks](https://www.javacodegeeks.com/2017/11/java-command-line-interfaces-part-30-observations.html))
+* [Java Command-Line Interfaces (Part 10): Picocli](https://marxsoftware.blogspot.jp/2017/08/picocli.html) by Dustin Marx about picocli 0.9.7 (also on: [DZone](https://dzone.com/articles/java-command-line-interfaces-part-10-picocli), [Java Code Geeks](https://www.javacodegeeks.com/2017/08/java-command-line-interfaces-part-10-picocli.html))
 * [Picocli 2.0: Groovy Scripts on Steroids](https://picocli.info/picocli-2.0-groovy-scripts-on-steroids.html) (also on: [DZone](https://dzone.com/articles/picocli-v2-groovy-scripts-on-steroids), [Java Code Geeks](https://www.javacodegeeks.com/2018/01/picocli-2-0-groovy-scripts-steroids.html))
 * [Picocli 2.0: Do More With Less](https://picocli.info/picocli-2.0-do-more-with-less.html) (also on: [DZone](https://dzone.com/articles/whats-new-in-picocli-20), [Java Code Geeks](https://www.javacodegeeks.com/2018/01/picocli-2-0-less.html))
 * [Announcing picocli 1.0](https://picocli.info/announcing-picocli-1.0.html) (also on: [DZone](https://dzone.com/articles/announcing-picocli-10))
@@ -197,7 +197,7 @@ Join the [picocli Google group](https://groups.google.com/d/forum/picocli) if yo
 
 ### Commitments
 
-| This project follows [semantic versioning](http://semver.org/) and adheres to the **[Zero Bugs Commitment](https://github.com/classgraph/classgraph/blob/latest/Zero-Bugs-Commitment.md)**. |
+| This project follows [semantic versioning](https://semver.org/) and adheres to the **[Zero Bugs Commitment](https://github.com/classgraph/classgraph/blob/latest/Zero-Bugs-Commitment.md)**. |
 |------------------------|
 
 ## Adoption
@@ -236,7 +236,7 @@ Join the [picocli Google group](https://groups.google.com/d/forum/picocli) if yo
 </div>
 
 
-* Picocli is now part of Groovy. From Groovy 2.5, all Groovy command line tools are picocli-based, and picocli is the underlying parser for Groovy's [CliBuilder DSL](http://groovy-lang.org/dsls.html#_clibuilder).
+* Picocli is now part of Groovy. From Groovy 2.5, all Groovy command line tools are picocli-based, and picocli is the underlying parser for Groovy's [CliBuilder DSL](https://groovy-lang.org/dsls.html#_clibuilder).
 * Picocli is now part of Micronaut. The Micronaut CLI has been rewritten with picocli, and Micronaut has dedicated support for running microservices [standalone with picocli](https://docs.micronaut.io/snapshot/guide/index.html#commandLineApps). See also [Micronaut Picocli Guide](https://micronaut-projects.github.io/micronaut-picocli/latest/guide/).
 * Quarkus now offers [Command mode with picocli](https://quarkus.io/guides/picocli).
 * Picocli is now part of JUnit 5. JUnit 5.3 migrated its `ConsoleLauncher` from jopt-simple to picocli to support @-files (argument files); this helps users who need to specify many tests on the command line and run into system limitations.
@@ -250,7 +250,7 @@ Join the [picocli Google group](https://groups.google.com/d/forum/picocli) if yo
 * Picocli is used in Pinterest [ktlint](https://ktlint.github.io/).
 * Picocli is used in Spring IO [nohttp-cli](https://github.com/spring-io/nohttp/tree/main/nohttp-cli).
 * The [MinecraftPicocli](https://github.com/Rubydesic/MinecraftPicocli) library facilitates the use of picocli in [Minecraft Forge](https://files.minecraftforge.net/).
-* [Simple Java Mail](http://www.simplejavamail.org/) now offers a picocli-based [CLI](http://www.simplejavamail.org/cli.html#navigation).
+* [Simple Java Mail](https://www.simplejavamail.org/) now offers a picocli-based [CLI](https://www.simplejavamail.org/cli.html#navigation).
 * [jbang](https://github.com/maxandersen/jbang) not only uses picocli internally, but also has a CLI template to generate an initial script: use `jbang --init=cli helloworld.java` to generate a sample picocli-enabled jbang script. See [asciinema](https://asciinema.org/a/AVwA19yijKRNKEO0bJENN2ME3?autoplay=true&speed=2).
 * Picocli is the main library used in the CookieTemple [cli-java template](https://cookietemple.readthedocs.io/en/latest/available_templates/available_templates.html#cli-java) for building GraalVM native CLI executables in Java. See [this preview](https://user-images.githubusercontent.com/21954664/86740903-474a3000-c037-11ea-9ae3-1a8f7bf1743f.gif).
 * Picocli is [mentioned](https://clig.dev/#the-basics) in [Command Line Interface Guidelines](https://clig.dev/).

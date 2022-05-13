@@ -11,7 +11,7 @@ Also, this release has various fixes and enhancements related to the synopsis of
 
 
 This is the seventy-ninth public release.
-Picocli follows [semantic versioning](http://semver.org/).
+Picocli follows [semantic versioning](https://semver.org/).
 Artifacts in this release are signed by Remko Popma (6601 E5C0 8DCC BB96).
 
 ## <a name="4.7.0-toc"></a> Table of Contents
@@ -6107,7 +6107,7 @@ This release contains bugfixes and support for command aliases.
 
 Picocli has a new logo! Many thanks to [Reallinfo](https://github.com/reallinfo) for the design!
 
-<img src="http://picocli.info/images/logo/horizontal.png" height="100">
+<img src="https://picocli.info/images/logo/horizontal.png" height="100">
 
 This is the thirty-second public release.
 Picocli follows [semantic versioning](http://semver.org/).
@@ -6249,7 +6249,7 @@ The usage help synopsis of the subcommand shows not only the subcommand name but
 # <a name="3.0.0"></a> Picocli 3.0.0
 The picocli community is pleased to announce picocli 3.0.0.
 
-This release offers a [programmatic API](http://picocli.info/picocli-3.0-programmatic-api.html) for creating command line applications, in addition to the annotations API. The programmatic API allows applications to dynamically create command line options on the fly, and also makes it possible to create idiomatic domain-specific languages for processing command line arguments, using picocli, in other JVM languages. The picocli community is proud to announce that [Apache Groovy](http://groovy-lang.org/)'s [CliBuilder](http://docs.groovy-lang.org/docs/next/html/gapi/groovy/cli/picocli/CliBuilder.html) DSL for command line applications has been rewritten to use the picocli programmatic API, starting from Groovy 2.5.
+This release offers a [programmatic API](https://picocli.info/picocli-3.0-programmatic-api.html) for creating command line applications, in addition to the annotations API. The programmatic API allows applications to dynamically create command line options on the fly, and also makes it possible to create idiomatic domain-specific languages for processing command line arguments, using picocli, in other JVM languages. The picocli community is proud to announce that [Apache Groovy](http://groovy-lang.org/)'s [CliBuilder](https://docs.groovy-lang.org/docs/next/html/gapi/groovy/cli/picocli/CliBuilder.html) DSL for command line applications has been rewritten to use the picocli programmatic API, starting from Groovy 2.5.
 
 Another new feature in this release are Mixins. Mixins allow reusing common options, parameters and command attributes in multiple applications without copy-and-paste duplication.
 

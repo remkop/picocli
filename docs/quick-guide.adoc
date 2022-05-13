@@ -870,7 +870,7 @@ See the https://picocli.info/#_hidden_options_and_parameters[user manual] for de
 
 
 ==== Show Default Values
-The link:http://picocli.info/#_default_values[default value] for an option or positional parameter
+The link:https://picocli.info/#_default_values[default value] for an option or positional parameter
 can be embedded in the description by specifying the variable `${DEFAULT-VALUE}` in the description text.
 See the https://picocli.info/#_show_default_values[user manual] for details.
 

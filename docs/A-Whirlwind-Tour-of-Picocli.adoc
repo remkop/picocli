@@ -7,7 +7,7 @@ ifdef::env-github[]
 :note-caption: :information_source:
 :tip-caption: :bulb:
 endif::[]
-//:imagesdir: http://picocli.info
+//:imagesdir: https://picocli.info
 
 
 > a mighty tiny command line processor
