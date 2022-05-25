@@ -119,6 +119,7 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1667] DEP: Bump actions/setup-java from 3.1.1 to 3.2.0
 * [#1674] DEP: Bump actions/setup-java from 3.2.0 to 3.3.0
 * [#1624] DEP: Bump actions/upload-artifact from 2.3.1 to 3
+* [#1687] DEP: Bump actions/upload-artifact from 3.0.0 to 3.1.0
 * [#1585] DEP: Bump github/codeql-action from 1.0.30 to 1.1.0
 * [#1593] DEP: Bump github/codeql-action from 1.1.0 to 1.1.2
 * [#1601] DEP: Bump github/codeql-action from 1.1.2 to 1.1.3
@@ -136,6 +137,7 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1639] DEP: Bump step-security/harden-runner from 1.4.0 to 1.4.1
 * [#1666] DEP: Bump step-security/harden-runner from 1.4.1 to 1.4.2
 * [#1580] DEP: Bump asciidoctor to 2.5.3 from 2.5.2. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+* [#1688] DEP: Bump asciidoctorj-pdf from 1.6.2 to 2.0.0
 * [#1618] DEP: Bump biz.aQute.bnd.gradle from 6.1.0 to 6.2.0
 * [#1582] DEP: Bump groovy-all from 2.4.10 to 2.5.15 // latest version of Groovy that supports Java 5
 * [#1589] DEP: Bump hamcrest-core from 1.3 to 2.2
@@ -156,6 +158,7 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1641] DEP: Bump Spring Boot version from 2.6.4 to 2.6.5
 * [#1645] DEP: Bump Spring Boot version from 2.6.5 to 2.6.6
 * [#1684] DEP: Bump Spring Boot version from 2.6.7 to 2.6.8
+* [#1686] DEP: Bump Spring Boot version from 2.6.8 to 2.7.0
 * [#1588] DEP: Bump system-rules from 1.17.1 to 1.19.0
 
 ## <a name="4.7.0-deprecated"></a> Deprecations
