@@ -500,7 +500,7 @@ public class ManPageGenerator implements Callable<Integer> {
         IParameterRenderer parameterRenderer = spec.commandLine().getHelp().createDefaultParameterRenderer();
 
         List<ArgGroupSpec> groups = optionListGroups(spec);
-        for (ArgGroupSpec group : groups) { options.removeAll(group.options()); }
+        for (ArgGroupSpec group : groups) { options.removeAll(group.allOptionsNested()); }
 
         if (options.isEmpty() && !spec.usageMessage().showEndOfOptionsDelimiterInUsageHelp()) {
             pw.printf("// tag::picocli-generated-man-section-options[]%n");
@@ -534,12 +534,12 @@ public class ManPageGenerator implements Callable<Integer> {
             String heading = makeHeading(group.heading(), "Options Group");
             pw.printf("== %s%n", COLOR_SCHEME.text(heading));
 
-            for (PositionalParamSpec positional : group.positionalParameters()) {
+            for (PositionalParamSpec positional : group.allPositionalParametersNested()) {
                 if (!positional.hidden()) {
                     writePositional(pw, positional, parameterRenderer, paramLabelRenderer);
                 }
             }
-            List<OptionSpec> groupOptions = new ArrayList<OptionSpec>(group.options());
+            List<OptionSpec> groupOptions = new ArrayList<OptionSpec>(group.allOptionsNested());
             if (optionSort != null) {
                 Collections.sort(groupOptions, optionSort);
             }
