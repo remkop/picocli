@@ -98,6 +98,7 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1615][#1616] Bugfix: `getCJKAdjustedLength()` no longer miscalculates for supplementary code points. Thanks to [gwalbran](https://github.com/gwalbran) for the pull request.
 * [#1575] Bugfix: Synopsis should not cluster boolean options if `posixClusteredShortOptionsAllowed` is set to false.
 * [#1642] Bugfix: Negatable options should negate explicit values. Thanks to [Nat Burns](https://github.com/burnnat) for raising this.
+* [#1696][#1697] Bugfix: ManPageGenerator asciidoc output now correctly shows options in nested ArgGroups. Thanks to [Ruud Senden](https://github.com/rsenden) for the pull request.
 * [#1298] DOC: Publish all-in-one javadoc for all picocli modules.
 * [#812] DOC: Document how to test a picocli spring-boot application.
 * [#1596] DOC: fix javadoc typos and incorrect links.
@@ -131,9 +132,11 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1669] DEP: Bump github/codeql-action from 2.1.8 to 2.1.9
 * [#1676] DEP: Bump github/codeql-action from 2.1.9 to 2.1.10
 * [#1682] DEP: Bump github/codeql-action from 2.1.10 to 2.1.11
+* [#1700] DEP: Bump github/codeql-action from 2.1.11 to 2.1.12
 * [#1586] DEP: Bump ossf/scorecard-action from 1.0.2 to 1.0.3
 * [#1594] DEP: Bump ossf/scorecard-action from 1.0.3 to 1.0.4
 * [#1691] DEP: Bump ossf/scorecard-action from 1.0.4 to 1.1.0
+* [#1699] DEP: Bump ossf/scorecard-action from 1.1.0 to 1.1.1
 * [#1583] DEP: Bump step-security/harden-runner from 1.3.0 to 1.4.0
 * [#1639] DEP: Bump step-security/harden-runner from 1.4.0 to 1.4.1
 * [#1666] DEP: Bump step-security/harden-runner from 1.4.1 to 1.4.2
@@ -141,7 +144,10 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1688] DEP: Bump asciidoctorj-pdf from 1.6.2 to 2.0.0
 * [#1690] DEP: Bump asciidoctorj-pdf from 2.0.0 to 2.0.2
 * [#1692] DEP: Bump asciidoctorj-pdf from 2.0.2 to 2.0.3
+* [#1694] DEP: Bump asciidoctorj-pdf from 2.0.3 to 2.0.4
+* [#1695] DEP: Bump asciidoctorj-pdf from 2.0.4 to 2.0.6
 * [#1618] DEP: Bump biz.aQute.bnd.gradle from 6.1.0 to 6.2.0
+* [#1698] DEP: Bump biz.aQute.bnd.gradle from 6.2.0 to 6.3.0
 * [#1582] DEP: Bump groovy-all from 2.4.10 to 2.5.15 // latest version of Groovy that supports Java 5
 * [#1589] DEP: Bump hamcrest-core from 1.3 to 2.2
 * [#1621] DEP: Bump hibernate-validator from 7.0.2.Final to 7.0.3.Final
