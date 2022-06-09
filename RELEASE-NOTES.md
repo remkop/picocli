@@ -149,6 +149,7 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1695] DEP: Bump asciidoctorj-pdf from 2.0.4 to 2.0.6
 * [#1618] DEP: Bump biz.aQute.bnd.gradle from 6.1.0 to 6.2.0
 * [#1698] DEP: Bump biz.aQute.bnd.gradle from 6.2.0 to 6.3.0
+* [#1703] DEP: Bump biz.aQute.bnd.gradle from 6.3.0 to 6.3.1
 * [#1582] DEP: Bump groovy-all from 2.4.10 to 2.5.15 // latest version of Groovy that supports Java 5
 * [#1589] DEP: Bump hamcrest-core from 1.3 to 2.2
 * [#1621] DEP: Bump hibernate-validator from 7.0.2.Final to 7.0.3.Final
