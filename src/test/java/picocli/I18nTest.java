@@ -184,7 +184,8 @@ public class I18nTest {
                 "i18n-top header heading%n" +
                 "Shared header first line%n" +
                 "Shared header second line%n" +
-                "Usage: i18n-top [-hV] [-x=<x>] [-y=<y>] [-z=<z>] <param0> <param1> [COMMAND]%n" +
+                "Usage: i18n-top [-hV] [--optionWithDescriptionFromParent] [-x=<x>] [-y=<y>]%n" +
+                "                [-z=<z>] <param0> <param1> [COMMAND]%n" +
                 "i18n-top description heading:%n" +
                 "Shared description 0%n" +
                 "Shared description 1%n" +
@@ -195,6 +196,9 @@ public class I18nTest {
                 "                  shared param1 desc line 1%n" +
                 "top option list heading%n" +
                 "  -h, --help      Shared help option description.%n" +
+                "      --optionWithDescriptionFromParent%n" +
+                "                  This description should be visible in both parent and sub%n" +
+                "                    commands%n" +
                 "  -V, --version   Print version information and exit.%n" +
                 "  -x, --xxx=<x>   X option description for i18n-top%n" +
                 "  -y, --yyy=<y>   top yyy description 1%n" +
@@ -203,6 +207,7 @@ public class I18nTest {
                 "top command list heading%n" +
                 "  help      i18n-top HELP command header%n" +
                 "  i18n-sub  i18n-sub header (only one line)%n" +
+                "  sub2      Shared header first line%n" +
                 "Shared Exit Codes Heading%n" +
                 "These exit codes are blah blah etc.%n" +
                 "  00   (From shared bundle) Normal termination%n" +
@@ -215,6 +220,7 @@ public class I18nTest {
         Locale original = Locale.getDefault();
         Locale.setDefault(Locale.ENGLISH);
         try {
+            String msg = new CommandLine(new I18nCommand()).getUsageMessage();
             assertEquals(expected, new CommandLine(new I18nCommand()).getUsageMessage());
         } finally {
             Locale.setDefault(original);
@@ -227,7 +233,8 @@ public class I18nTest {
                 "i18n-top \u30d8\u30c3\u30c0\u30fc\u898b\u51fa\u3057%n" +
                 "\u5171\u901a\u30d8\u30c3\u30c0\u30fc\uff11\u884c\u76ee%n" +
                 "\u5171\u901a\u30d8\u30c3\u30c0\u30fc\uff12\u884c\u76ee%n" +
-                "Usage: i18n-top [-hV] [-x=<x>] [-y=<y>] [-z=<z>] <param0> <param1> [COMMAND]%n" +
+                "Usage: i18n-top [-hV] [--optionWithDescriptionFromParent] [-x=<x>] [-y=<y>]%n" +
+                "                [-z=<z>] <param0> <param1> [COMMAND]%n" +
                 "i18n-top \u8aac\u660e\u898b\u51fa\u3057:%n" +
                 "\u5171\u901a\u8aac\u660e0%n" +
                 "\u5171\u901a\u8aac\u660e1%n" +
@@ -238,6 +245,9 @@ public class I18nTest {
                 "                  \u5171\u901a param1 \u8aac\u660e\uff12\u884c\u76ee%n" +
                 "top option list heading%n" +
                 "  -h, --help      \u5171\u901a help \u30aa\u30d7\u30b7\u30e7\u30f3\u8aac\u660e.%n" +
+                "      --optionWithDescriptionFromParent%n" +
+                "                  \u3053\u306e\u8aac\u660e\u306f\u3001\u89aa\u30b3\u30de\u30f3\u30c9\u3068\u30b5\u30d6\u30b3\u30de\u30f3\u30c9\u306e\u4e21\u65b9\u306b\u8868\u793a\u3055\u308c\u308b\u5fc5\u8981\u304c\u3042%n" +
+                "                    \u308a\u307e\u3059%n" +
                 "  -V, --version   Print version information and exit.%n" +
                 "  -x, --xxx=<x>   i18n-top\u7528 X \u30aa\u30d7\u30b7\u30e7\u30f3\u8aac\u660e%n" +
                 "  -y, --yyy=<y>   top yyy description 1%n" +
@@ -246,6 +256,7 @@ public class I18nTest {
                 "top command list heading%n" +
                 "  help      i18n-top\u7528 HELP \u30b3\u30de\u30f3\u30c9\u30d8\u30c3\u30c0\u30fc%n" +
                 "  i18n-sub  i18n-sub \u30d8\u30c3\u30c0\u30fc\uff08\u4e00\u884c\u306e\u307f\uff09%n" +
+                "  sub2      \u5171\u901a\u30d8\u30c3\u30c0\u30fc\uff11\u884c\u76ee%n" +
                 "\u7d42\u4e86\u30b9\u30c6\u30fc\u30bf\u30b9%n" +
                 "\u3053\u308c\u3089\u306e\u7d42\u4e86\u30b9\u30c6\u30fc\u30bf\u30b9\u306f\u7b49\u3005%n" +
                 "  00   (\u5171\u901a\u30d0\u30f3\u30c9\u30eb\u304b\u3089) \u6b63\u5e38\u7d42\u4e86%n" +
@@ -269,8 +280,8 @@ public class I18nTest {
         String expected = String.format("" +
                 "i18n-sub header heading%n" +
                 "i18n-sub header (only one line)%n" +
-                "Usage: i18n-top i18n-sub [-hV] [-x=<x>] [-y=<y>] [-z=<z>] <param0> <param1>%n" +
-                "                         [COMMAND]%n" +
+                "Usage: i18n-top i18n-sub [-hV] [--optionWithDescriptionFromParent] [-x=<x>]%n" +
+                "                         [-y=<y>] [-z=<z>] <param0> <param1> [COMMAND]%n" +
                 "i18n-sub description heading:%n" +
                 "Shared description 0%n" +
                 "Shared description 1%n" +
@@ -281,6 +292,9 @@ public class I18nTest {
                 "                  shared param1 desc line 1%n" +
                 "subcmd option list heading%n" +
                 "  -h, --help      Shared help option description.%n" +
+                "      --optionWithDescriptionFromParent%n" +
+                "                  This description should be visible in both parent and sub%n" +
+                "                    commands%n" +
                 "  -V, --version   Special version for i18n-sub.%n" +
                 "  -x, --xxx=<x>   X option description for i18n-sub%n" +
                 "  -y, --yyy=<y>   subcmd yyy description 1%n" +
@@ -302,6 +316,47 @@ public class I18nTest {
         try {
             CommandLine top = new CommandLine(new I18nCommand());
             CommandLine sub = top.getSubcommands().get("i18n-sub");
+            assertEquals(expected, sub.getUsageMessage());
+        } finally {
+            Locale.setDefault(original);
+        }
+    }
+
+    @Test
+    public void testSubcommandAndParentCommandResourceBundlePrioritization() {
+        String expected = String.format("" +
+            "my name is sub2%n" +
+            "Shared header first line%n" +
+            "Shared header second line%n" +
+            "Usage: i18n-top sub2 [-hV] [--optionWithDescriptionFromParent] [-a=<a>]%n" +
+            "                     [-q=<q>] [-x=<x>] [COMMAND]%n" +
+            "my parent is i18n-top, Shared description 0%n" +
+            "Shared description 1%n" +
+            "Shared description 2%n" +
+            "  -a, --aaa=<a>   lorem ipsum%n" +
+            "  -h, --help      Shared help option description.%n" +
+            "      --optionWithDescriptionFromParent%n" +
+            "                  This description should be visible in both parent and sub%n" +
+            "                    commands%n" +
+            "  -q=<q>          This is the correct description for q%n" +
+            "  -V, --version   Print version information and exit.%n" +
+            "  -x=<x>          shared X option description%n" +
+            "Commands:%n" +
+            "  help  Shared header first line%n" +
+            "Shared Exit Codes Heading%n" +
+            "These exit codes are blah blah etc.%n" +
+            "  00   (From shared bundle) Normal termination%n" +
+            "  64   (From shared bundle)%n" +
+            "       Multiline!%n" +
+            "       Invalid input%n" +
+            "  70   (From shared bundle) Internal error%n" +
+            "Shared footer heading%n" +
+            "lorem ipsum%n");
+        Locale original = Locale.getDefault();
+        Locale.setDefault(Locale.ENGLISH);
+        try {
+            CommandLine top = new CommandLine(new I18nCommand());
+            CommandLine sub = top.getSubcommands().get("sub2");
             assertEquals(expected, sub.getUsageMessage());
         } finally {
             Locale.setDefault(original);
@@ -590,7 +645,7 @@ public class I18nTest {
                 "Shared header heading%n" +
                 "i18n-sub HELP command header%n" +
                 "%n" +
-                "Usage: i18n-top i18n-sub help [-h] [COMMAND]%n" +
+                "Usage: i18n-top i18n-sub help [-h] [--optionWithDescriptionFromParent] [COMMAND]%n" +
                 "Shared description 0%n" +
                 "Shared description 1%n" +
                 "Shared description 2%n" +
@@ -598,6 +653,9 @@ public class I18nTest {
                 "                    subcommand%n" +
                 "  -h, --help      Shared description of --help option of built-in help%n" +
                 "                    subcommand%n" +
+                "      --optionWithDescriptionFromParent%n" +
+                "                  This description should be visible in both parent and sub%n" +
+                "                    commands%n" +
                 "Shared Exit Codes Heading%n" +
                 "These exit codes are blah blah etc.%n" +
                 "  00   (From shared bundle) Normal termination%n" +
@@ -625,7 +683,7 @@ public class I18nTest {
                 "Shared header heading%n" +
                 "i18n-top HELP command header%n" +
                 "%n" +
-                "Usage: i18n-top help [-h] [COMMAND]%n" +
+                "Usage: i18n-top help [-h] [--optionWithDescriptionFromParent] [COMMAND]%n" +
                 "Shared description 0%n" +
                 "Shared description 1%n" +
                 "Shared description 2%n" +
@@ -633,6 +691,9 @@ public class I18nTest {
                 "                    subcommand%n" +
                 "  -h, --help      Specialized description of --help option of i18-top help%n" +
                 "                    subcommand%n" +
+                "      --optionWithDescriptionFromParent%n" +
+                "                  This description should be visible in both parent and sub%n" +
+                "                    commands%n" +
                 "Shared Exit Codes Heading%n" +
                 "These exit codes are blah blah etc.%n" +
                 "  00   (From shared bundle) Normal termination%n" +
@@ -724,6 +785,13 @@ public class I18nTest {
                 "[picocli DEBUG] Adding subcommand 'i18n-sub' to 'i18n-top'%n" +
                 "[picocli DEBUG] Created Messages from resourceBundle[base=picocli.SharedMessages] for command 'i18n-sub' (command 'i18n-sub' (user object: class picocli.I18nSubcommand))%n" +
                 "[picocli DEBUG] Created Messages from resourceBundle[base=picocli.SharedMessages] for command 'help' (command 'help' (user object: class picocli.CommandLine$HelpCommand))%n" +
+                "[picocli DEBUG] Creating CommandSpec for class picocli.I18nSubcommand2 with factory picocli.CommandLine$DefaultFactory%n" +
+                "[picocli DEBUG] Created Messages from resourceBundle[base=picocli.ResourceBundlePropagationTest] for command 'sub2' (command 'sub2' (user object: class picocli.I18nSubcommand2))%n" +
+                "[picocli DEBUG] Creating CommandSpec for class picocli.CommandLine$HelpCommand with factory picocli.CommandLine$DefaultFactory%n" +
+                "[picocli DEBUG] Adding subcommand 'help' to 'sub2'%n" +
+                "[picocli DEBUG] Created Messages from resourceBundle[base=picocli.ResourceBundlePropagationTest] for command 'help' (command 'help' (user object: class picocli.CommandLine$HelpCommand))%n" +
+                "[picocli DEBUG] Creating CommandSpec for picocli.CommandLine$AutoHelpMixin@ with factory picocli.CommandLine$DefaultFactory%n" +
+                "[picocli DEBUG] Adding subcommand 'sub2' to 'i18n-top'%n" +
                 "[picocli DEBUG] Creating CommandSpec for picocli.CommandLine$AutoHelpMixin@34c53688 with factory picocli.CommandLine$DefaultFactory%n" +
                 "");
         assertEquals(stripAnsiTrace(stripHashcodes(expected)), stripAnsiTrace(stripHashcodes(err.toString())));

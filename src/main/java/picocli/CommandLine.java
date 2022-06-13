@@ -40,6 +40,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import picocli.CommandLine.Help.Ansi.IStyle;
 import picocli.CommandLine.Help.Ansi.Style;
 import picocli.CommandLine.Help.Ansi.Text;
@@ -11558,6 +11559,7 @@ public class CommandLine {
             private final String bundleBaseName;
             private final ResourceBundle rb;
             private final Set<String> keys;
+            private Messages parent;
             public Messages(CommandSpec spec, String baseName) {
                 this(spec, baseName, createBundle(baseName));
             }
@@ -11581,6 +11583,21 @@ public class CommandLine {
                     return (String) ResourceBundle.class.getDeclaredMethod("getBaseBundleName").invoke(rb);
                 } catch (Exception ignored) { return "?"; }
             }
+            public Messages parent() {
+            	CommandSpec parentSpec = this.spec.parent();
+            	if (parent == null || parent.spec != parentSpec) {
+            		parent = null; // Refresh if parentSpec doesn't match
+            		while (parent == null && parentSpec != null) {
+		            	String parentResourceBundleBaseName = parentSpec.resourceBundleBaseName();
+		            	if (parentResourceBundleBaseName != null && !parentResourceBundleBaseName.equals(this.bundleBaseName)) {
+		            		parent = new Messages(parentSpec, parentResourceBundleBaseName);
+		            	} else {
+		            		parentSpec = parentSpec.parent();
+		            	}
+            		}
+            	}
+	            return parent;
+            }
             private static Set<String> keys(ResourceBundle rb) {
                 if (rb == null) { return Collections.emptySet(); }
                 Set<String> keys = new LinkedHashSet<String>();
@@ -11596,8 +11613,8 @@ public class CommandLine {
             public static Messages copy(CommandSpec spec, Messages original) {
                 return original == null ? null : new Messages(spec, original.bundleBaseName, original.rb);
             }
-            /** Returns {@code true} if the specified {@code Messages} is {@code null} or has a {@code null ResourceBundle}. */
-            public static boolean empty(Messages messages) { return messages == null || messages.rb == null; }
+            /** Returns {@code true} if the specified {@code Messages} is {@code null}, has a {@code null ResourceBundle}, or has a {@code null parent Messages}. */
+            public static boolean empty(Messages messages) { return messages == null || messages.isEmpty(); }
 
             /** Returns the String value found in the resource bundle for the specified key, or the specified default value if not found.
              * @param key unqualified resource bundle key. This method will first try to find a value by qualifying the key with the command's fully qualified name,
@@ -11608,12 +11625,19 @@ public class CommandLine {
             public String getString(String key, String defaultValue) {
                 if (isEmpty()) { return defaultValue; }
                 String cmd = spec.qualifiedName(".");
-                if (keys.contains(cmd + "." + key)) { return rb.getString(cmd + "." + key); }
-                if (keys.contains(key)) { return rb.getString(key); }
-                return defaultValue;
+                String qualifiedKey = cmd + "." + key;
+                String result = getStringForExactKey(qualifiedKey);
+                if (result == null) { result = getStringForExactKey(key); }
+                return result != null ? result : defaultValue;
             }
 
-            boolean isEmpty() { return rb == null || keys.isEmpty(); }
+            private String getStringForExactKey(String key) {
+            	if (keys.contains(key)) { return rb.getString(key); }
+            	else if (parent() != null) { return parent().getStringForExactKey(key); }
+            	else { return null; }
+            }
+
+            boolean isEmpty() { return (rb == null || keys.isEmpty()) && (parent() == null || parent().isEmpty()); }
 
             /** Returns the String array value found in the resource bundle for the specified key, or the specified default value if not found.
              * Multi-line strings can be specified in the resource bundle with {@code key.0}, {@code key.1}, {@code key.2}, etc.
@@ -11625,10 +11649,15 @@ public class CommandLine {
             public String[] getStringArray(String key, String[] defaultValues) {
                 if (isEmpty()) { return defaultValues; }
                 String cmd = spec.qualifiedName(".");
-                List<String> result = addAllWithPrefix(rb, cmd + "." + key, keys, new ArrayList<String>());
-                if (!result.isEmpty()) { return result.toArray(new String[0]); }
-                addAllWithPrefix(rb, key, keys, result);
-                return result.isEmpty() ? defaultValues : result.toArray(new String[0]);
+                String qualifiedKey = cmd + "." + key;
+                String[] result = getStringArrayForExactKey(qualifiedKey);
+                if (result == null) { result = getStringArrayForExactKey(key); }
+                return result != null ? result : defaultValues;
+            }
+            private String[] getStringArrayForExactKey(String key) {
+            	List<String> result = addAllWithPrefix(rb, key, keys, new ArrayList<String>());
+            	if (!result.isEmpty()) { return result.toArray(new String[0]); }
+            	return parent() == null ? null : parent().getStringArrayForExactKey(key);
             }
             private static List<String> addAllWithPrefix(ResourceBundle rb, String key, Set<String> keys, List<String> result) {
                 if (keys.contains(key)) { result.add(rb.getString(key)); }
@@ -18236,7 +18265,7 @@ public class CommandLine {
         /** Returns whether the current trace level is WARN or higher. */
         public boolean isWarn()  { return level.isEnabled(TraceLevel.WARN); }
         /** Returns whether the current trace level is OFF (the lowest). */
-        public boolean isOff()  { return level== TraceLevel.OFF; }
+        public boolean isOff()  { return level == TraceLevel.OFF; }
         /** Prints the specified message if the current trace level is WARN or higher.
          * @param msg the message to print; may use {@link String#format(String, Object...)} syntax
          * @param params Arguments referenced by the format specifiers in the format string. If there are more arguments than format specifiers, the extra arguments are ignored. The number of arguments is variable and may be zero.
