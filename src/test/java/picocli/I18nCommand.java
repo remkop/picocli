@@ -3,10 +3,11 @@ package picocli;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
+import picocli.CommandLine.Mixin;
 
 @Command(name = "i18n-top",
         resourceBundle = "picocli.SharedMessages",
-        subcommands = {CommandLine.HelpCommand.class, I18nSubcommand.class },
+        subcommands = {CommandLine.HelpCommand.class, I18nSubcommand.class, I18nSubcommand2.class },
         mixinStandardHelpOptions = true,
         description = {"top desc 1", "top desc 2", "top desc 3"},
         descriptionHeading = "top desc heading%n",
@@ -32,6 +33,13 @@ public class I18nCommand {
 
     @Parameters(index = "1", description = "top param1 description")
     String param1;
+
+    @Option(
+        names = {"--optionWithDescriptionFromParent"},
+        descriptionKey = "optionWithDescriptionFromParent",
+        scope = CommandLine.ScopeType.INHERIT
+    )
+    public boolean parentOption1;
 
     @Override
     public String toString() {
