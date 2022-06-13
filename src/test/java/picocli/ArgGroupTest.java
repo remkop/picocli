@@ -4331,4 +4331,24 @@ public class ArgGroupTest {
         assertEquals(errorB2,"z", obj.optXAndGroupOneOrGroupTwo.oneORtwo.two.b2);
     }
 
+    static class Issue1680MultiplicityZeroCausesInfiniteLoop {
+        static class MyGroup {
+            @Option(names = "-x") String x;
+        }
+
+        @ArgGroup(multiplicity = "0")
+        MyGroup myGroup;
+    }
+
+    @Test
+    public void testIssue1680MultiplicityZeroCausesInfiniteLoop() {
+        final Object obj = new Issue1680MultiplicityZeroCausesInfiniteLoop();
+        try {
+            new CommandLine(obj).parseArgs("-x", "abc");
+            fail("Expected exception");
+        } catch (InitializationException good) {
+            assertEquals("ArgGroup must have multiplicity that allows at least one occurrence, but had multiplicity=0", good.getMessage());
+        }
+    }
+
 }

@@ -10339,6 +10339,8 @@ public class CommandLine {
                 headingKey       = NO_HEADING_KEY.equals(builder.headingKey) ? null : builder.headingKey;
                 exclusive        = builder.exclusive && builder.validate; // non-validating groups cannot be exclusive: https://github.com/remkop/picocli/issues/810
                 multiplicity     = builder.multiplicity;
+                if (multiplicity.max() <= 0) { throw new InitializationException("ArgGroup must have multiplicity that allows at least one occurrence, but had multiplicity=" + multiplicity); }
+
                 validate         = builder.validate;
                 order            = builder.order;
                 typeInfo         = builder.typeInfo;
