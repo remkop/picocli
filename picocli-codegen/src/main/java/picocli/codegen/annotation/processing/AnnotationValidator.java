@@ -157,7 +157,7 @@ class AnnotationValidator {
                     if (positional.split().length() > 0 && !new CompileTimeTypeInfo(type).isMultiValue()) {
                         error(e, null, "%s has a split regex but is a single-value type", e.getSimpleName());
                     }
-                    maybeValidateFinalFields(e, type, "@Parameter");
+                    maybeValidateFinalFields(e, type, "@Parameters");
                 }
             }, element.getAnnotation(Parameters.class));
         }
@@ -226,8 +226,10 @@ class AnnotationValidator {
         if (!isFinal || !shouldValidateFinal) {
             return;
         }
-        boolean isConstantValueField = ElementFilter.fieldsIn(Collections.singletonList(e)).stream()
-            .anyMatch(variableElement -> variableElement.getConstantValue() != null);
+        boolean isConstantValueField = false;
+        for (VariableElement variableElement : ElementFilter.fieldsIn(Collections.singletonList(e))) {
+             isConstantValueField = isConstantValueField || variableElement.getConstantValue() != null;
+        }
         if ((type.getKind().isPrimitive() || typeUtils.isAssignable(type, stringType)) && isConstantValueField) {
             error(e, null, "Constant (final) primitive and String fields like %s cannot be used as %s: compile-time constant inlining may hide new values written to it.", e.getSimpleName(), annotation);
         }
