@@ -15,8 +15,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static com.google.testing.compile.CompilationSubject.assertThat;
 import static com.google.testing.compile.Compiler.javac;
@@ -241,7 +239,7 @@ public class AbstractCommandSpecProcessorTest {
 
         // For every primitive type + String type, the InvalidFinal class defines
         // an invalid combination of using a final field with a declared value, for each of those types.
-        List<String> primitiveTypes = Arrays.asList(
+        List<String> types = Arrays.asList(
             "boolean",
             "byte",
             "short",
@@ -252,21 +250,17 @@ public class AbstractCommandSpecProcessorTest {
             "double",
             "string"
         );
-        List<String> fields = primitiveTypes.stream()
-            .flatMap(t -> {
-                String titleized = t.substring(0, 1).toUpperCase() + t.substring(1);
-                return Stream.of(
-                    String.format("invalid%s", titleized),
-                    String.format("invalid%sParam", titleized));
-            })
-            .collect(Collectors.toList());
 
-        List<String> expectedValidationErrors = fields.stream()
-            .map(field -> {
-                String annotation = field.endsWith("Param") ? "@Parameter" : "@Option";
-                return String.format("Constant (final) primitive and String fields like %s cannot be used as %s: compile-time constant inlining may hide new values written to it.", field, annotation);
-            })
-            .collect(Collectors.toList());
+        String errorFormat = "Constant (final) primitive and String fields like %s cannot be used as %s: compile-time constant inlining may hide new values written to it.";
+        List<String> expectedValidationErrors = new ArrayList<String>();
+        for (String type : types) {
+            String titleized = type.substring(0, 1).toUpperCase() + type.substring(1);
+            String invalidOptionField = String.format("invalid%s", titleized);
+            String invalidParamField = String.format("invalid%sParam", titleized);
+
+            expectedValidationErrors.add(String.format(errorFormat, invalidOptionField, "@Option"));
+            expectedValidationErrors.add(String.format(errorFormat, invalidParamField, "@Parameters"));
+        }
 
         validateErrorMessages(compilation, expectedValidationErrors);
     }
@@ -290,7 +284,7 @@ public class AbstractCommandSpecProcessorTest {
     @Test
     public void testCommandWithBundle() {
         Compilation compilation = compareCommandYamlDump(slurp("/picocli/examples/messages/CommandWithBundle.yaml"),
-            JavaFileObjects.forResource("picocli/examples/messages/CommandWithBundle.java"));
+                JavaFileObjects.forResource("picocli/examples/messages/CommandWithBundle.java"));
 
         assertOnlySourceVersionWarning(compilation);
     }
