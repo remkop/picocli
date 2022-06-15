@@ -241,6 +241,11 @@ public class TestUtil {
         return result.toString();
     }
 
+    public static String stripFactoryInstanceHashcodes(String original) {
+        String replacePattern = "(Factory returned a \\w[_\\.a-zA-Z0-9]+ instance \\()[a-z0-9]{8}(\\))";
+        return original.replaceAll(replacePattern, "$1$2");
+    }
+
     public static boolean equals(Object obj1, Object obj2) { return obj1 == null ? obj2 == null : obj1.equals(obj2); }
     public static int hashCode(Object obj) {return obj == null ? 0 : obj.hashCode(); }
     public static int hashCode(boolean bool) {return bool ? 1 : 0; }
