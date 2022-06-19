@@ -4387,12 +4387,13 @@ public class HelpTest {
 
     @Test
     public void testUsageMessageSpec_LongOptionsColumnLengthMinimum_Minimum20() {
-        try {
-            CommandSpec.create().usageMessage().longOptionsMaxWidth(19);
-            fail("Expected exception");
-        } catch (InitializationException ok) {
-            assertEquals("Invalid usage long options max width 19. Minimum value is 20", ok.getMessage());
-        }
+        CommandLine cmd = new CommandLine(CommandSpec.create());
+        cmd.setUsageHelpLongOptionsMaxWidth(20);
+
+        CommandLine returnValue = cmd.setUsageHelpLongOptionsMaxWidth(19);
+
+        assertEquals(20, cmd.getUsageHelpLongOptionsMaxWidth());
+        assertEquals(20, cmd.getCommandSpec().usageMessage().longOptionsMaxWidth());
     }
 
     @Test
@@ -4400,12 +4401,9 @@ public class HelpTest {
         UsageMessageSpec spec = CommandSpec.create().usageMessage();
         spec.longOptionsMaxWidth(spec.width() - 20);
         assertEquals(60, spec.longOptionsMaxWidth());
-        try {
-            spec.longOptionsMaxWidth(61);
-            fail("Expected exception");
-        } catch (InitializationException ok) {
-            assertEquals("Invalid usage long options max width 61. Value must not exceed width(80) - 20", ok.getMessage());
-        }
+
+        spec.longOptionsMaxWidth(61);
+        assertEquals(60, spec.longOptionsMaxWidth());
     }
 
     @Test

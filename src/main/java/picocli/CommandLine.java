@@ -7820,17 +7820,15 @@ public class CommandLine {
             /**
              * Sets the maximum usage help long options column max width to the specified value.
              * This value controls the maximum width of the long options column: any positional parameter labels or long options that are longer than the specified value will overflow into the description column, and cause the description to be displayed on the next line.
-             * @param newValue the new maximum usage help long options column max width. Must be 20 or greater.
+             * @param newValue the new maximum usage help long options column max width. Must be 20 or greater, otherwise the new value will be ignored.
              * @return this {@code UsageMessageSpec} for method chaining
-             * @throws IllegalArgumentException if the specified long options column max is less than 20
              * @since 4.2 */
             public UsageMessageSpec longOptionsMaxWidth(int newValue) {
-                if (newValue < DEFAULT_USAGE_LONG_OPTIONS_WIDTH) {
-                    throw new InitializationException("Invalid usage long options max width " + newValue + ". Minimum value is " + DEFAULT_USAGE_LONG_OPTIONS_WIDTH);
-                } else if (newValue > width() - DEFAULT_USAGE_LONG_OPTIONS_WIDTH) {
-                    throw new InitializationException("Invalid usage long options max width " + newValue + ". Value must not exceed width(" + width() + ") - " + DEFAULT_USAGE_LONG_OPTIONS_WIDTH);
+                if (newValue >= DEFAULT_USAGE_LONG_OPTIONS_WIDTH && newValue <= width() - DEFAULT_USAGE_LONG_OPTIONS_WIDTH) {
+                    longOptionsMaxWidth = newValue;
                 }
-                longOptionsMaxWidth = newValue; return this;
+
+                return this;
             }
 
             private int getSysPropertyWidthOrDefault(int defaultWidth, boolean detectTerminalSize) {
