@@ -150,7 +150,7 @@ class CompileTimeTypeInfo implements CommandLine.Model.ITypeInfo {
     }
 
     static boolean isBooleanType(TypeMirror type) {
-        return type.getKind() == TypeKind.BOOLEAN || "java.lang.Boolean".equals(type.toString());
+        return type.getKind() == TypeKind.BOOLEAN || "java.lang.Boolean".equals(type.toString()) || "java.util.Optional<java.lang.Boolean>".equals(type.toString());
     }
 
     @Override
