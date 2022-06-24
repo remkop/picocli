@@ -19,10 +19,11 @@ import java.util.Locale;
 import static com.google.testing.compile.CompilationSubject.assertThat;
 import static com.google.testing.compile.Compiler.javac;
 import static org.hamcrest.CoreMatchers.containsString;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static picocli.annotation.processing.tests.Resources.slurp;
 import static picocli.annotation.processing.tests.Resources.slurpAll;
-import static picocli.annotation.processing.tests.YamlAssert.*;
+import static picocli.annotation.processing.tests.YamlAssert.compareCommandYamlDump;
 
 public class AbstractCommandSpecProcessorTest {
     static Locale old;
@@ -225,9 +226,49 @@ public class AbstractCommandSpecProcessorTest {
         validateErrorMessages(compilation, expected, optional);
     }
 
+    @Test
+    public void testInvalidFinalOptionsAndParameters() {
+        CommandSpec2YamlProcessor processor = new CommandSpec2YamlProcessor();
+        Compilation compilation =
+            javac()
+                .withProcessors(processor)
+                .compile(JavaFileObjects.forResource(
+                    "picocli/examples/validation/InvalidFinal.java"));
+
+        assertThat(compilation).failed();
+
+        // For every primitive type + String type, the InvalidFinal class defines
+        // an invalid combination of using a final field with a declared value, for each of those types.
+        List<String> types = Arrays.asList(
+            "boolean",
+            "byte",
+            "short",
+            "int",
+            "long",
+            "char",
+            "float",
+            "double",
+            "string"
+        );
+
+        String errorFormat = "Constant (final) primitive and String fields like %s cannot be used as %s: compile-time constant inlining may hide new values written to it.";
+        List<String> expectedValidationErrors = new ArrayList<String>();
+        for (String type : types) {
+            String titleized = type.substring(0, 1).toUpperCase() + type.substring(1);
+            String invalidOptionField = String.format("invalid%s", titleized);
+            String invalidParamField = String.format("invalid%sParam", titleized);
+
+            expectedValidationErrors.add(String.format(errorFormat, invalidOptionField, "@Option"));
+            expectedValidationErrors.add(String.format(errorFormat, invalidParamField, "@Parameters"));
+        }
+
+        validateErrorMessages(compilation, expectedValidationErrors);
+    }
+
     private void validateErrorMessages(Compilation compilation, List<String> expected) {
         validateErrorMessages(compilation, expected, Collections.emptyList());
     }
+
     private void validateErrorMessages(Compilation compilation, List<String> expected, List<String> optional) {
         ImmutableList<Diagnostic<? extends JavaFileObject>> errors = compilation.errors();
         for (Diagnostic<? extends JavaFileObject> diag : errors) {

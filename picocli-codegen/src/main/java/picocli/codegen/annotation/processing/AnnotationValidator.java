@@ -11,11 +11,14 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.SimpleElementVisitor6;
+import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
@@ -41,10 +44,14 @@ class AnnotationValidator {
                     CommandLine.Unmatched.class,
                     CommandLine.ArgGroup.class
             ));
-    private ProcessingEnvironment processingEnv;
+    private final ProcessingEnvironment processingEnv;
+    private final TypeMirror stringType;
+    private final Types typeUtils;
 
     public AnnotationValidator(ProcessingEnvironment processingEnv) {
         this.processingEnv = Assert.notNull(processingEnv, "processingEnv");
+        this.stringType = processingEnv.getElementUtils().getTypeElement("java.lang.String").asType();
+        this.typeUtils = processingEnv.getTypeUtils();
     }
 
     public void validateAnnotations(RoundEnvironment roundEnv) {
@@ -105,6 +112,7 @@ class AnnotationValidator {
                     if (option.split().length() > 0 && !new CompileTimeTypeInfo(type).isMultiValue()) {
                         error(e, null, "%s has a split regex but is a single-value type", e.getSimpleName());
                     }
+                    maybeValidateFinalFields(e, type, "@Option");
                 }
             }, element.getAnnotation(Option.class));
         }
@@ -149,6 +157,7 @@ class AnnotationValidator {
                     if (positional.split().length() > 0 && !new CompileTimeTypeInfo(type).isMultiValue()) {
                         error(e, null, "%s has a split regex but is a single-value type", e.getSimpleName());
                     }
+                    maybeValidateFinalFields(e, type, "@Parameters");
                 }
             }, element.getAnnotation(Parameters.class));
         }
@@ -178,13 +187,16 @@ class AnnotationValidator {
 
     private void validateNoAnnotationsOnInterfaceField(Set<? extends Element> all) {
         for (Element element : all) {
-            if (element.getKind() == ElementKind.FIELD &&
-                    element.getEnclosingElement().getKind() == ElementKind.INTERFACE) {
+            if (isInterfaceField(element)) {
                 AnnotationMirror annotationMirror = getPicocliAnnotationMirror(element);
                 error(element, annotationMirror, "Invalid picocli annotation on interface field %s.%s",
-                        element.getEnclosingElement().toString(), element.getSimpleName());
+                    element.getEnclosingElement().toString(), element.getSimpleName());
             }
         }
+    }
+
+    private boolean isInterfaceField(Element element) {
+        return element.getKind() == ElementKind.FIELD && element.getEnclosingElement().getKind() == ElementKind.INTERFACE;
     }
 
     private void validateInvalidCombinations(RoundEnvironment roundEnv) {
@@ -196,13 +208,30 @@ class AnnotationValidator {
     }
 
     private <T1 extends Annotation, T2 extends Annotation> void validateInvalidCombination(
-            RoundEnvironment roundEnv, Class<T1> c1, Class<T2> c2) {
+        RoundEnvironment roundEnv, Class<T1> c1, Class<T2> c2) {
         for (Element element : roundEnv.getElementsAnnotatedWith(c1)) {
             if (element.getAnnotation(c2) != null) {
                 AnnotationMirror annotationMirror = getPicocliAnnotationMirror(element);
                 error(element, annotationMirror, "%s cannot have both @%s and @%s annotations",
-                        element, c1.getCanonicalName(), c2.getCanonicalName());
+                    element, c1.getCanonicalName(), c2.getCanonicalName());
             }
+        }
+    }
+
+    private void maybeValidateFinalFields(Element e, TypeMirror type, String annotation) {
+        ElementKind elementKind = e.getKind();
+        boolean isFinal = e.getModifiers().contains(Modifier.FINAL);
+        // We have an existing validator for fields in an interface. Ignore those elements here.
+        boolean shouldValidateFinal = elementKind.isField() && !isInterfaceField(e);
+        if (!isFinal || !shouldValidateFinal) {
+            return;
+        }
+        boolean isConstantValueField = false;
+        for (VariableElement variableElement : ElementFilter.fieldsIn(Collections.singletonList(e))) {
+             isConstantValueField = isConstantValueField || variableElement.getConstantValue() != null;
+        }
+        if ((type.getKind().isPrimitive() || typeUtils.isAssignable(type, stringType)) && isConstantValueField) {
+            error(e, null, "Constant (final) primitive and String fields like %s cannot be used as %s: compile-time constant inlining may hide new values written to it.", e.getSimpleName(), annotation);
         }
     }
 

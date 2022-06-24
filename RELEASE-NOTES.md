@@ -91,6 +91,8 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1408] Enhancement: Synopsis should respect `order` if specified. Thanks to [Simon](https://github.com/sbernard31) for raising this.
 * [#964][#1080] Enhancement: ArgGroup synopsis should respect `order` (if specified). Thanks to [Enderaoe](https://github.com/Lyther) for the pull request with unit tests.
 * [#899][#1578][#1579] Enhancement: improve built-in `Help` command description. Thanks to [Michael L Heuer](https://github.com/heuermh) for the pull request. Thanks to [Garret Wilson](https://github.com/garretwilson) for raising this.
+* [#1713][#1714] Enhancement: Support optional booleans in annotation processor. Thanks to [Jan Waś](https://github.com/nineinchnick) for the pull request.
+* [#1387][#1711] Enhancement: Annotation processor should validate final primitive and String fields with `Option` and `Parameters` annotations. Thanks to [xehpuk](https://github.com/xehpuk) for raising this, and thanks to [Adam McElwee](https://github.com/acmcelwee) for the pull request.
 * [#1572] Enhancement: Remove redundant braces in ArgGroup synopsis.
 * [#1602] Enhancement: Fix incorrect debug output for add/removeAlias.
 * [#1603] Enhancement: Improve debug tracing information for help requests and command execution.
