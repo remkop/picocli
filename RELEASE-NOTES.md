@@ -152,6 +152,7 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1694] DEP: Bump asciidoctorj-pdf from 2.0.3 to 2.0.4
 * [#1695] DEP: Bump asciidoctorj-pdf from 2.0.4 to 2.0.6
 * [#1715] DEP: Bump asciidoctorj-pdf from 2.0.6 to 2.0.8
+* [#1722] DEP: Bump asciidoctorj-pdf from 2.0.8 to 2.1.2
 * [#1618] DEP: Bump biz.aQute.bnd.gradle from 6.1.0 to 6.2.0
 * [#1698] DEP: Bump biz.aQute.bnd.gradle from 6.2.0 to 6.3.0
 * [#1703] DEP: Bump biz.aQute.bnd.gradle from 6.3.0 to 6.3.1
