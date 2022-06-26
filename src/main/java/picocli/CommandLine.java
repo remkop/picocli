@@ -7826,8 +7826,9 @@ public class CommandLine {
             public UsageMessageSpec longOptionsMaxWidth(int newValue) {
                 if (newValue >= DEFAULT_USAGE_LONG_OPTIONS_WIDTH && newValue <= width() - DEFAULT_USAGE_LONG_OPTIONS_WIDTH) {
                     longOptionsMaxWidth = newValue;
+                } else {
+                    CommandLine.tracer().info("Invalid usage long options max width %d. Value must not exceed width(%d) - %d", newValue, width(), DEFAULT_USAGE_LONG_OPTIONS_WIDTH);
                 }
-
                 return this;
             }
 

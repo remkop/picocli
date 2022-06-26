@@ -4389,11 +4389,15 @@ public class HelpTest {
     public void testUsageMessageSpec_LongOptionsColumnLengthMinimum_Minimum20() {
         CommandLine cmd = new CommandLine(CommandSpec.create());
         cmd.setUsageHelpLongOptionsMaxWidth(20);
+        TestUtil.setTraceLevel(CommandLine.TraceLevel.INFO);
 
         CommandLine returnValue = cmd.setUsageHelpLongOptionsMaxWidth(19);
 
         assertEquals(20, cmd.getUsageHelpLongOptionsMaxWidth());
         assertEquals(20, cmd.getCommandSpec().usageMessage().longOptionsMaxWidth());
+
+        String expected = "Invalid usage long options max width 19. Value must not exceed width(80) - 20";
+        assertTrue(systemErrRule.getLog(), systemErrRule.getLog().contains(expected));
     }
 
     @Test
@@ -4401,9 +4405,13 @@ public class HelpTest {
         UsageMessageSpec spec = CommandSpec.create().usageMessage();
         spec.longOptionsMaxWidth(spec.width() - 20);
         assertEquals(60, spec.longOptionsMaxWidth());
+        TestUtil.setTraceLevel(CommandLine.TraceLevel.INFO);
 
         spec.longOptionsMaxWidth(61);
         assertEquals(60, spec.longOptionsMaxWidth());
+
+        String expected = "Invalid usage long options max width 61. Value must not exceed width(80) - 20";
+        assertTrue(systemErrRule.getLog(), systemErrRule.getLog().contains(expected));
     }
 
     @Test
