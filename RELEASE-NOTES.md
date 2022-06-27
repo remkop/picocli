@@ -91,6 +91,8 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1408] Enhancement: Synopsis should respect `order` if specified. Thanks to [Simon](https://github.com/sbernard31) for raising this.
 * [#964][#1080] Enhancement: ArgGroup synopsis should respect `order` (if specified). Thanks to [Enderaoe](https://github.com/Lyther) for the pull request with unit tests.
 * [#899][#1578][#1579] Enhancement: improve built-in `Help` command description. Thanks to [Michael L Heuer](https://github.com/heuermh) for the pull request. Thanks to [Garret Wilson](https://github.com/garretwilson) for raising this.
+* [#1713][#1714] Enhancement: Support optional booleans in annotation processor. Thanks to [Jan Waś](https://github.com/nineinchnick) for the pull request.
+* [#1387][#1711] Enhancement: Annotation processor should validate final primitive and String fields with `Option` and `Parameters` annotations. Thanks to [xehpuk](https://github.com/xehpuk) for raising this, and thanks to [Adam McElwee](https://github.com/acmcelwee) for the pull request.
 * [#1572] Enhancement: Remove redundant braces in ArgGroup synopsis.
 * [#1602] Enhancement: Fix incorrect debug output for add/removeAlias.
 * [#1603] Enhancement: Improve debug tracing information for help requests and command execution.
@@ -120,6 +122,7 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1655] DEP: Bump actions/setup-java from 3.1.0 to 3.1.1
 * [#1667] DEP: Bump actions/setup-java from 3.1.1 to 3.2.0
 * [#1674] DEP: Bump actions/setup-java from 3.2.0 to 3.3.0
+* [#1717] DEP: Bump actions/setup-java from 3.3.0 to 3.4.0
 * [#1624] DEP: Bump actions/upload-artifact from 2.3.1 to 3
 * [#1687] DEP: Bump actions/upload-artifact from 3.0.0 to 3.1.0
 * [#1585] DEP: Bump github/codeql-action from 1.0.30 to 1.1.0
@@ -134,6 +137,7 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1676] DEP: Bump github/codeql-action from 2.1.9 to 2.1.10
 * [#1682] DEP: Bump github/codeql-action from 2.1.10 to 2.1.11
 * [#1700] DEP: Bump github/codeql-action from 2.1.11 to 2.1.12
+* [#1720] DEP: Bump github/codeql-action from 2.1.12 to 2.1.14
 * [#1586] DEP: Bump ossf/scorecard-action from 1.0.2 to 1.0.3
 * [#1594] DEP: Bump ossf/scorecard-action from 1.0.3 to 1.0.4
 * [#1691] DEP: Bump ossf/scorecard-action from 1.0.4 to 1.1.0
@@ -147,6 +151,8 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1692] DEP: Bump asciidoctorj-pdf from 2.0.2 to 2.0.3
 * [#1694] DEP: Bump asciidoctorj-pdf from 2.0.3 to 2.0.4
 * [#1695] DEP: Bump asciidoctorj-pdf from 2.0.4 to 2.0.6
+* [#1715] DEP: Bump asciidoctorj-pdf from 2.0.6 to 2.0.8
+* [#1722] DEP: Bump asciidoctorj-pdf from 2.0.8 to 2.1.2
 * [#1618] DEP: Bump biz.aQute.bnd.gradle from 6.1.0 to 6.2.0
 * [#1698] DEP: Bump biz.aQute.bnd.gradle from 6.2.0 to 6.3.0
 * [#1703] DEP: Bump biz.aQute.bnd.gradle from 6.3.0 to 6.3.1
@@ -170,6 +176,7 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1645] DEP: Bump Spring Boot version from 2.6.5 to 2.6.6
 * [#1684] DEP: Bump Spring Boot version from 2.6.7 to 2.6.8
 * [#1686] DEP: Bump Spring Boot version from 2.6.8 to 2.7.0
+* [#1719] DEP: Bump Spring Boot version from 2.7.0 to 2.7.1
 * [#1588] DEP: Bump system-rules from 1.17.1 to 1.19.0
 
 ## <a name="4.7.0-deprecated"></a> Deprecations
