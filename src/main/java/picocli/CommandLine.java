@@ -7824,10 +7824,12 @@ public class CommandLine {
              * @return this {@code UsageMessageSpec} for method chaining
              * @since 4.2 */
             public UsageMessageSpec longOptionsMaxWidth(int newValue) {
-                if (newValue >= DEFAULT_USAGE_LONG_OPTIONS_WIDTH && newValue <= width() - DEFAULT_USAGE_LONG_OPTIONS_WIDTH) {
-                    longOptionsMaxWidth = newValue;
+                if (newValue < DEFAULT_USAGE_LONG_OPTIONS_WIDTH) {
+                    CommandLine.tracer().info("Invalid usage long options max width %d. Minimum value is %d", newValue,  DEFAULT_USAGE_LONG_OPTIONS_WIDTH);
+                } else if (newValue > width() - DEFAULT_USAGE_LONG_OPTIONS_WIDTH) {
+                    CommandLine.tracer().info("Invalid usage long options max width %d. Value must not exceed width(%d) - %d", newValue , width(), DEFAULT_USAGE_LONG_OPTIONS_WIDTH);
                 } else {
-                    CommandLine.tracer().info("Invalid usage long options max width %d. Value must not exceed width(%d) - %d", newValue, width(), DEFAULT_USAGE_LONG_OPTIONS_WIDTH);
+                    longOptionsMaxWidth = newValue;
                 }
                 return this;
             }

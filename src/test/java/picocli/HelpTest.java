@@ -4396,7 +4396,7 @@ public class HelpTest {
         assertEquals(20, cmd.getUsageHelpLongOptionsMaxWidth());
         assertEquals(20, cmd.getCommandSpec().usageMessage().longOptionsMaxWidth());
 
-        String expected = "Invalid usage long options max width 19. Value must not exceed width(80) - 20";
+        String expected = "Invalid usage long options max width 19. Minimum value is 20";
         assertTrue(systemErrRule.getLog(), systemErrRule.getLog().contains(expected));
     }
 
