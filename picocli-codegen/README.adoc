@@ -27,7 +27,7 @@ If a tool does not have an annotation processor wrapper (yet), it can be invoked
 As of picocli version 4.2, this module has three major use cases:
 
 * **Compile time error checking**. The annotation processor shows errors for invalid annotations and attributes immediately when you compile, instead of during testing at runtime, resulting in shorter feedback cycles.
-* **GraalVm native images**. To create a GraalVM native image for a picocli application, https://www.graalvm.org/reference-manual/native-image/BuildConfiguration/[configuration] is needed. The `ReflectionConfigGenerator`, `ResourceConfigGenerator` and `DynamicProxyGenerator` tools can generate configuration files for https://www.graalvm.org/reference-manual/native-image/Reflection/[reflection], https://www.graalvm.org/reference-manual/native-image/Resources/[resources] and https://www.graalvm.org/reference-manual/native-image/DynamicProxy/[dynamic proxies], respectively.
+* **GraalVm native images**. To create a GraalVM native image for a picocli application, https://www.graalvm.org/reference-manual/native-image/BuildConfiguration/[configuration] is needed. The `ReflectionConfigGenerator`, `ResourceConfigGenerator` and `DynamicProxyGenerator` tools can generate `reflect-config.json`, `resource-config.json` and `proxy-config.json` configuration files for https://www.graalvm.org/reference-manual/native-image/Reflection/[reflection], https://www.graalvm.org/reference-manual/native-image/Resources/[resources] and https://www.graalvm.org/reference-manual/native-image/DynamicProxy/[dynamic proxies], respectively.
 +
 The annotation processor embeds these three tools and generates the configuration files under `META-INF/native-image/picocli-generated/$project` during compilation, to be included in the application jar.
 By embedding these configuration files, your jar is instantly GraalVM-enabled.
@@ -404,7 +404,7 @@ that should be included in the Substrate VM native image.
 
 The <<Generate Documentation,generated>> manual page for the `ResourceConfigGenerator` tool https://picocli.info/man/gen-resource-config.html[is here].
 
-The output of `ResourceConfigGenerator` is intended to be passed to the `-H:ResourceConfigurationFiles=/path/to/reflect-config.json` option of the `native-image` GraalVM utility,
+The output of `ResourceConfigGenerator` is intended to be passed to the `-H:ResourceConfigurationFiles=/path/to/resource-config.json` option of the `native-image` GraalVM utility,
 or placed in a `META-INF/native-image/` subdirectory of the JAR. 
 
 This allows picocli-based native image applications to access these resources.
