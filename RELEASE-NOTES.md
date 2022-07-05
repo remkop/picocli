@@ -147,6 +147,7 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1583] DEP: Bump step-security/harden-runner from 1.3.0 to 1.4.0
 * [#1639] DEP: Bump step-security/harden-runner from 1.4.0 to 1.4.1
 * [#1666] DEP: Bump step-security/harden-runner from 1.4.1 to 1.4.2
+* [#1730] DEP: Bump step-security/harden-runner from 1.4.3 to 1.4.4
 * [#1580] DEP: Bump asciidoctor to 2.5.3 from 2.5.2. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1688] DEP: Bump asciidoctorj-pdf from 1.6.2 to 2.0.0
 * [#1690] DEP: Bump asciidoctorj-pdf from 2.0.0 to 2.0.2
@@ -172,6 +173,7 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1649] DEP: Bump kotlin-gradle-plugin from 1.6.10 to 1.6.20
 * [#1648] DEP: Bump kotlin-script-runtime from 1.6.10 to 1.6.20
 * [#1617] DEP: Bump log4j2Version from 2.17.1 to 2.17.2
+* [#1729] DEP: Bump log4j2Version from 2.17.2 to 2.18.0
 * [#1576] DEP: Bump Spring Boot version from 2.5.6 to 2.6.3
 * [#1606] DEP: Bump Spring Boot version from 2.6.3 to 2.6.4
 * [#1641] DEP: Bump Spring Boot version from 2.6.4 to 2.6.5
