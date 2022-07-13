@@ -125,6 +125,7 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1667] DEP: Bump actions/setup-java from 3.1.1 to 3.2.0
 * [#1674] DEP: Bump actions/setup-java from 3.2.0 to 3.3.0
 * [#1717] DEP: Bump actions/setup-java from 3.3.0 to 3.4.0
+* [#1736] DEP: Bump actions/setup-java from 3.4.0 to 3.4.1
 * [#1624] DEP: Bump actions/upload-artifact from 2.3.1 to 3
 * [#1687] DEP: Bump actions/upload-artifact from 3.0.0 to 3.1.0
 * [#1585] DEP: Bump github/codeql-action from 1.0.30 to 1.1.0
@@ -140,6 +141,8 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1682] DEP: Bump github/codeql-action from 2.1.10 to 2.1.11
 * [#1700] DEP: Bump github/codeql-action from 2.1.11 to 2.1.12
 * [#1720] DEP: Bump github/codeql-action from 2.1.12 to 2.1.14
+* [#1728] DEP: Bump github/codeql-action from 2.1.14 to 2.1.15
+* [#1739] DEP: Bump github/codeql-action from 2.1.15 to 2.1.16
 * [#1586] DEP: Bump ossf/scorecard-action from 1.0.2 to 1.0.3
 * [#1594] DEP: Bump ossf/scorecard-action from 1.0.3 to 1.0.4
 * [#1691] DEP: Bump ossf/scorecard-action from 1.0.4 to 1.1.0
