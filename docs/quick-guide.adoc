@@ -534,7 +534,7 @@ int number;
 Use the `arity` attribute to make `@Parameters` mandatory:
 [source, java]
 ----
-@Parameters(arity = "1..*", descriptions = "at least one File")
+@Parameters(arity = "1..*", description = "at least one File")
 List<File> files;
 ----
 
