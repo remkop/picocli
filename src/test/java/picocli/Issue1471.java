@@ -18,6 +18,11 @@ public class Issue1471 {
     static class ParentTestCommand {
     }
 
+    @Command(name = "parentTestCommand", mixinStandardHelpOptions = true, scope = INHERIT,
+            subcommands = TestCommand.class)
+    static class ParentTestCommand2 {
+    }
+
     @Command(name = "sorteotest")
     static class TestCommand {
         @Command(name = "entertest", description = "Start participating in a giveaway")
@@ -29,9 +34,14 @@ public class Issue1471 {
 
     @Ignore
     @Test
-    public void testIssue1741() {
+    public void testIssue1741_subcommandAddedProgrammatically() {
         CommandLine commandLine = getTestCommandLine(new ParentTestCommand(), new TestCommand(), CommandLine.defaultFactory());
         assertEquals(0, commandLine.execute("sorteotest", "entertest", "sequenceType", "url"));
     }
 
+    @Test
+    public void testIssue1741_staticHierarchy() {
+        CommandLine commandLine = new CommandLine(new ParentTestCommand2());
+        assertEquals(0, commandLine.execute("sorteotest", "entertest", "sequenceType", "url"));
+    }
 }
