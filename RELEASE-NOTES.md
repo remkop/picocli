@@ -184,6 +184,7 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1684] DEP: Bump Spring Boot version from 2.6.7 to 2.6.8
 * [#1686] DEP: Bump Spring Boot version from 2.6.8 to 2.7.0
 * [#1719] DEP: Bump Spring Boot version from 2.7.0 to 2.7.1
+* [#1747] DEP: Bump Spring Boot version from 2.7.1 to 2.7.2
 * [#1588] DEP: Bump system-rules from 1.17.1 to 1.19.0
 
 ## <a name="4.7.0-deprecated"></a> Deprecations
