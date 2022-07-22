@@ -104,6 +104,7 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1575] Bugfix: Synopsis should not cluster boolean options if `posixClusteredShortOptionsAllowed` is set to false.
 * [#1642] Bugfix: Negatable options should negate explicit values. Thanks to [Nat Burns](https://github.com/burnnat) for raising this.
 * [#1696][#1697] Bugfix: ManPageGenerator asciidoc output now correctly shows options in nested ArgGroups. Thanks to [Ruud Senden](https://github.com/rsenden) for the pull request.
+* [#1741] Bugfix: `@Command`-annotated method parameters are assigned incorrect indices when contained in a `@Command` class that is added as a subcommand to another `@Command` class which has `scope = CommandLine.ScopeType.INHERIT`. Thanks to [Onedy](https://github.com/Onedy) for raising this.
 * [#1298] DOC: Publish all-in-one javadoc for all picocli modules.
 * [#812] DOC: Document how to test a picocli spring-boot application.
 * [#1596] DOC: fix javadoc typos and incorrect links.

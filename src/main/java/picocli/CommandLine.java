@@ -6601,9 +6601,17 @@ public class CommandLine {
                 commands.remove(interpolator.interpolate(alias));
             }
             private void inheritAttributesFrom(CommandSpec root) {
-                inherited = true;
+                setInheritedDeep();
                 initFrom(root);
                 updatedSubcommandsToInheritFrom(root);
+            }
+            // Issue #1741: ensure all commands in the hierarchy downwards have `inherited = true` set
+            // before mixing in the standard help options
+            private void setInheritedDeep() {
+                inherited = true;
+                for (CommandLine sub : subcommands().values()) {
+                    sub.getCommandSpec().setInheritedDeep();
+                }
             }
             private void updatedSubcommandsToInheritFrom(CommandSpec root) {
                 if (root != this && root.mixinStandardHelpOptions()) { // #1331 only add, don't remove

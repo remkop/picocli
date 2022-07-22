@@ -1,6 +1,5 @@
 package picocli;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
@@ -32,7 +31,6 @@ public class Issue1741 {
         }
     }
 
-    @Ignore
     @Test
     public void testIssue1741_subcommandAddedProgrammatically() {
         CommandLine commandLine = getTestCommandLine(new ParentTestCommand(), new TestCommand(), CommandLine.defaultFactory());
