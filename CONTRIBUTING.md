@@ -48,3 +48,12 @@ Artifact | Target Java Version
 
 Please be aware that pull requests can only use language features that are supported in the above version of Java.
 
+## <a name="build"> Building
+
+```
+git clone https://github.com/remkop/picocli.git
+cd picocli
+gradlew publishToMavenLocal
+```
+
+That should publish `picocli-4.7.0-SNAPSHOT` to your local .m2 Maven cache. You can then try this in a project that uses the `info.picocli:picocli:4.7.0-SNAPSHOT` dependency.
