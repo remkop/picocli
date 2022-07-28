@@ -716,16 +716,16 @@ public class AutoComplete {
 
     private static void generatePositionParamCompletionCandidates(StringBuilder buff, PositionalParamSpec f) {
         String paramName = bashify(f.paramLabel());
-        buff.append(format("  local %s_pos_param_args=\"%s\" # %d-%d values\n",
+        buff.append(format("  local %s_pos_param_args=(\"%s\") # %d-%d values\n",
                 paramName,
-                concat(" ", extract(f.completionCandidates())).trim(),
+                concat("\" \"", extract(f.completionCandidates())).trim(),
                 f.index().min(), f.index().max()));
     }
 
     private static void generateCompletionCandidates(StringBuilder buff, OptionSpec f) {
-        buff.append(format("  local %s_option_args=\"%s\" # %s values\n",
+        buff.append(format("  local %s_option_args=(\"%s\") # %s values\n",
                 bashify(f.paramLabel()),
-                concat(" ", extract(f.completionCandidates())).trim(),
+                concat("\" \"", extract(f.completionCandidates())).trim(),
                 f.longestName()));
     }
     private static List<String> extract(Iterable<String> generator) {
@@ -750,7 +750,9 @@ public class AutoComplete {
             int max = param.index().max();
             if (param.completionCandidates() != null) {
                 buff.append(format("%s    %s (( currIndex >= %d && currIndex <= %d )); then\n", indent, ifOrElif, min, max));
-                buff.append(format("%s      positionals=$( compgen -W \"$%s_pos_param_args\" -- \"%s\" )\n", indent, paramName, currWord));
+                buff.append(format("%s      local IFS=$'\\n'\n", indent));
+                buff.append(format("%s      positionals=$( compgen -W \"${%s_pos_param_args[*]}\" -- \"%s\" )\n",
+                        indent, paramName, currWord));
             } else if (type.equals(File.class) || "java.nio.file.Path".equals(type.getName())) {
                 buff.append(format("%s    %s (( currIndex >= %d && currIndex <= %d )); then\n", indent, ifOrElif, min, max));
                 buff.append(format("%s      local IFS=$'\\n'\n", indent));
@@ -793,7 +795,9 @@ public class AutoComplete {
             }
             if (option.completionCandidates() != null) {
                 buff.append(format("%s    %s)\n", indent, concat("|", option.names()))); // "    -u|--timeUnit)\n"
-                buff.append(format("%s      COMPREPLY=( $( compgen -W \"${%s_option_args}\" -- \"%s\" ) )\n", indent, bashify(option.paramLabel()), currWord));
+                buff.append(format("%s      local IFS=$'\\n'\n", indent));
+                buff.append(format("%s      COMPREPLY=( $( compgen -W \"${%s_option_args[*]}\" -- \"%s\" ) )\n", indent,
+                        bashify(option.paramLabel()), currWord));
                 buff.append(format("%s      return $?\n", indent));
                 buff.append(format("%s      ;;\n", indent));
             } else if (type.equals(File.class) || "java.nio.file.Path".equals(type.getName())) {

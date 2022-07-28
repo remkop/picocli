@@ -136,13 +136,14 @@ function _picocli_basicExample() {
   local commands=""
   local flag_opts=""
   local arg_opts="-u --timeUnit -t --timeout"
-  local timeUnit_option_args="%2$s" # --timeUnit values
+  local timeUnit_option_args=("%2$s") # --timeUnit values
 
   type compopt &>/dev/null && compopt +o default
 
   case ${prev_word} in
     -u|--timeUnit)
-      COMPREPLY=( $( compgen -W "${timeUnit_option_args}" -- "${curr_word}" ) )
+      local IFS=$'\n'
+      COMPREPLY=( $( compgen -W "${timeUnit_option_args[*]}" -- "${curr_word}" ) )
       return $?
       ;;
     -t|--timeout)

@@ -202,7 +202,7 @@ function _picocli_picocompletion-demo_sub1() {
   local commands=""
   local flag_opts=""
   local arg_opts="--num --str --candidates"
-  local str2_option_args="aaa bbb ccc" # --candidates values
+  local str2_option_args=("aaa" "bbb" "ccc") # --candidates values
 
   type compopt &>/dev/null && compopt +o default
 
@@ -214,7 +214,8 @@ function _picocli_picocompletion-demo_sub1() {
       return
       ;;
     --candidates)
-      COMPREPLY=( $( compgen -W "${str2_option_args}" -- "${curr_word}" ) )
+      local IFS=$'\n'
+      COMPREPLY=( $( compgen -W "${str2_option_args[*]}" -- "${curr_word}" ) )
       return $?
       ;;
   esac
@@ -237,7 +238,7 @@ function _picocli_picocompletion-demo_sub1alias() {
   local commands=""
   local flag_opts=""
   local arg_opts="--num --str --candidates"
-  local str2_option_args="aaa bbb ccc" # --candidates values
+  local str2_option_args=("aaa" "bbb" "ccc") # --candidates values
 
   type compopt &>/dev/null && compopt +o default
 
@@ -249,7 +250,8 @@ function _picocli_picocompletion-demo_sub1alias() {
       return
       ;;
     --candidates)
-      COMPREPLY=( $( compgen -W "${str2_option_args}" -- "${curr_word}" ) )
+      local IFS=$'\n'
+      COMPREPLY=( $( compgen -W "${str2_option_args[*]}" -- "${curr_word}" ) )
       return $?
       ;;
   esac
@@ -286,7 +288,7 @@ function _picocli_picocompletion-demo_sub2() {
       return $?
       ;;
   esac
-  local possibilities_pos_param_args="Aaa Bbb Ccc" # 0-0 values
+  local possibilities_pos_param_args=("Aaa" "Bbb" "Ccc") # 0-0 values
 
   if [[ "${curr_word}" == -* ]]; then
     COMPREPLY=( $(compgen -W "${flag_opts} ${arg_opts}" -- "${curr_word}") )
@@ -295,7 +297,8 @@ function _picocli_picocompletion-demo_sub2() {
     local currIndex
     currIndex=$(currentPositionalIndex "sub2" "${arg_opts}" "${flag_opts}")
     if (( currIndex >= 0 && currIndex <= 0 )); then
-      positionals=$( compgen -W "$possibilities_pos_param_args" -- "${curr_word}" )
+      local IFS=$'\n'
+      positionals=$( compgen -W "${possibilities_pos_param_args[*]}" -- "${curr_word}" )
     fi
     local IFS=$'\n'
     COMPREPLY=( $(compgen -W "${commands// /$'\n'}${IFS}${positionals}" -- "${curr_word}") )
@@ -325,7 +328,7 @@ function _picocli_picocompletion-demo_sub2alias() {
       return $?
       ;;
   esac
-  local possibilities_pos_param_args="Aaa Bbb Ccc" # 0-0 values
+  local possibilities_pos_param_args=("Aaa" "Bbb" "Ccc") # 0-0 values
 
   if [[ "${curr_word}" == -* ]]; then
     COMPREPLY=( $(compgen -W "${flag_opts} ${arg_opts}" -- "${curr_word}") )
@@ -334,7 +337,8 @@ function _picocli_picocompletion-demo_sub2alias() {
     local currIndex
     currIndex=$(currentPositionalIndex "sub2-alias" "${arg_opts}" "${flag_opts}")
     if (( currIndex >= 0 && currIndex <= 0 )); then
-      positionals=$( compgen -W "$possibilities_pos_param_args" -- "${curr_word}" )
+      local IFS=$'\n'
+      positionals=$( compgen -W "${possibilities_pos_param_args[*]}" -- "${curr_word}" )
     fi
     local IFS=$'\n'
     COMPREPLY=( $(compgen -W "${commands// /$'\n'}${IFS}${positionals}" -- "${curr_word}") )
@@ -408,20 +412,21 @@ function _picocli_picocompletion-demo_sub2_subsub2() {
   local commands=""
   local flag_opts=""
   local arg_opts="-u --timeUnit -t --timeout"
-  local timeUnit_option_args="%2$s" # --timeUnit values
+  local timeUnit_option_args=("%2$s") # --timeUnit values
 
   type compopt &>/dev/null && compopt +o default
 
   case ${prev_word} in
     -u|--timeUnit)
-      COMPREPLY=( $( compgen -W "${timeUnit_option_args}" -- "${curr_word}" ) )
+      local IFS=$'\n'
+      COMPREPLY=( $( compgen -W "${timeUnit_option_args[*]}" -- "${curr_word}" ) )
       return $?
       ;;
     -t|--timeout)
       return
       ;;
   esac
-  local str2_pos_param_args="aaa bbb ccc" # 0-0 values
+  local str2_pos_param_args=("aaa" "bbb" "ccc") # 0-0 values
 
   if [[ "${curr_word}" == -* ]]; then
     COMPREPLY=( $(compgen -W "${flag_opts} ${arg_opts}" -- "${curr_word}") )
@@ -430,7 +435,8 @@ function _picocli_picocompletion-demo_sub2_subsub2() {
     local currIndex
     currIndex=$(currentPositionalIndex "subsub2" "${arg_opts}" "${flag_opts}")
     if (( currIndex >= 0 && currIndex <= 0 )); then
-      positionals=$( compgen -W "$str2_pos_param_args" -- "${curr_word}" )
+      local IFS=$'\n'
+      positionals=$( compgen -W "${str2_pos_param_args[*]}" -- "${curr_word}" )
     fi
     local IFS=$'\n'
     COMPREPLY=( $(compgen -W "${commands// /$'\n'}${IFS}${positionals}" -- "${curr_word}") )
@@ -446,20 +452,21 @@ function _picocli_picocompletion-demo_sub2_sub2child2alias() {
   local commands=""
   local flag_opts=""
   local arg_opts="-u --timeUnit -t --timeout"
-  local timeUnit_option_args="%2$s" # --timeUnit values
+  local timeUnit_option_args=("%2$s") # --timeUnit values
 
   type compopt &>/dev/null && compopt +o default
 
   case ${prev_word} in
     -u|--timeUnit)
-      COMPREPLY=( $( compgen -W "${timeUnit_option_args}" -- "${curr_word}" ) )
+      local IFS=$'\n'
+      COMPREPLY=( $( compgen -W "${timeUnit_option_args[*]}" -- "${curr_word}" ) )
       return $?
       ;;
     -t|--timeout)
       return
       ;;
   esac
-  local str2_pos_param_args="aaa bbb ccc" # 0-0 values
+  local str2_pos_param_args=("aaa" "bbb" "ccc") # 0-0 values
 
   if [[ "${curr_word}" == -* ]]; then
     COMPREPLY=( $(compgen -W "${flag_opts} ${arg_opts}" -- "${curr_word}") )
@@ -468,7 +475,8 @@ function _picocli_picocompletion-demo_sub2_sub2child2alias() {
     local currIndex
     currIndex=$(currentPositionalIndex "sub2child2-alias" "${arg_opts}" "${flag_opts}")
     if (( currIndex >= 0 && currIndex <= 0 )); then
-      positionals=$( compgen -W "$str2_pos_param_args" -- "${curr_word}" )
+      local IFS=$'\n'
+      positionals=$( compgen -W "${str2_pos_param_args[*]}" -- "${curr_word}" )
     fi
     local IFS=$'\n'
     COMPREPLY=( $(compgen -W "${commands// /$'\n'}${IFS}${positionals}" -- "${curr_word}") )
@@ -483,7 +491,7 @@ function _picocli_picocompletion-demo_sub2_subsub3() {
   local commands=""
   local flag_opts=""
   local arg_opts=""
-  local cands_pos_param_args="aaa bbb ccc" # 0-0 values
+  local cands_pos_param_args=("aaa" "bbb" "ccc") # 0-0 values
 
   if [[ "${curr_word}" == -* ]]; then
     COMPREPLY=( $(compgen -W "${flag_opts} ${arg_opts}" -- "${curr_word}") )
@@ -492,7 +500,8 @@ function _picocli_picocompletion-demo_sub2_subsub3() {
     local currIndex
     currIndex=$(currentPositionalIndex "subsub3" "${arg_opts}" "${flag_opts}")
     if (( currIndex >= 0 && currIndex <= 0 )); then
-      positionals=$( compgen -W "$cands_pos_param_args" -- "${curr_word}" )
+      local IFS=$'\n'
+      positionals=$( compgen -W "${cands_pos_param_args[*]}" -- "${curr_word}" )
     elif (( currIndex >= 1 && currIndex <= 2 )); then
       local IFS=$'\n'
       type compopt &>/dev/null && compopt -o filenames
@@ -514,7 +523,7 @@ function _picocli_picocompletion-demo_sub2_sub2child3alias() {
   local commands=""
   local flag_opts=""
   local arg_opts=""
-  local cands_pos_param_args="aaa bbb ccc" # 0-0 values
+  local cands_pos_param_args=("aaa" "bbb" "ccc") # 0-0 values
 
   if [[ "${curr_word}" == -* ]]; then
     COMPREPLY=( $(compgen -W "${flag_opts} ${arg_opts}" -- "${curr_word}") )
@@ -523,7 +532,8 @@ function _picocli_picocompletion-demo_sub2_sub2child3alias() {
     local currIndex
     currIndex=$(currentPositionalIndex "sub2child3-alias" "${arg_opts}" "${flag_opts}")
     if (( currIndex >= 0 && currIndex <= 0 )); then
-      positionals=$( compgen -W "$cands_pos_param_args" -- "${curr_word}" )
+      local IFS=$'\n'
+      positionals=$( compgen -W "${cands_pos_param_args[*]}" -- "${curr_word}" )
     elif (( currIndex >= 1 && currIndex <= 2 )); then
       local IFS=$'\n'
       type compopt &>/dev/null && compopt -o filenames
@@ -604,20 +614,21 @@ function _picocli_picocompletion-demo_sub2alias_subsub2() {
   local commands=""
   local flag_opts=""
   local arg_opts="-u --timeUnit -t --timeout"
-  local timeUnit_option_args="%2$s" # --timeUnit values
+  local timeUnit_option_args=("%2$s") # --timeUnit values
 
   type compopt &>/dev/null && compopt +o default
 
   case ${prev_word} in
     -u|--timeUnit)
-      COMPREPLY=( $( compgen -W "${timeUnit_option_args}" -- "${curr_word}" ) )
+      local IFS=$'\n'
+      COMPREPLY=( $( compgen -W "${timeUnit_option_args[*]}" -- "${curr_word}" ) )
       return $?
       ;;
     -t|--timeout)
       return
       ;;
   esac
-  local str2_pos_param_args="aaa bbb ccc" # 0-0 values
+  local str2_pos_param_args=("aaa" "bbb" "ccc") # 0-0 values
 
   if [[ "${curr_word}" == -* ]]; then
     COMPREPLY=( $(compgen -W "${flag_opts} ${arg_opts}" -- "${curr_word}") )
@@ -626,7 +637,8 @@ function _picocli_picocompletion-demo_sub2alias_subsub2() {
     local currIndex
     currIndex=$(currentPositionalIndex "subsub2" "${arg_opts}" "${flag_opts}")
     if (( currIndex >= 0 && currIndex <= 0 )); then
-      positionals=$( compgen -W "$str2_pos_param_args" -- "${curr_word}" )
+      local IFS=$'\n'
+      positionals=$( compgen -W "${str2_pos_param_args[*]}" -- "${curr_word}" )
     fi
     local IFS=$'\n'
     COMPREPLY=( $(compgen -W "${commands// /$'\n'}${IFS}${positionals}" -- "${curr_word}") )
@@ -642,20 +654,21 @@ function _picocli_picocompletion-demo_sub2alias_sub2child2alias() {
   local commands=""
   local flag_opts=""
   local arg_opts="-u --timeUnit -t --timeout"
-  local timeUnit_option_args="%2$s" # --timeUnit values
+  local timeUnit_option_args=("%2$s") # --timeUnit values
 
   type compopt &>/dev/null && compopt +o default
 
   case ${prev_word} in
     -u|--timeUnit)
-      COMPREPLY=( $( compgen -W "${timeUnit_option_args}" -- "${curr_word}" ) )
+      local IFS=$'\n'
+      COMPREPLY=( $( compgen -W "${timeUnit_option_args[*]}" -- "${curr_word}" ) )
       return $?
       ;;
     -t|--timeout)
       return
       ;;
   esac
-  local str2_pos_param_args="aaa bbb ccc" # 0-0 values
+  local str2_pos_param_args=("aaa" "bbb" "ccc") # 0-0 values
 
   if [[ "${curr_word}" == -* ]]; then
     COMPREPLY=( $(compgen -W "${flag_opts} ${arg_opts}" -- "${curr_word}") )
@@ -664,7 +677,8 @@ function _picocli_picocompletion-demo_sub2alias_sub2child2alias() {
     local currIndex
     currIndex=$(currentPositionalIndex "sub2child2-alias" "${arg_opts}" "${flag_opts}")
     if (( currIndex >= 0 && currIndex <= 0 )); then
-      positionals=$( compgen -W "$str2_pos_param_args" -- "${curr_word}" )
+      local IFS=$'\n'
+      positionals=$( compgen -W "${str2_pos_param_args[*]}" -- "${curr_word}" )
     fi
     local IFS=$'\n'
     COMPREPLY=( $(compgen -W "${commands// /$'\n'}${IFS}${positionals}" -- "${curr_word}") )
@@ -679,7 +693,7 @@ function _picocli_picocompletion-demo_sub2alias_subsub3() {
   local commands=""
   local flag_opts=""
   local arg_opts=""
-  local cands_pos_param_args="aaa bbb ccc" # 0-0 values
+  local cands_pos_param_args=("aaa" "bbb" "ccc") # 0-0 values
 
   if [[ "${curr_word}" == -* ]]; then
     COMPREPLY=( $(compgen -W "${flag_opts} ${arg_opts}" -- "${curr_word}") )
@@ -688,7 +702,8 @@ function _picocli_picocompletion-demo_sub2alias_subsub3() {
     local currIndex
     currIndex=$(currentPositionalIndex "subsub3" "${arg_opts}" "${flag_opts}")
     if (( currIndex >= 0 && currIndex <= 0 )); then
-      positionals=$( compgen -W "$cands_pos_param_args" -- "${curr_word}" )
+      local IFS=$'\n'
+      positionals=$( compgen -W "${cands_pos_param_args[*]}" -- "${curr_word}" )
     elif (( currIndex >= 1 && currIndex <= 2 )); then
       local IFS=$'\n'
       type compopt &>/dev/null && compopt -o filenames
@@ -710,7 +725,7 @@ function _picocli_picocompletion-demo_sub2alias_sub2child3alias() {
   local commands=""
   local flag_opts=""
   local arg_opts=""
-  local cands_pos_param_args="aaa bbb ccc" # 0-0 values
+  local cands_pos_param_args=("aaa" "bbb" "ccc") # 0-0 values
 
   if [[ "${curr_word}" == -* ]]; then
     COMPREPLY=( $(compgen -W "${flag_opts} ${arg_opts}" -- "${curr_word}") )
@@ -719,7 +734,8 @@ function _picocli_picocompletion-demo_sub2alias_sub2child3alias() {
     local currIndex
     currIndex=$(currentPositionalIndex "sub2child3-alias" "${arg_opts}" "${flag_opts}")
     if (( currIndex >= 0 && currIndex <= 0 )); then
-      positionals=$( compgen -W "$cands_pos_param_args" -- "${curr_word}" )
+      local IFS=$'\n'
+      positionals=$( compgen -W "${cands_pos_param_args[*]}" -- "${curr_word}" )
     elif (( currIndex >= 1 && currIndex <= 2 )); then
       local IFS=$'\n'
       type compopt &>/dev/null && compopt -o filenames
