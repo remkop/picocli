@@ -756,6 +756,41 @@ public class AutoCompleteTest {
                 "  echo \"$result\"\n" +
                 "}\n" +
                 "\n" +
+                "# compReplyArray generates a list of completion suggestions based on an array, ensuring all values are properly escaped.\n" +
+                "#\n" +
+                "# compReplyArray takes a single parameter: the array of options to be displayed\n" +
+                "#\n" +
+                "# The output is echoed to std_out, one option per line.\n" +
+                "#\n" +
+                "# Example usage:\n" +
+                "# local options=(\"foo\", \"bar\", \"baz\")\n" +
+                "# local IFS=$'\\n'\n" +
+                "# COMPREPLY=$(compReplyArray \"${options[@]}\")\n" +
+                "function compReplyArray() {\n" +
+                "  declare -a options\n" +
+                "  options=(\"$@\")\n" +
+                "  local curr_word=${COMP_WORDS[COMP_CWORD]}\n" +
+                "  local i\n" +
+                "  local quoted\n" +
+                "  local optionList=()\n" +
+                "\n" +
+                "  for (( i=0; i<${#options[@]}; i++ )); do\n" +
+                "    # Double escape, since we want escaped values, but compgen -W expands the argument\n" +
+                "    printf -v quoted %%q \"${options[i]}\"\n" +
+                "    quoted=\\'${quoted//\\'/\\'\\\\\\'\\'}\\'\n" +
+                "\n" +
+                "    optionList[i]=$quoted\n" +
+                "  done\n" +
+                "\n" +
+                "  # We also have to add another round of escaping to $curr_word.\n" +
+                "  curr_word=${curr_word//\\\\/\\\\\\\\}\n" +
+                "  curr_word=${curr_word//\\'/\\\\\\'}\n" +
+                "\n" +
+                "  # Actually generate completions.\n" +
+                "  local IFS=$'\\n'\n" +
+                "  echo -e \"$(compgen -W \"${optionList[*]}\" -- \"$curr_word\")\"\n" +
+                "}\n" +
+                "\n" +
                 "# Bash completion entry point function.\n" +
                 "# _complete_picocli.AutoComplete finds which commands and subcommands have been specified\n" +
                 "# on the command line and delegates to the appropriate function\n" +
@@ -801,7 +836,8 @@ public class AutoCompleteTest {
                 "    COMPREPLY=( $(compgen -W \"${flag_opts} ${arg_opts}\" -- \"${curr_word}\") )\n" +
                 "  else\n" +
                 "    local positionals=\"\"\n" +
-                "    COMPREPLY=( $(compgen -W \"${commands} ${positionals}\" -- \"${curr_word}\") )\n" +
+                "    local IFS=$'\\n'\n" +
+                "    COMPREPLY=( $(compgen -W \"${commands// /$'\\n'}${IFS}${positionals}\" -- \"${curr_word}\") )\n" +
                 "  fi\n" +
                 "}\n" +
                 "\n" +
@@ -973,6 +1009,41 @@ public class AutoCompleteTest {
                 "  echo \"$result\"\n" +
                 "}\n" +
                 "\n" +
+                "# compReplyArray generates a list of completion suggestions based on an array, ensuring all values are properly escaped.\n" +
+                "#\n" +
+                "# compReplyArray takes a single parameter: the array of options to be displayed\n" +
+                "#\n" +
+                "# The output is echoed to std_out, one option per line.\n" +
+                "#\n" +
+                "# Example usage:\n" +
+                "# local options=(\"foo\", \"bar\", \"baz\")\n" +
+                "# local IFS=$'\\n'\n" +
+                "# COMPREPLY=$(compReplyArray \"${options[@]}\")\n" +
+                "function compReplyArray() {\n" +
+                "  declare -a options\n" +
+                "  options=(\"$@\")\n" +
+                "  local curr_word=${COMP_WORDS[COMP_CWORD]}\n" +
+                "  local i\n" +
+                "  local quoted\n" +
+                "  local optionList=()\n" +
+                "\n" +
+                "  for (( i=0; i<${#options[@]}; i++ )); do\n" +
+                "    # Double escape, since we want escaped values, but compgen -W expands the argument\n" +
+                "    printf -v quoted %%q \"${options[i]}\"\n" +
+                "    quoted=\\'${quoted//\\'/\\'\\\\\\'\\'}\\'\n" +
+                "\n" +
+                "    optionList[i]=$quoted\n" +
+                "  done\n" +
+                "\n" +
+                "  # We also have to add another round of escaping to $curr_word.\n" +
+                "  curr_word=${curr_word//\\\\/\\\\\\\\}\n" +
+                "  curr_word=${curr_word//\\'/\\\\\\'}\n" +
+                "\n" +
+                "  # Actually generate completions.\n" +
+                "  local IFS=$'\\n'\n" +
+                "  echo -e \"$(compgen -W \"${optionList[*]}\" -- \"$curr_word\")\"\n" +
+                "}\n" +
+                "\n" +
                 "# Bash completion entry point function.\n" +
                 "# _complete_nondefault finds which commands and subcommands have been specified\n" +
                 "# on the command line and delegates to the appropriate function\n" +
@@ -1009,7 +1080,8 @@ public class AutoCompleteTest {
                 "    COMPREPLY=( $(compgen -W \"${flag_opts} ${arg_opts}\" -- \"${curr_word}\") )\n" +
                 "  else\n" +
                 "    local positionals=\"\"\n" +
-                "    COMPREPLY=( $(compgen -W \"${commands} ${positionals}\" -- \"${curr_word}\") )\n" +
+                "    local IFS=$'\\n'\n" +
+                "    COMPREPLY=( $(compgen -W \"${commands// /$'\\n'}${IFS}${positionals}\" -- \"${curr_word}\") )\n" +
                 "  fi\n" +
                 "}\n" +
                 "\n" +
@@ -1538,6 +1610,41 @@ public class AutoCompleteTest {
                     "  echo \"$result\"\n" +
                     "}\n" +
                     "\n" +
+                    "# compReplyArray generates a list of completion suggestions based on an array, ensuring all values are properly escaped.\n" +
+                    "#\n" +
+                    "# compReplyArray takes a single parameter: the array of options to be displayed\n" +
+                    "#\n" +
+                    "# The output is echoed to std_out, one option per line.\n" +
+                    "#\n" +
+                    "# Example usage:\n" +
+                    "# local options=(\"foo\", \"bar\", \"baz\")\n" +
+                    "# local IFS=$'\\n'\n" +
+                    "# COMPREPLY=$(compReplyArray \"${options[@]}\")\n" +
+                    "function compReplyArray() {\n" +
+                    "  declare -a options\n" +
+                    "  options=(\"$@\")\n" +
+                    "  local curr_word=${COMP_WORDS[COMP_CWORD]}\n" +
+                    "  local i\n" +
+                    "  local quoted\n" +
+                    "  local optionList=()\n" +
+                    "\n" +
+                    "  for (( i=0; i<${#options[@]}; i++ )); do\n" +
+                    "    # Double escape, since we want escaped values, but compgen -W expands the argument\n" +
+                    "    printf -v quoted %%q \"${options[i]}\"\n" +
+                    "    quoted=\\'${quoted//\\'/\\'\\\\\\'\\'}\\'\n" +
+                    "\n" +
+                    "    optionList[i]=$quoted\n" +
+                    "  done\n" +
+                    "\n" +
+                    "  # We also have to add another round of escaping to $curr_word.\n" +
+                    "  curr_word=${curr_word//\\\\/\\\\\\\\}\n" +
+                    "  curr_word=${curr_word//\\'/\\\\\\'}\n" +
+                    "\n" +
+                    "  # Actually generate completions.\n" +
+                    "  local IFS=$'\\n'\n" +
+                    "  echo -e \"$(compgen -W \"${optionList[*]}\" -- \"$curr_word\")\"\n" +
+                    "}\n" +
+                    "\n" +
                     "# Bash completion entry point function.\n" +
                     "# _complete_%1$s finds which commands and subcommands have been specified\n" +
                     "# on the command line and delegates to the appropriate function\n" +
@@ -1568,7 +1675,8 @@ public class AutoCompleteTest {
                     "    COMPREPLY=( $(compgen -W \"${flag_opts} ${arg_opts}\" -- \"${curr_word}\") )\n" +
                     "  else\n" +
                     "    local positionals=\"\"\n" +
-                    "    COMPREPLY=( $(compgen -W \"${commands} ${positionals}\" -- \"${curr_word}\") )\n" +
+                    "    local IFS=$'\\n'\n" +
+                    "    COMPREPLY=( $(compgen -W \"${commands// /$'\\n'}${IFS}${positionals}\" -- \"${curr_word}\") )\n" +
                     "  fi\n" +
                     "}\n" +
                     "\n" +
@@ -1585,7 +1693,8 @@ public class AutoCompleteTest {
                     "    COMPREPLY=( $(compgen -W \"${flag_opts} ${arg_opts}\" -- \"${curr_word}\") )\n" +
                     "  else\n" +
                     "    local positionals=\"\"\n" +
-                    "    COMPREPLY=( $(compgen -W \"${commands} ${positionals}\" -- \"${curr_word}\") )\n" +
+                    "    local IFS=$'\\n'\n" +
+                    "    COMPREPLY=( $(compgen -W \"${commands// /$'\\n'}${IFS}${positionals}\" -- \"${curr_word}\") )\n" +
                     "  fi\n" +
                     "}\n" +
                     "\n" +
@@ -1748,6 +1857,41 @@ public class AutoCompleteTest {
                 "  echo \"$result\"\n" +
                 "}\n" +
                 "\n" +
+                "# compReplyArray generates a list of completion suggestions based on an array, ensuring all values are properly escaped.\n" +
+                "#\n" +
+                "# compReplyArray takes a single parameter: the array of options to be displayed\n" +
+                "#\n" +
+                "# The output is echoed to std_out, one option per line.\n" +
+                "#\n" +
+                "# Example usage:\n" +
+                "# local options=(\"foo\", \"bar\", \"baz\")\n" +
+                "# local IFS=$'\\n'\n" +
+                "# COMPREPLY=$(compReplyArray \"${options[@]}\")\n" +
+                "function compReplyArray() {\n" +
+                "  declare -a options\n" +
+                "  options=(\"$@\")\n" +
+                "  local curr_word=${COMP_WORDS[COMP_CWORD]}\n" +
+                "  local i\n" +
+                "  local quoted\n" +
+                "  local optionList=()\n" +
+                "\n" +
+                "  for (( i=0; i<${#options[@]}; i++ )); do\n" +
+                "    # Double escape, since we want escaped values, but compgen -W expands the argument\n" +
+                "    printf -v quoted %%q \"${options[i]}\"\n" +
+                "    quoted=\\'${quoted//\\'/\\'\\\\\\'\\'}\\'\n" +
+                "\n" +
+                "    optionList[i]=$quoted\n" +
+                "  done\n" +
+                "\n" +
+                "  # We also have to add another round of escaping to $curr_word.\n" +
+                "  curr_word=${curr_word//\\\\/\\\\\\\\}\n" +
+                "  curr_word=${curr_word//\\'/\\\\\\'}\n" +
+                "\n" +
+                "  # Actually generate completions.\n" +
+                "  local IFS=$'\\n'\n" +
+                "  echo -e \"$(compgen -W \"${optionList[*]}\" -- \"$curr_word\")\"\n" +
+                "}\n" +
+                "\n" +
                 "# Bash completion entry point function.\n" +
                 "# _complete_%1$s finds which commands and subcommands have been specified\n" +
                 "# on the command line and delegates to the appropriate function\n" +
@@ -1790,7 +1934,8 @@ public class AutoCompleteTest {
                 "    COMPREPLY=( $(compgen -W \"${flag_opts} ${arg_opts}\" -- \"${curr_word}\") )\n" +
                 "  else\n" +
                 "    local positionals=\"\"\n" +
-                "    COMPREPLY=( $(compgen -W \"${commands} ${positionals}\" -- \"${curr_word}\") )\n" +
+                "    local IFS=$'\\n'\n" +
+                "    COMPREPLY=( $(compgen -W \"${commands// /$'\\n'}${IFS}${positionals}\" -- \"${curr_word}\") )\n" +
                 "  fi\n" +
                 "}\n" +
                 "\n" +
@@ -1807,7 +1952,8 @@ public class AutoCompleteTest {
                 "    COMPREPLY=( $(compgen -W \"${flag_opts} ${arg_opts}\" -- \"${curr_word}\") )\n" +
                 "  else\n" +
                 "    local positionals=\"\"\n" +
-                "    COMPREPLY=( $(compgen -W \"${commands} ${positionals}\" -- \"${curr_word}\") )\n" +
+                "    local IFS=$'\\n'\n" +
+                "    COMPREPLY=( $(compgen -W \"${commands// /$'\\n'}${IFS}${positionals}\" -- \"${curr_word}\") )\n" +
                 "  fi\n" +
                 "}\n" +
                 "\n" +
