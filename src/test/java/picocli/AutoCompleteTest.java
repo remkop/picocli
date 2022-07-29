@@ -765,7 +765,7 @@ public class AutoCompleteTest {
                 "# Example usage:\n" +
                 "# local options=(\"foo\", \"bar\", \"baz\")\n" +
                 "# local IFS=$'\\n'\n" +
-                "# COMPREPLY=$(compReplyArray \"${options[@]}\")\n" +
+                "# COMPREPLY=($(compReplyArray \"${options[@]}\"))\n" +
                 "function compReplyArray() {\n" +
                 "  declare -a options\n" +
                 "  options=(\"$@\")\n" +
@@ -1018,7 +1018,7 @@ public class AutoCompleteTest {
                 "# Example usage:\n" +
                 "# local options=(\"foo\", \"bar\", \"baz\")\n" +
                 "# local IFS=$'\\n'\n" +
-                "# COMPREPLY=$(compReplyArray \"${options[@]}\")\n" +
+                "# COMPREPLY=($(compReplyArray \"${options[@]}\"))\n" +
                 "function compReplyArray() {\n" +
                 "  declare -a options\n" +
                 "  options=(\"$@\")\n" +
@@ -1619,7 +1619,7 @@ public class AutoCompleteTest {
                     "# Example usage:\n" +
                     "# local options=(\"foo\", \"bar\", \"baz\")\n" +
                     "# local IFS=$'\\n'\n" +
-                    "# COMPREPLY=$(compReplyArray \"${options[@]}\")\n" +
+                    "# COMPREPLY=($(compReplyArray \"${options[@]}\"))\n" +
                     "function compReplyArray() {\n" +
                     "  declare -a options\n" +
                     "  options=(\"$@\")\n" +
@@ -1866,7 +1866,7 @@ public class AutoCompleteTest {
                 "# Example usage:\n" +
                 "# local options=(\"foo\", \"bar\", \"baz\")\n" +
                 "# local IFS=$'\\n'\n" +
-                "# COMPREPLY=$(compReplyArray \"${options[@]}\")\n" +
+                "# COMPREPLY=($(compReplyArray \"${options[@]}\"))\n" +
                 "function compReplyArray() {\n" +
                 "  declare -a options\n" +
                 "  options=(\"$@\")\n" +

@@ -122,7 +122,7 @@ function currentPositionalIndex() {
 # Example usage:
 # local options=("foo", "bar", "baz")
 # local IFS=$'\n'
-# COMPREPLY=$(compReplyArray "${options[@]}")
+# COMPREPLY=($(compReplyArray "${options[@]}"))
 function compReplyArray() {
   declare -a options
   options=("$@")
