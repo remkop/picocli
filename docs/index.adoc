@@ -9924,6 +9924,11 @@ verbose = Show more detail during execution. \
           May be specified multiple times for increasing verbosity.
 ----
 
+For negatable options, the entry in the resource bundle must match the negated form:
+----
+no-verbose = Show verbose output
+----
+
 For https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.Parameters.html#descriptionKey--[positional parameters] the fallback key is the `paramLabel + [ index ]`, for example:
 
 .Java
