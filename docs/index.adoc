@@ -1466,6 +1466,15 @@ class InetSocketAddressConverter : ITypeConverter<InetSocketAddress> {
 
 The `picocli-examples` module on GitHub has a minimal working https://github.com/remkop/picocli/blob/main/picocli-examples/src/main/java/picocli/examples/typeconverter/InetSocketAddressConverterDemo.java[example] which you can run in our https://www.jdoodle.com/embed/v0/2mxo?stdin=1&arg=1[online-editor^].
 
+[WARNING]
+====
+Note that when an option has <<Arity,variable arity>>, the picocli  parser cannot tell whether each next argument belongs to that option or to a positional parameter. It will try to assign to the option first, but it will take the type conversion exception to mean that it has reached the end of the parameters for that option, and this argument must be assigned to a positional parameter instead.
+
+If it then cannot find a positional parameter, an <<Unmatched Input,unmatched argument error>> is shown to the end user instead.
+====
+
+
+
 === Option-specific Type Converters
 Picocli 2.2 added a `converter` attribute to the `@Option` and `@Parameter` annotations. This allows a specific option or positional parameter to use a different converter than would be used by default based on the type of the field.
 
@@ -13063,6 +13072,7 @@ As you can see in the above example, each closure in the annotation should conta
 <4> Option or Parameters `parameterConsumer`: given a `Stack`, `ArgSpec` and `CommandSpec`, process the remaining arguments. The closure must be cast to `IParameterConsumer`.
 <5> Option or Parameters type `converter` takes an array of closures. Groovy 3.0.7 or greater is required: older versions of Groovy ignore closures in class array annotations. Each closure must have a parameter and be cast to `ITypeConverter`.
 
+NOTE: From picocli version 4.7.0, this feature can be disabled by setting system property `picocli.disable.closures` to `true`. Disabling support for closures in annotations can improve the application startup time.
 
 ==== Older Versions of Groovy
 NOTE: When using a Groovy version older than 2.4.7, use this workaround for the https://issues.apache.org/jira/browse/GROOVY-7613[Grape bug] that causes this error:

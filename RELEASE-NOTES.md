@@ -7,6 +7,8 @@ This release includes bugfixes and enhancements.
 
 From this release, applications can programmatically set the trace level, and use tracing in custom components.
 
+Applications can improve startup time by setting system property `picocli.disable.closures` to `true` to disable support for [closures in annotations](https://picocli.info/#_closures_in_annotations).
+
 Also, this release has various fixes and enhancements related to the synopsis of the usage help message.
 
 
@@ -89,6 +91,7 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1571] Enhancement: Variables in values from the default value provider should be interpolated. Thanks to [Bas Passon](https://github.com/bpasson) for raising this.
 * [#1574] API: Add annotation API to control whether synopsis should be sorted alphabetically or by explicit `order`.
 * [#1708][#1712][#1723] API: The `setUsageHelpLongOptionsMaxWidth` method no longer throws an exception when an invalid value is specified; instead, the value is ignored and an INFO-level trace message is logged. Thanks to [Fabio](https://github.com/fabio-franco) for the pull request.
+* [#1773] Enhancement: Applications can improve startup time by setting system property `picocli.disable.closures` to `true` to disable support for [closures in annotations](https://picocli.info/#_closures_in_annotations). Thanks to [patric-r](https://github.com/patric-r) for raising this.
 * [#1408] Enhancement: Synopsis should respect `order` if specified. Thanks to [Simon](https://github.com/sbernard31) for raising this.
 * [#964][#1080] Enhancement: ArgGroup synopsis should respect `order` (if specified). Thanks to [Enderaoe](https://github.com/Lyther) for the pull request with unit tests.
 * [#1706][#1710] Enhancement: Subcommands should get missing messages from parent command resource bundle. Thanks to [Ruud Senden](https://github.com/rsenden) and [Mike Snowden](https://github.com/wtfacoconut) for the pull request.
@@ -117,6 +120,7 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1650] DOC: User guide, Spring Boot section: add warning about dynamic proxies. Thanks to [Ernst Plüss](https://github.com/pluess) for raising this.
 * [#1677] DOC: Many improvements and corrections to the user manual. Thanks to [Björn Kautler](https://github.com/Vampire) for the pull request.
 * [#1678] DOC: Change links from http to https, fix broken links. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+* [#1750] DOC: Clarify that GPL licensing NOTICE is for docs only.
 * [#1581] BUILD: Fix dependabot config.
 * [#1613] DEP: The `picocli-groovy` module now declares `groovy-all` as dependency.
 * [#1604] DEP: Remove dependency on `slf4j` from `picocli-spring-boot-starter`.
