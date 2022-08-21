@@ -20,13 +20,8 @@ public class Issue1774 {
     static class ParentTestCommand {
     }
 
-    @Command(name = "parentTestCommand", mixinStandardHelpOptions = true, scope = INHERIT,
-            subcommands = TestCommand.class)
-    static class ParentTestCommand2 {
-    }
-
     @Command(name = "test")
-    class TestCommand {
+    static class TestCommand {
         @Command(name = "subcommand")
         void start(@Option(names = "-r", arity = "0") boolean optionR,
                    @Option(names = "-s", arity = "0") boolean optionS,
