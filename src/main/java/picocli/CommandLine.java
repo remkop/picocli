@@ -11737,7 +11737,7 @@ public class CommandLine {
 
                 CommandUserObject userObject = CommandUserObject.create(command, factory);
                 t.debug("Creating CommandSpec for %s with factory %s", userObject, factory.getClass().getName());
-                CommandSpec result = CommandSpec.wrapWithoutInspection(userObject);
+                CommandSpec result = CommandSpec.wrapWithoutInspection(userObject, factory);
 
                 boolean hasCommandAnnotation = false;
                 if (userObject.isMethod()) {
