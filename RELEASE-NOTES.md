@@ -126,6 +126,7 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1581] BUILD: Fix dependabot config.
 * [#1613] DEP: The `picocli-groovy` module now declares `groovy-all` as dependency.
 * [#1604] DEP: Remove dependency on `slf4j` from `picocli-spring-boot-starter`.
+* [#1783] DEP: Update actions/checkout requirement to 2541b1294d2704b0964813337f33b291d3f8596b
 * [#1607] DEP: Bump actions/setup-java from 2.5.0 to 3
 * [#1646] DEP: Bump actions/setup-java from 3.0.0 to 3.1.0
 * [#1655] DEP: Bump actions/setup-java from 3.1.0 to 3.1.1
@@ -150,6 +151,10 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1720] DEP: Bump github/codeql-action from 2.1.12 to 2.1.14
 * [#1728] DEP: Bump github/codeql-action from 2.1.14 to 2.1.15
 * [#1739] DEP: Bump github/codeql-action from 2.1.15 to 2.1.16
+* [#1781] DEP: Bump github/codeql-action from 2.1.18 to 2.1.1
+* [#1786] DEP: Bump github/codeql-action from 2.1.18 to 2.1.20
+* [#1782] DEP: Bump gradle/gradle-build-action from c6619898ec857b418d6436d3efe8a0becf74eb9e to 2.2.4
+* [#1787] DEP: Bump gradle/gradle-build-action from c6619898ec857b418d6436d3efe8a0becf74eb9e to 2.2.5
 * [#1586] DEP: Bump ossf/scorecard-action from 1.0.2 to 1.0.3
 * [#1594] DEP: Bump ossf/scorecard-action from 1.0.3 to 1.0.4
 * [#1691] DEP: Bump ossf/scorecard-action from 1.0.4 to 1.1.0
@@ -166,6 +171,7 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1695] DEP: Bump asciidoctorj-pdf from 2.0.4 to 2.0.6
 * [#1715] DEP: Bump asciidoctorj-pdf from 2.0.6 to 2.0.8
 * [#1722] DEP: Bump asciidoctorj-pdf from 2.0.8 to 2.1.2
+* [#1785] DEP: Bump asciidoctorj-pdf from 2.1.6 to 2.3.0
 * [#1618] DEP: Bump biz.aQute.bnd.gradle from 6.1.0 to 6.2.0
 * [#1698] DEP: Bump biz.aQute.bnd.gradle from 6.2.0 to 6.3.0
 * [#1703] DEP: Bump biz.aQute.bnd.gradle from 6.3.0 to 6.3.1
@@ -192,7 +198,9 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1686] DEP: Bump Spring Boot version from 2.6.8 to 2.7.0
 * [#1719] DEP: Bump Spring Boot version from 2.7.0 to 2.7.1
 * [#1747] DEP: Bump Spring Boot version from 2.7.1 to 2.7.2
+* [#1780] DEP: Bump spring Boot Version from 2.7.2 to 2.7.3
 * [#1588] DEP: Bump system-rules from 1.17.1 to 1.19.0
+
 
 ## <a name="4.7.0-deprecated"></a> Deprecations
 No features were deprecated in this release.
