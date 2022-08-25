@@ -15,7 +15,7 @@ buildscript {
 
     dependencies {
         classpath "org.asciidoctor:asciidoctor-gradle-jvm:$asciidoctorGradlePluginVersion"
-        classpath 'org.asciidoctor:asciidoctorj-pdf:2.1.6'
+        classpath 'org.asciidoctor:asciidoctorj-pdf:2.3.0'
         classpath "org.beryx:badass-jar:2.0.0"
         classpath 'biz.aQute.bnd:biz.aQute.bnd.gradle:6.3.1'
         classpath "io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.30.0"
