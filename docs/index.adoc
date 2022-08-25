@@ -263,6 +263,12 @@ The <<Mixin Standard Help Options,mixinStandardHelpOptions>> attribute adds `--h
 The picocli Quick Guide shows other https://picocli.info/quick-guide.html#_example_applications[sample applications] and explains them in more detail.
 ====
 
+[TIP]
+====
+The https://github.com/remkop/picocli/tree/main/picocli-examples[picocli-examples] module in the picocli git repository has many more examples.
+====
+
+
 == Getting Started
 You can add picocli as an external dependency to your project, or you can include it as source.
 
