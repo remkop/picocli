@@ -108,6 +108,7 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1642] Bugfix: Negatable options should negate explicit values. Thanks to [Nat Burns](https://github.com/burnnat) for raising this.
 * [#1696][#1697] Bugfix: ManPageGenerator asciidoc output now correctly shows options in nested ArgGroups. Thanks to [Ruud Senden](https://github.com/rsenden) for the pull request.
 * [#1741] Bugfix: `@Command`-annotated method parameters are assigned incorrect indices when contained in a `@Command` class that is added as a subcommand to another `@Command` class which has `scope = CommandLine.ScopeType.INHERIT`. Thanks to [Onedy](https://github.com/Onedy) for raising this.
+* [#1779] bugfix: Custom factory should be used when creating `CommandSpec`. Thanks to [Philippe Charles](https://github.com/charphi) for raising this.
 * [#1298] DOC: Publish all-in-one javadoc for all picocli modules.
 * [#812] DOC: Document how to test a picocli spring-boot application.
 * [#1596] DOC: fix javadoc typos and incorrect links.
@@ -121,6 +122,7 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1677] DOC: Many improvements and corrections to the user manual. Thanks to [Björn Kautler](https://github.com/Vampire) for the pull request.
 * [#1678] DOC: Change links from http to https, fix broken links. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1750] DOC: Clarify that GPL licensing NOTICE is for docs only.
+* [#1788] DOC: add link to `picocli-examples` in the user manual. Thanks to [Markus Elfring](https://github.com/Markus-Elfring) for raising this.
 * [#1581] BUILD: Fix dependabot config.
 * [#1613] DEP: The `picocli-groovy` module now declares `groovy-all` as dependency.
 * [#1604] DEP: Remove dependency on `slf4j` from `picocli-spring-boot-starter`.
