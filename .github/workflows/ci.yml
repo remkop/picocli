@@ -63,7 +63,7 @@ jobs:
           cache: gradle
 
       - name: Build
-        uses: gradle/gradle-build-action@c6619898ec857b418d6436d3efe8a0becf74eb9e # v2
+        uses: gradle/gradle-build-action@cd579d970f8aec1cf0cae5f62a8e418768970015 # v2
         with:
           gradle-version: 1.12
           build-root-directory: picocli-legacy-tests/
