@@ -37,7 +37,7 @@ Including as source is optional. If you prefer to use picocli as a library, that
 == Customizable Usage Help - with ANSI Styles and Colors
 Usage help is the face of a command line application. The generated help message should look great out of the box, but should also be easy to tweak.
 
-Do you want your application's usage help to look http://picocli.info/index.html#_compact_example[compact], or do you prefer a more http://picocli.info/index.html#_expanded_example[spacious] look? A good command line library should let you customize the usage help message to accomodate a variety of styles.
+Do you want your application's usage help to look http://picocli.info/index.html#_compact_example[compact], or do you prefer a more http://picocli.info/index.html#_expanded_example[spacious] look? A good command line library should let you customize the usage help message to accommodate a variety of styles.
 
 This is easily accomplished in picocli with http://picocli.info/index.html#_section_headings[annotations]. Separate annotations exist for sections like description, header and footer. Text can be multi-line and each section has a customizable heading. If the annotations are not sufficient, picocli has a Help http://picocli.info/index.html#_usage_help_api[API] that offers some building blocks for further customizing the help message. This may range from the basic (reordering sections and passing parameters for https://docs.oracle.com/javase/8/docs/api/java/util/Formatter.html#syntax[format specifiers] in the headings or section text) to the more advanced (http://picocli.info/index.html#_custom_layout[custom layouts] for options).
 
