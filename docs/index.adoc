@@ -8735,7 +8735,7 @@ myapp add -x=item1 -w=0.2 \
 ----
 
 In the above command line invocation, the `myapp` top-level command is followed by its subcommand `add`.
-Next, this is followed by another two occurences of `add`, followed by `list` and `send-report`.
+Next, this is followed by another two occurrences of `add`, followed by `list` and `send-report`.
 These are all "sibling" commands, that share the same parent command `myapp`.
 This invocation is valid because `myapp` is marked with `subcommandsRepeatable = true`.
 
@@ -10140,7 +10140,7 @@ Hello Sarah!
 Hello Lea!
 ----
 
-In order to control the locale choosen for our output, we have to make use of the command line parameter `--locale`:
+In order to control the locale chosen for our output, we have to make use of the command line parameter `--locale`:
 
 [source,bash]
 ----
@@ -12890,7 +12890,7 @@ See also this https://github.com/remkop/picocli-native-image-demo[demo Gradle pr
 
 A https://skife.org/java/unix/2011/06/20/really_executable_jars.html[really executable JAR]
 is a JAR file that is also a shell script which executes the JAR by running it with `java`.
-It thus functions as an exectuable, is portable across operating systems and architectures,
+It thus functions as an executable, is portable across operating systems and architectures,
 and is still a valid JAR file that can be executed explicitly or otherwise used as a JAR.
 
 The https://github.com/brianm/really-executable-jars-maven-plugin[Really Executable JAR Maven Plugin]

@@ -834,7 +834,7 @@ public class CommandLine {
     }
 
     /** Returns whether abbreviation of subcommands should be allowed when matching subcommands. The default is {@code false}.
-     * @return {@code true} if subcommands can be matched when they are abbrevations of the {@code getCommandName()} value of a registered one, {@code false} otherwise.
+     * @return {@code true} if subcommands can be matched when they are abbreviations of the {@code getCommandName()} value of a registered one, {@code false} otherwise.
      *       For example, if true, for a subcommand with name {@code helpCommand}, inputs like {@code h}, {@code h-c} and {@code hC} are all recognized.
      * @since 4.4 */
     public boolean isAbbreviatedSubcommandsAllowed() {
@@ -860,7 +860,7 @@ public class CommandLine {
     }
 
     /** Returns whether abbreviation of option names should be allowed when matching options. The default is {@code false}.
-     * @return {@code true} if options can be matched when they are abbrevations of the {@code names()} value of a registered one, {@code false} otherwise.
+     * @return {@code true} if options can be matched when they are abbreviations of the {@code names()} value of a registered one, {@code false} otherwise.
      *       For example, if true, for a subcommand with name {@code --helpMe}, inputs like {@code --h}, {@code --h-m} and {@code --hM} are all recognized.
      * @since 4.4 */
     public boolean isAbbreviatedOptionsAllowed() {

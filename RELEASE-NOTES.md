@@ -370,7 +370,7 @@ Artifacts in this release are signed by Remko Popma (6601 E5C0 8DCC BB96).
 * [#1331] Bugfix: Avoid `IllegalArgumentException` when parent has no standard help options and `scope = INHERIT`, while subcommand does have mixed-in standard help options. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
 * [#1381][#1382] Bugfix: Default value of option in repeated subcommand was not applied correctly. Thanks to [sfeuerhahn](https://github.com/sfeuerhahn) for the pull request.
 * [#1434][#1435] `CommandSpec.remove(arg)` should also remove the arg from the `args` collection in the CommandSpec. Thanks to [kaushalkumar](https://github.com/kaushalkumar) for the pull request.
-* [#1404] Bugfix/Enhancement: Print paramLabel only when it could exist. Thanks to [João Guerra](https://github.com/joca-bt) for the pull reqeust.
+* [#1404] Bugfix/Enhancement: Print paramLabel only when it could exist. Thanks to [João Guerra](https://github.com/joca-bt) for the pull request.
 * [#1320][#1321] Bugfix/Enhancement: Use system properties `sun.stdout.encoding` and `sun.stderr.encoding` when creating the `PrintWriters` returned by  `CommandLine::getOut` and `CommandLine::getErr`. Thanks to [Philippe Charles](https://github.com/charphi) for the investigation and the pull request.
 * [#1431] Bugfix/enhancement: `.gitattributes` should include HTML files to convert CRLF to LF. Thanks to [wenhoujx](https://github.com/wenhoujx) for pointing this out.
 * [#1388][#1430] Bugfix: Fix subcommand aliases autocomplete regression. Thanks to [NewbieOrange](https://github.com/NewbieOrange) for the pull request.
@@ -1066,7 +1066,7 @@ For details see the [New and Noteworthy](#4.4.0-new) section below.
 
 Another important change are parser fixes and improvements: the parser will no longer assign values that match an option name to options that take a parameter, unless the value is in quotes. Also, values that resemble, but not exactly match, option names are now treated more consistently and parser behaviour for such values is configurable.
 
-Also worth hightlighting: from this release, the `ManPageGenerator` tool can be used as a subcommand in your application.
+Also worth highlighting: from this release, the `ManPageGenerator` tool can be used as a subcommand in your application.
 
 This release has many more improvements for customizing the usage help message, JANSI fixes, and other bugfixes and improvements. See the [Fixed Issues](#4.4.0-fixes) list for details.
 
@@ -1911,7 +1911,7 @@ myapp add -x=item1 -w=0.2 \
 ```
 
 In the above command line invocation, the `myapp` top-level command is followed by its subcommand `add`.
-Next, this is followed by another two occurences of `add`, followed by `list` and `send-report`.
+Next, this is followed by another two occurrences of `add`, followed by `list` and `send-report`.
 These are all "sibling" commands, that share the same parent command `myapp`.
 This invocation is valid because `myapp` is marked with `subcommandsRepeatable = true`.
 
@@ -4818,7 +4818,7 @@ No features were deprecated in this release.
 The `picocli.AutoComplete` application no longer calls `System.exit()` unless requested by setting system property `picocli.autocomplete.systemExitOnError` or `picocli.autocomplete.systemExitOnSuccess` to any value other than `false`.
 Applications that rely on the exit codes introduced in picocli 3.9.0 need to set these system properties.
 
-The new support for quoted map keys with embedded '=' characters [#594] may inpact some existing applications.
+The new support for quoted map keys with embedded '=' characters [#594] may impact some existing applications.
 If `CommandLine::setTrimQuotes()` is set to `true`, quotes are now removed from map keys and map values. This did not use to be the case.
 
 For example:
@@ -8403,7 +8403,7 @@ Renamed class `Arity` to `Range` since it is not just used for @Option and @Para
 
 # <a name="0.9.1"></a> 0.9.1 - Bugfix release for public review. API may change.
 
-* [#103] Replace javadoc occurences of ASCII with ANSI.  (doc bug)
+* [#103] Replace javadoc occurrences of ASCII with ANSI.  (doc bug)
 * [#102] Move ColorScheme inside Ansi class  (enhancement question wontfix)
 * [#101] Cosmetics: indent `Default: <value>` by 2 spaces  (enhancement)
 * [#100] Improve error message for DuplicateOptionAnnotationsException  (enhancement)
