@@ -302,9 +302,9 @@ The `picocli-codegen` module includes an annotation processor that can build a m
 Enabling this annotation processor in your project is optional, but strongly recommended. Use this if you’re interested in:
 
 * **Compile time error checking**. The annotation processor shows errors for invalid annotations and attributes immediately when you compile, instead of during testing at runtime, resulting in shorter feedback cycles.
-* **<<GraalVM Native Image,GraalVM native images>>**. The annotation processor generates and updates https://www.graalvm.org/reference-manual/native-image/BuildConfiguration/[GraalVM configuration] files under
+* **<<GraalVM Native Image,GraalVM native images>>**. The annotation processor generates and updates https://www.graalvm.org/22.2/reference-manual/native-image/overview/BuildConfiguration/[GraalVM configuration] files under
 `META-INF/native-image/picocli-generated/$project` during compilation, to be included in the application jar.
-This includes configuration files for https://www.graalvm.org/reference-manual/native-image/Reflection/[reflection], https://www.graalvm.org/reference-manual/native-image/Resources/[resources] and https://www.graalvm.org/reference-manual/native-image/DynamicProxy/[dynamic proxies].
+This includes configuration files for https://www.graalvm.org/22.2/reference-manual/native-image/dynamic-features/Reflection/[reflection], https://www.graalvm.org/22.2/reference-manual/native-image/dynamic-features/Resources/[resources] and https://www.graalvm.org/22.2/reference-manual/native-image/dynamic-features/DynamicProxy/[dynamic proxies].
 By embedding these configuration files, your jar is instantly Graal-enabled.
 In most cases no further configuration is needed when generating a native image.
 
@@ -12849,8 +12849,8 @@ ahead-of-time compile Java code to a standalone executable, called a native imag
 The resulting executable includes the application, the libraries, and the JDK and does not require a separate Java VM to be installed.
 The generated native image has faster startup time and lower runtime memory overhead compared to a Java VM.
 
-GraalVM native images have some limitations and require some extra https://www.graalvm.org/reference-manual/native-image/BuildConfiguration/[configuration]
-to be able to use features like https://www.graalvm.org/reference-manual/native-image/Reflection/[reflection], https://www.graalvm.org/reference-manual/native-image/Resources/[resources] (including resource bundles) and https://www.graalvm.org/reference-manual/native-image/DynamicProxy/[dynamic proxies].
+GraalVM native images have some limitations and require some extra https://www.graalvm.org/22.2/reference-manual/native-image/overview/BuildConfiguration/[configuration]
+to be able to use features like https://www.graalvm.org/22.2/reference-manual/native-image/dynamic-features/Reflection/[reflection], https://www.graalvm.org/22.2/reference-manual/native-image/dynamic-features/Resources/[resources] (including resource bundles) and https://www.graalvm.org/22.2/reference-manual/native-image/dynamic-features/DynamicProxy/[dynamic proxies].
 
 ==== How do I Create a Native Image for my Application?
 The `picocli-codegen` module contains an annotation processor that generates the necessary configuration files
@@ -12859,7 +12859,7 @@ to be included in the application jar. The <<Annotation Processor>> section of t
 file.
 
 By embedding these configuration files, your jar is instantly Graal-enabled: the
-https://www.graalvm.org/docs/reference-manual/aot-compilation/#install-native-image[`native-image` tool]
+https://www.graalvm.org/22.2/reference-manual/native-image/#install-native-image[`native-image` tool]
 used to generate the native executable is able to get the configuration from the jar.
 In most cases no further configuration is needed when generating a native image.
 
