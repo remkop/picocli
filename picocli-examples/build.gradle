@@ -36,7 +36,7 @@ dependencies {
                     supportDependencies.validation_api,
                     supportDependencies.hibernate_validator,
                     supportDependencies.hibernate_validator_annproc,
-                    supportDependencies.el_api,
+                    //supportDependencies.el_api,
                     supportDependencies.el_impl,
                     supportDependencies.kotlin_script_runtime
 }

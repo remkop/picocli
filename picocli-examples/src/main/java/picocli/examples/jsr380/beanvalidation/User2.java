@@ -1,11 +1,5 @@
 package picocli.examples.jsr380.beanvalidation;
 
-import picocli.CommandLine;
-import picocli.CommandLine.Model.CommandSpec;
-import picocli.CommandLine.Option;
-import picocli.CommandLine.ParameterException;
-import picocli.CommandLine.Spec;
-
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -18,13 +12,20 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Size;
+import picocli.CommandLine;
+import picocli.CommandLine.Model.CommandSpec;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.ParameterException;
+import picocli.CommandLine.Spec;
+
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
 // Example inspired by https://www.baeldung.com/javax-validation
-public class User implements Runnable {
+// This example uses a custom execution strategy
+public class User2 implements Runnable {
 
     @NotNull(message = "Name cannot be null")
     @Option(names = {"-n", "--name"}, description = "mandatory")
@@ -57,7 +58,7 @@ public class User implements Runnable {
     @Spec
     CommandSpec spec;
 
-    public User() {
+    public User2() {
     }
 
     public Optional<@Past LocalDate> getDateOfBirth() {
@@ -79,30 +80,14 @@ public class User implements Runnable {
 
     public static void main(String... args) {
         args = "-d 2019-03-01 -n Remko -p \"\" -p a -w -e me@mail@com --aboutMe about".split(" ");
-        new CommandLine(new User()).execute(args);
+        new CommandLine(new User2())
+            .setExecutionStrategy(new ValidatingExecutionStrategy())
+            .execute(args);
     }
 
     @Override
     public void run() {
-        validate();
-
         // ... now run the business logic
-    }
-
-    private void validate() {
-        System.out.println(spec.commandLine().getParseResult().originalArgs());
-        System.out.println(this);
-
-        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-        Validator validator = factory.getValidator();
-        Set<ConstraintViolation<User>> violations = validator.validate(this);
-
-        if (!violations.isEmpty()) {
-            String errorMsg = "";
-            for (ConstraintViolation<User> violation : violations) {
-                errorMsg += "ERROR: " + violation.getMessage() + "\n";
-            }
-            throw new ParameterException(spec.commandLine(), errorMsg);
-        }
+        System.out.println("hello " + this);
     }
 }

@@ -4451,10 +4451,10 @@ import picocli.CommandLine;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.*;
 
-import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.validation.constraints.*;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.constraints.*;
 import java.util.Set;
 
 // Example inspired by https://www.baeldung.com/javax-validation
@@ -4515,10 +4515,10 @@ import picocli.CommandLine
 import picocli.CommandLine.Model.CommandSpec
 import picocli.CommandLine.*
 
-import javax.validation.ConstraintViolation
-import javax.validation.Validation
-import javax.validation.Validator
-import javax.validation.constraints.*
+import jakarta.validation.ConstraintViolation
+import jakarta.validation.Validation
+import jakarta.validation.Validator
+import jakarta.validation.constraints.*
 
 // Example inspired by https://www.baeldung.com/javax-validation
 class User : Runnable {
@@ -4564,6 +4564,79 @@ class User : Runnable {
 fun main(args: Array<String>) {
     CommandLine(User()).execute(*args)
 }
+----
+
+==== Using a Custom Execution Strategy for Validation
+
+The above JSR-380 BeanValidation can also be accomplished with a custom `IExecutionStrategy` that does the validation before executing the command.
+For example:
+
+.Java
+[source,java,role="primary"]
+----
+class ValidatingExecutionStrategy implements IExecutionStrategy {
+    public int execute(ParseResult parseResult) {
+        validate(parseResult.commandSpec());
+        return new CommandLine.RunLast().execute(parseResult); // default execution strategy
+    }
+
+    void validate(CommandSpec spec) {
+        Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+        Set<ConstraintViolation<Object>> violations = validator.validate(spec.userObject());
+        if (!violations.isEmpty()) {
+            String errorMsg = "";
+            for (ConstraintViolation<?> violation : violations) {
+                errorMsg += "ERROR: " + violation.getMessage() + "\n";
+            }
+            throw new ParameterException(spec.commandLine(), errorMsg);
+        }
+    }
+}
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+class ValidatingExecutionStrategy : IExecutionStrategy {
+    override fun execute(parseResult : ParseResult) : Int {
+        validate(parseResult.commandSpec())
+        return CommandLine.RunLast().execute(parseResult) // default execution strategy
+    }
+
+    private fun validate(spec : CommandSpec) {
+        val validator: Validator = Validation.buildDefaultValidatorFactory().validator
+        val violations: Set<ConstraintViolation<Any>> = validator.validate(spec.userObject())
+        if (violations.isNotEmpty()) {
+            var errorMsg = ""
+            for (violation in violations) {
+                errorMsg += "ERROR: ${violation.message}\n"
+            }
+            throw CommandLine.ParameterException(spec.commandLine(), errorMsg)
+        }
+    }
+}
+----
+
+The application can wire in this custom execution strategy as follows:
+
+.Java
+[source,java,role="primary"]
+----
+    public static void main(String... args) {
+        new CommandLine(new MyApp())
+                .setExecutionStrategy(new ValidatingExecutionStrategy())
+                .execute(args);
+    }
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+    public static void main(String... args) {
+        CommandLine(MyApp())
+                .setExecutionStrategy(ValidatingExecutionStrategy())
+                .execute(*args)
+    }
 ----
 
 == Parser Configuration
