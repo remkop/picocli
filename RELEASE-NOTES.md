@@ -123,6 +123,7 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1678] DOC: Change links from http to https, fix broken links. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1750] DOC: Clarify that GPL licensing NOTICE is for docs only.
 * [#1788] DOC: add link to `picocli-examples` in the user manual. Thanks to [Markus Elfring](https://github.com/Markus-Elfring) for raising this.
+* [#1796] DOC: Fixing broken links and typos. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1798] DOC: update examples for jakarta.validation-api. Thanks to [Roy](https://github.com/ashr123) for raising this.
 * [#1581] BUILD: Fix dependabot config.
 * [#1613] DEP: The `picocli-groovy` module now declares `groovy-all` as dependency.
@@ -155,6 +156,7 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1781] DEP: Bump github/codeql-action from 2.1.18 to 2.1.1
 * [#1786] DEP: Bump github/codeql-action from 2.1.18 to 2.1.20
 * [#1792] DEP: Bump github/codeql-action from 2.1.20 to 2.1.21
+* [#1797] DEP: Bump github/codeql-action from 2.1.21 to 2.1.22
 * [#1782] DEP: Bump gradle/gradle-build-action from c6619898ec857b418d6436d3efe8a0becf74eb9e to 2.2.4
 * [#1787] DEP: Bump gradle/gradle-build-action from c6619898ec857b418d6436d3efe8a0becf74eb9e to 2.2.5
 * [#1586] DEP: Bump ossf/scorecard-action from 1.0.2 to 1.0.3
