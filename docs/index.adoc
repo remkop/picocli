@@ -4569,7 +4569,10 @@ fun main(args: Array<String>) {
 ==== Using a Custom Execution Strategy for Validation
 
 The above JSR-380 BeanValidation can also be accomplished with a custom `IExecutionStrategy` that does the validation before executing the command.
-For example:
+This moves the validation logic into a separate class.
+Picocli invokes this logic, removing the need to call a `validate` method from the business logic.
+
+Such a custom execution strategy could look like this:
 
 .Java
 [source,java,role="primary"]
