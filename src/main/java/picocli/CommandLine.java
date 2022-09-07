@@ -6023,6 +6023,15 @@ public class CommandLine {
              * @throws Exception internally, picocli call sites will catch any exceptions thrown from here and rethrow them wrapped in a PicocliException */
             <T> T set(T value) throws Exception;
         }
+        /** Optional interface that can be implemented by {@link IGetter} implementations to
+         * indicate whether the {@link IGetter#get()} method is accessible. 
+         */
+        public interface IGetterAccessChecker {
+            /** Check whether the {@link IGetter#get()} method is accessible.
+             * 
+             *  @return true if the {@link IGetter#get()} method is accessible, false otherwise */
+            boolean isGetterAccessible();
+        }
 
         /**
          * This class provides a case-aware Linked HashMap. Supports both case-sensitive and case-insensitive modes.
@@ -9169,6 +9178,9 @@ public class CommandLine {
 
             /** Returns the current value of this argument. Delegates to the current {@link #getter()}. */
             public <T> T getValue() throws PicocliException {
+                if ( getter instanceof IGetterAccessChecker && !((IGetterAccessChecker)getter).isGetterAccessible() ) {
+                    return null;
+                }
                 try {
                     return getter.<T>get();
                 } catch (PicocliException ex) { throw ex;
@@ -12018,11 +12030,15 @@ public class CommandLine {
             }
         }
 
-        static class FieldBinding implements IGetter, ISetter {
+        static class FieldBinding implements IGetter, IGetterAccessChecker, ISetter {
             private final IScope scope;
             private final Field field;
             FieldBinding(Object scope, Field field) { this(ObjectScope.asScope(scope), field); }
             FieldBinding(IScope scope, Field field) { this.scope = scope; this.field = field; }
+            public boolean isGetterAccessible() {
+                try { return scope!=null && scope.get()!=null; }
+                catch (Exception ex) { return false; }
+            }
             public <T> T get() throws PicocliException {
                 Object obj;
                 try { obj = scope.get(); }
@@ -12051,7 +12067,7 @@ public class CommandLine {
                         field.getDeclaringClass().getName(), field.getName());
             }
         }
-        static class MethodBinding implements IGetter, ISetter {
+        static class MethodBinding implements IGetter, IGetterAccessChecker, ISetter {
             private final IScope scope;
             private final Method method;
             private final CommandSpec spec;
@@ -12060,6 +12076,10 @@ public class CommandLine {
                 this.scope = scope;
                 this.method = method;
                 this.spec = spec;
+            }
+            public boolean isGetterAccessible() {
+                try { return scope!=null && scope.get()!=null; }
+                catch (Exception ex) { return false; }
             }
             @SuppressWarnings("unchecked") public <T> T get() { return (T) currentValue; }
             public <T> T set(T value) throws PicocliException {
