@@ -5995,6 +5995,15 @@ public class CommandLine {
          * @since 4.0
          */
         public interface IScope extends IGetter, ISetter {}
+        
+        /** This interface provides access to an {@link IScope} instance. 
+         */
+        public interface IScoped {
+            /** Get the {@link IScope} instance.
+             * 
+             *  @return {@link IScope} instance */
+            IScope getScope();
+        }
 
         /** Customizable getter for obtaining the current value of an option or positional parameter.
          * When an option or positional parameter is matched on the command line, its getter or setter is invoked to capture the value.
@@ -9166,9 +9175,25 @@ public class CommandLine {
              * @return whether this argument applies to all descendent subcommands of the command where it is defined
              * @since 4.3 */
             public ScopeType scopeType() { return scopeType; }
+            
+            /** Check whether the {@link #getValue()} method is able to get an actual value from the current {@link #getter()}. */
+            public boolean isValueGettable() {
+                if (getter instanceof IScoped) {
+                    IScoped scoped = (IScoped) getter;
+                    IScope scope = scoped.getScope();
+                    try {
+                        Object obj = scope.get();
+                        return obj != null;
+                    } catch (Exception e) {
+                        return false;
+                    }
+                }
+                return true;
+            }
 
             /** Returns the current value of this argument. Delegates to the current {@link #getter()}. */
             public <T> T getValue() throws PicocliException {
+                if ( !isValueGettable() ) { return null; }
                 try {
                     return getter.<T>get();
                 } catch (PicocliException ex) { throw ex;
@@ -12018,11 +12043,14 @@ public class CommandLine {
             }
         }
 
-        static class FieldBinding implements IGetter, ISetter {
+        static class FieldBinding implements IGetter, ISetter, IScoped {
             private final IScope scope;
             private final Field field;
             FieldBinding(Object scope, Field field) { this(ObjectScope.asScope(scope), field); }
             FieldBinding(IScope scope, Field field) { this.scope = scope; this.field = field; }
+            public IScope getScope() {
+                return scope;
+            }
             public <T> T get() throws PicocliException {
                 Object obj;
                 try { obj = scope.get(); }
@@ -12051,7 +12079,7 @@ public class CommandLine {
                         field.getDeclaringClass().getName(), field.getName());
             }
         }
-        static class MethodBinding implements IGetter, ISetter {
+        static class MethodBinding implements IGetter, ISetter, IScoped {
             private final IScope scope;
             private final Method method;
             private final CommandSpec spec;
@@ -12060,6 +12088,9 @@ public class CommandLine {
                 this.scope = scope;
                 this.method = method;
                 this.spec = spec;
+            }
+            public IScope getScope() {
+                return scope;
             }
             @SuppressWarnings("unchecked") public <T> T get() { return (T) currentValue; }
             public <T> T set(T value) throws PicocliException {
