@@ -60,14 +60,22 @@ sourceSets {
 //a task that generates the resources for the example VersionProviderDemo1:
 task generateVersionTxt {
     description 'Creates a version.txt file with build info that is added to the root of the picocli-examples jar'
+    def generated = new File(generatedResources, "version.txt")
+    outputs.file(generated)
     doLast {
         new File(generatedResources).mkdirs()
-        def generated = new File(generatedResources, "version.txt")
         generated.text = """
 Version: $rootProject.version
 Buildtime: ${new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date())}
 Application-name: $rootProject.name $project.name
 """
+    }
+}
+normalization {
+    runtimeClasspath {
+        properties('**/version.txt') {
+            ignoreProperty 'Buildtime'
+        }
     }
 }
 

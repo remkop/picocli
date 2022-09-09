@@ -11,4 +11,3 @@ if (org.gradle.api.JavaVersion.current().isJava8Compatible()) {
 } else {
     println("Excluding module picocli-annotation-processing-tests from the build: they require Java 8 but we have Java version ${org.gradle.api.JavaVersion.current()}")
 }
-
