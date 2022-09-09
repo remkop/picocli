@@ -5997,6 +5997,7 @@ public class CommandLine {
         public interface IScope extends IGetter, ISetter {}
         
         /** This interface provides access to an {@link IScope} instance. 
+         * @since 4.7
          */
         public interface IScoped {
             /** Get the {@link IScope} instance.
@@ -9176,14 +9177,15 @@ public class CommandLine {
              * @since 4.3 */
             public ScopeType scopeType() { return scopeType; }
             
-            /** Check whether the {@link #getValue()} method is able to get an actual value from the current {@link #getter()}. */
+            /** Check whether the {@link #getValue()} method is able to get an actual value from the current {@link #getter()}. 
+             * @since 4.7 */
             public boolean isValueGettable() {
                 if (getter instanceof IScoped) {
                     IScoped scoped = (IScoped) getter;
                     IScope scope = scoped.getScope();
+                    if ( scope==null ) { return false; }
                     try {
-                        Object obj = scope.get();
-                        return obj != null;
+                        return scope.get() != null;
                     } catch (Exception e) {
                         return false;
                     }
