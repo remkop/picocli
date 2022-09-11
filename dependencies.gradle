@@ -46,7 +46,7 @@ ext {
         log4j2core        : "org.apache.logging.log4j:log4j-core:$log4j2Version",
         kotlin_stdlib     : "org.jetbrains.kotlin:kotlin-stdlib",
         scala_lang        : "org.scala-lang:scala-library:2.13.8",
-        validation_api    : "jakarta.validation:validation-api:3.0.2",
+        validation_api    : "jakarta.validation:jakarta.validation-api:3.0.2",
         //el_api            : "jakarta.el:jakarta.el-api:3.0.3",
         el_impl           : "org.glassfish:jakarta.el:4.0.2",
 
