@@ -13,7 +13,7 @@ import picocli.spring.PicocliSpringFactory;
 /**
  * @author Thibaud Leprêtre
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @ConditionalOnClass(CommandLine.class)
 public class PicocliAutoConfiguration {
 
