@@ -10594,12 +10594,13 @@ class Cat {
 
     @Command(description = "Concatenate FILE(s) to standard output.",
              mixinStandardHelpOptions = true, version = "4.1.3")
-    void cat(@Option(names = {"-E", "--show-ends"}) boolean showEnds,
+    int cat(@Option(names = {"-E", "--show-ends"}) boolean showEnds,
              @Option(names = {"-n", "--number"}) boolean number,
              @Option(names = {"-T", "--show-tabs"}) boolean showTabs,
              @Option(names = {"-v", "--show-nonprinting"}) boolean showNonPrinting,
              @Parameters(paramLabel = "FILE") File[] files) {
         // process files
+        return CommandLine.ExitCode.OK;
     }
 }
 ----
@@ -10614,8 +10615,9 @@ class Cat {
             @Option(names = ["-n", "--number"]) number: Boolean,
             @Option(names = ["-T", "--show-tabs"]) showTabs: Boolean,
             @Option(names = ["-v", "--show-nonprinting"]) showNonPrinting: Boolean,
-            @Parameters(paramLabel = "FILE") files: Array<File>?) {
+            @Parameters(paramLabel = "FILE") files: Array<File>?): Int {
         // process files
+        return CommandLine.ExitCode.OK
     }
 }
 
