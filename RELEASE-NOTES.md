@@ -111,6 +111,7 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1696][#1697] Bugfix: ManPageGenerator asciidoc output now correctly shows options in nested ArgGroups. Thanks to [Ruud Senden](https://github.com/rsenden) for the pull request.
 * [#1741] Bugfix: `@Command`-annotated method parameters are assigned incorrect indices when contained in a `@Command` class that is added as a subcommand to another `@Command` class which has `scope = CommandLine.ScopeType.INHERIT`. Thanks to [Onedy](https://github.com/Onedy) for raising this.
 * [#1779] bugfix: Custom factory should be used when creating `CommandSpec`. Thanks to [Philippe Charles](https://github.com/charphi) for raising this.
+* [#1807] BUILD: Optimize incremental builds and local build cache usage. Thanks to [Jean André Gauthier](https://github.com/jean-andre-gauthier) for the pull request and [Nelson Osacky](https://github.com/runningcode) for the review.
 * [#1298] DOC: Publish all-in-one javadoc for all picocli modules.
 * [#812] DOC: Document how to test a picocli spring-boot application.
 * [#1596] DOC: fix javadoc typos and incorrect links.
