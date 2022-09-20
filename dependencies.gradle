@@ -24,7 +24,7 @@ ext {
     jline3Version       = "3.21.0"
     junitDepVersion     = "4.11.20120805.1225"
     junitVersion        = "4.13.2"
-    log4j2Version       = "2.18.0"
+    log4j2Version       = "2.19.0"
     springBootVersion   = "2.7.3"
     systemRulesVersion  = "1.19.0"
 
