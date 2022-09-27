@@ -110,10 +110,10 @@ import java.util.concurrent.Callable;
 @Command(name = "mycommand", mixinStandardHelpOptions = true, subcommands = MyCommand.Sub.class)
 public class MyCommand implements Callable<Integer> {
     @Option(names = "-x", description = "optional option")
-    private String x;
+    public String x;;
 
     @Parameters(description = "positional params")
-    private List<String> positionals;
+    public List<String> positionals;
 
     @Override
     public Integer call() {
