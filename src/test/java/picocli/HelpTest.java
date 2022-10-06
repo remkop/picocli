@@ -5180,4 +5180,14 @@ public class HelpTest {
         String actual = cmd.getUsageMessage();
         assertEquals(expected, actual);
     }
+
+    @Test
+    public void testIssue1834SynopsisForCharArrayOption() {
+        @Command() class App {
+            @Option(names = {"--password", "-p"}, interactive = true, echo = false, arity = "0..1", required = true)
+            private char[] password;;
+        }
+        Help help = new Help(new App());
+        assertEquals("<main class> -p[=<password>]" + LINESEP, help.synopsis(0));
+    }
 }
