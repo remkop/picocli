@@ -5995,13 +5995,13 @@ public class CommandLine {
          * @since 4.0
          */
         public interface IScope extends IGetter, ISetter {}
-        
-        /** This interface provides access to an {@link IScope} instance. 
+
+        /** This interface provides access to an {@link IScope} instance.
          * @since 4.7
          */
         public interface IScoped {
             /** Get the {@link IScope} instance.
-             * 
+             *
              *  @return {@link IScope} instance */
             IScope getScope();
         }
@@ -9176,8 +9176,8 @@ public class CommandLine {
              * @return whether this argument applies to all descendent subcommands of the command where it is defined
              * @since 4.3 */
             public ScopeType scopeType() { return scopeType; }
-            
-            /** Check whether the {@link #getValue()} method is able to get an actual value from the current {@link #getter()}. 
+
+            /** Check whether the {@link #getValue()} method is able to get an actual value from the current {@link #getter()}.
              * @since 4.7 */
             public boolean isValueGettable() {
                 if (getter instanceof IScoped) {
@@ -15754,14 +15754,17 @@ public class CommandLine {
                 Text name = colorScheme.optionText(nameString);
                 Text param = parameterLabelRenderer.renderParameterLabel(option, colorScheme.ansi(), colorScheme.optionParamStyles);
                 text = text.concat(prefix);
+
+                // related: Interpreter#getActualTypeConverter special logic for interactive char[] options... (also: #648)
+                boolean treatAsSingleValue = char[].class.equals(option.type()) && option.interactive(); // #1834
                 if (option.required()) { // e.g., -x=VAL
                     text = text.concat(name).concat(param).concat("");
-                    if (option.isMultiValue()) { // e.g., -x=VAL [-x=VAL]...
+                    if (option.isMultiValue() && !treatAsSingleValue) { // e.g., -x=VAL [-x=VAL]...
                         text = text.concat(" [").concat(name).concat(param).concat("]...");
                     }
                 } else {
                     text = text.concat("[").concat(name).concat(param).concat("]");
-                    if (option.isMultiValue()) { // add ellipsis to show option is repeatable
+                    if (option.isMultiValue() && !treatAsSingleValue) { // add ellipsis to show option is repeatable
                         text = text.concat("...");
                     }
                 }
