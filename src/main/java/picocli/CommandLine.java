@@ -5995,13 +5995,13 @@ public class CommandLine {
          * @since 4.0
          */
         public interface IScope extends IGetter, ISetter {}
-        
-        /** This interface provides access to an {@link IScope} instance. 
+
+        /** This interface provides access to an {@link IScope} instance.
          * @since 4.7
          */
         public interface IScoped {
             /** Get the {@link IScope} instance.
-             * 
+             *
              *  @return {@link IScope} instance */
             IScope getScope();
         }
@@ -7010,7 +7010,7 @@ public class CommandLine {
                 mixins.put(interpolator.interpolate(name), mixin);
 
                 initName(interpolator.interpolateCommandName(mixin.name()));
-                // TODO initAliases(mixin.aliases()); // should we?
+                initAliases(mixin.aliases()); // should we?
                 // TODO initCommandHierarchyWithResourceBundle(mixin.usageMessage().messages().resourceBundleBaseName(), );
                 initFrom(mixin);
 
@@ -7455,6 +7455,7 @@ public class CommandLine {
                 }
             }
 
+            void initAliases(String[] aliases)          { if (aliases != null) { this.aliases.addAll(Arrays.asList(aliases));}}
             void initName(String value)                 { if (initializable(name, value, DEFAULT_COMMAND_NAME))                           {name = value;} }
             void initHelpCommand(boolean value)         { if (initializable(isHelpCommand, value, DEFAULT_IS_HELP_COMMAND))               {isHelpCommand = value;} }
             void initVersion(String[] value)            { if (initializable(version, value, UsageMessageSpec.DEFAULT_MULTI_LINE))         {version = value.clone();} }
@@ -9176,8 +9177,8 @@ public class CommandLine {
              * @return whether this argument applies to all descendent subcommands of the command where it is defined
              * @since 4.3 */
             public ScopeType scopeType() { return scopeType; }
-            
-            /** Check whether the {@link #getValue()} method is able to get an actual value from the current {@link #getter()}. 
+
+            /** Check whether the {@link #getValue()} method is able to get an actual value from the current {@link #getter()}.
              * @since 4.7 */
             public boolean isValueGettable() {
                 if (getter instanceof IScoped) {
