@@ -1081,4 +1081,23 @@ public class MixinTest {
 
         assertEquals(43, another.usageMessage().longOptionsMaxWidth());
     }
+
+    @Command(aliases = {"ls"} )
+    public static class ListAliasMixin {
+    }
+
+    @Command(name="list")
+    public static class MyListCommand {
+        @Mixin() public ListAliasMixin aliasMixin;
+    }
+
+    @Command(subcommands = {MyListCommand.class})
+    public static class App_Issue1836 {
+    }
+
+    @Test
+    public void testIssue1836CommandAliasOnMixin() {
+        Help help = new Help(new App_Issue1836());
+        assertEquals("list, ls", help.commandList().trim());
+    }
 }

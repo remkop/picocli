@@ -7010,7 +7010,7 @@ public class CommandLine {
                 mixins.put(interpolator.interpolate(name), mixin);
 
                 initName(interpolator.interpolateCommandName(mixin.name()));
-                // TODO initAliases(mixin.aliases()); // should we?
+                initAliases(mixin.aliases()); // should we?
                 // TODO initCommandHierarchyWithResourceBundle(mixin.usageMessage().messages().resourceBundleBaseName(), );
                 initFrom(mixin);
 
@@ -7455,6 +7455,7 @@ public class CommandLine {
                 }
             }
 
+            void initAliases(String[] aliases)          { if (aliases != null) { this.aliases.addAll(Arrays.asList(aliases));}}
             void initName(String value)                 { if (initializable(name, value, DEFAULT_COMMAND_NAME))                           {name = value;} }
             void initHelpCommand(boolean value)         { if (initializable(isHelpCommand, value, DEFAULT_IS_HELP_COMMAND))               {isHelpCommand = value;} }
             void initVersion(String[] value)            { if (initializable(version, value, UsageMessageSpec.DEFAULT_MULTI_LINE))         {version = value.clone();} }
