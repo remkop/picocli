@@ -3629,7 +3629,7 @@ public class CommandLine {
     private static boolean isBoolean(Class<?>[] types) { return isBoolean(types[0]) || (isOptional(types[0]) && isBoolean(types[1])); }
     private static boolean isBoolean(Class<?> type) { return type == Boolean.class || type == Boolean.TYPE; }
     private static CommandLine toCommandLine(Object obj, IFactory factory) { return obj instanceof CommandLine ? (CommandLine) obj : new CommandLine(obj, factory, false);}
-    private static boolean isMultiValue(Class<?> cls) { return cls.isArray() || Collection.class.isAssignableFrom(cls) || Map.class.isAssignableFrom(cls); }
+    private static boolean isMultiValue(Class<?> cls) { return (cls.isArray() && cls != char[].class) || Collection.class.isAssignableFrom(cls) || Map.class.isAssignableFrom(cls); }
     private static boolean isOptional(Class<?> cls) { return cls != null && "java.util.Optional".equals(cls.getName()); } // #1108
     private static Object getOptionalEmpty() throws Exception {
         return Class.forName("java.util.Optional").getMethod("empty").invoke(null);
@@ -11112,12 +11112,15 @@ public class CommandLine {
         public interface ITypeInfo {
             /** Returns {@code true} if {@link #getType()} is {@code boolean} or {@code java.lang.Boolean}. */
             boolean isBoolean();
-            /** Returns {@code true} if {@link #getType()} is an array, map or collection. */
+            /** Returns {@code true} if {@link #getType()} is an array, map or collection.
+             * Note that from picocli 4.7, {@code char[]} arrays are considered single values (similar to String) and are not treated as arrays.*/
             boolean isMultiValue();
 
             /** Returns {@code true} if {@link #getType()} is {@code java.util.Optional}
              * @since 4.6 */
             boolean isOptional();
+            /** Returns {@code true} if this type is an array multi-value type.
+             * Note that from picocli 4.7, {@code char[]} arrays are considered single values (similar to String) and are not treated as arrays.*/
             boolean isArray();
             boolean isCollection();
             boolean isMap();
@@ -11191,8 +11194,8 @@ public class CommandLine {
                 }
                 if (auxiliaryTypes == null || auxiliaryTypes.length == 0) {
                     if (type.isArray()) {
-                        if (interactive && type.equals(char[].class)) {
-                            auxiliaryTypes = new Class<?>[]{char[].class};
+                        if (type.equals(char[].class)) {
+                            auxiliaryTypes = new Class<?>[]{char[].class}; // TODO is this still needed?
                         } else {
                             auxiliaryTypes = new Class<?>[]{type.getComponentType()};
                         }
@@ -11279,7 +11282,7 @@ public class CommandLine {
 
             public boolean isBoolean()            { return auxiliaryTypes[0] == boolean.class || auxiliaryTypes[0] == Boolean.class; }
             public boolean isMultiValue()         { return CommandLine.isMultiValue(type); }
-            public boolean isArray()              { return type.isArray(); }
+            public boolean isArray()              { return type.isArray() && type != char[].class; }
             public boolean isCollection()         { return Collection.class.isAssignableFrom(type); }
             public boolean isMap()                { return Map.class.isAssignableFrom(type); }
             public boolean isOptional()           { return CommandLine.isOptional(type); }
@@ -14065,11 +14068,11 @@ public class CommandLine {
             }
 
             int result;
-            if (argSpec.type().isArray() && !(argSpec.interactive() && argSpec.type() == char[].class)) {
+            if (argSpec.typeInfo().isArray()) {
                 result = applyValuesToArrayField(argSpec, negated, lookBehind, alreadyUnquoted, arity, workingStack, initialized, argDescription);
-            } else if (Collection.class.isAssignableFrom(argSpec.type())) {
+            } else if (argSpec.typeInfo().isCollection()) {
                 result = applyValuesToCollectionField(argSpec, negated, lookBehind, alreadyUnquoted, arity, workingStack, initialized, argDescription);
-            } else if (Map.class.isAssignableFrom(argSpec.type())) {
+            } else if (argSpec.typeInfo().isMap()) {
                 result = applyValuesToMapField(argSpec, lookBehind, alreadyUnquoted, arity, workingStack, initialized, argDescription);
             } else {
                 result = applyValueToSingleValuedField(argSpec, negated, lookBehind, alreadyUnquoted, arity, workingStack, initialized, argDescription);
@@ -15755,16 +15758,14 @@ public class CommandLine {
                 Text param = parameterLabelRenderer.renderParameterLabel(option, colorScheme.ansi(), colorScheme.optionParamStyles);
                 text = text.concat(prefix);
 
-                // related: Interpreter#getActualTypeConverter special logic for interactive char[] options... (also: #648)
-                boolean treatAsSingleValue = char[].class.equals(option.type()) && option.interactive(); // #1834
                 if (option.required()) { // e.g., -x=VAL
                     text = text.concat(name).concat(param).concat("");
-                    if (option.isMultiValue() && !treatAsSingleValue) { // e.g., -x=VAL [-x=VAL]...
+                    if (option.isMultiValue()) { // e.g., -x=VAL [-x=VAL]...
                         text = text.concat(" [").concat(name).concat(param).concat("]...");
                     }
                 } else {
                     text = text.concat("[").concat(name).concat(param).concat("]");
-                    if (option.isMultiValue() && !treatAsSingleValue) { // add ellipsis to show option is repeatable
+                    if (option.isMultiValue()) { // add ellipsis to show option is repeatable
                         text = text.concat("...");
                     }
                 }
