@@ -89,6 +89,7 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1380][#1505] API, bugfix: `requiredOptionMarker` should not be displayed on `ArgGroup` options. Thanks to [Ahmed El Khalifa](https://github.com/ahmede41) for the pull request.
 * [#1563] API: Add constructor to `PicocliSpringFactory` to allow custom fallback `IFactory`. Thanks to [Andrew Holland](https://github.com/a1dutch) for raising this.
 * [#1767][#1802] API: avoid NPE on `OptionSpec.getValue()` and add `IScoped` internal API. Thanks to [Ruud Senden](https://github.com/rsenden) for the discussion and the pull request.
+* [#648][#1846] Enhancement: Treat `char[]` as single-value types (Potentially breaking change). Thanks to [Lukáš Petrovický](https://github.com/triceo) for the pull request for the test.
 * [#1571] Enhancement: Variables in values from the default value provider should be interpolated. Thanks to [Bas Passon](https://github.com/bpasson) for raising this.
 * [#1574] API: Add annotation API to control whether synopsis should be sorted alphabetically or by explicit `order`.
 * [#1708][#1712][#1723] API: The `setUsageHelpLongOptionsMaxWidth` method no longer throws an exception when an invalid value is specified; instead, the value is ignored and an INFO-level trace message is logged. Thanks to [Fabio](https://github.com/fabio-franco) for the pull request.
