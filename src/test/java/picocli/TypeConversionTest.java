@@ -90,6 +90,7 @@ public class TypeConversionTest {
         @Option(names = "-Byte")          Byte aByteField;
         @Option(names = "-char")          char charField;
         @Option(names = "-Character")     Character aCharacterField;
+        @Option(names = "-charArray")     char[] charArrayField;
         @Option(names = "-short")         short shortField;
         @Option(names = "-Short")         Short aShortField;
         @Option(names = "-int")           int intField;
@@ -481,6 +482,16 @@ public class TypeConversionTest {
             fail("Invalid format was accepted");
         } catch (CommandLine.ParameterException expected) {
             assertEquals("Invalid value for option '-char': 'aa' is not a single character", expected.getMessage());
+        }
+    }
+    @Test
+    public void testCharArrayConverter() {
+        try {
+            final SupportedTypes cli = new SupportedTypes();
+            CommandLine.populateCommand(new SupportedTypes(), "-charArray", "abcd");
+            assertEquals(new char[]{'a', 'b', 'c', 'd'}, cli.charArrayField);
+        } catch (Exception exception) {
+            fail("Unexpected exception while converting char[] type: " + exception.getMessage());
         }
     }
     @Test
