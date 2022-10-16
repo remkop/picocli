@@ -104,6 +104,7 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1603] Enhancement: Improve debug tracing information for help requests and command execution.
 * [#1629] Enhancement: Omit empty braces in standard prompt for interactive options without description. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
 * [#1778] Enhancement: Add support for new Spring Boot auto configuration introduced in Spring Boot 2.7. Thanks to [Andreas Asplund](https://github.com/aspan) for the pull request.
+* [#1834][#1838] Incorrect synopsis for char[] options. Thanks to [Ruud Senden](https://github.com/rsenden) and [Mike Snowden](https://github.com/wtfacoconut) for the pull request.
 * [#1680] Bugfix: ArgGroups with `multiplicity="0"` are now disallowed at construction time and no longer throw a `StackOverflowError` while parsing. Thanks to [ARNOLD Somogyi](https://github.com/zappee) for raising this.
 * [#1615][#1616] Bugfix: `getCJKAdjustedLength()` no longer miscalculates for supplementary code points. Thanks to [gwalbran](https://github.com/gwalbran) for the pull request.
 * [#1575] Bugfix: Synopsis should not cluster boolean options if `posixClusteredShortOptionsAllowed` is set to false.
@@ -133,6 +134,7 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1613] DEP: The `picocli-groovy` module now declares `groovy-all` as dependency.
 * [#1604] DEP: Remove dependency on `slf4j` from `picocli-spring-boot-starter`.
 * [#1783] DEP: Update actions/checkout requirement to 2541b1294d2704b0964813337f33b291d3f8596b
+* [#1837] DEP: Bump actions/checkout from 3.0.2 to 3.1.0
 * [#1607] DEP: Bump actions/setup-java from 2.5.0 to 3
 * [#1646] DEP: Bump actions/setup-java from 3.0.0 to 3.1.0
 * [#1655] DEP: Bump actions/setup-java from 3.1.0 to 3.1.1
@@ -141,6 +143,7 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1717] DEP: Bump actions/setup-java from 3.3.0 to 3.4.0
 * [#1736] DEP: Bump actions/setup-java from 3.4.0 to 3.4.1
 * [#1806] DEP: Bump actions/setup-java from 3.4.1 to 3.5.0
+* [#1826] DEP: Bump actions/setup-java from 3.5.0 to 3.5.1
 * [#1624] DEP: Bump actions/upload-artifact from 2.3.1 to 3
 * [#1687] DEP: Bump actions/upload-artifact from 3.0.0 to 3.1.0
 * [#1585] DEP: Bump github/codeql-action from 1.0.30 to 1.1.0
@@ -162,17 +165,28 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1786] DEP: Bump github/codeql-action from 2.1.18 to 2.1.20
 * [#1792] DEP: Bump github/codeql-action from 2.1.20 to 2.1.21
 * [#1797] DEP: Bump github/codeql-action from 2.1.21 to 2.1.22
+* [#1817] DEP: Bump github/codeql-action from 2.1.22 to 2.1.23
+* [#1820] DEP: Bump github/codeql-action from 2.1.22 to 2.1.24
+* [#1823] DEP: Bump github/codeql-action from 2.1.24 to 2.1.25
+* [#1831] DEP: Bump github/codeql-action from 2.1.25 to 2.1.26
+* [#1842] DEP: Bump github/codeql-action from 2.1.26 to 2.1.27
 * [#1782] DEP: Bump gradle/gradle-build-action from c6619898ec857b418d6436d3efe8a0becf74eb9e to 2.2.4
 * [#1787] DEP: Bump gradle/gradle-build-action from c6619898ec857b418d6436d3efe8a0becf74eb9e to 2.2.5
+* [#1825] DEP: Bump gradle/gradle-build-action from 2.3.0 to 2.3.1
+* [#1832] DEP: Bump gradle/gradle-build-action from 2.3.1 to 2.3.2
 * [#1586] DEP: Bump ossf/scorecard-action from 1.0.2 to 1.0.3
 * [#1594] DEP: Bump ossf/scorecard-action from 1.0.3 to 1.0.4
 * [#1691] DEP: Bump ossf/scorecard-action from 1.0.4 to 1.1.0
 * [#1699] DEP: Bump ossf/scorecard-action from 1.1.0 to 1.1.1
 * [#1805] DEP: Bump ossf/scorecard-action from 1.1.2 to 2.0.0
+* [#1813] DEP: Bump ossf/scorecard-action from 2.0.0 to 2.0.2
+* [#1816] DEP: Bump ossf/scorecard-action from 2.0.0 to 2.0.3
+* [#1828] DEP: Bump ossf/scorecard-action from 2.0.3 to 2.0.4
 * [#1583] DEP: Bump step-security/harden-runner from 1.3.0 to 1.4.0
 * [#1639] DEP: Bump step-security/harden-runner from 1.4.0 to 1.4.1
 * [#1666] DEP: Bump step-security/harden-runner from 1.4.1 to 1.4.2
 * [#1730] DEP: Bump step-security/harden-runner from 1.4.3 to 1.4.4
+* [#1833] DEP: Bump step-security/harden-runner from 1.4.5 to 1.5.0
 * [#1580] DEP: Bump asciidoctor to 2.5.3 from 2.5.2. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1688] DEP: Bump asciidoctorj-pdf from 1.6.2 to 2.0.0
 * [#1690] DEP: Bump asciidoctorj-pdf from 2.0.0 to 2.0.2
@@ -189,6 +203,8 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1589] DEP: Bump hamcrest-core from 1.3 to 2.2
 * [#1621] DEP: Bump hibernate-validator from 7.0.2.Final to 7.0.3.Final
 * [#1633][#1635] DEP: Bump hibernate-validator from 7.0.3.Final to 7.0.4.Final
+* [#1821] DEP: Bump hibernate-validator from 7.0.5.Final to 8.0.0.Final
+* [#1812] DEP: Bump hibernate-validator from 7.0.5.Final to 8.0.0.Final
 * [#1622] DEP: Bump hibernate-validator-annotation-processor from 7.0.2.Final to 7.0.3.Final
 * [#1634] DEP: Bump hibernate-validator-annotation-processor from 7.0.3.Final to 7.0.4.Final
 * [#1587] DEP: Bump ivy from 2.4.0 to 2.5.0
@@ -197,9 +213,14 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1590] DEP: Bump junit-dep from 4.11 to 4.11.20120805.1225
 * [#1591] DEP: Bump junit from 4.12 to 4.13.2
 * [#1649] DEP: Bump kotlin-gradle-plugin from 1.6.10 to 1.6.20
+* [#1829] DEP: Bump kotlin-gradle-plugin from 1.7.10 to 1.7.20
 * [#1648] DEP: Bump kotlin-script-runtime from 1.6.10 to 1.6.20
+* [#1830] DEP: Bump kotlin-script-runtime from 1.7.10 to 1.7.20
 * [#1617] DEP: Bump log4j2Version from 2.17.1 to 2.17.2
 * [#1729] DEP: Bump log4j2Version from 2.17.2 to 2.18.0
+* [#1819] DEP: Bump log4j2Version from 2.18.0 to 2.19.0
+* [#1822] DEP: Bump scala-library from 2.13.8 to 2.13.9
+* [#1843] DEP: Bump scala-library from 2.13.9 to 2.13.10
 * [#1576] DEP: Bump Spring Boot version from 2.5.6 to 2.6.3
 * [#1606] DEP: Bump Spring Boot version from 2.6.3 to 2.6.4
 * [#1641] DEP: Bump Spring Boot version from 2.6.4 to 2.6.5
@@ -209,6 +230,7 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1719] DEP: Bump Spring Boot version from 2.7.0 to 2.7.1
 * [#1747] DEP: Bump Spring Boot version from 2.7.1 to 2.7.2
 * [#1780] DEP: Bump spring Boot Version from 2.7.2 to 2.7.3
+* [#1824] DEP: Bump springBootVersion from 2.7.3 to 2.7.4
 * [#1588] DEP: Bump system-rules from 1.17.1 to 1.19.0
 
 
