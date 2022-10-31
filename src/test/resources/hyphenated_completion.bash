@@ -146,7 +146,8 @@ function _picocli_rcmd() {
     COMPREPLY=( $(compgen -W "${flag_opts} ${arg_opts}" -- "${curr_word}") )
   else
     local positionals=""
-    COMPREPLY=( $(compgen -W "${commands} ${positionals}" -- "${curr_word}") )
+    local IFS=$'\n'
+    COMPREPLY=( $(compgen -W "${commands// /$'\n'}${IFS}${positionals}" -- "${curr_word}") )
   fi
 }
 
@@ -172,7 +173,8 @@ function _picocli_rcmd_sub1() {
     COMPREPLY=( $(compgen -W "${flag_opts} ${arg_opts}" -- "${curr_word}") )
   else
     local positionals=""
-    COMPREPLY=( $(compgen -W "${commands} ${positionals}" -- "${curr_word}") )
+    local IFS=$'\n'
+    COMPREPLY=( $(compgen -W "${commands// /$'\n'}${IFS}${positionals}" -- "${curr_word}") )
   fi
 }
 
@@ -198,7 +200,8 @@ function _picocli_rcmd_sub2() {
     COMPREPLY=( $(compgen -W "${flag_opts} ${arg_opts}" -- "${curr_word}") )
   else
     local positionals=""
-    COMPREPLY=( $(compgen -W "${commands} ${positionals}" -- "${curr_word}") )
+    local IFS=$'\n'
+    COMPREPLY=( $(compgen -W "${commands// /$'\n'}${IFS}${positionals}" -- "${curr_word}") )
   fi
 }
 
