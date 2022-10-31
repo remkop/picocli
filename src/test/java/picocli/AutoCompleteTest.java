@@ -796,7 +796,8 @@ public class AutoCompleteTest {
                 "    COMPREPLY=( $(compgen -W \"${flag_opts} ${arg_opts}\" -- \"${curr_word}\") )\n" +
                 "  else\n" +
                 "    local positionals=\"\"\n" +
-                "    COMPREPLY=( $(compgen -W \"${commands} ${positionals}\" -- \"${curr_word}\") )\n" +
+                "    local IFS=$'\\n'\n" +
+                "    COMPREPLY=( $(compgen -W \"${commands// /$'\\n'}${IFS}${positionals}\" -- \"${curr_word}\") )\n" +
                 "  fi\n" +
                 "}\n" +
                 "\n" +
@@ -1004,7 +1005,8 @@ public class AutoCompleteTest {
                 "    COMPREPLY=( $(compgen -W \"${flag_opts} ${arg_opts}\" -- \"${curr_word}\") )\n" +
                 "  else\n" +
                 "    local positionals=\"\"\n" +
-                "    COMPREPLY=( $(compgen -W \"${commands} ${positionals}\" -- \"${curr_word}\") )\n" +
+                "    local IFS=$'\\n'\n" +
+                "    COMPREPLY=( $(compgen -W \"${commands// /$'\\n'}${IFS}${positionals}\" -- \"${curr_word}\") )\n" +
                 "  fi\n" +
                 "}\n" +
                 "\n" +
@@ -1563,7 +1565,8 @@ public class AutoCompleteTest {
                     "    COMPREPLY=( $(compgen -W \"${flag_opts} ${arg_opts}\" -- \"${curr_word}\") )\n" +
                     "  else\n" +
                     "    local positionals=\"\"\n" +
-                    "    COMPREPLY=( $(compgen -W \"${commands} ${positionals}\" -- \"${curr_word}\") )\n" +
+                    "    local IFS=$'\\n'\n" +
+                    "    COMPREPLY=( $(compgen -W \"${commands// /$'\\n'}${IFS}${positionals}\" -- \"${curr_word}\") )\n" +
                     "  fi\n" +
                     "}\n" +
                     "\n" +
@@ -1580,7 +1583,8 @@ public class AutoCompleteTest {
                     "    COMPREPLY=( $(compgen -W \"${flag_opts} ${arg_opts}\" -- \"${curr_word}\") )\n" +
                     "  else\n" +
                     "    local positionals=\"\"\n" +
-                    "    COMPREPLY=( $(compgen -W \"${commands} ${positionals}\" -- \"${curr_word}\") )\n" +
+                    "    local IFS=$'\\n'\n" +
+                    "    COMPREPLY=( $(compgen -W \"${commands// /$'\\n'}${IFS}${positionals}\" -- \"${curr_word}\") )\n" +
                     "  fi\n" +
                     "}\n" +
                     "\n" +
@@ -1785,7 +1789,8 @@ public class AutoCompleteTest {
                 "    COMPREPLY=( $(compgen -W \"${flag_opts} ${arg_opts}\" -- \"${curr_word}\") )\n" +
                 "  else\n" +
                 "    local positionals=\"\"\n" +
-                "    COMPREPLY=( $(compgen -W \"${commands} ${positionals}\" -- \"${curr_word}\") )\n" +
+                "    local IFS=$'\\n'\n" +
+                "    COMPREPLY=( $(compgen -W \"${commands// /$'\\n'}${IFS}${positionals}\" -- \"${curr_word}\") )\n" +
                 "  fi\n" +
                 "}\n" +
                 "\n" +
@@ -1802,7 +1807,8 @@ public class AutoCompleteTest {
                 "    COMPREPLY=( $(compgen -W \"${flag_opts} ${arg_opts}\" -- \"${curr_word}\") )\n" +
                 "  else\n" +
                 "    local positionals=\"\"\n" +
-                "    COMPREPLY=( $(compgen -W \"${commands} ${positionals}\" -- \"${curr_word}\") )\n" +
+                "    local IFS=$'\\n'\n" +
+                "    COMPREPLY=( $(compgen -W \"${commands// /$'\\n'}${IFS}${positionals}\" -- \"${curr_word}\") )\n" +
                 "  fi\n" +
                 "}\n" +
                 "\n" +
