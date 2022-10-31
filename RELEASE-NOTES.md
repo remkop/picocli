@@ -113,7 +113,8 @@ Applications that want to preserve the previous behaviour will need to change th
 * [#1603] Enhancement: Improve debug tracing information for help requests and command execution.
 * [#1629] Enhancement: Omit empty braces in standard prompt for interactive options without description. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
 * [#1778] Enhancement: Add support for new Spring Boot auto configuration introduced in Spring Boot 2.7. Thanks to [Andreas Asplund](https://github.com/aspan) for the pull request.
-* [#1834][#1838] Incorrect synopsis for char[] options. Thanks to [Ruud Senden](https://github.com/rsenden) and [Mike Snowden](https://github.com/wtfacoconut) for the pull request.
+* [#1836][#1841] Enhancement: Command aliases on Mixin were not being applied. Thanks to [Mike Snowden](https://github.com/wtfacoconut) for the pull request and to [Ruud Senden](https://github.com/rsenden) for raising this.
+* [#1834][#1838] Bugfix: Incorrect synopsis for char[] options. Thanks to [Ruud Senden](https://github.com/rsenden) and [Mike Snowden](https://github.com/wtfacoconut) for the pull request.
 * [#1680] Bugfix: ArgGroups with `multiplicity="0"` are now disallowed at construction time and no longer throw a `StackOverflowError` while parsing. Thanks to [ARNOLD Somogyi](https://github.com/zappee) for raising this.
 * [#1615][#1616] Bugfix: `getCJKAdjustedLength()` no longer miscalculates for supplementary code points. Thanks to [gwalbran](https://github.com/gwalbran) for the pull request.
 * [#1575] Bugfix: Synopsis should not cluster boolean options if `posixClusteredShortOptionsAllowed` is set to false.
