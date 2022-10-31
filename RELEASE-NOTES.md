@@ -1,6 +1,6 @@
 # picocli Release Notes
 
-# <a name="4.7.0"></a> Picocli 4.7.0 (UNRELEASED)
+# <a name="4.7.0"></a> Picocli 4.7.0
 The picocli community is pleased to announce picocli 4.7.0.
 
 This release includes bugfixes and enhancements.
@@ -11,7 +11,7 @@ From this release, applications can programmatically set the trace level, and us
 
 Applications can improve startup time by setting system property `picocli.disable.closures` to `true` to disable support for [closures in annotations](https://picocli.info/#_closures_in_annotations).
 
-Also, this release has various fixes and enhancements related to the synopsis of the usage help message.
+Many more fixes and enhancements, see the sections below for more details.
 
 
 This is the seventy-ninth public release.
@@ -70,7 +70,7 @@ If an option is defined as `arity = "*"`, this option will consume _all_ remaini
 
 ### Unsorted Synopsis
 By default, the synopsis displays options in alphabetical order.
-Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis display options in the order they are declared in your class, or sorted by their `order` attribute.
+Picocli 4.7.0 introduces a `sortSynopsis = false` attribute to let the synopsis display options in the order they are declared in your class, or sorted by their `order` attribute.
 
 ```java
 @Command(sortSynopsis = false)
@@ -98,9 +98,9 @@ Applications that want to preserve the previous behaviour will need to change th
 * [#1563] API: Add constructor to `PicocliSpringFactory` to allow custom fallback `IFactory`. Thanks to [Andrew Holland](https://github.com/a1dutch) for raising this.
 * [#1767][#1802] API: avoid NPE on `OptionSpec.getValue()` and add `IScoped` internal API. Thanks to [Ruud Senden](https://github.com/rsenden) for the discussion and the pull request.
 * [#1574] API: Add annotation API to control whether synopsis should be sorted alphabetically or by explicit `order`.
+* [#1708][#1712][#1723] API: The `setUsageHelpLongOptionsMaxWidth` method no longer throws an exception when an invalid value is specified; instead, the value is ignored and an INFO-level trace message is logged. Thanks to [Fabio](https://github.com/fabio-franco) for the pull request.
 * [#648][#1846] Enhancement: Treat `char[]` as single-value types (Potentially breaking change). Thanks to [Lukáš Petrovický](https://github.com/triceo) for the pull request with the test to verify the solution.
 * [#1571] Enhancement: Variables in values from the default value provider should be interpolated. Thanks to [Bas Passon](https://github.com/bpasson) for raising this.
-* [#1708][#1712][#1723] API: The `setUsageHelpLongOptionsMaxWidth` method no longer throws an exception when an invalid value is specified; instead, the value is ignored and an INFO-level trace message is logged. Thanks to [Fabio](https://github.com/fabio-franco) for the pull request.
 * [#1773] Enhancement: Applications can improve startup time by setting system property `picocli.disable.closures` to `true` to disable support for [closures in annotations](https://picocli.info/#_closures_in_annotations). Thanks to [patric-r](https://github.com/patric-r) for raising this.
 * [#1408] Enhancement: Synopsis should respect `order` if specified. Thanks to [Simon](https://github.com/sbernard31) for raising this.
 * [#964][#1080] Enhancement: ArgGroup synopsis should respect `order` (if specified). Thanks to [Enderaoe](https://github.com/Lyther) for the pull request with unit tests.

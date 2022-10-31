@@ -308,7 +308,7 @@ public class AutoCompleteTest {
             "%n" +
             "Example%n" +
             "-------%n" +
-            "  java -cp \"myapp.jar;picocli-4.7.0-SNAPSHOT.jar\" \\%n" +
+            "  java -cp \"myapp.jar;picocli-4.7.0.jar\" \\%n" +
             "              picocli.AutoComplete my.pkg.MyClass%n");
 
     @Test

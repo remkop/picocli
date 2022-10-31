@@ -142,7 +142,7 @@ task extractReleaseNotesNext {
 
 /*
 Release procedure:
-1. edit version numbers: remove -SNAPSHOT classifier; edit releaseDate
+1. edit version numbers in dependencies.gradle: remove -SNAPSHOT classifier; edit releaseDate
 2. ./gradlew bumpVersion
 3. check modified files
 4. ./gradlew clean build
