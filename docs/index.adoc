@@ -12975,6 +12975,13 @@ Many thanks to https://github.com/mmellon[Matthew Mellon] for https://github.com
 pefrmdllembed -impinj VCRUNTIME140.DLL your-native-image.exe your-native-image-fixed.exe
 ----
 
+[quote]
+____
+Caveat for the above workaround:
+
+If you embed `MSVCR100.DLL` or `VCRUNTIME140.DLL` in your exe rather than create an installer that installs a dependency, you will probably lose the ability of Windows to apply updates for vulnerabilities in the shared runtime that might impact the security of your application. Windows installer has magic to keep you from downgrading the DLL in `%System32%`, and, once it is installed, I believe Windows Update keeps it up-to-date.
+____
+
 ====
 
 === Really Executable JAR
