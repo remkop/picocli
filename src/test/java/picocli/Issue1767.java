@@ -20,13 +20,12 @@ public class Issue1767 {
     static class TestCommand implements Callable<Integer> {
         @ArgGroup TestArgGroup testArgGroup;
         @Spec CommandSpec spec;
-        
+
         public static class TestArgGroup {
             @Option(names = "-r")
             public Integer option1;
         }
 
-        @Override
         public Integer call() throws Exception {
             Integer value = spec.options().get(0).getValue();
             return value==null ? 0 : value;
