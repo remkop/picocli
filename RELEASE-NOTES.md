@@ -156,6 +156,7 @@ Applications that want to preserve the previous behaviour will need to change th
 * [#1826] DEP: Bump actions/setup-java from 3.5.0 to 3.5.1
 * [#1624] DEP: Bump actions/upload-artifact from 2.3.1 to 3
 * [#1687] DEP: Bump actions/upload-artifact from 3.0.0 to 3.1.0
+* [#1859] DEP: Bump actions/upload-artifact from 3.1.0 to 3.1.1
 * [#1585] DEP: Bump github/codeql-action from 1.0.30 to 1.1.0
 * [#1593] DEP: Bump github/codeql-action from 1.1.0 to 1.1.2
 * [#1601] DEP: Bump github/codeql-action from 1.1.2 to 1.1.3
@@ -180,10 +181,13 @@ Applications that want to preserve the previous behaviour will need to change th
 * [#1823] DEP: Bump github/codeql-action from 2.1.24 to 2.1.25
 * [#1831] DEP: Bump github/codeql-action from 2.1.25 to 2.1.26
 * [#1842] DEP: Bump github/codeql-action from 2.1.26 to 2.1.27
+* [#1862] DEP: Bump github/codeql-action from 2.1.28 to 2.1.29
 * [#1782] DEP: Bump gradle/gradle-build-action from c6619898ec857b418d6436d3efe8a0becf74eb9e to 2.2.4
 * [#1787] DEP: Bump gradle/gradle-build-action from c6619898ec857b418d6436d3efe8a0becf74eb9e to 2.2.5
 * [#1825] DEP: Bump gradle/gradle-build-action from 2.3.0 to 2.3.1
 * [#1832] DEP: Bump gradle/gradle-build-action from 2.3.1 to 2.3.2
+* [#1860] DEP: Bump gradle/gradle-build-action from 2.3.2 to 2.3.3
+* [#1861] DEP: Bump gradle/wrapper-validation-action from 1.0.4 to 1.0.5
 * [#1586] DEP: Bump ossf/scorecard-action from 1.0.2 to 1.0.3
 * [#1594] DEP: Bump ossf/scorecard-action from 1.0.3 to 1.0.4
 * [#1691] DEP: Bump ossf/scorecard-action from 1.0.4 to 1.1.0
@@ -206,6 +210,7 @@ Applications that want to preserve the previous behaviour will need to change th
 * [#1715] DEP: Bump asciidoctorj-pdf from 2.0.6 to 2.0.8
 * [#1722] DEP: Bump asciidoctorj-pdf from 2.0.8 to 2.1.2
 * [#1785] DEP: Bump asciidoctorj-pdf from 2.1.6 to 2.3.0
+* [#1854] DEP: Bump asciidoctorj-pdf from 2.3.0 to 2.3.3
 * [#1618] DEP: Bump biz.aQute.bnd.gradle from 6.1.0 to 6.2.0
 * [#1698] DEP: Bump biz.aQute.bnd.gradle from 6.2.0 to 6.3.0
 * [#1703] DEP: Bump biz.aQute.bnd.gradle from 6.3.0 to 6.3.1
@@ -241,6 +246,7 @@ Applications that want to preserve the previous behaviour will need to change th
 * [#1747] DEP: Bump Spring Boot version from 2.7.1 to 2.7.2
 * [#1780] DEP: Bump spring Boot Version from 2.7.2 to 2.7.3
 * [#1824] DEP: Bump springBootVersion from 2.7.3 to 2.7.4
+* [#1853] DEP: Bump springBootVersion from 2.7.4 to 2.7.5
 * [#1588] DEP: Bump system-rules from 1.17.1 to 1.19.0
 
 
