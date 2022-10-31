@@ -72,7 +72,7 @@ The generated `reflect.json` files looks something like this:
 TIP: If necessary, it is possible to exclude classes with system property `picocli.codegen.excludes`, which accepts a comma-separated list of regular expressions of the fully qualified class names that should not be included in the resulting JSON String.
 
 === Compiling a Native Image
-This assumes you have GraalVM installed, with prerequisites. From https://www.graalvm.org/docs/reference-manual/aot-compilation/[the site]:
+This assumes you have GraalVM installed, with prerequisites. From https://www.graalvm.org/22.2/reference-manual/native-image/[the site]:
 
 [quote]
 ____

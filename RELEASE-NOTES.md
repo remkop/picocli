@@ -88,6 +88,8 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1396][#1401] API: Support generic types in containers (e.g. List, Map). Thanks to [Michał Górniewski](https://github.com/mgorniew) for the pull request.
 * [#1380][#1505] API, bugfix: `requiredOptionMarker` should not be displayed on `ArgGroup` options. Thanks to [Ahmed El Khalifa](https://github.com/ahmede41) for the pull request.
 * [#1563] API: Add constructor to `PicocliSpringFactory` to allow custom fallback `IFactory`. Thanks to [Andrew Holland](https://github.com/a1dutch) for raising this.
+* [#1767][#1802] API: avoid NPE on `OptionSpec.getValue()` and add `IScoped` internal API. Thanks to [Ruud Senden](https://github.com/rsenden) for the discussion and the pull request.
+* [#648][#1846] Enhancement: Treat `char[]` as single-value types (Potentially breaking change). Thanks to [Lukáš Petrovický](https://github.com/triceo) for the pull request for the test.
 * [#1571] Enhancement: Variables in values from the default value provider should be interpolated. Thanks to [Bas Passon](https://github.com/bpasson) for raising this.
 * [#1574] API: Add annotation API to control whether synopsis should be sorted alphabetically or by explicit `order`.
 * [#1708][#1712][#1723] API: The `setUsageHelpLongOptionsMaxWidth` method no longer throws an exception when an invalid value is specified; instead, the value is ignored and an INFO-level trace message is logged. Thanks to [Fabio](https://github.com/fabio-franco) for the pull request.
@@ -102,12 +104,16 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1602] Enhancement: Fix incorrect debug output for add/removeAlias.
 * [#1603] Enhancement: Improve debug tracing information for help requests and command execution.
 * [#1629] Enhancement: Omit empty braces in standard prompt for interactive options without description. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
+* [#1778] Enhancement: Add support for new Spring Boot auto configuration introduced in Spring Boot 2.7. Thanks to [Andreas Asplund](https://github.com/aspan) for the pull request.
+* [#1834][#1838] Incorrect synopsis for char[] options. Thanks to [Ruud Senden](https://github.com/rsenden) and [Mike Snowden](https://github.com/wtfacoconut) for the pull request.
 * [#1680] Bugfix: ArgGroups with `multiplicity="0"` are now disallowed at construction time and no longer throw a `StackOverflowError` while parsing. Thanks to [ARNOLD Somogyi](https://github.com/zappee) for raising this.
 * [#1615][#1616] Bugfix: `getCJKAdjustedLength()` no longer miscalculates for supplementary code points. Thanks to [gwalbran](https://github.com/gwalbran) for the pull request.
 * [#1575] Bugfix: Synopsis should not cluster boolean options if `posixClusteredShortOptionsAllowed` is set to false.
 * [#1642] Bugfix: Negatable options should negate explicit values. Thanks to [Nat Burns](https://github.com/burnnat) for raising this.
 * [#1696][#1697] Bugfix: ManPageGenerator asciidoc output now correctly shows options in nested ArgGroups. Thanks to [Ruud Senden](https://github.com/rsenden) for the pull request.
 * [#1741] Bugfix: `@Command`-annotated method parameters are assigned incorrect indices when contained in a `@Command` class that is added as a subcommand to another `@Command` class which has `scope = CommandLine.ScopeType.INHERIT`. Thanks to [Onedy](https://github.com/Onedy) for raising this.
+* [#1779] bugfix: Custom factory should be used when creating `CommandSpec`. Thanks to [Philippe Charles](https://github.com/charphi) for raising this.
+* [#1807] BUILD: Optimize incremental builds and local build cache usage. Thanks to [Jean André Gauthier](https://github.com/jean-andre-gauthier) for the pull request and [Nelson Osacky](https://github.com/runningcode) for the review.
 * [#1298] DOC: Publish all-in-one javadoc for all picocli modules.
 * [#812] DOC: Document how to test a picocli spring-boot application.
 * [#1596] DOC: fix javadoc typos and incorrect links.
@@ -121,9 +127,15 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1677] DOC: Many improvements and corrections to the user manual. Thanks to [Björn Kautler](https://github.com/Vampire) for the pull request.
 * [#1678] DOC: Change links from http to https, fix broken links. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1750] DOC: Clarify that GPL licensing NOTICE is for docs only.
+* [#1788] DOC: add link to `picocli-examples` in the user manual. Thanks to [Markus Elfring](https://github.com/Markus-Elfring) for raising this.
+* [#1796] DOC: Fixing broken links and typos. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+* [#1798] DOC: update examples for jakarta.validation-api. Thanks to [Roy](https://github.com/ashr123) for raising this.
+* [#1803] DOC: show `@Command`-annotated method with `int` return value in user manual. Thanks to [SinaMobasheri](https://github.com/SinaMobasheri) for raising this.
 * [#1581] BUILD: Fix dependabot config.
 * [#1613] DEP: The `picocli-groovy` module now declares `groovy-all` as dependency.
 * [#1604] DEP: Remove dependency on `slf4j` from `picocli-spring-boot-starter`.
+* [#1783] DEP: Update actions/checkout requirement to 2541b1294d2704b0964813337f33b291d3f8596b
+* [#1837] DEP: Bump actions/checkout from 3.0.2 to 3.1.0
 * [#1607] DEP: Bump actions/setup-java from 2.5.0 to 3
 * [#1646] DEP: Bump actions/setup-java from 3.0.0 to 3.1.0
 * [#1655] DEP: Bump actions/setup-java from 3.1.0 to 3.1.1
@@ -131,6 +143,8 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1674] DEP: Bump actions/setup-java from 3.2.0 to 3.3.0
 * [#1717] DEP: Bump actions/setup-java from 3.3.0 to 3.4.0
 * [#1736] DEP: Bump actions/setup-java from 3.4.0 to 3.4.1
+* [#1806] DEP: Bump actions/setup-java from 3.4.1 to 3.5.0
+* [#1826] DEP: Bump actions/setup-java from 3.5.0 to 3.5.1
 * [#1624] DEP: Bump actions/upload-artifact from 2.3.1 to 3
 * [#1687] DEP: Bump actions/upload-artifact from 3.0.0 to 3.1.0
 * [#1585] DEP: Bump github/codeql-action from 1.0.30 to 1.1.0
@@ -148,14 +162,32 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1720] DEP: Bump github/codeql-action from 2.1.12 to 2.1.14
 * [#1728] DEP: Bump github/codeql-action from 2.1.14 to 2.1.15
 * [#1739] DEP: Bump github/codeql-action from 2.1.15 to 2.1.16
+* [#1781] DEP: Bump github/codeql-action from 2.1.18 to 2.1.1
+* [#1786] DEP: Bump github/codeql-action from 2.1.18 to 2.1.20
+* [#1792] DEP: Bump github/codeql-action from 2.1.20 to 2.1.21
+* [#1797] DEP: Bump github/codeql-action from 2.1.21 to 2.1.22
+* [#1817] DEP: Bump github/codeql-action from 2.1.22 to 2.1.23
+* [#1820] DEP: Bump github/codeql-action from 2.1.22 to 2.1.24
+* [#1823] DEP: Bump github/codeql-action from 2.1.24 to 2.1.25
+* [#1831] DEP: Bump github/codeql-action from 2.1.25 to 2.1.26
+* [#1842] DEP: Bump github/codeql-action from 2.1.26 to 2.1.27
+* [#1782] DEP: Bump gradle/gradle-build-action from c6619898ec857b418d6436d3efe8a0becf74eb9e to 2.2.4
+* [#1787] DEP: Bump gradle/gradle-build-action from c6619898ec857b418d6436d3efe8a0becf74eb9e to 2.2.5
+* [#1825] DEP: Bump gradle/gradle-build-action from 2.3.0 to 2.3.1
+* [#1832] DEP: Bump gradle/gradle-build-action from 2.3.1 to 2.3.2
 * [#1586] DEP: Bump ossf/scorecard-action from 1.0.2 to 1.0.3
 * [#1594] DEP: Bump ossf/scorecard-action from 1.0.3 to 1.0.4
 * [#1691] DEP: Bump ossf/scorecard-action from 1.0.4 to 1.1.0
 * [#1699] DEP: Bump ossf/scorecard-action from 1.1.0 to 1.1.1
+* [#1805] DEP: Bump ossf/scorecard-action from 1.1.2 to 2.0.0
+* [#1813] DEP: Bump ossf/scorecard-action from 2.0.0 to 2.0.2
+* [#1816] DEP: Bump ossf/scorecard-action from 2.0.0 to 2.0.3
+* [#1828] DEP: Bump ossf/scorecard-action from 2.0.3 to 2.0.4
 * [#1583] DEP: Bump step-security/harden-runner from 1.3.0 to 1.4.0
 * [#1639] DEP: Bump step-security/harden-runner from 1.4.0 to 1.4.1
 * [#1666] DEP: Bump step-security/harden-runner from 1.4.1 to 1.4.2
 * [#1730] DEP: Bump step-security/harden-runner from 1.4.3 to 1.4.4
+* [#1833] DEP: Bump step-security/harden-runner from 1.4.5 to 1.5.0
 * [#1580] DEP: Bump asciidoctor to 2.5.3 from 2.5.2. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1688] DEP: Bump asciidoctorj-pdf from 1.6.2 to 2.0.0
 * [#1690] DEP: Bump asciidoctorj-pdf from 2.0.0 to 2.0.2
@@ -164,6 +196,7 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1695] DEP: Bump asciidoctorj-pdf from 2.0.4 to 2.0.6
 * [#1715] DEP: Bump asciidoctorj-pdf from 2.0.6 to 2.0.8
 * [#1722] DEP: Bump asciidoctorj-pdf from 2.0.8 to 2.1.2
+* [#1785] DEP: Bump asciidoctorj-pdf from 2.1.6 to 2.3.0
 * [#1618] DEP: Bump biz.aQute.bnd.gradle from 6.1.0 to 6.2.0
 * [#1698] DEP: Bump biz.aQute.bnd.gradle from 6.2.0 to 6.3.0
 * [#1703] DEP: Bump biz.aQute.bnd.gradle from 6.3.0 to 6.3.1
@@ -171,6 +204,8 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1589] DEP: Bump hamcrest-core from 1.3 to 2.2
 * [#1621] DEP: Bump hibernate-validator from 7.0.2.Final to 7.0.3.Final
 * [#1633][#1635] DEP: Bump hibernate-validator from 7.0.3.Final to 7.0.4.Final
+* [#1821] DEP: Bump hibernate-validator from 7.0.5.Final to 8.0.0.Final
+* [#1812] DEP: Bump hibernate-validator from 7.0.5.Final to 8.0.0.Final
 * [#1622] DEP: Bump hibernate-validator-annotation-processor from 7.0.2.Final to 7.0.3.Final
 * [#1634] DEP: Bump hibernate-validator-annotation-processor from 7.0.3.Final to 7.0.4.Final
 * [#1587] DEP: Bump ivy from 2.4.0 to 2.5.0
@@ -179,9 +214,14 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1590] DEP: Bump junit-dep from 4.11 to 4.11.20120805.1225
 * [#1591] DEP: Bump junit from 4.12 to 4.13.2
 * [#1649] DEP: Bump kotlin-gradle-plugin from 1.6.10 to 1.6.20
+* [#1829] DEP: Bump kotlin-gradle-plugin from 1.7.10 to 1.7.20
 * [#1648] DEP: Bump kotlin-script-runtime from 1.6.10 to 1.6.20
+* [#1830] DEP: Bump kotlin-script-runtime from 1.7.10 to 1.7.20
 * [#1617] DEP: Bump log4j2Version from 2.17.1 to 2.17.2
 * [#1729] DEP: Bump log4j2Version from 2.17.2 to 2.18.0
+* [#1819] DEP: Bump log4j2Version from 2.18.0 to 2.19.0
+* [#1822] DEP: Bump scala-library from 2.13.8 to 2.13.9
+* [#1843] DEP: Bump scala-library from 2.13.9 to 2.13.10
 * [#1576] DEP: Bump Spring Boot version from 2.5.6 to 2.6.3
 * [#1606] DEP: Bump Spring Boot version from 2.6.3 to 2.6.4
 * [#1641] DEP: Bump Spring Boot version from 2.6.4 to 2.6.5
@@ -190,7 +230,10 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1686] DEP: Bump Spring Boot version from 2.6.8 to 2.7.0
 * [#1719] DEP: Bump Spring Boot version from 2.7.0 to 2.7.1
 * [#1747] DEP: Bump Spring Boot version from 2.7.1 to 2.7.2
+* [#1780] DEP: Bump spring Boot Version from 2.7.2 to 2.7.3
+* [#1824] DEP: Bump springBootVersion from 2.7.3 to 2.7.4
 * [#1588] DEP: Bump system-rules from 1.17.1 to 1.19.0
+
 
 ## <a name="4.7.0-deprecated"></a> Deprecations
 No features were deprecated in this release.
@@ -359,7 +402,7 @@ Artifacts in this release are signed by Remko Popma (6601 E5C0 8DCC BB96).
 * [#1331] Bugfix: Avoid `IllegalArgumentException` when parent has no standard help options and `scope = INHERIT`, while subcommand does have mixed-in standard help options. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
 * [#1381][#1382] Bugfix: Default value of option in repeated subcommand was not applied correctly. Thanks to [sfeuerhahn](https://github.com/sfeuerhahn) for the pull request.
 * [#1434][#1435] `CommandSpec.remove(arg)` should also remove the arg from the `args` collection in the CommandSpec. Thanks to [kaushalkumar](https://github.com/kaushalkumar) for the pull request.
-* [#1404] Bugfix/Enhancement: Print paramLabel only when it could exist. Thanks to [João Guerra](https://github.com/joca-bt) for the pull reqeust.
+* [#1404] Bugfix/Enhancement: Print paramLabel only when it could exist. Thanks to [João Guerra](https://github.com/joca-bt) for the pull request.
 * [#1320][#1321] Bugfix/Enhancement: Use system properties `sun.stdout.encoding` and `sun.stderr.encoding` when creating the `PrintWriters` returned by  `CommandLine::getOut` and `CommandLine::getErr`. Thanks to [Philippe Charles](https://github.com/charphi) for the investigation and the pull request.
 * [#1431] Bugfix/enhancement: `.gitattributes` should include HTML files to convert CRLF to LF. Thanks to [wenhoujx](https://github.com/wenhoujx) for pointing this out.
 * [#1388][#1430] Bugfix: Fix subcommand aliases autocomplete regression. Thanks to [NewbieOrange](https://github.com/NewbieOrange) for the pull request.
@@ -1055,7 +1098,7 @@ For details see the [New and Noteworthy](#4.4.0-new) section below.
 
 Another important change are parser fixes and improvements: the parser will no longer assign values that match an option name to options that take a parameter, unless the value is in quotes. Also, values that resemble, but not exactly match, option names are now treated more consistently and parser behaviour for such values is configurable.
 
-Also worth hightlighting: from this release, the `ManPageGenerator` tool can be used as a subcommand in your application.
+Also worth highlighting: from this release, the `ManPageGenerator` tool can be used as a subcommand in your application.
 
 This release has many more improvements for customizing the usage help message, JANSI fixes, and other bugfixes and improvements. See the [Fixed Issues](#4.4.0-fixes) list for details.
 
@@ -1900,7 +1943,7 @@ myapp add -x=item1 -w=0.2 \
 ```
 
 In the above command line invocation, the `myapp` top-level command is followed by its subcommand `add`.
-Next, this is followed by another two occurences of `add`, followed by `list` and `send-report`.
+Next, this is followed by another two occurrences of `add`, followed by `list` and `send-report`.
 These are all "sibling" commands, that share the same parent command `myapp`.
 This invocation is valid because `myapp` is marked with `subcommandsRepeatable = true`.
 
@@ -4807,7 +4850,7 @@ No features were deprecated in this release.
 The `picocli.AutoComplete` application no longer calls `System.exit()` unless requested by setting system property `picocli.autocomplete.systemExitOnError` or `picocli.autocomplete.systemExitOnSuccess` to any value other than `false`.
 Applications that rely on the exit codes introduced in picocli 3.9.0 need to set these system properties.
 
-The new support for quoted map keys with embedded '=' characters [#594] may inpact some existing applications.
+The new support for quoted map keys with embedded '=' characters [#594] may impact some existing applications.
 If `CommandLine::setTrimQuotes()` is set to `true`, quotes are now removed from map keys and map values. This did not use to be the case.
 
 For example:
@@ -8392,7 +8435,7 @@ Renamed class `Arity` to `Range` since it is not just used for @Option and @Para
 
 # <a name="0.9.1"></a> 0.9.1 - Bugfix release for public review. API may change.
 
-* [#103] Replace javadoc occurences of ASCII with ANSI.  (doc bug)
+* [#103] Replace javadoc occurrences of ASCII with ANSI.  (doc bug)
 * [#102] Move ColorScheme inside Ansi class  (enhancement question wontfix)
 * [#101] Cosmetics: indent `Default: <value>` by 2 spaces  (enhancement)
 * [#100] Improve error message for DuplicateOptionAnnotationsException  (enhancement)

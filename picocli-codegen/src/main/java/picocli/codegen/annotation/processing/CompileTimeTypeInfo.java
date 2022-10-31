@@ -35,6 +35,8 @@ class CompileTimeTypeInfo implements CommandLine.Model.ITypeInfo {
     final boolean isCollection;
     final boolean isMap;
 
+    final boolean isCharArray;
+
     public CompileTimeTypeInfo(TypeMirror asType) {
         typeMirror = asType;
 
@@ -68,11 +70,14 @@ class CompileTimeTypeInfo implements CommandLine.Model.ITypeInfo {
                     logger.finest("fixed aux (for single type): " + aux);
                 }
             }
+            isCharArray = false;
         } else if (typeMirror.getKind() == TypeKind.ARRAY) {
             aux = Arrays.asList(((ArrayType) typeMirror).getComponentType());
             actualGenericTypeArguments = Arrays.asList(aux.get(0).toString());
+            isCharArray = "char".equals(aux.get(0).toString());
         } else {
             actualGenericTypeArguments = Collections.emptyList();
+            isCharArray = false;
         }
         auxTypeMirrors = aux;
         typeElement = tempTypeElement;
@@ -166,7 +171,7 @@ class CompileTimeTypeInfo implements CommandLine.Model.ITypeInfo {
 
     @Override
     public boolean isArray() {
-        return typeMirror.getKind() == TypeKind.ARRAY;
+        return typeMirror.getKind() == TypeKind.ARRAY && !isCharArray;
     }
 
     @Override

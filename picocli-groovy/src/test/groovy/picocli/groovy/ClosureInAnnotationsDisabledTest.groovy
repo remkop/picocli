@@ -2,10 +2,12 @@ package picocli.groovy
 
 import org.junit.AfterClass
 import org.junit.BeforeClass
+import org.junit.Ignore
 import org.junit.Test
 import picocli.CommandLine
 import picocli.CommandLine.InitializationException
 
+@Ignore
 class ClosureInAnnotationsDisabledTest {
     @BeforeClass
     public static void beforeClass() {

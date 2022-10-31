@@ -834,7 +834,7 @@ public class CommandLine {
     }
 
     /** Returns whether abbreviation of subcommands should be allowed when matching subcommands. The default is {@code false}.
-     * @return {@code true} if subcommands can be matched when they are abbrevations of the {@code getCommandName()} value of a registered one, {@code false} otherwise.
+     * @return {@code true} if subcommands can be matched when they are abbreviations of the {@code getCommandName()} value of a registered one, {@code false} otherwise.
      *       For example, if true, for a subcommand with name {@code helpCommand}, inputs like {@code h}, {@code h-c} and {@code hC} are all recognized.
      * @since 4.4 */
     public boolean isAbbreviatedSubcommandsAllowed() {
@@ -860,7 +860,7 @@ public class CommandLine {
     }
 
     /** Returns whether abbreviation of option names should be allowed when matching options. The default is {@code false}.
-     * @return {@code true} if options can be matched when they are abbrevations of the {@code names()} value of a registered one, {@code false} otherwise.
+     * @return {@code true} if options can be matched when they are abbreviations of the {@code names()} value of a registered one, {@code false} otherwise.
      *       For example, if true, for a subcommand with name {@code --helpMe}, inputs like {@code --h}, {@code --h-m} and {@code --hM} are all recognized.
      * @since 4.4 */
     public boolean isAbbreviatedOptionsAllowed() {
@@ -3629,7 +3629,7 @@ public class CommandLine {
     private static boolean isBoolean(Class<?>[] types) { return isBoolean(types[0]) || (isOptional(types[0]) && isBoolean(types[1])); }
     private static boolean isBoolean(Class<?> type) { return type == Boolean.class || type == Boolean.TYPE; }
     private static CommandLine toCommandLine(Object obj, IFactory factory) { return obj instanceof CommandLine ? (CommandLine) obj : new CommandLine(obj, factory, false);}
-    private static boolean isMultiValue(Class<?> cls) { return cls.isArray() || Collection.class.isAssignableFrom(cls) || Map.class.isAssignableFrom(cls); }
+    private static boolean isMultiValue(Class<?> cls) { return (cls.isArray() && cls != char[].class) || Collection.class.isAssignableFrom(cls) || Map.class.isAssignableFrom(cls); }
     private static boolean isOptional(Class<?> cls) { return cls != null && "java.util.Optional".equals(cls.getName()); } // #1108
     private static Object getOptionalEmpty() throws Exception {
         return Class.forName("java.util.Optional").getMethod("empty").invoke(null);
@@ -5995,6 +5995,16 @@ public class CommandLine {
          * @since 4.0
          */
         public interface IScope extends IGetter, ISetter {}
+
+        /** This interface provides access to an {@link IScope} instance.
+         * @since 4.7
+         */
+        public interface IScoped {
+            /** Get the {@link IScope} instance.
+             *
+             *  @return {@link IScope} instance */
+            IScope getScope();
+        }
 
         /** Customizable getter for obtaining the current value of an option or positional parameter.
          * When an option or positional parameter is matched on the command line, its getter or setter is invoked to capture the value.
@@ -9167,8 +9177,25 @@ public class CommandLine {
              * @since 4.3 */
             public ScopeType scopeType() { return scopeType; }
 
+            /** Check whether the {@link #getValue()} method is able to get an actual value from the current {@link #getter()}.
+             * @since 4.7 */
+            public boolean isValueGettable() {
+                if (getter instanceof IScoped) {
+                    IScoped scoped = (IScoped) getter;
+                    IScope scope = scoped.getScope();
+                    if ( scope==null ) { return false; }
+                    try {
+                        return scope.get() != null;
+                    } catch (Exception e) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+
             /** Returns the current value of this argument. Delegates to the current {@link #getter()}. */
             public <T> T getValue() throws PicocliException {
+                if ( !isValueGettable() ) { return null; }
                 try {
                     return getter.<T>get();
                 } catch (PicocliException ex) { throw ex;
@@ -11085,12 +11112,15 @@ public class CommandLine {
         public interface ITypeInfo {
             /** Returns {@code true} if {@link #getType()} is {@code boolean} or {@code java.lang.Boolean}. */
             boolean isBoolean();
-            /** Returns {@code true} if {@link #getType()} is an array, map or collection. */
+            /** Returns {@code true} if {@link #getType()} is an array, map or collection.
+             * Note that from picocli 4.7, {@code char[]} arrays are considered single values (similar to String) and are not treated as arrays.*/
             boolean isMultiValue();
 
             /** Returns {@code true} if {@link #getType()} is {@code java.util.Optional}
              * @since 4.6 */
             boolean isOptional();
+            /** Returns {@code true} if this type is an array multi-value type.
+             * Note that from picocli 4.7, {@code char[]} arrays are considered single values (similar to String) and are not treated as arrays.*/
             boolean isArray();
             boolean isCollection();
             boolean isMap();
@@ -11164,8 +11194,8 @@ public class CommandLine {
                 }
                 if (auxiliaryTypes == null || auxiliaryTypes.length == 0) {
                     if (type.isArray()) {
-                        if (interactive && type.equals(char[].class)) {
-                            auxiliaryTypes = new Class<?>[]{char[].class};
+                        if (type.equals(char[].class)) {
+                            auxiliaryTypes = new Class<?>[]{char[].class}; // TODO is this still needed?
                         } else {
                             auxiliaryTypes = new Class<?>[]{type.getComponentType()};
                         }
@@ -11252,7 +11282,7 @@ public class CommandLine {
 
             public boolean isBoolean()            { return auxiliaryTypes[0] == boolean.class || auxiliaryTypes[0] == Boolean.class; }
             public boolean isMultiValue()         { return CommandLine.isMultiValue(type); }
-            public boolean isArray()              { return type.isArray(); }
+            public boolean isArray()              { return type.isArray() && type != char[].class; }
             public boolean isCollection()         { return Collection.class.isAssignableFrom(type); }
             public boolean isMap()                { return Map.class.isAssignableFrom(type); }
             public boolean isOptional()           { return CommandLine.isOptional(type); }
@@ -11737,7 +11767,7 @@ public class CommandLine {
 
                 CommandUserObject userObject = CommandUserObject.create(command, factory);
                 t.debug("Creating CommandSpec for %s with factory %s", userObject, factory.getClass().getName());
-                CommandSpec result = CommandSpec.wrapWithoutInspection(userObject);
+                CommandSpec result = CommandSpec.wrapWithoutInspection(userObject, factory);
 
                 boolean hasCommandAnnotation = false;
                 if (userObject.isMethod()) {
@@ -12018,11 +12048,14 @@ public class CommandLine {
             }
         }
 
-        static class FieldBinding implements IGetter, ISetter {
+        static class FieldBinding implements IGetter, ISetter, IScoped {
             private final IScope scope;
             private final Field field;
             FieldBinding(Object scope, Field field) { this(ObjectScope.asScope(scope), field); }
             FieldBinding(IScope scope, Field field) { this.scope = scope; this.field = field; }
+            public IScope getScope() {
+                return scope;
+            }
             public <T> T get() throws PicocliException {
                 Object obj;
                 try { obj = scope.get(); }
@@ -12051,7 +12084,7 @@ public class CommandLine {
                         field.getDeclaringClass().getName(), field.getName());
             }
         }
-        static class MethodBinding implements IGetter, ISetter {
+        static class MethodBinding implements IGetter, ISetter, IScoped {
             private final IScope scope;
             private final Method method;
             private final CommandSpec spec;
@@ -12060,6 +12093,9 @@ public class CommandLine {
                 this.scope = scope;
                 this.method = method;
                 this.spec = spec;
+            }
+            public IScope getScope() {
+                return scope;
             }
             @SuppressWarnings("unchecked") public <T> T get() { return (T) currentValue; }
             public <T> T set(T value) throws PicocliException {
@@ -14032,11 +14068,11 @@ public class CommandLine {
             }
 
             int result;
-            if (argSpec.type().isArray() && !(argSpec.interactive() && argSpec.type() == char[].class)) {
+            if (argSpec.typeInfo().isArray()) {
                 result = applyValuesToArrayField(argSpec, negated, lookBehind, alreadyUnquoted, arity, workingStack, initialized, argDescription);
-            } else if (Collection.class.isAssignableFrom(argSpec.type())) {
+            } else if (argSpec.typeInfo().isCollection()) {
                 result = applyValuesToCollectionField(argSpec, negated, lookBehind, alreadyUnquoted, arity, workingStack, initialized, argDescription);
-            } else if (Map.class.isAssignableFrom(argSpec.type())) {
+            } else if (argSpec.typeInfo().isMap()) {
                 result = applyValuesToMapField(argSpec, lookBehind, alreadyUnquoted, arity, workingStack, initialized, argDescription);
             } else {
                 result = applyValueToSingleValuedField(argSpec, negated, lookBehind, alreadyUnquoted, arity, workingStack, initialized, argDescription);
@@ -15721,6 +15757,7 @@ public class CommandLine {
                 Text name = colorScheme.optionText(nameString);
                 Text param = parameterLabelRenderer.renderParameterLabel(option, colorScheme.ansi(), colorScheme.optionParamStyles);
                 text = text.concat(prefix);
+
                 if (option.required()) { // e.g., -x=VAL
                     text = text.concat(name).concat(param).concat("");
                     if (option.isMultiValue()) { // e.g., -x=VAL [-x=VAL]...

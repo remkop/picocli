@@ -263,6 +263,12 @@ The <<Mixin Standard Help Options,mixinStandardHelpOptions>> attribute adds `--h
 The picocli Quick Guide shows other https://picocli.info/quick-guide.html#_example_applications[sample applications] and explains them in more detail.
 ====
 
+[TIP]
+====
+The https://github.com/remkop/picocli/tree/main/picocli-examples[picocli-examples] module in the picocli git repository has many more examples.
+====
+
+
 == Getting Started
 You can add picocli as an external dependency to your project, or you can include it as source.
 
@@ -296,9 +302,9 @@ The `picocli-codegen` module includes an annotation processor that can build a m
 Enabling this annotation processor in your project is optional, but strongly recommended. Use this if you’re interested in:
 
 * **Compile time error checking**. The annotation processor shows errors for invalid annotations and attributes immediately when you compile, instead of during testing at runtime, resulting in shorter feedback cycles.
-* **<<GraalVM Native Image,GraalVM native images>>**. The annotation processor generates and updates https://www.graalvm.org/reference-manual/native-image/BuildConfiguration/[GraalVM configuration] files under
+* **<<GraalVM Native Image,GraalVM native images>>**. The annotation processor generates and updates https://www.graalvm.org/22.2/reference-manual/native-image/overview/BuildConfiguration/[GraalVM configuration] files under
 `META-INF/native-image/picocli-generated/$project` during compilation, to be included in the application jar.
-This includes configuration files for https://www.graalvm.org/reference-manual/native-image/Reflection/[reflection], https://www.graalvm.org/reference-manual/native-image/Resources/[resources] and https://www.graalvm.org/reference-manual/native-image/DynamicProxy/[dynamic proxies].
+This includes configuration files for https://www.graalvm.org/22.2/reference-manual/native-image/dynamic-features/Reflection/[reflection], https://www.graalvm.org/22.2/reference-manual/native-image/dynamic-features/Resources/[resources] and https://www.graalvm.org/22.2/reference-manual/native-image/dynamic-features/DynamicProxy/[dynamic proxies].
 By embedding these configuration files, your jar is instantly Graal-enabled.
 In most cases no further configuration is needed when generating a native image.
 
@@ -4445,10 +4451,10 @@ import picocli.CommandLine;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.*;
 
-import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.validation.constraints.*;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.constraints.*;
 import java.util.Set;
 
 // Example inspired by https://www.baeldung.com/javax-validation
@@ -4509,10 +4515,10 @@ import picocli.CommandLine
 import picocli.CommandLine.Model.CommandSpec
 import picocli.CommandLine.*
 
-import javax.validation.ConstraintViolation
-import javax.validation.Validation
-import javax.validation.Validator
-import javax.validation.constraints.*
+import jakarta.validation.ConstraintViolation
+import jakarta.validation.Validation
+import jakarta.validation.Validator
+import jakarta.validation.constraints.*
 
 // Example inspired by https://www.baeldung.com/javax-validation
 class User : Runnable {
@@ -4558,6 +4564,82 @@ class User : Runnable {
 fun main(args: Array<String>) {
     CommandLine(User()).execute(*args)
 }
+----
+
+==== Using a Custom Execution Strategy for Validation
+
+The above JSR-380 BeanValidation can also be accomplished with a custom `IExecutionStrategy` that does the validation before executing the command.
+This moves the validation logic into a separate class.
+Picocli invokes this logic, removing the need to call a `validate` method from the business logic.
+
+Such a custom execution strategy could look like this:
+
+.Java
+[source,java,role="primary"]
+----
+class ValidatingExecutionStrategy implements IExecutionStrategy {
+    public int execute(ParseResult parseResult) {
+        validate(parseResult.commandSpec());
+        return new CommandLine.RunLast().execute(parseResult); // default execution strategy
+    }
+
+    void validate(CommandSpec spec) {
+        Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+        Set<ConstraintViolation<Object>> violations = validator.validate(spec.userObject());
+        if (!violations.isEmpty()) {
+            String errorMsg = "";
+            for (ConstraintViolation<?> violation : violations) {
+                errorMsg += "ERROR: " + violation.getMessage() + "\n";
+            }
+            throw new ParameterException(spec.commandLine(), errorMsg);
+        }
+    }
+}
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+class ValidatingExecutionStrategy : IExecutionStrategy {
+    override fun execute(parseResult : ParseResult) : Int {
+        validate(parseResult.commandSpec())
+        return CommandLine.RunLast().execute(parseResult) // default execution strategy
+    }
+
+    private fun validate(spec : CommandSpec) {
+        val validator: Validator = Validation.buildDefaultValidatorFactory().validator
+        val violations: Set<ConstraintViolation<Any>> = validator.validate(spec.userObject())
+        if (violations.isNotEmpty()) {
+            var errorMsg = ""
+            for (violation in violations) {
+                errorMsg += "ERROR: ${violation.message}\n"
+            }
+            throw CommandLine.ParameterException(spec.commandLine(), errorMsg)
+        }
+    }
+}
+----
+
+The application can wire in this custom execution strategy as follows:
+
+.Java
+[source,java,role="primary"]
+----
+    public static void main(String... args) {
+        new CommandLine(new MyApp())
+                .setExecutionStrategy(new ValidatingExecutionStrategy())
+                .execute(args);
+    }
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+    public static void main(String... args) {
+        CommandLine(MyApp())
+                .setExecutionStrategy(ValidatingExecutionStrategy())
+                .execute(*args)
+    }
 ----
 
 == Parser Configuration
@@ -8729,7 +8811,7 @@ myapp add -x=item1 -w=0.2 \
 ----
 
 In the above command line invocation, the `myapp` top-level command is followed by its subcommand `add`.
-Next, this is followed by another two occurences of `add`, followed by `list` and `send-report`.
+Next, this is followed by another two occurrences of `add`, followed by `list` and `send-report`.
 These are all "sibling" commands, that share the same parent command `myapp`.
 This invocation is valid because `myapp` is marked with `subcommandsRepeatable = true`.
 
@@ -10134,7 +10216,7 @@ Hello Sarah!
 Hello Lea!
 ----
 
-In order to control the locale choosen for our output, we have to make use of the command line parameter `--locale`:
+In order to control the locale chosen for our output, we have to make use of the command line parameter `--locale`:
 
 [source,bash]
 ----
@@ -10512,12 +10594,13 @@ class Cat {
 
     @Command(description = "Concatenate FILE(s) to standard output.",
              mixinStandardHelpOptions = true, version = "4.1.3")
-    void cat(@Option(names = {"-E", "--show-ends"}) boolean showEnds,
+    int cat(@Option(names = {"-E", "--show-ends"}) boolean showEnds,
              @Option(names = {"-n", "--number"}) boolean number,
              @Option(names = {"-T", "--show-tabs"}) boolean showTabs,
              @Option(names = {"-v", "--show-nonprinting"}) boolean showNonPrinting,
              @Parameters(paramLabel = "FILE") File[] files) {
         // process files
+        return CommandLine.ExitCode.OK;
     }
 }
 ----
@@ -10532,8 +10615,9 @@ class Cat {
             @Option(names = ["-n", "--number"]) number: Boolean,
             @Option(names = ["-T", "--show-tabs"]) showTabs: Boolean,
             @Option(names = ["-v", "--show-nonprinting"]) showNonPrinting: Boolean,
-            @Parameters(paramLabel = "FILE") files: Array<File>?) {
+            @Parameters(paramLabel = "FILE") files: Array<File>?): Int {
         // process files
+        return CommandLine.ExitCode.OK
     }
 }
 
@@ -12843,8 +12927,8 @@ ahead-of-time compile Java code to a standalone executable, called a native imag
 The resulting executable includes the application, the libraries, and the JDK and does not require a separate Java VM to be installed.
 The generated native image has faster startup time and lower runtime memory overhead compared to a Java VM.
 
-GraalVM native images have some limitations and require some extra https://www.graalvm.org/reference-manual/native-image/BuildConfiguration/[configuration]
-to be able to use features like https://www.graalvm.org/reference-manual/native-image/Reflection/[reflection], https://www.graalvm.org/reference-manual/native-image/Resources/[resources] (including resource bundles) and https://www.graalvm.org/reference-manual/native-image/DynamicProxy/[dynamic proxies].
+GraalVM native images have some limitations and require some extra https://www.graalvm.org/22.2/reference-manual/native-image/overview/BuildConfiguration/[configuration]
+to be able to use features like https://www.graalvm.org/22.2/reference-manual/native-image/dynamic-features/Reflection/[reflection], https://www.graalvm.org/22.2/reference-manual/native-image/dynamic-features/Resources/[resources] (including resource bundles) and https://www.graalvm.org/22.2/reference-manual/native-image/dynamic-features/DynamicProxy/[dynamic proxies].
 
 ==== How do I Create a Native Image for my Application?
 The `picocli-codegen` module contains an annotation processor that generates the necessary configuration files
@@ -12853,7 +12937,7 @@ to be included in the application jar. The <<Annotation Processor>> section of t
 file.
 
 By embedding these configuration files, your jar is instantly Graal-enabled: the
-https://www.graalvm.org/docs/reference-manual/aot-compilation/#install-native-image[`native-image` tool]
+https://www.graalvm.org/22.2/reference-manual/native-image/#install-native-image[`native-image` tool]
 used to generate the native executable is able to get the configuration from the jar.
 In most cases no further configuration is needed when generating a native image.
 
@@ -12884,7 +12968,7 @@ See also this https://github.com/remkop/picocli-native-image-demo[demo Gradle pr
 
 A https://skife.org/java/unix/2011/06/20/really_executable_jars.html[really executable JAR]
 is a JAR file that is also a shell script which executes the JAR by running it with `java`.
-It thus functions as an exectuable, is portable across operating systems and architectures,
+It thus functions as an executable, is portable across operating systems and architectures,
 and is still a valid JAR file that can be executed explicitly or otherwise used as a JAR.
 
 The https://github.com/brianm/really-executable-jars-maven-plugin[Really Executable JAR Maven Plugin]

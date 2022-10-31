@@ -136,7 +136,7 @@ public class Example {
      * Command that optionally reads and password interactively.
      */
     @Command(name = "pwd", mixinStandardHelpOptions = true,
-            description = "Interactivly reads a password", version = "1.0")
+            description = "Interactively reads a password", version = "1.0")
     static class ReadInteractive implements Callable<Void> {
         
         @Option(names = {"-p"}, parameterConsumer = InteractiveParameterConsumer.class)

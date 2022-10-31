@@ -90,6 +90,7 @@ public class TypeConversionTest {
         @Option(names = "-Byte")          Byte aByteField;
         @Option(names = "-char")          char charField;
         @Option(names = "-Character")     Character aCharacterField;
+        @Option(names = "-charArray")     char[] charArrayField;
         @Option(names = "-short")         short shortField;
         @Option(names = "-Short")         Short aShortField;
         @Option(names = "-int")           int intField;
@@ -484,6 +485,16 @@ public class TypeConversionTest {
         }
     }
     @Test
+    public void testCharArrayConverter() {
+        try {
+            final SupportedTypes cli = new SupportedTypes();
+            CommandLine.populateCommand(cli, "-charArray", "abcd");
+            assertArrayEquals(new char[]{'a', 'b', 'c', 'd'}, cli.charArrayField);
+        } catch (Exception exception) {
+            fail("Unexpected exception while converting char[] type: " + exception.getMessage());
+        }
+    }
+    @Test
     public void testNumberConvertersInvalidError() {
         parseInvalidValue("-Byte", "aa", "Invalid value for option '-Byte': 'aa' is not a byte");
         parseInvalidValue("-byte", "aa", "Invalid value for option '-byte': 'aa' is not a byte");
@@ -716,8 +727,7 @@ public class TypeConversionTest {
         //System.out.println(sw);
         assertTrue(sw.toString().startsWith("picocli.CommandLine$ParameterException: Invalid value for positional parameter at index 0 (<sqlTypeParam>): cannot convert 'anything' to int (java.lang.IllegalStateException: bad converter)"));
         assertTrue(sw.toString().contains(String.format("Caused by: java.lang.IllegalStateException: bad converter%n" +
-                "\tat picocli.TypeConversionTest$ErrorConverter.convert(TypeConversionTest.java:674)%n" +
-                "\tat picocli.TypeConversionTest$ErrorConverter.convert(TypeConversionTest.java:672)")));
+                "\tat picocli.TypeConversionTest$ErrorConverter.convert(TypeConversionTest.java:")));
     }
     static class TypeConversionExceptionConverter implements ITypeConverter<Integer> {
         public Integer convert(String value) throws Exception {
@@ -752,8 +762,7 @@ public class TypeConversionTest {
         //System.out.println(sw);
         assertTrue(sw.toString().startsWith("picocli.CommandLine$ParameterException: Invalid value for positional parameter at index 0 (<sqlTypeParam>): I am always thrown"));
         assertTrue(sw.toString(), sw.toString().contains(String.format("Caused by: picocli.CommandLine$TypeConversionException: I am always thrown%n" +
-                "\tat picocli.TypeConversionTest$TypeConversionExceptionConverter.convert(TypeConversionTest.java:724)%n" +
-                "\tat picocli.TypeConversionTest$TypeConversionExceptionConverter.convert(TypeConversionTest.java:722)%n")));
+                "\tat picocli.TypeConversionTest$TypeConversionExceptionConverter.convert(TypeConversionTest.java:")));
     }
     static class CustomConverter implements ITypeConverter<Integer> {
         public Integer convert(String value) { return Integer.parseInt(value); }

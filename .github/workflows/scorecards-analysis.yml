@@ -31,12 +31,12 @@ jobs:
 
     steps:
       - name: "Checkout code"
-        uses: actions/checkout@ec3a7ce113134d7a93b817d10a8272cb61118579 # v2.4.0
+        uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # v2.4.0
         with:
           persist-credentials: false
 
       - name: "Run analysis"
-        uses: ossf/scorecard-action@ce330fde6b1a5c9c75b417e7efc510b822a35564 # v1.0.2
+        uses: ossf/scorecard-action@99c53751e09b9529366343771cc321ec74e9bd3d # v1.0.2
         with:
           results_file: results.sarif
           results_format: sarif
@@ -59,6 +59,6 @@ jobs:
 
       # Upload the results to GitHub's code scanning dashboard.
       - name: "Upload to code-scanning"
-        uses: github/codeql-action/upload-sarif@2ca79b6fa8d3ec278944088b4aa5f46912db5d63 # v1.0.26
+        uses: github/codeql-action/upload-sarif@cc7986c02bac29104a72998e67239bb5ee2ee110 # v1.0.26
         with:
           sarif_file: results.sarif

@@ -51,6 +51,7 @@ task generateManpageAsciiDoc(type: JavaExec) {
     description = "Generate AsciiDoc manpage"
     classpath(configurations.compileClasspath, configurations.annotationProcessor, sourceSets.main.runtimeClasspath)
     mainClass = 'picocli.codegen.docgen.manpage.ManPageGenerator'
+    outputs.dir("${project.buildDir}/picocli-generated-docs")
     args 'picocli.codegen.docgen.manpage.ManPageGenerator$App',
             'picocli.codegen.aot.graalvm.DynamicProxyConfigGenerator$App',
             'picocli.codegen.aot.graalvm.ReflectionConfigGenerator$App',
