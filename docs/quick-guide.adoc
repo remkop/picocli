@@ -1,7 +1,7 @@
 = Quick Guide
 //:author: Remko Popma
 //:email: rpopma@apache.org
-:revnumber: 4.7.0
+:revnumber: 4.7.1-SNAPSHOT
 :revdate: 2022-10-31
 :toc: left
 :numbered:
@@ -52,7 +52,7 @@ Below we show a small but fully functional example picocli-based command line ap
 
 .Invoking the command
 ----
-$ java -cp "myapp.jar;picocli-4.7.0.jar" ASCIIArt --font-size=9 Hello picocli
+$ java -cp "myapp.jar;picocli-4.7.1-SNAPSHOT.jar" ASCIIArt --font-size=9 Hello picocli
        #   #       #  #                 #                  #  #
        #   #       #  #                                    #
        #   #  ***  #  #  ****     #***  #  **#  ****  **#  #  #
@@ -162,7 +162,7 @@ The application can be used as follows:
 
 .Resolving two letter language codes
 ----
-$ java -cp "myapp.jar;picocli-4.7.0.jar" ISOCodeResolver language de cs en sd se
+$ java -cp "myapp.jar;picocli-4.7.1-SNAPSHOT.jar" ISOCodeResolver language de cs en sd se
 de: German
 cs: Czech
 en: English
@@ -172,7 +172,7 @@ se: Northern Sami
 
 .Resolving two letter country codes
 ----
-$ java -cp "myapp.jar;picocli-4.7.0.jar" ISOCodeResolver country cn fr th ro no
+$ java -cp "myapp.jar;picocli-4.7.1-SNAPSHOT.jar" ISOCodeResolver country cn fr th ro no
 CN: China
 FR: France
 TH: Thailand
