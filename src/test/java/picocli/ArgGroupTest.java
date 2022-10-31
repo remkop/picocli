@@ -4351,4 +4351,30 @@ public class ArgGroupTest {
         }
     }
 
+    @Test
+    public void testReuseBothCommandLineAndUserObjectWithArgGroup() {
+        MyCommand userObject = new MyCommand();
+        CommandLine cmdLine = new CommandLine(userObject);
+        cmdLine.execute("--group", "group", "--option", "option");
+        cmdLine.execute();
+        assertNull("Expected option to be reset to null", userObject.option);
+        assertNull("Expected group option to be reset to null", userObject.group.option);
+    }
+
+    @Command(name = "command")
+    static class MyCommand implements Runnable {
+        @Option(names = "--option"/*, defaultValue = Option.NULL_VALUE*/)
+        private String option;
+
+        @ArgGroup
+        private Group group = new Group();
+
+        private static class Group {
+            @Option(names = "--group", defaultValue = Option.NULL_VALUE)
+            private String option;
+        }
+
+        public void run() {
+        }
+    }
 }
