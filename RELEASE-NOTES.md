@@ -5,6 +5,8 @@ The picocli community is pleased to announce picocli 4.7.0.
 
 This release includes bugfixes and enhancements.
 
+A potentially breaking change is that the parser now treats `char[]` as a single-value type.
+
 From this release, applications can programmatically set the trace level, and use tracing in custom components.
 
 Applications can improve startup time by setting system property `picocli.disable.closures` to `true` to disable support for [closures in annotations](https://picocli.info/#_closures_in_annotations).
@@ -74,6 +76,12 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 @Command(sortSynopsis = false)
 ```
 
+### Parser change for `char[]` options
+Prior to 4.7, the picocli parser treated options and positional parameters with type `char[]` as array (multi-value) options, except for interactive options. However, it is more intuitive to treat all `char[]` options as single-value options, similar to `String` options.
+
+For end users, this means that existing applications that use non-interactive `char[]` options will no longer allow multiple characters to be specified separately on the command line. That is, input like `-c A -c B -c C` will be rejected and the user needs to specify `-c ABC` instead.
+
+Applications that want to preserve the previous behaviour will need to change their code to use `java.lang.Character[]` instead of `char[]`.
 
 ## <a name="4.7.0-fixes"></a> Fixed issues
 * [#1599] API: The `picocli-codegen` artifact is now an explicitly declared named JPMS module with a `module-info.class`.
@@ -89,9 +97,9 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1380][#1505] API, bugfix: `requiredOptionMarker` should not be displayed on `ArgGroup` options. Thanks to [Ahmed El Khalifa](https://github.com/ahmede41) for the pull request.
 * [#1563] API: Add constructor to `PicocliSpringFactory` to allow custom fallback `IFactory`. Thanks to [Andrew Holland](https://github.com/a1dutch) for raising this.
 * [#1767][#1802] API: avoid NPE on `OptionSpec.getValue()` and add `IScoped` internal API. Thanks to [Ruud Senden](https://github.com/rsenden) for the discussion and the pull request.
-* [#648][#1846] Enhancement: Treat `char[]` as single-value types (Potentially breaking change). Thanks to [Lukáš Petrovický](https://github.com/triceo) for the pull request for the test.
-* [#1571] Enhancement: Variables in values from the default value provider should be interpolated. Thanks to [Bas Passon](https://github.com/bpasson) for raising this.
 * [#1574] API: Add annotation API to control whether synopsis should be sorted alphabetically or by explicit `order`.
+* [#648][#1846] Enhancement: Treat `char[]` as single-value types (Potentially breaking change). Thanks to [Lukáš Petrovický](https://github.com/triceo) for the pull request with the test to verify the solution.
+* [#1571] Enhancement: Variables in values from the default value provider should be interpolated. Thanks to [Bas Passon](https://github.com/bpasson) for raising this.
 * [#1708][#1712][#1723] API: The `setUsageHelpLongOptionsMaxWidth` method no longer throws an exception when an invalid value is specified; instead, the value is ignored and an INFO-level trace message is logged. Thanks to [Fabio](https://github.com/fabio-franco) for the pull request.
 * [#1773] Enhancement: Applications can improve startup time by setting system property `picocli.disable.closures` to `true` to disable support for [closures in annotations](https://picocli.info/#_closures_in_annotations). Thanks to [patric-r](https://github.com/patric-r) for raising this.
 * [#1408] Enhancement: Synopsis should respect `order` if specified. Thanks to [Simon](https://github.com/sbernard31) for raising this.
@@ -112,7 +120,8 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1642] Bugfix: Negatable options should negate explicit values. Thanks to [Nat Burns](https://github.com/burnnat) for raising this.
 * [#1696][#1697] Bugfix: ManPageGenerator asciidoc output now correctly shows options in nested ArgGroups. Thanks to [Ruud Senden](https://github.com/rsenden) for the pull request.
 * [#1741] Bugfix: `@Command`-annotated method parameters are assigned incorrect indices when contained in a `@Command` class that is added as a subcommand to another `@Command` class which has `scope = CommandLine.ScopeType.INHERIT`. Thanks to [Onedy](https://github.com/Onedy) for raising this.
-* [#1779] bugfix: Custom factory should be used when creating `CommandSpec`. Thanks to [Philippe Charles](https://github.com/charphi) for raising this.
+* [#1779] Bugfix: Custom factory should be used when creating `CommandSpec`. Thanks to [Philippe Charles](https://github.com/charphi) for raising this.
+* [#1644][#1863] Bugfix: autocompletion of directory names stopped working from picocli 4.6.3. Thanks to [NewbieOrange](https://github.com/NewbieOrange) for the pull request, and thanks to [philgdn](https://github.com/philgdn) for raising this and verifying the solution.
 * [#1807] BUILD: Optimize incremental builds and local build cache usage. Thanks to [Jean André Gauthier](https://github.com/jean-andre-gauthier) for the pull request and [Nelson Osacky](https://github.com/runningcode) for the review.
 * [#1298] DOC: Publish all-in-one javadoc for all picocli modules.
 * [#812] DOC: Document how to test a picocli spring-boot application.
@@ -147,6 +156,7 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1826] DEP: Bump actions/setup-java from 3.5.0 to 3.5.1
 * [#1624] DEP: Bump actions/upload-artifact from 2.3.1 to 3
 * [#1687] DEP: Bump actions/upload-artifact from 3.0.0 to 3.1.0
+* [#1859] DEP: Bump actions/upload-artifact from 3.1.0 to 3.1.1
 * [#1585] DEP: Bump github/codeql-action from 1.0.30 to 1.1.0
 * [#1593] DEP: Bump github/codeql-action from 1.1.0 to 1.1.2
 * [#1601] DEP: Bump github/codeql-action from 1.1.2 to 1.1.3
@@ -171,10 +181,13 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1823] DEP: Bump github/codeql-action from 2.1.24 to 2.1.25
 * [#1831] DEP: Bump github/codeql-action from 2.1.25 to 2.1.26
 * [#1842] DEP: Bump github/codeql-action from 2.1.26 to 2.1.27
+* [#1862] DEP: Bump github/codeql-action from 2.1.28 to 2.1.29
 * [#1782] DEP: Bump gradle/gradle-build-action from c6619898ec857b418d6436d3efe8a0becf74eb9e to 2.2.4
 * [#1787] DEP: Bump gradle/gradle-build-action from c6619898ec857b418d6436d3efe8a0becf74eb9e to 2.2.5
 * [#1825] DEP: Bump gradle/gradle-build-action from 2.3.0 to 2.3.1
 * [#1832] DEP: Bump gradle/gradle-build-action from 2.3.1 to 2.3.2
+* [#1860] DEP: Bump gradle/gradle-build-action from 2.3.2 to 2.3.3
+* [#1861] DEP: Bump gradle/wrapper-validation-action from 1.0.4 to 1.0.5
 * [#1586] DEP: Bump ossf/scorecard-action from 1.0.2 to 1.0.3
 * [#1594] DEP: Bump ossf/scorecard-action from 1.0.3 to 1.0.4
 * [#1691] DEP: Bump ossf/scorecard-action from 1.0.4 to 1.1.0
@@ -197,6 +210,7 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1715] DEP: Bump asciidoctorj-pdf from 2.0.6 to 2.0.8
 * [#1722] DEP: Bump asciidoctorj-pdf from 2.0.8 to 2.1.2
 * [#1785] DEP: Bump asciidoctorj-pdf from 2.1.6 to 2.3.0
+* [#1854] DEP: Bump asciidoctorj-pdf from 2.3.0 to 2.3.3
 * [#1618] DEP: Bump biz.aQute.bnd.gradle from 6.1.0 to 6.2.0
 * [#1698] DEP: Bump biz.aQute.bnd.gradle from 6.2.0 to 6.3.0
 * [#1703] DEP: Bump biz.aQute.bnd.gradle from 6.3.0 to 6.3.1
@@ -232,6 +246,7 @@ Picocli 4.7.0 introduced a `sortSynopsis = false` attribute to let the synopsis 
 * [#1747] DEP: Bump Spring Boot version from 2.7.1 to 2.7.2
 * [#1780] DEP: Bump spring Boot Version from 2.7.2 to 2.7.3
 * [#1824] DEP: Bump springBootVersion from 2.7.3 to 2.7.4
+* [#1853] DEP: Bump springBootVersion from 2.7.4 to 2.7.5
 * [#1588] DEP: Bump system-rules from 1.17.1 to 1.19.0
 
 
@@ -242,6 +257,7 @@ No features were deprecated in this release.
 
 * The JPMS module name of `picocli-spring-boot-starter` has been changed to `info.picocli.spring.boot` from `info.picocli.spring`.
 * The `picocli-groovy` module now declares `groovy-all` as dependency.
+* The parser now treats `char[]` as a single-value type.
 * Redundant braces are now omitted in ArgGroup synopsis in usage help messages.
 
 

@@ -12964,6 +12964,19 @@ This https://picocli.info/picocli-on-graalvm.html[older article], "Picocli on Gr
 
 See also this https://github.com/remkop/picocli-native-image-demo[demo Gradle project] and this https://github.com/remkop/picocli-native-image-maven-demo[demo Maven project] that provide a simple complete CLI app, with build instructions, that developers can clone, and build to get the stand-alone executable.
 
+[TIP]
+====
+Native images on Windows have the https://github.com/oracle/graal/issues/1762[problem] that the native image does not include the required dependency `msvcr100.dll` (for Java 8) or `VCRUNTIME140.dll` (with GraalVM 19.3 or later for Java 11). On Windows machines where this dependency is not in the `PATH`, the native image fails to start, and shows an error dialog "System Error: The program can't start because VCRUNTIME140.dll is missing from your computer".
+
+Many thanks to https://github.com/mmellon[Matthew Mellon] for https://github.com/oracle/graal/issues/1762#issuecomment-1297370039[suggesting] to use https://osdn.net/projects/pefrm-units/[pefrmdllembed] as a workaround. Syntax:
+
+[source,bash]
+----
+pefrmdllembed -impinj VCRUNTIME140.DLL your-native-image.exe your-native-image-fixed.exe
+----
+
+====
+
 === Really Executable JAR
 
 A https://skife.org/java/unix/2011/06/20/really_executable_jars.html[really executable JAR]
