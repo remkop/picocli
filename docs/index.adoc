@@ -3620,8 +3620,7 @@ fun main(args: Array<String>) {
 
 CAUTION: Older versions of picocli had some limited exit code support where picocli would call `System.exit`, but this is now deprecated.
 
-When an application is not appropriate to call `System.exit`, for example it runs on the caller's process, you can take a different action based on the returned `int`.
-See <<Usage of `System.exit`>> section for the usecases.
+There are cases where calling `System.exit` is not ideal. See <<Usage of `System.exit`>> for details.
 
 === Generating an Exit Code
 
@@ -11409,25 +11408,16 @@ For more details, see https://www.infoq.com/articles/java-text-blocks/[this arti
 When an application runs as an independent process, `System.exit` returns an exit code to the caller.
 On the other hand, when an application runs as part of the caller process, `System.exit` halts the caller process and ends up an abrupt finish.
 
-In such scenario, you need to avoid `System.exit`.
-
 For example, picocli based <<TAB Autocomplete,TAB AutoComplete application>> solves this problem by having link:autocomplete.html#_maven_example[a system property] to determine whether to call `System.exit`.
 
-Another usecase is https://www.mojohaus.org/exec-maven-plugin/[`exec-maven-plugin`] with https://www.mojohaus.org/exec-maven-plugin/java-mojo.html[`exec:java` goal].
+Another use case is https://www.mojohaus.org/exec-maven-plugin/[`exec-maven-plugin`] with https://www.mojohaus.org/exec-maven-plugin/java-mojo.html[`exec:java` goal].
 This goal invokes the target class on the same maven process.
 The `System.exit` call finishes maven process bypassing the rest of the maven steps including its error handlings.
 
-In picocli, any exceptions thrown during the `CommandLine.execute` method are captured, printed, and converted to an exit code.
-You can check the exit code and perform an appropriate action, such as throwing an exception, instead of calling `System.exit`.
-Then, the caller(maven process) could perform its exception handlings.
-
-[source,java]
-----
-int exitCode = new CommandLine(new MyCommand()).execute(args);
-if (exitCode != ExitCode.OK) {
-    throw new IllegalStateException("MyCommand failed");
-}
-----
+In such scenarios, you should use `parseArgs` instead.
+You can control whether to propagate the exception to the caller.
+Then, the caller(e.g. maven process) can perform its exception handlings.
+See <<DIY Command Execution>> for details.
 
 
 == Dependency Injection
