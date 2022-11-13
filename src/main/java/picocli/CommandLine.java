@@ -3659,6 +3659,15 @@ public class CommandLine {
     private static class NoCompletionCandidates implements Iterable<String> {
         public Iterator<String> iterator() { throw new UnsupportedOperationException(); }
     }
+    /** A marker completer class to enable file path completion for positional parameters.
+     * <p>If the {@code type} of {@code Option} or {@code Parameters} is neither {@code java.io.File} nor {@code java.nio.file.Path}
+     * and it still requires to enable file path completion, specify this class to its {@code completionCandidates} attribute.</p>
+     */
+    public static class FilePathCompleter implements Iterable<String> {
+        public Iterator<String> iterator() {
+            return Collections.<String>emptyList().iterator();
+        }
+    }
     /** Specifies the scope of the element.
      * @since 4.3 */
     public enum ScopeType {

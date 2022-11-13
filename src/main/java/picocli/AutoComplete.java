@@ -783,10 +783,11 @@ public class AutoComplete {
             String ifOrElif = buff.length() > 0 ? "elif" : "if";
             int min = param.index().min();
             int max = param.index().max();
-            if (param.completionCandidates() != null) {
+            Iterable<String> completionCandidates = param.completionCandidates();
+            if (completionCandidates != null && !(completionCandidates instanceof CommandLine.FilePathCompleter)) {
                 buff.append(format("%s    %s (( currIndex >= %d && currIndex <= %d )); then\n", indent, ifOrElif, min, max));
                 buff.append(format("%s      positionals=$( compReplyArray \"${%s_pos_param_args[@]}\" )\n", indent, paramName, currWord));
-            } else if (type.equals(File.class) || "java.nio.file.Path".equals(type.getName())) {
+            } else if (type.equals(File.class) || "java.nio.file.Path".equals(type.getName()) || completionCandidates != null) {
                 buff.append(format("%s    %s (( currIndex >= %d && currIndex <= %d )); then\n", indent, ifOrElif, min, max));
                 buff.append(format("%s      local IFS=$'\\n'\n", indent));
                 buff.append(format("%s      type compopt &>/dev/null && compopt -o filenames\n", indent)); // #1464 workaround for old bash
@@ -826,13 +827,14 @@ public class AutoComplete {
             if (option.typeInfo().isMultiValue()){
                 type = option.typeInfo().getAuxiliaryTypes()[0];
             }
-            if (option.completionCandidates() != null) {
+            Iterable<String> completionCandidates = option.completionCandidates();
+            if (completionCandidates != null && !(completionCandidates instanceof CommandLine.FilePathCompleter)) {
                 buff.append(format("%s    %s)\n", indent, concat("|", option.names()))); // "    -u|--timeUnit)\n"
                 buff.append(format("%s      local IFS=$'\\n'\n", indent));
                 buff.append(format("%s      COMPREPLY=( $( compReplyArray \"${%s_option_args[@]}\" ) )\n", indent, bashify(option.paramLabel()), currWord));
                 buff.append(format("%s      return $?\n", indent));
                 buff.append(format("%s      ;;\n", indent));
-            } else if (type.equals(File.class) || "java.nio.file.Path".equals(type.getName())) {
+            } else if (type.equals(File.class) || "java.nio.file.Path".equals(type.getName()) || completionCandidates != null) {
                 buff.append(format("%s    %s)\n", indent, concat("|", option.names()))); // "    -f|--file)\n"
                 buff.append(format("%s      local IFS=$'\\n'\n", indent));
                 buff.append(format("%s      type compopt &>/dev/null && compopt -o filenames\n", indent)); // #1464 workaround for old bash
