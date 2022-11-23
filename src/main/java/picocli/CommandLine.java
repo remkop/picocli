@@ -11599,6 +11599,7 @@ public class CommandLine {
          * @see CommandSpec#qualifiedName(String)
          * @since 3.6 */
         public static class Messages {
+            public static boolean loadBundles = true;
             private final CommandSpec spec;
             private final String bundleBaseName;
             private final ResourceBundle rb;
@@ -11620,7 +11621,20 @@ public class CommandLine {
                 }
             }
             private static ResourceBundle createBundle(String baseName) {
-                return ResourceBundle.getBundle(baseName);
+                if ( loadBundles ) {
+                    return ResourceBundle.getBundle(baseName);
+                } else {
+                    return new ResourceBundle() {
+                        @Override
+                        protected Object handleGetObject(String key) {
+                            return null;
+                        }
+                        @Override
+                        public Enumeration<String> getKeys() {
+                            return new Vector<String>().elements();
+                        }
+                    };
+                }
             }
             private static String extractName(ResourceBundle rb) {
                 try { // ResourceBundle.getBaseBundleName was introduced in Java 8
