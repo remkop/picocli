@@ -27,7 +27,7 @@ If a tool does not have an annotation processor wrapper (yet), it can be invoked
 As of picocli version 4.2, this module has three major use cases:
 
 * **Compile time error checking**. The annotation processor shows errors for invalid annotations and attributes immediately when you compile, instead of during testing at runtime, resulting in shorter feedback cycles.
-* **GraalVm native images**. To create a GraalVM native image for a picocli application, https://www.graalvm.org/22.2/reference-manual/native-image/overview/BuildConfiguration/[configuration] is needed. The `ReflectionConfigGenerator`, `ResourceConfigGenerator` and `DynamicProxyGenerator` tools can generate `reflect-config.json`, `resource-config.json` and `proxy-config.json` configuration files for https://www.graalvm.org/22.2/reference-manual/native-image/dynamic-features/Reflection/[reflection], https://www.graalvm.org/22.2/reference-manual/native-image/dynamic-features/Resources/[resources] and https://www.graalvm.org/22.2/reference-manual/native-image/dynamic-features/DynamicProxy/[dynamic proxies], respectively.
+* **GraalVm native images**. To create a GraalVM native image for a picocli application, https://www.graalvm.org/latest/reference-manual/native-image/overview/BuildConfiguration/[configuration] is needed. The `ReflectionConfigGenerator`, `ResourceConfigGenerator` and `DynamicProxyGenerator` tools can generate `reflect-config.json`, `resource-config.json` and `proxy-config.json` configuration files for https://www.graalvm.org/latest/reference-manual/native-image/dynamic-features/Reflection/[reflection], https://www.graalvm.org/latest/reference-manual/native-image/dynamic-features/Resources/[resources] and https://www.graalvm.org/latest/reference-manual/native-image/dynamic-features/DynamicProxy/[dynamic proxies], respectively.
 +
 The annotation processor embeds these three tools and generates the configuration files under `META-INF/native-image/picocli-generated/$project` during compilation, to be included in the application jar.
 By embedding these configuration files, your jar is instantly GraalVM-enabled.
@@ -43,10 +43,10 @@ To build a GraalVM native image for a picocli-based application, configuration f
 The `picocli-codegen` module has tools that generate these configuration files for a picocli-based application.
 The annotation processor in the `picocli-codegen` jar wraps these tools so they are executed automatically during compilation.
 
-The annotation processor generates and updates https://www.graalvm.org/22.2/reference-manual/native-image/overview/BuildConfiguration/[GraalVM configuration]
+The annotation processor generates and updates https://www.graalvm.org/latest/reference-manual/native-image/overview/BuildConfiguration/[GraalVM configuration]
 files under `META-INF/native-image/picocli-generated/$project` during compilation,
 to be included in the application jar.
-This includes configuration files for https://www.graalvm.org/22.2/reference-manual/native-image/dynamic-features/Reflection/[reflection], https://www.graalvm.org/22.2/reference-manual/native-image/dynamic-features/Resources/[resources] and https://www.graalvm.org/22.2/reference-manual/native-image/dynamic-features/DynamicProxy/[dynamic proxies].
+This includes configuration files for https://www.graalvm.org/latest/reference-manual/native-image/dynamic-features/Reflection/[reflection], https://www.graalvm.org/latest/reference-manual/native-image/dynamic-features/Resources/[resources] and https://www.graalvm.org/latest/reference-manual/native-image/dynamic-features/DynamicProxy/[dynamic proxies].
 By embedding these configuration files, your jar is instantly GraalVM-enabled.
 
 In most cases no further configuration is needed when generating a native image.
@@ -285,11 +285,11 @@ This directory (or any of its subdirectories) is searched for files with the nam
 which are then automatically included in the build. Not all of those files must be present.
 When multiple files with the same name are found, all of them are included.
 
-See also the SubstrateVM https://www.graalvm.org/22.2/reference-manual/native-image/overview/BuildConfiguration/[configuration documentation].
+See also the SubstrateVM https://www.graalvm.org/latest/reference-manual/native-image/overview/BuildConfiguration/[configuration documentation].
 
 === ReflectionConfigGenerator
 
-GraalVM has https://www.graalvm.org/22.2/reference-manual/native-image/dynamic-features/Reflection/[limited support for Java reflection]
+GraalVM has https://www.graalvm.org/latest/reference-manual/native-image/dynamic-features/Reflection/[limited support for Java reflection]
 and it needs to know ahead of time the reflectively accessed program elements.
 
 `ReflectionConfigGenerator` generates a JSON String with the program elements that will be accessed reflectively in a picocli-based application, in order to compile this application ahead-of-time into a native executable with GraalVM.
@@ -397,7 +397,7 @@ assemble.dependsOn generateGraalReflectionConfig
 === ResourceConfigGenerator
 
 The GraalVM native-image builder by default will not integrate any of the
-https://www.graalvm.org/22.2/reference-manual/native-image/dynamic-features/Resources/[classpath resources] into the image it creates.
+https://www.graalvm.org/latest/reference-manual/native-image/dynamic-features/Resources/[classpath resources] into the image it creates.
 
 `ResourceConfigGenerator` generates a JSON String with the resource bundles and other classpath resources
 that should be included in the Substrate VM native image.
@@ -505,7 +505,7 @@ assemble.dependsOn generateGraalResourceConfig
 === DynamicProxyConfigGenerator
 
 Substrate VM doesn't provide machinery for generating and interpreting bytecodes at run time. Therefore all dynamic proxy classes
-https://www.graalvm.org/22.2/reference-manual/native-image/dynamic-features/DynamicProxy/[need to be generated] at native image build time.
+https://www.graalvm.org/latest/reference-manual/native-image/dynamic-features/DynamicProxy/[need to be generated] at native image build time.
 
 `DynamicProxyConfigGenerator` generates a JSON String with the fully qualified interface names for which
 dynamic proxy classes should be generated at native image build time.
