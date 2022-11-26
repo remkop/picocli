@@ -20,13 +20,13 @@ import java.util.concurrent.Callable;
  * that should be included in the Substrate VM native image.
  * <p>
  * The GraalVM native-image builder by default will not integrate any of the
- * <a href="https://www.graalvm.org/22.2/reference-manual/native-image/dynamic-features/Resources/">classpath resources</a> into the image it creates.
+ * <a href="https://www.graalvm.org/latest/reference-manual/native-image/dynamic-features/Resources/">classpath resources</a> into the image it creates.
  * </p><p>
  * The output of {@code ResourceConfigGenerator} is intended to be passed to the {@code -H:ResourceConfigurationFiles=/path/to/resource-config.json}
- * option of the {@code native-image} <a href="https://www.graalvm.org/22.2/reference-manual/native-image/">GraalVM utility</a>.
+ * option of the {@code native-image} <a href="https://www.graalvm.org/latest/reference-manual/native-image/">GraalVM utility</a>.
  * This allows picocli-based native image applications to access these resources.
  * </p><p>
- * Alternatively, the generated <a href="https://www.graalvm.org/22.2/reference-manual/native-image/overview/BuildConfiguration/">configuration</a>
+ * Alternatively, the generated <a href="https://www.graalvm.org/latest/reference-manual/native-image/overview/BuildConfiguration/">configuration</a>
  * files can be supplied to the {@code native-image} tool by placing them in a
  * {@code META-INF/native-image/} directory on the class path, for example, in a JAR file used in the image build.
  * This directory (or any of its subdirectories) is searched for files with the names {@code jni-config.json},
@@ -43,7 +43,7 @@ public class ResourceConfigGenerator {
             description = {"Generates a JSON file with the resources and resource bundles to include in the native image.",
                     "The generated JSON file can be passed to the `-H:ResourceConfigurationFiles=/path/to/resource-config.json` " +
                     "option of the `native-image` GraalVM utility.",
-                    "See https://www.graalvm.org/22.2/reference-manual/native-image/dynamic-features/Resources/"},
+                    "See https://www.graalvm.org/latest/reference-manual/native-image/dynamic-features/Resources/"},
             exitCodeListHeading = "%nExit Codes (if enabled with `--exit`)%n",
             exitCodeList = {
                     "0:Successful program execution.",
@@ -111,7 +111,7 @@ public class ResourceConfigGenerator {
      * @param specs one or more {@code CommandSpec} objects to inspect for resource bundles
      * @param bundles base names of additional resource bundles to be included in the image
      * @param resourceRegex one or more Java regular expressions that match resource(s) to be included in the image
-     * @return a JSON String in the <a href="https://www.graalvm.org/22.2/reference-manual/native-image/dynamic-features/Resources/#resource-bundles-in-native-image">format</a>
+     * @return a JSON String in the <a href="https://www.graalvm.org/latest/reference-manual/native-image/dynamic-features/Resources/#resource-bundles-in-native-image">format</a>
      *       required by the {@code -H:ResourceConfigurationFiles=/path/to/resource-config.json} option of the GraalVM {@code native-image} utility.
      */
     public static String generateResourceConfig(CommandSpec[] specs, String[] bundles, String[] resourceRegex) {
