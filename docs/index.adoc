@@ -302,9 +302,9 @@ The `picocli-codegen` module includes an annotation processor that can build a m
 Enabling this annotation processor in your project is optional, but strongly recommended. Use this if you’re interested in:
 
 * **Compile time error checking**. The annotation processor shows errors for invalid annotations and attributes immediately when you compile, instead of during testing at runtime, resulting in shorter feedback cycles.
-* **<<GraalVM Native Image,GraalVM native images>>**. The annotation processor generates and updates https://www.graalvm.org/22.2/reference-manual/native-image/overview/BuildConfiguration/[GraalVM configuration] files under
+* **<<GraalVM Native Image,GraalVM native images>>**. The annotation processor generates and updates https://www.graalvm.org/latest/reference-manual/native-image/overview/BuildConfiguration/[GraalVM configuration] files under
 `META-INF/native-image/picocli-generated/$project` during compilation, to be included in the application jar.
-This includes configuration files for https://www.graalvm.org/22.2/reference-manual/native-image/dynamic-features/Reflection/[reflection], https://www.graalvm.org/22.2/reference-manual/native-image/dynamic-features/Resources/[resources] and https://www.graalvm.org/22.2/reference-manual/native-image/dynamic-features/DynamicProxy/[dynamic proxies].
+This includes configuration files for https://www.graalvm.org/latest/reference-manual/native-image/dynamic-features/Reflection/[reflection], https://www.graalvm.org/latest/reference-manual/native-image/dynamic-features/Resources/[resources] and https://www.graalvm.org/latest/reference-manual/native-image/dynamic-features/DynamicProxy/[dynamic proxies].
 By embedding these configuration files, your jar is instantly Graal-enabled.
 In most cases no further configuration is needed when generating a native image.
 
@@ -1857,7 +1857,7 @@ Enum value matching is case-sensitive by default, but as of picocli 3.4 this can
 == Default Values
 It is possible to define a default value for an option or positional parameter, that is assigned when the user did not specify this option or positional parameter on the command line.
 
-Configuring a default value guarantees that the `@Option` or `@Parameters`-annotated field will get set, annotated method will get called, and, when using the programmatic API, that the https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.Model.ArgSpec.html#setValue-T-[`ArgSpec.setValue`] method will get invoked, even when the option or positional parameter was not specified on the command line.
+Configuring a default value guarantees that the `@Option` or `@Parameters`-annotated field will get set, annotated method will get called, and, when using the programmatic API, that the https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.Model.ArgSpec.html#setValue(T)[`ArgSpec.setValue`] method will get invoked, even when the option or positional parameter was not specified on the command line.
 
 [#defaultValue-annotation]
 === `defaultValue` Annotation
@@ -2053,11 +2053,11 @@ cmd.execute(*args)
 ==== PropertiesDefaultProvider Format
 The `PropertiesDefaultProvider` expects the properties file to be in the standard java `.properties` https://en.wikipedia.org/wiki/.properties[format].
 
-For options, the key is either the https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.Option.html#descriptionKey--[descriptionKey],
-or the option's https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.Model.OptionSpec.html#longestName--[longest name], without the prefix. So, for an option `--verbose`, the key would be `verbose`, and for an option `/F`, the key would be `F`.
+For options, the key is either the https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.Option.html#descriptionKey()[descriptionKey],
+or the option's https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.Model.OptionSpec.html#longestName()[longest name], without the prefix. So, for an option `--verbose`, the key would be `verbose`, and for an option `/F`, the key would be `F`.
 
-For positional parameters, the key is either the https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.Parameters.html#descriptionKey--[descriptionKey],
-or the positional parameter's https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.Parameters.html#paramLabel--[param label].
+For positional parameters, the key is either the https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.Parameters.html#descriptionKey()[descriptionKey],
+or the positional parameter's https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.Parameters.html#paramLabel()[param label].
 
 End users may not know what the `descriptionKey` of your options and positional parameters are, so be sure  to document that with your application.
 
@@ -4114,7 +4114,7 @@ When the user specified invalid input, the parser throws a `ParameterException`.
 In the `execute` method, such exceptions are caught and passed to the `IParameterExceptionHandler`.
 
 The default parameter exception handler prints an error message describing the problem,
-followed by either https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.UnmatchedArgumentException.html#printSuggestions-picocli.CommandLine.ParameterException-java.io.PrintWriter-[suggested alternatives]
+followed by either https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.UnmatchedArgumentException.html#printSuggestions(picocli.CommandLine.ParameterException,java.io.PrintWriter)[suggested alternatives]
 for mistyped options, or the full usage help message of the problematic command.
 Finally, the handler returns an <<Exception Exit Codes,exit code>>.
 This is sufficient for most applications.
@@ -5289,7 +5289,7 @@ This allows you to control:
 * the negative form recognized by the parser while parsing the command line
 * the documentation string showing both the positive and the negative form in the usage help message
 
-By default, a set of https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.RegexTransformer.html#createDefault--[regular expressions] is used to control the above.
+By default, a set of https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.RegexTransformer.html#createDefault()[regular expressions] is used to control the above.
 Use `CommandLine::setNegatableOptionTransformer` to replace the https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.INegatableOptionTransformer[`INegatableOptionTransformer`] with a custom version.
 See the JavaDoc for details.
 
@@ -8852,7 +8852,7 @@ The default link:#_executing_commands_with_subcommands[`IExecutionStrategy`] (`p
 toplevelcmd subcmd-A subcmd-B subsub-B1 subsub-B2
 ----
 
-is invoked, only the last two sub-subcommands `subsub-B1` and `subsub-B2` (who both have parent command `subcmd-B`) are executed by default. You can https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.html#setExecutionStrategy-picocli.CommandLine.IExecutionStrategy-[set] a different https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.IExecutionStrategy.html[execution strategy] if this does not meet your needs.
+is invoked, only the last two sub-subcommands `subsub-B1` and `subsub-B2` (who both have parent command `subcmd-B`) are executed by default. You can https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.html#setExecutionStrategy(picocli.CommandLine.IExecutionStrategy)[set] a different https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.IExecutionStrategy.html[execution strategy] if this does not meet your needs.
 
 
 === Usage Help for Subcommands
@@ -9995,7 +9995,7 @@ The matching entry in the resource bundle could look like this:
 xoption = This is the description for the -x option.
 ----
 
-When the `descriptionKey` is omitted, the https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.Option.html#descriptionKey--[fallback for options] is any option name without the leading dashes, for example:
+When the `descriptionKey` is omitted, the https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.Option.html#descriptionKey()[fallback for options] is any option name without the leading dashes, for example:
 
 .Java
 [source,java,role="primary"]
@@ -10015,7 +10015,7 @@ verbose = Show more detail during execution. \
           May be specified multiple times for increasing verbosity.
 ----
 
-For https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.Parameters.html#descriptionKey--[positional parameters] the fallback key is the `paramLabel + [ index ]`, for example:
+For https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.Parameters.html#descriptionKey()[positional parameters] the fallback key is the `paramLabel + [ index ]`, for example:
 
 .Java
 [source,java,role="primary"]
@@ -12451,7 +12451,7 @@ assertEquals("expectedValue1", app.state1)
 assertEquals("expectedValue2", app.state2)
 ----
 
-This assumes that the application uses the `PrintWriter` provided by https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.html#getOut--[`CommandLine.getOut`] or  https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.html#getErr--[`CommandLine.getErr`].
+This assumes that the application uses the `PrintWriter` provided by https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.html#getOut()[`CommandLine.getOut`] or https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.html#getErr()[`CommandLine.getErr`].
 Applications can get these writers via the <<#spec-annotation,`@Spec`>> annotation:
 
 .Java
@@ -12927,8 +12927,8 @@ ahead-of-time compile Java code to a standalone executable, called a native imag
 The resulting executable includes the application, the libraries, and the JDK and does not require a separate Java VM to be installed.
 The generated native image has faster startup time and lower runtime memory overhead compared to a Java VM.
 
-GraalVM native images have some limitations and require some extra https://www.graalvm.org/22.2/reference-manual/native-image/overview/BuildConfiguration/[configuration]
-to be able to use features like https://www.graalvm.org/22.2/reference-manual/native-image/dynamic-features/Reflection/[reflection], https://www.graalvm.org/22.2/reference-manual/native-image/dynamic-features/Resources/[resources] (including resource bundles) and https://www.graalvm.org/22.2/reference-manual/native-image/dynamic-features/DynamicProxy/[dynamic proxies].
+GraalVM native images have some limitations and require some extra https://www.graalvm.org/latest/reference-manual/native-image/overview/BuildConfiguration/[configuration]
+to be able to use features like https://www.graalvm.org/latest/reference-manual/native-image/dynamic-features/Reflection/[reflection], https://www.graalvm.org/latest/reference-manual/native-image/dynamic-features/Resources/[resources] (including resource bundles) and https://www.graalvm.org/latest/reference-manual/native-image/dynamic-features/DynamicProxy/[dynamic proxies].
 
 ==== How do I Create a Native Image for my Application?
 The `picocli-codegen` module contains an annotation processor that generates the necessary configuration files
@@ -12937,7 +12937,7 @@ to be included in the application jar. The <<Annotation Processor>> section of t
 file.
 
 By embedding these configuration files, your jar is instantly Graal-enabled: the
-https://www.graalvm.org/22.2/reference-manual/native-image/#install-native-image[`native-image` tool]
+https://www.graalvm.org/latest/reference-manual/native-image/#install-native-image[`native-image` tool]
 used to generate the native executable is able to get the configuration from the jar.
 In most cases no further configuration is needed when generating a native image.
 

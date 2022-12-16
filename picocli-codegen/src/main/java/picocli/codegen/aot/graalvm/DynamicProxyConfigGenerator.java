@@ -22,15 +22,15 @@ import java.util.concurrent.Callable;
  * <p>
  * Substrate VM doesn't provide machinery for generating and interpreting bytecodes at run time.
  * Therefore all dynamic proxy classes
- * <a href="https://www.graalvm.org/22.2/reference-manual/native-image/dynamic-features/DynamicProxy/">need to be generated</a>
+ * <a href="https://www.graalvm.org/latest/reference-manual/native-image/dynamic-features/DynamicProxy/">need to be generated</a>
  * at native image build time.
  * </p><p>
  * The output of {@code DynamicProxyConfigGenerator} is intended to be passed to the {@code -H:DynamicProxyConfigurationFiles=/path/to/proxy-config.json}
- * option of the {@code native-image} <a href="https://www.graalvm.org/22.2/reference-manual/native-image/">GraalVM utility</a>.
+ * option of the {@code native-image} <a href="https://www.graalvm.org/latest/reference-manual/native-image/">GraalVM utility</a>.
  * This allows picocli-based native image applications that use {@code @Command}-annotated interfaces with
  * {@code @Option} and {@code @Parameters}-annotated methods to define options and positional parameters.
  * </p><p>
- * Alternatively, the generated <a href="https://www.graalvm.org/22.2/reference-manual/native-image/overview/BuildConfiguration/">configuration</a>
+ * Alternatively, the generated <a href="https://www.graalvm.org/latest/reference-manual/native-image/overview/BuildConfiguration/">configuration</a>
  * files can be supplied to the {@code native-image} tool by placing them in a
  * {@code META-INF/native-image/} directory on the class path, for example, in a JAR file used in the image build.
  * This directory (or any of its subdirectories) is searched for files with the names {@code jni-config.json},
@@ -47,7 +47,7 @@ public class DynamicProxyConfigGenerator {
             description = {"Generates a JSON file with the interface names to generate dynamic proxy classes for in the native image.",
                     "The generated JSON file can be passed to the `-H:DynamicProxyConfigurationFiles=/path/to/proxy-config.json` " +
                     "option of the `native-image` GraalVM utility.",
-                    "See https://www.graalvm.org/22.2/reference-manual/native-image/dynamic-features/DynamicProxy/"},
+                    "See https://www.graalvm.org/latest/reference-manual/native-image/dynamic-features/DynamicProxy/"},
             exitCodeListHeading = "%nExit Codes (if enabled with `--exit`)%n",
             exitCodeList = {
                     "0:Successful program execution.",
@@ -110,7 +110,7 @@ public class DynamicProxyConfigGenerator {
      *
      * @param specs one or more {@code CommandSpec} objects to inspect for dynamic proxies
      * @param interfaceClasses other (non-{@code @Command}) fully qualified interface names to generate dynamic proxy classes for
-     * @return a JSON String in the <a href="https://www.graalvm.org/22.2/reference-manual/native-image/dynamic-features/DynamicProxy/#manual-configuration">format</a>
+     * @return a JSON String in the <a href="https://www.graalvm.org/latest/reference-manual/native-image/dynamic-features/DynamicProxy/#manual-configuration">format</a>
      *       required by the {@code -H:DynamicProxyConfigurationFiles=/path/to/proxy-config.json} option of the GraalVM {@code native-image} utility.
      */
     public static String generateProxyConfig(CommandSpec[] specs, String[] interfaceClasses) {
