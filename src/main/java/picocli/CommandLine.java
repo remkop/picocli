@@ -11599,7 +11599,7 @@ public class CommandLine {
          * @see CommandSpec#qualifiedName(String)
          * @since 3.6 */
         public static class Messages {
-            public static boolean loadBundles = true;
+            private static boolean loadBundles = true;
             private final CommandSpec spec;
             private final String bundleBaseName;
             private final ResourceBundle rb;
@@ -11621,7 +11621,7 @@ public class CommandLine {
                 }
             }
             private static ResourceBundle createBundle(String baseName) {
-                if ( loadBundles ) {
+                if (loadBundles) {
                     return ResourceBundle.getBundle(baseName);
                 } else {
                     return new ResourceBundle() {
@@ -11631,8 +11631,7 @@ public class CommandLine {
                         }
                         @Override
                         public Enumeration<String> getKeys() {
-                            return new Vector<String>().elements();
-                        }
+                            return Collections.emptyEnumeration();                       }
                     };
                 }
             }
@@ -11661,6 +11660,18 @@ public class CommandLine {
                 Set<String> keys = new LinkedHashSet<String>();
                 for (Enumeration<String> k = rb.getKeys(); k.hasMoreElements(); keys.add(k.nextElement()));
                 return keys;
+            }
+            
+            /**
+             * During annotation processing, resource bundles may not be available on the
+             * classpath and thereby cause failures. This method allows for disabling
+             * loading of resource bundles during annotation processing, preventing such
+             * errors. 
+             * @since 4.7.1
+             * @param loadBundles true if bundles should be loaded (default), false if bundles should not be loaded
+             */
+            public static final void setLoadBundles(boolean loadBundles) {
+            	Messages.loadBundles = loadBundles;
             }
 
             /** Returns a copy of the specified Messages object with the CommandSpec replaced by the specified one.
