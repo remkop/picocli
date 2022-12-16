@@ -180,7 +180,7 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
     }
 
     private boolean tryProcess(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        Model.Messages.loadBundles = false;
+        Model.Messages.setLoadBundles(false);
         new AnnotationValidator(processingEnv).validateAnnotations(roundEnv);
 
         Context context = new Context();
