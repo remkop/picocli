@@ -4,6 +4,7 @@ import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.IFactory;
 import picocli.CommandLine.Mixin;
+import picocli.CommandLine.Model;
 import picocli.CommandLine.Model.ArgGroupSpec;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Model.IAnnotatedElement;
@@ -179,7 +180,7 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
     }
 
     private boolean tryProcess(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-
+        Model.Messages.setLoadBundles(false);
         new AnnotationValidator(processingEnv).validateAnnotations(roundEnv);
 
         Context context = new Context();

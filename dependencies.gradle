@@ -5,12 +5,12 @@ ext {
     // PICOCLI VERSION
 
     // projectPreviousPublishedVersion is non-SNAPSHOT, only published releases
-    projectPreviousPublishedVersion = "4\\.6\\.3"      // for task bumpReadmeVersion
+    projectPreviousPublishedVersion = "4\\.7\\.0"      // for task bumpReadmeVersion
     // projectPreviousVersionRegex may be a SNAPSHOT
-    projectPreviousVersionRegex     = "4\\.6\\.3"      // for task bumpVersion
-    projectVersion                  = "4.7.0-SNAPSHOT" // for all build tasks
-    releaseDate                     = "2022-02-09"     // for task bumpVersion
-    releaseDatePreviousRegex        = "2022\\-02\\-09" // for task bumpVersion
+    projectPreviousVersionRegex     = "4\\.7\\.0"      // for task bumpVersion
+    projectVersion                  = "4.7.1-SNAPSHOT" // for all build tasks
+    releaseDate                     = "2022-10-31"     // for task bumpVersion
+    releaseDatePreviousRegex        = "2022\\-10\\-31" // for task bumpVersion
 
     // DEPENDENCIES
     asciidoctorGradlePluginVersion = "3.3.2"
@@ -25,7 +25,7 @@ ext {
     junitDepVersion     = "4.11.20120805.1225"
     junitVersion        = "4.13.2"
     log4j2Version       = "2.19.0"
-    springBootVersion   = "2.7.4"
+    springBootVersion   = "2.7.5"
     systemRulesVersion  = "1.19.0"
 
     supportDependencies = [

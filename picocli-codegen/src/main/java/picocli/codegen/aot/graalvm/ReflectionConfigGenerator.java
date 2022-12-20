@@ -47,14 +47,14 @@ import java.util.concurrent.Callable;
  * reflectively in a picocli-based application, in order to compile this application ahead-of-time into a native
  * executable with GraalVM.
  * <p>
- * GraalVM has <a href="https://www.graalvm.org/22.2/reference-manual/native-image/dynamic-features/Reflection/">limited support for Java
+ * GraalVM has <a href="https://www.graalvm.org/latest/reference-manual/native-image/dynamic-features/Reflection/">limited support for Java
  * reflection</a> and it needs to know ahead of time the reflectively accessed program elements.
  * </p><p>
  * The output of {@code ReflectionConfigGenerator} is intended to be passed to the {@code -H:ReflectionConfigurationFiles=/path/to/reflect-config.json}
- * option of the {@code native-image} <a href="https://www.graalvm.org/22.2/reference-manual/native-image/">GraalVM utility</a>.
+ * option of the {@code native-image} <a href="https://www.graalvm.org/latest/reference-manual/native-image/">GraalVM utility</a>.
  * This allows picocli-based applications to be compiled to a native image.
  * </p><p>
- * Alternatively, the generated <a href="https://www.graalvm.org/22.2/reference-manual/native-image/overview/BuildConfiguration/">configuration</a>
+ * Alternatively, the generated <a href="https://www.graalvm.org/latest/reference-manual/native-image/overview/BuildConfiguration/">configuration</a>
  * files can be supplied to the {@code native-image} tool by placing them in a
  * {@code META-INF/native-image/} directory on the class path, for example, in a JAR file used in the image build.
  * This directory (or any of its subdirectories) is searched for files with the names {@code jni-config.json},
@@ -84,7 +84,7 @@ public class ReflectionConfigGenerator {
                     "accessed reflectively for the specified `@Command` classes.",
                     "The generated JSON file can be passed to the `-H:ReflectionConfigurationFiles=/path/to/reflect-config.json` " +
                     "option of the `native-image` GraalVM utility.",
-                    "See https://www.graalvm.org/22.2/reference-manual/native-image/dynamic-features/Reflection/"},
+                    "See https://www.graalvm.org/latest/reference-manual/native-image/dynamic-features/Reflection/"},
             exitCodeListHeading = "%nExit Codes (if enabled with `--exit`)%n",
             exitCodeList = {
                     "0:Successful program execution.",
@@ -95,7 +95,7 @@ public class ReflectionConfigGenerator {
             },
             footerHeading = "%nExample%n",
             footer = {
-                    "  java -cp \"myapp.jar;picocli-4.7.0-SNAPSHOT.jar;picocli-codegen-4.7.0-SNAPSHOT.jar\" " +
+                    "  java -cp \"myapp.jar;picocli-4.7.1-SNAPSHOT.jar;picocli-codegen-4.7.1-SNAPSHOT.jar\" " +
                             "picocli.codegen.aot.graalvm.ReflectionConfigGenerator my.pkg.MyClass"
             },
             mixinStandardHelpOptions = true, sortOptions = false,
@@ -143,7 +143,7 @@ public class ReflectionConfigGenerator {
      * {@code CommandSpec} objects.
      *
      * @param specs one or more {@code CommandSpec} objects to inspect
-     * @return a JSON String in the <a href="https://www.graalvm.org/22.2/reference-manual/native-image/dynamic-features/Reflection/#manual-configuration">format</a>
+     * @return a JSON String in the <a href="https://www.graalvm.org/latest/reference-manual/native-image/dynamic-features/Reflection/#manual-configuration">format</a>
      *       required by the {@code -H:ReflectionConfigurationFiles=/path/to/reflect-config.json} option of the GraalVM {@code native-image} utility.
      * @throws NoSuchFieldException if a problem occurs while processing the specified specs
      * @throws IllegalAccessException if a problem occurs while processing the specified specs

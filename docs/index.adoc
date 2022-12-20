@@ -1,8 +1,8 @@
 = picocli - a mighty tiny command line interface
 //:author: Remko Popma
 //:email: rpopma@apache.org
-:revnumber: 4.7.0-SNAPSHOT
-:revdate: 2022-02-09
+:revnumber: 4.7.1-SNAPSHOT
+:revdate: 2022-10-31
 :toc: left
 :numbered:
 :toclevels: 2
@@ -120,7 +120,7 @@ class CheckSum implements Callable<Integer> {
 [[CheckSum-App-Groovy]]
 [source,groovy,role="secondary"]
 ----
-@Grab('info.picocli:picocli-groovy:4.7.0-SNAPSHOT')
+@Grab('info.picocli:picocli-groovy:4.7.1-SNAPSHOT')
 import picocli.CommandLine
 import static picocli.CommandLine.*
 
@@ -152,7 +152,7 @@ class Checksum implements Callable<Integer> {
 [[CheckSum-App-Groovy-Script]]
 [source,groovy,role="secondary"]
 ----
-@Grab('info.picocli:picocli-groovy:4.7.0-SNAPSHOT')
+@Grab('info.picocli:picocli-groovy:4.7.1-SNAPSHOT')
 import static picocli.CommandLine.*
 import groovy.transform.Field
 import java.security.MessageDigest
@@ -279,7 +279,7 @@ Below are examples of configuring Gradle or Maven to use picocli as an external 
 [source,groovy,role="primary"]
 ----
 dependencies {
-    implementation 'info.picocli:picocli:4.7.0-SNAPSHOT'
+    implementation 'info.picocli:picocli:4.7.1-SNAPSHOT'
 }
 ----
 .Maven
@@ -288,7 +288,7 @@ dependencies {
 <dependency>
   <groupId>info.picocli</groupId>
   <artifactId>picocli</artifactId>
-  <version>4.7.0-SNAPSHOT</version>
+  <version>4.7.1-SNAPSHOT</version>
 </dependency>
 ----
 
@@ -302,9 +302,9 @@ The `picocli-codegen` module includes an annotation processor that can build a m
 Enabling this annotation processor in your project is optional, but strongly recommended. Use this if you’re interested in:
 
 * **Compile time error checking**. The annotation processor shows errors for invalid annotations and attributes immediately when you compile, instead of during testing at runtime, resulting in shorter feedback cycles.
-* **<<GraalVM Native Image,GraalVM native images>>**. The annotation processor generates and updates https://www.graalvm.org/22.2/reference-manual/native-image/overview/BuildConfiguration/[GraalVM configuration] files under
+* **<<GraalVM Native Image,GraalVM native images>>**. The annotation processor generates and updates https://www.graalvm.org/latest/reference-manual/native-image/overview/BuildConfiguration/[GraalVM configuration] files under
 `META-INF/native-image/picocli-generated/$project` during compilation, to be included in the application jar.
-This includes configuration files for https://www.graalvm.org/22.2/reference-manual/native-image/dynamic-features/Reflection/[reflection], https://www.graalvm.org/22.2/reference-manual/native-image/dynamic-features/Resources/[resources] and https://www.graalvm.org/22.2/reference-manual/native-image/dynamic-features/DynamicProxy/[dynamic proxies].
+This includes configuration files for https://www.graalvm.org/latest/reference-manual/native-image/dynamic-features/Reflection/[reflection], https://www.graalvm.org/latest/reference-manual/native-image/dynamic-features/Resources/[resources] and https://www.graalvm.org/latest/reference-manual/native-image/dynamic-features/DynamicProxy/[dynamic proxies].
 By embedding these configuration files, your jar is instantly Graal-enabled.
 In most cases no further configuration is needed when generating a native image.
 
@@ -325,8 +325,8 @@ https://immutables.github.io/apt.html[This page] shows the steps to configure Ec
 [source,groovy,role="primary"]
 ----
 dependencies {
-    implementation 'info.picocli:picocli:4.7.0-SNAPSHOT'
-    annotationProcessor 'info.picocli:picocli-codegen:4.7.0-SNAPSHOT'
+    implementation 'info.picocli:picocli:4.7.1-SNAPSHOT'
+    annotationProcessor 'info.picocli:picocli-codegen:4.7.1-SNAPSHOT'
 }
 
 
@@ -348,7 +348,7 @@ compileJava {
       <path>
         <groupId>info.picocli</groupId>
         <artifactId>picocli-codegen</artifactId>
-        <version>4.7.0-SNAPSHOT</version>
+        <version>4.7.1-SNAPSHOT</version>
       </path>
     </annotationProcessorPaths>
     <compilerArgs>
@@ -368,7 +368,7 @@ then replace `annotationProcessor` with `kapt`:
 apply plugin: 'kotlin-kapt' // required
 dependencies {
     // ...
-    kapt 'info.picocli:picocli-codegen:4.7.0-SNAPSHOT'
+    kapt 'info.picocli:picocli-codegen:4.7.1-SNAPSHOT'
 }
 ```
 
@@ -399,7 +399,7 @@ Now, assuming we created a jar named `checksum.jar` containing our compiled `Che
 
 [source,bash]
 ----
-java -cp "picocli-4.7.0-SNAPSHOT.jar:checksum.jar" CheckSum --algorithm SHA-1 hello.txt
+java -cp "picocli-4.7.1-SNAPSHOT.jar:checksum.jar" CheckSum --algorithm SHA-1 hello.txt
 ----
 
 You may want to package your application in such a way that end users can invoke it with a short command like this:
@@ -1857,7 +1857,7 @@ Enum value matching is case-sensitive by default, but as of picocli 3.4 this can
 == Default Values
 It is possible to define a default value for an option or positional parameter, that is assigned when the user did not specify this option or positional parameter on the command line.
 
-Configuring a default value guarantees that the `@Option` or `@Parameters`-annotated field will get set, annotated method will get called, and, when using the programmatic API, that the https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.Model.ArgSpec.html#setValue-T-[`ArgSpec.setValue`] method will get invoked, even when the option or positional parameter was not specified on the command line.
+Configuring a default value guarantees that the `@Option` or `@Parameters`-annotated field will get set, annotated method will get called, and, when using the programmatic API, that the https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.Model.ArgSpec.html#setValue(T)[`ArgSpec.setValue`] method will get invoked, even when the option or positional parameter was not specified on the command line.
 
 [#defaultValue-annotation]
 === `defaultValue` Annotation
@@ -2053,11 +2053,11 @@ cmd.execute(*args)
 ==== PropertiesDefaultProvider Format
 The `PropertiesDefaultProvider` expects the properties file to be in the standard java `.properties` https://en.wikipedia.org/wiki/.properties[format].
 
-For options, the key is either the https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.Option.html#descriptionKey--[descriptionKey],
-or the option's https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.Model.OptionSpec.html#longestName--[longest name], without the prefix. So, for an option `--verbose`, the key would be `verbose`, and for an option `/F`, the key would be `F`.
+For options, the key is either the https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.Option.html#descriptionKey()[descriptionKey],
+or the option's https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.Model.OptionSpec.html#longestName()[longest name], without the prefix. So, for an option `--verbose`, the key would be `verbose`, and for an option `/F`, the key would be `F`.
 
-For positional parameters, the key is either the https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.Parameters.html#descriptionKey--[descriptionKey],
-or the positional parameter's https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.Parameters.html#paramLabel--[param label].
+For positional parameters, the key is either the https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.Parameters.html#descriptionKey()[descriptionKey],
+or the positional parameter's https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.Parameters.html#paramLabel()[param label].
 
 End users may not know what the `descriptionKey` of your options and positional parameters are, so be sure  to document that with your application.
 
@@ -4116,7 +4116,7 @@ When the user specified invalid input, the parser throws a `ParameterException`.
 In the `execute` method, such exceptions are caught and passed to the `IParameterExceptionHandler`.
 
 The default parameter exception handler prints an error message describing the problem,
-followed by either https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.UnmatchedArgumentException.html#printSuggestions-picocli.CommandLine.ParameterException-java.io.PrintWriter-[suggested alternatives]
+followed by either https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.UnmatchedArgumentException.html#printSuggestions(picocli.CommandLine.ParameterException,java.io.PrintWriter)[suggested alternatives]
 for mistyped options, or the full usage help message of the problematic command.
 Finally, the handler returns an <<Exception Exit Codes,exit code>>.
 This is sufficient for most applications.
@@ -5291,7 +5291,7 @@ This allows you to control:
 * the negative form recognized by the parser while parsing the command line
 * the documentation string showing both the positive and the negative form in the usage help message
 
-By default, a set of https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.RegexTransformer.html#createDefault--[regular expressions] is used to control the above.
+By default, a set of https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.RegexTransformer.html#createDefault()[regular expressions] is used to control the above.
 Use `CommandLine::setNegatableOptionTransformer` to replace the https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.INegatableOptionTransformer[`INegatableOptionTransformer`] with a custom version.
 See the JavaDoc for details.
 
@@ -8854,7 +8854,7 @@ The default link:#_executing_commands_with_subcommands[`IExecutionStrategy`] (`p
 toplevelcmd subcmd-A subcmd-B subsub-B1 subsub-B2
 ----
 
-is invoked, only the last two sub-subcommands `subsub-B1` and `subsub-B2` (who both have parent command `subcmd-B`) are executed by default. You can https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.html#setExecutionStrategy-picocli.CommandLine.IExecutionStrategy-[set] a different https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.IExecutionStrategy.html[execution strategy] if this does not meet your needs.
+is invoked, only the last two sub-subcommands `subsub-B1` and `subsub-B2` (who both have parent command `subcmd-B`) are executed by default. You can https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.html#setExecutionStrategy(picocli.CommandLine.IExecutionStrategy)[set] a different https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.IExecutionStrategy.html[execution strategy] if this does not meet your needs.
 
 
 === Usage Help for Subcommands
@@ -9997,7 +9997,7 @@ The matching entry in the resource bundle could look like this:
 xoption = This is the description for the -x option.
 ----
 
-When the `descriptionKey` is omitted, the https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.Option.html#descriptionKey--[fallback for options] is any option name without the leading dashes, for example:
+When the `descriptionKey` is omitted, the https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.Option.html#descriptionKey()[fallback for options] is any option name without the leading dashes, for example:
 
 .Java
 [source,java,role="primary"]
@@ -10017,7 +10017,7 @@ verbose = Show more detail during execution. \
           May be specified multiple times for increasing verbosity.
 ----
 
-For https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.Parameters.html#descriptionKey--[positional parameters] the fallback key is the `paramLabel + [ index ]`, for example:
+For https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.Parameters.html#descriptionKey()[positional parameters] the fallback key is the `paramLabel + [ index ]`, for example:
 
 .Java
 [source,java,role="primary"]
@@ -10208,7 +10208,7 @@ Eventually, we are ready to run our application:
 
 [source,bash]
 ----
-java -cp "picocli-4.7.0-SNAPSHOT.jar;myapp.jar" org.myorg.GreetingApp Sarah Lea
+java -cp "picocli-4.7.1-SNAPSHOT.jar;myapp.jar" org.myorg.GreetingApp Sarah Lea
 ----
 
 With no command line parameter `--locale` given, the message texts are printed in the default language (here: English):
@@ -10222,7 +10222,7 @@ In order to control the locale chosen for our output, we have to make use of the
 
 [source,bash]
 ----
-java -cp "picocli-4.7.0-SNAPSHOT.jar;myapp.jar" org.myorg.GreetingApp --locale=es Sarah Lea
+java -cp "picocli-4.7.1-SNAPSHOT.jar;myapp.jar" org.myorg.GreetingApp --locale=es Sarah Lea
 ----
 
 Now our message texts are printed in Spanish:
@@ -11554,21 +11554,21 @@ Since picocli dependencies are not available in the Spring Initializr, we have t
 <dependency>
   <groupId>info.picocli</groupId>
   <artifactId>picocli-spring-boot-starter</artifactId>
-  <version>4.7.0-SNAPSHOT</version>
+  <version>4.7.1-SNAPSHOT</version>
 </dependency>
 ----
 .Gradle (Groovy)
 [source,groovy,role="secondary"]
 ----
 dependencies {
-    implementation 'info.picocli:picocli-spring-boot-starter:4.7.0-SNAPSHOT'
+    implementation 'info.picocli:picocli-spring-boot-starter:4.7.1-SNAPSHOT'
 }
 ----
 .Gradle (Kotlin)
 [source,kotlin,role="secondary"]
 ----
 dependencies {
-    implementation("info.picocli:picocli-spring-boot-starter:4.7.0-SNAPSHOT")
+    implementation("info.picocli:picocli-spring-boot-starter:4.7.1-SNAPSHOT")
 }
 ----
 
@@ -12469,7 +12469,7 @@ assertEquals("expectedValue1", app.state1)
 assertEquals("expectedValue2", app.state2)
 ----
 
-This assumes that the application uses the `PrintWriter` provided by https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.html#getOut--[`CommandLine.getOut`] or  https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.html#getErr--[`CommandLine.getErr`].
+This assumes that the application uses the `PrintWriter` provided by https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.html#getOut()[`CommandLine.getOut`] or https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.html#getErr()[`CommandLine.getErr`].
 Applications can get these writers via the <<#spec-annotation,`@Spec`>> annotation:
 
 .Java
@@ -12895,7 +12895,7 @@ As mentioned in <<Running the Application>>, earlier in this manual, one way to 
 
 [source,bash]
 ----
-java -cp "picocli-4.7.0-SNAPSHOT.jar;myapp.jar" org.myorg.MyMainClass --option=value arg0 arg1
+java -cp "picocli-4.7.1-SNAPSHOT.jar;myapp.jar" org.myorg.MyMainClass --option=value arg0 arg1
 ----
 
 That is quite verbose. You may want to package your application in such a way that end users can invoke it by its command name like this:
@@ -12914,7 +12914,7 @@ On unix-based operating systems, you can ask your users to define an alias. For 
 
 [source,bash]
 ----
-alias mycommand='java -cp "/path/to/picocli-4.7.0-SNAPSHOT.jar:/path/to/myapp.jar" org.myorg.MainClass'
+alias mycommand='java -cp "/path/to/picocli-4.7.1-SNAPSHOT.jar:/path/to/myapp.jar" org.myorg.MainClass'
 ----
 
 Append the above line to your `~/.bashrc` file to make this alias available in every new shell session.
@@ -12945,8 +12945,8 @@ ahead-of-time compile Java code to a standalone executable, called a native imag
 The resulting executable includes the application, the libraries, and the JDK and does not require a separate Java VM to be installed.
 The generated native image has faster startup time and lower runtime memory overhead compared to a Java VM.
 
-GraalVM native images have some limitations and require some extra https://www.graalvm.org/22.2/reference-manual/native-image/overview/BuildConfiguration/[configuration]
-to be able to use features like https://www.graalvm.org/22.2/reference-manual/native-image/dynamic-features/Reflection/[reflection], https://www.graalvm.org/22.2/reference-manual/native-image/dynamic-features/Resources/[resources] (including resource bundles) and https://www.graalvm.org/22.2/reference-manual/native-image/dynamic-features/DynamicProxy/[dynamic proxies].
+GraalVM native images have some limitations and require some extra https://www.graalvm.org/latest/reference-manual/native-image/overview/BuildConfiguration/[configuration]
+to be able to use features like https://www.graalvm.org/latest/reference-manual/native-image/dynamic-features/Reflection/[reflection], https://www.graalvm.org/latest/reference-manual/native-image/dynamic-features/Resources/[resources] (including resource bundles) and https://www.graalvm.org/latest/reference-manual/native-image/dynamic-features/DynamicProxy/[dynamic proxies].
 
 ==== How do I Create a Native Image for my Application?
 The `picocli-codegen` module contains an annotation processor that generates the necessary configuration files
@@ -12955,7 +12955,7 @@ to be included in the application jar. The <<Annotation Processor>> section of t
 file.
 
 By embedding these configuration files, your jar is instantly Graal-enabled: the
-https://www.graalvm.org/22.2/reference-manual/native-image/#install-native-image[`native-image` tool]
+https://www.graalvm.org/latest/reference-manual/native-image/#install-native-image[`native-image` tool]
 used to generate the native executable is able to get the configuration from the jar.
 In most cases no further configuration is needed when generating a native image.
 
@@ -12963,7 +12963,7 @@ After installing GraalVM and installing the `native-image` generator utility (wi
 you can then create a native image by invoking the `native-image` command:
 
 ----
-path/to/native-image -cp picocli-4.7.0-SNAPSHOT.jar --static -jar myapp.jar
+path/to/native-image -cp picocli-4.7.1-SNAPSHOT.jar --static -jar myapp.jar
 ----
 
 CAUTION: To create a native image, the compiler toolchain for your platform needs to be installed. See https://www.infoq.com/articles/java-native-cli-graalvm-picocli/[Build Great Native CLI Apps in Java with Graalvm and Picocli] for details.
@@ -12981,6 +12981,26 @@ It pays special attention to Windows, where setting up the compiler toolchain ca
 This https://picocli.info/picocli-on-graalvm.html[older article], "Picocli on GraalVM: Blazingly Fast Command Line Apps", may still be useful.
 
 See also this https://github.com/remkop/picocli-native-image-demo[demo Gradle project] and this https://github.com/remkop/picocli-native-image-maven-demo[demo Maven project] that provide a simple complete CLI app, with build instructions, that developers can clone, and build to get the stand-alone executable.
+
+[TIP]
+====
+Native images on Windows have the https://github.com/oracle/graal/issues/1762[problem] that the native image does not include the required dependency `msvcr100.dll` (for Java 8) or `VCRUNTIME140.dll` (with GraalVM 19.3 or later for Java 11). On Windows machines where this dependency is not in the `PATH`, the native image fails to start, and shows an error dialog "System Error: The program can't start because VCRUNTIME140.dll is missing from your computer".
+
+Many thanks to https://github.com/mmellon[Matthew Mellon] for https://github.com/oracle/graal/issues/1762#issuecomment-1297370039[suggesting] to use https://osdn.net/projects/pefrm-units/[pefrmdllembed] as a workaround. Syntax:
+
+[source,bash]
+----
+pefrmdllembed -impinj VCRUNTIME140.DLL your-native-image.exe your-native-image-fixed.exe
+----
+
+[quote]
+____
+Caveat for the above workaround:
+
+If you embed `MSVCR100.DLL` or `VCRUNTIME140.DLL` in your exe rather than create an installer that installs a dependency, you will probably lose the ability of Windows to apply updates for vulnerabilities in the shared runtime that might impact the security of your application. Windows installer has magic to keep you from downgrading the DLL in `%System32%`, and, once it is installed, I believe Windows Update keeps it up-to-date.
+____
+
+====
 
 === Really Executable JAR
 
@@ -13083,7 +13103,7 @@ The script body is executed if the user input was valid and did not request usag
 
 [source,groovy]
 ----
-@Grab('info.picocli:picocli-groovy:4.7.0-SNAPSHOT')
+@Grab('info.picocli:picocli-groovy:4.7.1-SNAPSHOT')
 @GrabConfig(systemClassLoader=true)
 @Command(name = "myScript",
         mixinStandardHelpOptions = true, // add --help and --version options
@@ -13124,7 +13144,7 @@ The table below compares these two base classes.
 
 
 WARNING: When upgrading scripts from picocli versions older than 4.0, just changing the version number is not enough!
-Scripts should use `@Grab('info.picocli:picocli-groovy:4.7.0-SNAPSHOT')`. The old artifact id `@Grab('info.picocli:picocli:4.7.0-SNAPSHOT')` will not work,
+Scripts should use `@Grab('info.picocli:picocli-groovy:4.7.1-SNAPSHOT')`. The old artifact id `@Grab('info.picocli:picocli:4.7.1-SNAPSHOT')` will not work,
 because the `@picocli.groovy.PicocliScript` annotation class and supporting classes have been moved into a separate module, `picocli-groovy`.
 
 ==== Closures in Annotations
@@ -13182,7 +13202,7 @@ NOTE: When using a Groovy version older than 2.4.7, use this workaround for the 
 
 [source,groovy]
 ----
-@Grab('info.picocli:picocli-groovy:4.7.0-SNAPSHOT')
+@Grab('info.picocli:picocli-groovy:4.7.1-SNAPSHOT')
 @GrabExclude('org.codehaus.groovy:groovy-all') // work around GROOVY-7613
 ...
 ----
@@ -13325,13 +13345,13 @@ You can add picocli as an external dependency to your project, or you can includ
 .Gradle
 [source,groovy,role="primary"]
 ----
-implementation 'info.picocli:picocli:4.7.0-SNAPSHOT'
+implementation 'info.picocli:picocli:4.7.1-SNAPSHOT'
 ----
 
 .Gradle (Kotlin)
 [source,kotlin,role="secondary"]
 ----
-implementation("info.picocli:picocli:4.7.0-SNAPSHOT")
+implementation("info.picocli:picocli:4.7.1-SNAPSHOT")
 ----
 
 .Maven
@@ -13340,50 +13360,50 @@ implementation("info.picocli:picocli:4.7.0-SNAPSHOT")
 <dependency>
   <groupId>info.picocli</groupId>
   <artifactId>picocli</artifactId>
-  <version>4.7.0-SNAPSHOT</version>
+  <version>4.7.1-SNAPSHOT</version>
 </dependency>
 ----
 
 .Scala SBT
 [source,role="secondary"]
 ----
-libraryDependencies += "info.picocli" % "picocli" % "4.7.0-SNAPSHOT"
+libraryDependencies += "info.picocli" % "picocli" % "4.7.1-SNAPSHOT"
 ----
 
 .Ivy
 [source,role="secondary"]
 ----
-<dependency org="info.picocli" name="picocli" rev="4.7.0-SNAPSHOT" />
+<dependency org="info.picocli" name="picocli" rev="4.7.1-SNAPSHOT" />
 ----
 
 .Grape
 [source,role="secondary"]
 ----
 @Grapes(
-    @Grab(group='info.picocli', module='picocli', version='4.7.0-SNAPSHOT')
+    @Grab(group='info.picocli', module='picocli', version='4.7.1-SNAPSHOT')
 )
 ----
 
 .Leiningen
 [source,role="secondary"]
 ----
-[info.picocli/picocli "4.7.0-SNAPSHOT"]
+[info.picocli/picocli "4.7.1-SNAPSHOT"]
 ----
 
 .Buildr
 [source,role="secondary"]
 ----
-'info.picocli:picocli:jar:4.7.0-SNAPSHOT'
+'info.picocli:picocli:jar:4.7.1-SNAPSHOT'
 ----
 
 .JBang
 [source,role="secondary"]
 ----
-//DEPS info.picocli:picocli:4.7.0-SNAPSHOT
+//DEPS info.picocli:picocli:4.7.1-SNAPSHOT
 ----
 
 === Source
 
 By using picocli in source form, you can avoid having an external dependency on picocli.
-Picocli has only one source file: link:https://github.com/remkop/picocli/blob/v4.7.0-SNAPSHOT/src/main/java/picocli/CommandLine.java[CommandLine.java].
+Picocli has only one source file: link:https://github.com/remkop/picocli/blob/v4.7.1-SNAPSHOT/src/main/java/picocli/CommandLine.java[CommandLine.java].
 This facilitates including picocli in your project: simply copy and paste the code of this file into a file called `CommandLine.java`, add it to your project, and enjoy!

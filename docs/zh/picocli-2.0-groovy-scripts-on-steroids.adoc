@@ -130,7 +130,7 @@ image:AllYourBase.png[Alt="你们所有的基地都属于我们",width='35%']
 
 * 否则，执行脚本主体。
 
-此行为可以自定义，有关更多详情，请参见 http://picocli.info/apidocs-all/info.picocli.groovy/picocli/groovy/PicocliBaseScript.html#run--[Picocli基础脚本文档]。
+此行为可以自定义，有关更多详情，请参见 http://picocli.info/apidocs-all/info.picocli.groovy/picocli/groovy/PicocliBaseScript.html#run()[Picocli基础脚本文档]。
 
 除了修改脚本基类之外， `@PicocliScript` 注释还允许Groovy脚本直接使用 `@Command` 注释，而无需引入助手类。
 Picocli解析器将在含有 `@Option` 和 `@Parameters` 注释字段的类中寻找此注释。

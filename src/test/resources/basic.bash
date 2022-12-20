@@ -113,6 +113,41 @@ function currentPositionalIndex() {
   echo "$result"
 }
 
+# compReplyArray generates a list of completion suggestions based on an array, ensuring all values are properly escaped.
+#
+# compReplyArray takes a single parameter: the array of options to be displayed
+#
+# The output is echoed to std_out, one option per line.
+#
+# Example usage:
+# local options=("foo", "bar", "baz")
+# local IFS=$'\n'
+# COMPREPLY=($(compReplyArray "${options[@]}"))
+function compReplyArray() {
+  declare -a options
+  options=("$@")
+  local curr_word=${COMP_WORDS[COMP_CWORD]}
+  local i
+  local quoted
+  local optionList=()
+
+  for (( i=0; i<${#options[@]}; i++ )); do
+    # Double escape, since we want escaped values, but compgen -W expands the argument
+    printf -v quoted %%q "${options[i]}"
+    quoted=\'${quoted//\'/\'\\\'\'}\'
+
+    optionList[i]=$quoted
+  done
+
+  # We also have to add another round of escaping to $curr_word.
+  curr_word=${curr_word//\\/\\\\}
+  curr_word=${curr_word//\'/\\\'}
+
+  # Actually generate completions.
+  local IFS=$'\n'
+  echo -e "$(compgen -W "${optionList[*]}" -- "$curr_word")"
+}
+
 # Bash completion entry point function.
 # _complete_basicExample finds which commands and subcommands have been specified
 # on the command line and delegates to the appropriate function
@@ -136,13 +171,14 @@ function _picocli_basicExample() {
   local commands=""
   local flag_opts=""
   local arg_opts="-u --timeUnit -t --timeout"
-  local timeUnit_option_args="%2$s" # --timeUnit values
+  local timeUnit_option_args=("%2$s") # --timeUnit values
 
   type compopt &>/dev/null && compopt +o default
 
   case ${prev_word} in
     -u|--timeUnit)
-      COMPREPLY=( $( compgen -W "${timeUnit_option_args}" -- "${curr_word}" ) )
+      local IFS=$'\n'
+      COMPREPLY=( $( compReplyArray "${timeUnit_option_args[@]}" ) )
       return $?
       ;;
     -t|--timeout)
@@ -154,7 +190,8 @@ function _picocli_basicExample() {
     COMPREPLY=( $(compgen -W "${flag_opts} ${arg_opts}" -- "${curr_word}") )
   else
     local positionals=""
-    COMPREPLY=( $(compgen -W "${commands} ${positionals}" -- "${curr_word}") )
+    local IFS=$'\n'
+    COMPREPLY=( $(compgen -W "${commands// /$'\n'}${IFS}${positionals}" -- "${curr_word}") )
   fi
 }
 
