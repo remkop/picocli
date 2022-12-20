@@ -4273,6 +4273,110 @@ class PrintExceptionMessageHandler : IExecutionExceptionHandler {
 }
 ----
 
+=== Rare Use Cases
+
+The `CommandLine::execute` method is the recommended way to execute your command line application, as it provides configurable exception handling, handles user requests for usage help or version information, results in short and simple application code, and never throws an exception.
+
+However, there may be use cases for which the `execute` method is not a good match.
+The alternative is to use `CommandLine::parseArgs` and handle the resulting `ParseResult` object in your application.
+The <<DIY Command Execution>> section shows what is involved in doing so.
+
+The `parseArgs` method may be useful when writing parser test code, or when your application's `main` method is called by another application. The following sections go into some detail.
+
+==== Parser Test Code Example
+The `parseArgs` method is useful in test code that only exercises the parsing logic, without involving the business logic.
+For example:
+
+.Java
+[source,java,role="primary"]
+----
+MyApp app = new MyApp();
+new CommandLine(app).parseArgs("--some --options and parameters".split(" "));
+assertTrue(app.some);
+----
+
+.Groovy
+[source,groovy,role="secondary"]
+----
+MyApp app = new MyApp()
+new CommandLine(app).parseArgs('--some --options and parameters'.split(' '))
+assert app.some
+----
+
+==== Percolating Exceptions Up
+The `execute` method never throws an exception, and for some applications this is undesirable.
+
+The `parseArgs` method can also be useful when the `main` method of your application is called by another application, and this other application is responsible for error handling.
+
+An common use case is when your application is called as part of the build.
+For example, Maven provides the https://www.mojohaus.org/exec-maven-plugin/[`exec-maven-plugin`] with https://www.mojohaus.org/exec-maven-plugin/java-mojo.html[`exec:java` goal], and Gradle similarly provides the https://docs.gradle.org/current/dsl/org.gradle.api.tasks.Exec.html[Exec] and https://docs.gradle.org/current/dsl/org.gradle.api.tasks.JavaExec.html[JavaExec] tasks.
+
+The Maven `exec:java` goal invokes the target class in the same Maven process.
+In this case, we don't want to call `System.exit`, because it would stop the entire Maven process, and additionally, we want the exceptions thrown by the command line application to be handled by Maven.
+
+One idea is to provide a separate `main` method that uses `parseArgs` instead of `execute`.
+For example:
+
+.Java
+[source,java,role="primary"]
+----
+public class MyApp implements Callable {
+    /** Calls System.exit when called from the command line. */
+    public static void main(String... args) throws Exception {
+        System.exit(new CommandLine(new MyApp()).execute(args));
+    }
+
+    /**
+     * Nested helper class that can be used safely from the build tool:
+     * it does not call System.exit and it percolates exceptions up
+     * for handling by the caller.
+     */
+    public static class NoSystemExit {
+        public static void main(String... args) throws Exception {
+            MyApp app = new MyApp();
+            ParseResult pr = new CommandLine(app).parseArgs(args);
+            if (CommandLine.executeHelpRequest(pr) != null) { return; } // help was requested
+            app.call(); // execute business logic, which may also throw an exception
+        }
+    }
+    //...
+----
+
+Then, in the build configuration, invoke nested class `MyApp.NoSystemExit` instead of `MyApp` to let the build tool handle any exceptions and avoid calling `System.exit`.
+
+==== System.exit or not?
+An alternative to the above solution is to decide at runtime whether to call `System.exit` or not.
+
+The example implementation below demonstrates how to use system properties to determine whether to call `System.exit` or not:
+
+.Java
+[source,java,role="primary"]
+----
+public static void main(String... args) {
+    int exitCode = new CommandLine(new App()).execute(args);
+    if ((exitCode == CommandLine.ExitCode.OK && exitOnSuccess())
+    || (exitCode != CommandLine.ExitCode.OK && exitOnError())) {
+        System.exit(exitCode);
+    }
+}
+
+private static boolean exitOnSuccess() {
+    return syspropDefinedAndNotFalse("systemExitOnSuccess");
+}
+
+private static boolean exitOnError() {
+    return syspropDefinedAndNotFalse("systemExitOnError");
+}
+
+private static boolean syspropDefinedAndNotFalse(String key) {
+    String value = System.getProperty(key);
+    return value != null && !"false".equalsIgnoreCase(value);
+}
+----
+
+Picocli's own <<TAB Autocomplete,Bash and ZSH completion script generator>> tool uses this method:
+when this tool is called with a link:autocomplete.html#_maven_example[specific system property] (`picocli.autocomplete.systemExitOnError`) it will call `System.exit` when an error occurs.
+
 
 == Validation
 === Built-in Validation

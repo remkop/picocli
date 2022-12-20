@@ -1710,80 +1710,155 @@ new ClipboardJS('.clipboard', {
 });
 </script>
 <style>
+
 .hidden {
+
     display: none;
+
 }
+
+
 
 .switch {
+
     border-width: 1px 1px 0 1px;
+
     border-style: solid;
+
     border-color: #7a2518;
+
     display: inline-block;
+
 }
+
+
 
 .switch--item {
+
     padding: 10px;
+
     background-color: #ffffff;
+
     color: #7a2518;
+
     display: inline-block;
+
     cursor: pointer;
+
 }
+
+
 
 .switch--item.selected {
+
     background-color: #7a2519;
+
     color: #ffffff;
+
 }
+
+
 
 </style>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/zepto/1.2.0/zepto.min.js"></script>
+
 <script type="text/javascript">
+
 function addBlockSwitches() {
+
     $('.primary').each(function() {
+
         primary = $(this);
+
         createSwitchItem(primary, createBlockSwitch(primary)).item.addClass("selected");
+
         primary.children('.title').remove();
+
     });
+
     $('.secondary').each(function(idx, node) {
+
         secondary = $(node);
+
         primary = findPrimary(secondary);
+
         switchItem = createSwitchItem(secondary, primary.children('.switch'));
+
         switchItem.content.addClass('hidden');
+
         findPrimary(secondary).append(switchItem.content);
+
         secondary.remove();
+
     });
+
 }
+
+
 
 function createBlockSwitch(primary) {
+
     blockSwitch = $('<div class="switch"></div>');
+
     primary.prepend(blockSwitch);
+
     return blockSwitch;
+
 }
+
+
 
 function findPrimary(secondary) {
+
     candidate = secondary.prev();
+
     while (!candidate.is('.primary')) {
+
         candidate = candidate.prev();
+
     }
+
     return candidate;
+
 }
 
+
+
 function createSwitchItem(block, blockSwitch) {
+
     blockName = block.children('.title').text();
+
     content = block.children('.content').first().append(block.next('.colist'));
+
     item = $('<div class="switch--item">' + blockName + '</div>');
+
     item.on('click', '', content, function(e) {
+
         $(this).addClass('selected');
+
         $(this).siblings().removeClass('selected');
+
         e.data.siblings('.content').addClass('hidden');
+
         e.data.removeClass('hidden');
+
     });
+
     blockSwitch.append(item);
+
     return {'item': item, 'content': content};
+
 }
+
+
 
 $(addBlockSwitches);
 
+
+
 </script>
+
 
 </head>
 <body class="article toc2 toc-left">
@@ -1885,6 +1960,7 @@ $(addBlockSwitches);
 <li><a href="#_migration">9.6. Migration</a></li>
 <li><a href="#_diy_command_execution">9.7. DIY Command Execution</a></li>
 <li><a href="#_handling_errors">9.8. Handling Errors</a></li>
+<li><a href="#_rare_use_cases">9.9. Rare Use Cases</a></li>
 </ul>
 </li>
 <li><a href="#_validation">10. Validation</a>
@@ -4506,7 +4582,7 @@ Not only will picocli validate the input, it allows you to <a href="#_show_defau
 <p>It is possible to define a default value for an option or positional parameter, that is assigned when the user did not specify this option or positional parameter on the command line.</p>
 </div>
 <div class="paragraph">
-<p>Configuring a default value guarantees that the <code>@Option</code> or <code>@Parameters</code>-annotated field will get set, annotated method will get called, and, when using the programmatic API, that the <a href="https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.Model.ArgSpec.html#setValue-T-"><code>ArgSpec.setValue</code></a> method will get invoked, even when the option or positional parameter was not specified on the command line.</p>
+<p>Configuring a default value guarantees that the <code>@Option</code> or <code>@Parameters</code>-annotated field will get set, annotated method will get called, and, when using the programmatic API, that the <a href="https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.Model.ArgSpec.html#setValue(T)"><code>ArgSpec.setValue</code></a> method will get invoked, even when the option or positional parameter was not specified on the command line.</p>
 </div>
 <div class="sect2">
 <h3 id="defaultValue-annotation"><a class="anchor" href="#defaultValue-annotation"></a>5.1. <code>defaultValue</code> Annotation</h3>
@@ -4749,12 +4825,12 @@ The location of the properties file can also be controlled with system property 
 <p>The <code>PropertiesDefaultProvider</code> expects the properties file to be in the standard java <code>.properties</code> <a href="https://en.wikipedia.org/wiki/.properties">format</a>.</p>
 </div>
 <div class="paragraph">
-<p>For options, the key is either the <a href="https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.Option.html#descriptionKey--">descriptionKey</a>,
-or the option&#8217;s <a href="https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.Model.OptionSpec.html#longestName--">longest name</a>, without the prefix. So, for an option <code>--verbose</code>, the key would be <code>verbose</code>, and for an option <code>/F</code>, the key would be <code>F</code>.</p>
+<p>For options, the key is either the <a href="https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.Option.html#descriptionKey()">descriptionKey</a>,
+or the option&#8217;s <a href="https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.Model.OptionSpec.html#longestName()">longest name</a>, without the prefix. So, for an option <code>--verbose</code>, the key would be <code>verbose</code>, and for an option <code>/F</code>, the key would be <code>F</code>.</p>
 </div>
 <div class="paragraph">
-<p>For positional parameters, the key is either the <a href="https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.Parameters.html#descriptionKey--">descriptionKey</a>,
-or the positional parameter&#8217;s <a href="https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.Parameters.html#paramLabel--">param label</a>.</p>
+<p>For positional parameters, the key is either the <a href="https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.Parameters.html#descriptionKey()">descriptionKey</a>,
+or the positional parameter&#8217;s <a href="https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.Parameters.html#paramLabel()">param label</a>.</p>
 </div>
 <div class="paragraph">
 <p>End users may not know what the <code>descriptionKey</code> of your options and positional parameters are, so be sure  to document that with your application.</p>
@@ -7360,7 +7436,7 @@ In the <code>execute</code> method, such exceptions are caught and passed to the
 </div>
 <div class="paragraph">
 <p>The default parameter exception handler prints an error message describing the problem,
-followed by either <a href="https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.UnmatchedArgumentException.html#printSuggestions-picocli.CommandLine.ParameterException-java.io.PrintWriter-">suggested alternatives</a>
+followed by either <a href="https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.UnmatchedArgumentException.html#printSuggestions(picocli.CommandLine.ParameterException,java.io.PrintWriter)">suggested alternatives</a>
 for mistyped options, or the full usage help message of the problematic command.
 Finally, the handler returns an <a href="#_exception_exit_codes">exit code</a>.
 This is sufficient for most applications.</p>
@@ -7527,6 +7603,130 @@ This can be accomplished by installing a custom <code>IExecutionExceptionHandler
     <span class="p">}</span>
 <span class="p">}</span></code></pre>
 </div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_rare_use_cases"><a class="anchor" href="#_rare_use_cases"></a>9.9. Rare Use Cases</h3>
+<div class="paragraph">
+<p>The <code>CommandLine::execute</code> method is the recommended way to execute your command line application, as it provides configurable exception handling, handles user requests for usage help or version information, results in short and simple application code, and never throws an exception.</p>
+</div>
+<div class="paragraph">
+<p>However, there may be use cases for which the <code>execute</code> method is not a good match.
+The alternative is to use <code>CommandLine::parseArgs</code> and handle the resulting <code>ParseResult</code> object in your application.
+The <a href="#_diy_command_execution">DIY Command Execution</a> section shows what is involved in doing so.</p>
+</div>
+<div class="paragraph">
+<p>The <code>parseArgs</code> method may be useful when writing parser test code, or when your application&#8217;s <code>main</code> method is called by another application. The following sections go into some detail.</p>
+</div>
+<div class="sect3">
+<h4 id="_parser_test_code_example"><a class="anchor" href="#_parser_test_code_example"></a>9.9.1. Parser Test Code Example</h4>
+<div class="paragraph">
+<p>The <code>parseArgs</code> method is useful in test code that only exercises the parsing logic, without involving the business logic.
+For example:</p>
+</div>
+<div class="listingblock primary">
+<div class="title">Java</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="java"><span class="nc">MyApp</span> <span class="n">app</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">MyApp</span><span class="o">();</span>
+<span class="k">new</span> <span class="nf">CommandLine</span><span class="o">(</span><span class="n">app</span><span class="o">).</span><span class="na">parseArgs</span><span class="o">(</span><span class="s">"--some --options and parameters"</span><span class="o">.</span><span class="na">split</span><span class="o">(</span><span class="s">" "</span><span class="o">));</span>
+<span class="n">assertTrue</span><span class="o">(</span><span class="n">app</span><span class="o">.</span><span class="na">some</span><span class="o">);</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Groovy</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="groovy"><span class="n">MyApp</span> <span class="n">app</span> <span class="o">=</span> <span class="k">new</span> <span class="n">MyApp</span><span class="o">()</span>
+<span class="k">new</span> <span class="nf">CommandLine</span><span class="o">(</span><span class="n">app</span><span class="o">).</span><span class="na">parseArgs</span><span class="o">(</span><span class="s1">'--some --options and parameters'</span><span class="o">.</span><span class="na">split</span><span class="o">(</span><span class="s1">' '</span><span class="o">))</span>
+<span class="k">assert</span> <span class="n">app</span><span class="o">.</span><span class="na">some</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_percolating_exceptions_up"><a class="anchor" href="#_percolating_exceptions_up"></a>9.9.2. Percolating Exceptions Up</h4>
+<div class="paragraph">
+<p>The <code>execute</code> method never throws an exception, and for some applications this is undesirable.</p>
+</div>
+<div class="paragraph">
+<p>The <code>parseArgs</code> method can also be useful when the <code>main</code> method of your application is called by another application, and this other application is responsible for error handling.</p>
+</div>
+<div class="paragraph">
+<p>An common use case is when your application is called as part of the build.
+For example, Maven provides the <a href="https://www.mojohaus.org/exec-maven-plugin/"><code>exec-maven-plugin</code></a> with <a href="https://www.mojohaus.org/exec-maven-plugin/java-mojo.html"><code>exec:java</code> goal</a>, and Gradle similarly provides the <a href="https://docs.gradle.org/current/dsl/org.gradle.api.tasks.Exec.html">Exec</a> and <a href="https://docs.gradle.org/current/dsl/org.gradle.api.tasks.JavaExec.html">JavaExec</a> tasks.</p>
+</div>
+<div class="paragraph">
+<p>The Maven <code>exec:java</code> goal invokes the target class in the same Maven process.
+In this case, we don&#8217;t want to call <code>System.exit</code>, because it would stop the entire Maven process, and additionally, we want the exceptions thrown by the command line application to be handled by Maven.</p>
+</div>
+<div class="paragraph">
+<p>One idea is to provide a separate <code>main</code> method that uses <code>parseArgs</code> instead of <code>execute</code>.
+For example:</p>
+</div>
+<div class="listingblock primary">
+<div class="title">Java</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="java"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">MyApp</span> <span class="kd">implements</span> <span class="nc">Callable</span> <span class="o">{</span>
+    <span class="cm">/** Calls System.exit when called from the command line. */</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="nc">String</span><span class="o">...</span> <span class="n">args</span><span class="o">)</span> <span class="kd">throws</span> <span class="nc">Exception</span> <span class="o">{</span>
+        <span class="nc">System</span><span class="o">.</span><span class="na">exit</span><span class="o">(</span><span class="k">new</span> <span class="nc">CommandLine</span><span class="o">(</span><span class="k">new</span> <span class="nc">MyApp</span><span class="o">()).</span><span class="na">execute</span><span class="o">(</span><span class="n">args</span><span class="o">));</span>
+    <span class="o">}</span>
+
+    <span class="cm">/**
+     * Nested helper class that can be used safely from the build tool:
+     * it does not call System.exit and it percolates exceptions up
+     * for handling by the caller.
+     */</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kd">class</span> <span class="nc">NoSystemExit</span> <span class="o">{</span>
+        <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="nc">String</span><span class="o">...</span> <span class="n">args</span><span class="o">)</span> <span class="kd">throws</span> <span class="nc">Exception</span> <span class="o">{</span>
+            <span class="nc">MyApp</span> <span class="n">app</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">MyApp</span><span class="o">();</span>
+            <span class="nc">ParseResult</span> <span class="n">pr</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">CommandLine</span><span class="o">(</span><span class="n">app</span><span class="o">).</span><span class="na">parseArgs</span><span class="o">(</span><span class="n">args</span><span class="o">);</span>
+            <span class="k">if</span> <span class="o">(</span><span class="nc">CommandLine</span><span class="o">.</span><span class="na">executeHelpRequest</span><span class="o">(</span><span class="n">pr</span><span class="o">)</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span> <span class="k">return</span><span class="o">;</span> <span class="o">}</span> <span class="c1">// help was requested</span>
+            <span class="n">app</span><span class="o">.</span><span class="na">call</span><span class="o">();</span> <span class="c1">// execute business logic, which may also throw an exception</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+    <span class="c1">//...</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Then, in the build configuration, invoke nested class <code>MyApp.NoSystemExit</code> instead of <code>MyApp</code> to let the build tool handle any exceptions and avoid calling <code>System.exit</code>.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_system_exit_or_not"><a class="anchor" href="#_system_exit_or_not"></a>9.9.3. System.exit or not?</h4>
+<div class="paragraph">
+<p>An alternative to the above solution is to decide at runtime whether to call <code>System.exit</code> or not.</p>
+</div>
+<div class="paragraph">
+<p>The example implementation below demonstrates how to use system properties to determine whether to call <code>System.exit</code> or not:</p>
+</div>
+<div class="listingblock primary">
+<div class="title">Java</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="java"><span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="nc">String</span><span class="o">...</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
+    <span class="kt">int</span> <span class="n">exitCode</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">CommandLine</span><span class="o">(</span><span class="k">new</span> <span class="nc">App</span><span class="o">()).</span><span class="na">execute</span><span class="o">(</span><span class="n">args</span><span class="o">);</span>
+    <span class="k">if</span> <span class="o">((</span><span class="n">exitCode</span> <span class="o">==</span> <span class="nc">CommandLine</span><span class="o">.</span><span class="na">ExitCode</span><span class="o">.</span><span class="na">OK</span> <span class="o">&amp;&amp;</span> <span class="n">exitOnSuccess</span><span class="o">())</span>
+    <span class="o">||</span> <span class="o">(</span><span class="n">exitCode</span> <span class="o">!=</span> <span class="nc">CommandLine</span><span class="o">.</span><span class="na">ExitCode</span><span class="o">.</span><span class="na">OK</span> <span class="o">&amp;&amp;</span> <span class="n">exitOnError</span><span class="o">()))</span> <span class="o">{</span>
+        <span class="nc">System</span><span class="o">.</span><span class="na">exit</span><span class="o">(</span><span class="n">exitCode</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="kd">private</span> <span class="kd">static</span> <span class="kt">boolean</span> <span class="nf">exitOnSuccess</span><span class="o">()</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="nf">syspropDefinedAndNotFalse</span><span class="o">(</span><span class="s">"systemExitOnSuccess"</span><span class="o">);</span>
+<span class="o">}</span>
+
+<span class="kd">private</span> <span class="kd">static</span> <span class="kt">boolean</span> <span class="nf">exitOnError</span><span class="o">()</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="nf">syspropDefinedAndNotFalse</span><span class="o">(</span><span class="s">"systemExitOnError"</span><span class="o">);</span>
+<span class="o">}</span>
+
+<span class="kd">private</span> <span class="kd">static</span> <span class="kt">boolean</span> <span class="nf">syspropDefinedAndNotFalse</span><span class="o">(</span><span class="nc">String</span> <span class="n">key</span><span class="o">)</span> <span class="o">{</span>
+    <span class="nc">String</span> <span class="n">value</span> <span class="o">=</span> <span class="nc">System</span><span class="o">.</span><span class="na">getProperty</span><span class="o">(</span><span class="n">key</span><span class="o">);</span>
+    <span class="k">return</span> <span class="n">value</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="s">"false"</span><span class="o">.</span><span class="na">equalsIgnoreCase</span><span class="o">(</span><span class="n">value</span><span class="o">);</span>
+<span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Picocli&#8217;s own <a href="#_tab_autocomplete">Bash and ZSH completion script generator</a> tool uses this method:
+when this tool is called with a <a href="autocomplete.html#_maven_example">specific system property</a> (<code>picocli.autocomplete.systemExitOnError</code>) it will call <code>System.exit</code> when an error occurs.</p>
 </div>
 </div>
 </div>
@@ -8873,7 +9073,7 @@ yyy"</code></pre>
 </ul>
 </div>
 <div class="paragraph">
-<p>By default, a set of <a href="https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.RegexTransformer.html#createDefault--">regular expressions</a> is used to control the above.
+<p>By default, a set of <a href="https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.RegexTransformer.html#createDefault()">regular expressions</a> is used to control the above.
 Use <code>CommandLine::setNegatableOptionTransformer</code> to replace the <a href="https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.INegatableOptionTransformer"><code>INegatableOptionTransformer</code></a> with a custom version.
 See the JavaDoc for details.</p>
 </div>
@@ -13271,7 +13471,7 @@ myapp add <span class="nt">-x</span><span class="o">=</span>item1 <span class="n
 </div>
 </div>
 <div class="paragraph">
-<p>is invoked, only the last two sub-subcommands <code>subsub-B1</code> and <code>subsub-B2</code> (who both have parent command <code>subcmd-B</code>) are executed by default. You can <a href="https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.html#setExecutionStrategy-picocli.CommandLine.IExecutionStrategy-">set</a> a different <a href="https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.IExecutionStrategy.html">execution strategy</a> if this does not meet your needs.</p>
+<p>is invoked, only the last two sub-subcommands <code>subsub-B1</code> and <code>subsub-B2</code> (who both have parent command <code>subcmd-B</code>) are executed by default. You can <a href="https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.html#setExecutionStrategy(picocli.CommandLine.IExecutionStrategy)">set</a> a different <a href="https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.IExecutionStrategy.html">execution strategy</a> if this does not meet your needs.</p>
 </div>
 </div>
 </div>
@@ -14532,7 +14732,7 @@ picocli.endofoptions = Separates options from positional parameters.</code></pre
 </div>
 </div>
 <div class="paragraph">
-<p>When the <code>descriptionKey</code> is omitted, the <a href="https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.Option.html#descriptionKey--">fallback for options</a> is any option name without the leading dashes, for example:</p>
+<p>When the <code>descriptionKey</code> is omitted, the <a href="https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.Option.html#descriptionKey()">fallback for options</a> is any option name without the leading dashes, for example:</p>
 </div>
 <div class="listingblock primary">
 <div class="title">Java</div>
@@ -14556,7 +14756,7 @@ picocli.endofoptions = Separates options from positional parameters.</code></pre
 </div>
 </div>
 <div class="paragraph">
-<p>For <a href="https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.Parameters.html#descriptionKey--">positional parameters</a> the fallback key is the <code>paramLabel + [ index ]</code>, for example:</p>
+<p>For <a href="https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.Parameters.html#descriptionKey()">positional parameters</a> the fallback key is the <code>paramLabel + [ index ]</code>, for example:</p>
 </div>
 <div class="listingblock primary">
 <div class="title">Java</div>
@@ -17603,7 +17803,7 @@ The generated AsciiDoc files can be converted to HTML, PDF and unix man pages wi
 </div>
 </div>
 <div class="paragraph">
-<p>This assumes that the application uses the <code>PrintWriter</code> provided by <a href="https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.html#getOut--"><code>CommandLine.getOut</code></a> or  <a href="https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.html#getErr--"><code>CommandLine.getErr</code></a>.
+<p>This assumes that the application uses the <code>PrintWriter</code> provided by <a href="https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.html#getOut()"><code>CommandLine.getOut</code></a> or <a href="https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.html#getErr()"><code>CommandLine.getErr</code></a>.
 Applications can get these writers via the <a href="#spec-annotation"><code>@Spec</code></a> annotation:</p>
 </div>
 <div class="listingblock primary">
