@@ -1,4 +1,39 @@
-# picocli Release Notes
+# picocli Release Notes (UNRELEASED)
+
+
+# <a name="4.7.1"></a> Picocli 4.7.1
+The picocli community is pleased to announce picocli 4.7.1.
+
+This release includes bugfixes and enhancements.
+
+
+
+This is the eightieth public release.
+Picocli follows [semantic versioning](https://semver.org/).
+Artifacts in this release are signed by Remko Popma (6601 E5C0 8DCC BB96).
+
+## <a name="4.7.1-toc"></a> Table of Contents
+* [New and noteworthy](#4.7.1-new)
+* [Fixed issues](#4.7.1-fixes)
+* [Deprecations](#4.7.1-deprecated)
+* [Potential breaking changes](#4.7.1-breaking-changes)
+
+## <a name="4.7.1-new"></a> New and Noteworthy
+
+## <a name="4.7.1-fixes"></a> Fixed issues
+* [#1886][#1896] Bugfix: AsciiDoc generator now correctly outputs options even if all options are in ArgGroups. Thanks to [Ruud Senden](https://github.com/rsenden) for the discussion and the pull request.
+* [#1878][#1876] Bugfix: Annotation processor now avoids loading resource bundles at compile time. Thanks to [Ruud Senden](https://github.com/rsenden) for the discussion and the pull request.
+* [#1881] DOC: Many documentation improvements. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+* [#1855][#1857] DOC: Add new user manual section called [Rare Use Cases](https://picocli.info/#_rare_use_cases) detailing `System.exit` usage. Thanks to [Tadaya Tsuyukubo](https://github.com/ttddyy) for the pull request.
+
+## <a name="4.7.1-deprecated"></a> Deprecations
+No features were deprecated in this release.
+
+## <a name="4.7.1-breaking-changes"></a> Potential breaking changes
+This release has no breaking changes.
+
+
+
 
 # <a name="4.7.0"></a> Picocli 4.7.0
 The picocli community is pleased to announce picocli 4.7.0.
