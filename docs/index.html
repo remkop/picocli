@@ -3214,29 +3214,41 @@ Short option names are not given a negative alias by default. (This is <a href="
 <td class="content">
 <div class="title">Negatable options that are <code>true</code> by default</div>
 <div class="paragraph">
-<p>When a negatable option is <code>true</code> by default, give it the negative name. For example:</p>
+<p>When a negatable option is <code>true</code> by default, give it both a <code>defaultValue</code> and a <code>fallbackValue</code> of <code>"true"</code>. For example:</p>
 </div>
 <div class="listingblock primary">
 <div class="title">Java</div>
 <div class="content">
-<pre class="rouge highlight"><code data-lang="java"><span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"--no-backup"</span><span class="o">,</span> <span class="n">negatable</span> <span class="o">=</span> <span class="kc">true</span><span class="o">,</span>
+<pre class="rouge highlight"><code data-lang="java"><span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"--backup"</span><span class="o">,</span> <span class="n">negatable</span> <span class="o">=</span> <span class="kc">true</span><span class="o">,</span>
+  <span class="n">defaultValue</span> <span class="o">=</span> <span class="s">"true"</span><span class="o">,</span> <span class="n">fallbackValue</span> <span class="o">=</span> <span class="s">"true"</span><span class="o">,</span>
   <span class="n">description</span> <span class="o">=</span> <span class="s">"Make a backup. True by default."</span><span class="o">)</span>
-<span class="kt">boolean</span> <span class="n">backup</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span></code></pre>
+<span class="kt">boolean</span> <span class="n">backup</span><span class="o">;</span></code></pre>
 </div>
 </div>
 <div class="listingblock secondary">
 <div class="title">Kotlin</div>
 <div class="content">
-<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"--no-backup"</span><span class="p">],</span> <span class="n">negatable</span> <span class="p">=</span> <span class="k">true</span><span class="p">,</span>
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"--backup"</span><span class="p">],</span> <span class="n">negatable</span> <span class="p">=</span> <span class="k">true</span><span class="p">,</span>
+  <span class="n">defaultValue</span> <span class="p">=</span> <span class="s">"true"</span><span class="p">,</span> <span class="n">fallbackValue</span> <span class="p">=</span> <span class="s">"true"</span><span class="p">,</span>
   <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"Make a backup. True by default."</span><span class="p">])</span>
 <span class="kd">var</span> <span class="py">backup</span> <span class="p">=</span> <span class="k">true</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>When end users specify <code>--no-backup</code> on the command line, the value is set to <code>false</code>.</p>
+<p>The table below shows the value assigned to the annotated option field for a number of possible user input strings:</p>
 </div>
-<div class="paragraph">
-<p>The negated form of this option is <code>--backup</code>, and if that is specified, the default value is applied.</p>
+<div class="listingblock">
+<div class="content">
+<pre>End user input      Option value
+--------------      ------------
+(no args)           true
+--backup            true
+--backup=true       true
+--backup=false      false
+--no-backup         false
+--no-backup=true    false
+--no-backup=false   true</pre>
+</div>
 </div>
 </td>
 </tr>

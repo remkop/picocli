@@ -843,27 +843,54 @@ If the negated form of the option is found, for example `--no-verbose`, the valu
 [TIP]
 .Negatable options that are `true` by default
 ====
-When a negatable option is `true` by default, give it the negative name. For example:
+When a negatable option is `true` by default, give it both a `defaultValue` and a `fallbackValue` of `"true"`. For example:
 
 .Java
 [source,java,role="primary"]
 ----
-@Option(names = "--no-backup", negatable = true,
+@Option(names = "--backup", negatable = true,
+  defaultValue = "true", fallbackValue = "true",
   description = "Make a backup. True by default.")
-boolean backup = true;
+boolean backup;
 ----
 
 .Kotlin
 [source,kotlin,role="secondary"]
 ----
-@Option(names = ["--no-backup"], negatable = true,
+@Option(names = ["--backup"], negatable = true,
+  defaultValue = "true", fallbackValue = "true",
   description = ["Make a backup. True by default."])
 var backup = true
 ----
 
-When end users specify `--no-backup` on the command line, the value is set to `false`.
+The table below shows the value assigned to the annotated option field for a number of possible user input strings:
 
-The negated form of this option is `--backup`, and if that is specified, the default value is applied.
+//.Negatable option values for various user input strings
+//[grid=cols,cols="10,10",options="header"]
+//|===
+//| End user input | Option value
+//| (no args)             | `true`
+//| `--backup`            | `true`
+//| `--backup=true`       | `true`
+//| `--backup=false`      | `false`
+//| `--no-backup`         | `false`
+//| `--no-backup=true`    | `false`
+//| `--no-backup=false`   | `true`
+//|===
+//
+
+----
+End user input      Option value
+--------------      ------------
+(no args)           true
+--backup            true
+--backup=true       true
+--backup=false      false
+--no-backup         false
+--no-backup=true    false
+--no-backup=false   true
+----
+
 ====
 
 === Positional Parameters
