@@ -2529,9 +2529,9 @@ The example <code>main</code> method calls <code>CommandLine.execute</code> to p
 <p><strong>Compile time error checking</strong>. The annotation processor shows errors for invalid annotations and attributes immediately when you compile, instead of during testing at runtime, resulting in shorter feedback cycles.</p>
 </li>
 <li>
-<p><strong><a href="#_graalvm_native_image">GraalVM native images</a></strong>. The annotation processor generates and updates <a href="https://www.graalvm.org/22.2/reference-manual/native-image/overview/BuildConfiguration/">GraalVM configuration</a> files under
+<p><strong><a href="#_graalvm_native_image">GraalVM native images</a></strong>. The annotation processor generates and updates <a href="https://www.graalvm.org/latest/reference-manual/native-image/overview/BuildConfiguration/">GraalVM configuration</a> files under
 <code>META-INF/native-image/picocli-generated/$project</code> during compilation, to be included in the application jar.
-This includes configuration files for <a href="https://www.graalvm.org/22.2/reference-manual/native-image/dynamic-features/Reflection/">reflection</a>, <a href="https://www.graalvm.org/22.2/reference-manual/native-image/dynamic-features/Resources/">resources</a> and <a href="https://www.graalvm.org/22.2/reference-manual/native-image/dynamic-features/DynamicProxy/">dynamic proxies</a>.
+This includes configuration files for <a href="https://www.graalvm.org/latest/reference-manual/native-image/dynamic-features/Reflection/">reflection</a>, <a href="https://www.graalvm.org/latest/reference-manual/native-image/dynamic-features/Resources/">resources</a> and <a href="https://www.graalvm.org/latest/reference-manual/native-image/dynamic-features/DynamicProxy/">dynamic proxies</a>.
 By embedding these configuration files, your jar is instantly Graal-enabled.
 In most cases no further configuration is needed when generating a native image.</p>
 </li>
@@ -6146,6 +6146,35 @@ For optional groups (groups with <code>multiplicity = "0..1"</code> - the defaul
 <pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@ArgGroup</span><span class="p">(</span><span class="n">heading</span> <span class="p">=</span> <span class="s">"First%n"</span><span class="p">,</span> <span class="n">order</span> <span class="p">=</span> <span class="mi">1</span><span class="p">)</span> <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">section1</span><span class="p">:</span> <span class="nc">Section1</span>
 <span class="nd">@ArgGroup</span><span class="p">(</span><span class="n">heading</span> <span class="p">=</span> <span class="s">"Next%n"</span><span class="p">,</span> <span class="n">order</span> <span class="p">=</span> <span class="mi">2</span><span class="p">)</span>  <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">section2</span><span class="p">:</span> <span class="nc">Section2</span>
 <span class="nd">@ArgGroup</span><span class="p">(</span><span class="n">heading</span> <span class="p">=</span> <span class="s">"Last%n"</span><span class="p">,</span> <span class="n">order</span> <span class="p">=</span> <span class="mi">3</span><span class="p">)</span>  <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">section3</span><span class="p">:</span> <span class="nc">Section3</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_validation_trade_offs"><a class="anchor" href="#_validation_trade_offs"></a>8.3.3. Validation Trade-offs</h4>
+<div class="paragraph">
+<p>Note that setting <code>validate = false</code> means that picocli won&#8217;t validate user input for the group.
+For example, even for groups with <code>multiplicity = 1</code>, when the end user specifies the group multiple times, no error is shown.
+If the group is a single-value field, only the last occurrence is stored and previous occurrences are silently dropped.</p>
+</div>
+<div class="paragraph">
+<p>If validation is needed, the recommendation is to make the field holding the group a collection, and doing <a href="#_custom_validation">Custom Validation</a>. For example to ensure that this collection holds only a single element:</p>
+</div>
+<div class="listingblock primary">
+<div class="title">Java</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="java"><span class="nd">@ArgGroup</span><span class="o">(</span><span class="n">validate</span> <span class="o">=</span> <span class="kc">false</span><span class="o">,</span> <span class="n">heading</span> <span class="o">=</span> <span class="s">"This is the first section%n"</span><span class="o">,</span> <span class="n">multiplicity</span> <span class="o">=</span> <span class="s">"0..1"</span><span class="o">)</span>
+<span class="kd">private</span> <span class="nc">List</span><span class="o">&lt;</span><span class="nc">Section1</span><span class="o">&gt;</span> <span class="n">section1List</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">ArrayList</span><span class="o">&lt;&gt;();</span>
+
+<span class="nd">@Spec</span> <span class="nc">CommandSpec</span> <span class="n">spec</span><span class="o">;</span>
+
+<span class="c1">// validate in the business logic</span>
+<span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">()</span> <span class="o">{</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">section1List</span><span class="o">.</span><span class="na">size</span><span class="o">()</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">throw</span> <span class="k">new</span> <span class="nf">ParameterException</span><span class="o">(</span><span class="n">spec</span><span class="o">.</span><span class="na">commandLine</span><span class="o">(),</span>
+                <span class="s">"Group [-a=&lt;a&gt;] [-b=&lt;b&gt;] [-c=&lt;c&gt;] can be specified at most once."</span><span class="o">);</span>
+    <span class="o">}</span>
+    <span class="c1">// remaining business logic...</span>
+<span class="o">}</span></code></pre>
 </div>
 </div>
 </div>

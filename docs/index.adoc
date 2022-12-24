@@ -3082,6 +3082,32 @@ The ordering of group option sections can be controlled with the `order` attribu
 @ArgGroup(heading = "Last%n", order = 3)  lateinit var section3: Section3
 ----
 
+==== Validation Trade-offs
+Note that setting `validate = false` means that picocli won't validate user input for the group.
+For example, even for groups with `multiplicity = 1`, when the end user specifies the group multiple times, no error is shown.
+If the group is a single-value field, only the last occurrence is stored and previous occurrences are silently dropped.
+
+If validation is needed, the recommendation is to make the field holding the group a collection, and doing <<Custom Validation>>. For example to ensure that this collection holds only a single element:
+
+
+.Java
+[source, java,role="primary"]
+----
+@ArgGroup(validate = false, heading = "This is the first section%n", multiplicity = "0..1")
+private List<Section1> section1List = new ArrayList<>();
+
+@Spec CommandSpec spec;
+
+// validate in the business logic
+public void run() {
+    if (section1List.size() > 1) {
+        throw new ParameterException(spec.commandLine(),
+                "Group [-a=<a>] [-b=<b>] [-c=<c>] can be specified at most once.");
+    }
+    // remaining business logic...
+}
+----
+
 === Repeating Composite Argument Groups
 
 The below example shows how groups can be composed of other groups, and how arrays and collections can be used to capture repeating groups (with a `multiplicity` greater than one):
