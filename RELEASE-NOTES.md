@@ -27,7 +27,7 @@ Artifacts in this release are signed by Remko Popma (6601 E5C0 8DCC BB96).
 * [#1855][#1857] DOC: Add new user manual section called [Rare Use Cases](https://picocli.info/#_rare_use_cases) detailing `System.exit` usage. Thanks to [Tadaya Tsuyukubo](https://github.com/ttddyy) for the pull request.
 * [#1880] DOC: Improve documentation for negatable options that are true by default. Thanks to [Sebastian Hoß](https://github.com/sebhoss) for raising this.
 * [#1815] DOC: Improve user manual section for non-validating ArgGroups. Thanks for [Paul Harris](https://github.com/rolfyone) for raising this.
-*
+* [#1908] DOC: Update the user manual GraalVM section to use the new official native-maven-plugin. Thanks to [tison](https://github.com/tisonkun) for the pull request.
 
 
 ## <a name="4.7.1-deprecated"></a> Deprecations
