@@ -13107,7 +13107,7 @@ path/to/native-image -cp picocli-4.7.1-SNAPSHOT.jar --static -jar myapp.jar
 
 CAUTION: To create a native image, the compiler toolchain for your platform needs to be installed. See https://www.infoq.com/articles/java-native-cli-graalvm-picocli/[Build Great Native CLI Apps in Java with Graalvm and Picocli] for details.
 
-GraalVM includes a https://medium.com/graalvm/simplifying-native-image-generation-with-maven-plugin-and-embeddable-configuration-d5b283b92f57[Maven plugin]
+GraalVM includes a https://graalvm.github.io/native-build-tools/latest/maven-plugin.html[Maven plugin]
 to generate a native image during the build.
 Gradle users may be interested in the https://github.com/palantir/gradle-graal[gradle-graal] plugin by Palantir, or the https://plugins.gradle.org/plugin/org.mikeneck.graalvm-native-image[graalvm-native-image] plugin by Mike Neck.
 (Documentation for both Maven and Gradle plugins seems sparse at time of this writing.)
