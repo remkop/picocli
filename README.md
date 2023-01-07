@@ -197,7 +197,7 @@ Join the [picocli Google group](https://groups.google.com/d/forum/picocli) if yo
 
 ### Commitments
 
-| This project follows [semantic versioning](https://semver.org/) and adheres to the **[Zero Bugs Commitment](https://github.com/classgraph/classgraph/blob/latest/Zero-Bugs-Commitment.md)**. |
+| This project follows [semantic versioning](https://semver.org/) and adheres to the **[Zero Bugs Commitment](https://github.com/classgraph/classgraph/blob/f24fb4e8f2e4f3221065d755be6e65d59939c5d0/Zero-Bugs-Commitment.md)**. |
 |------------------------|
 
 ## Adoption
