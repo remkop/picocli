@@ -311,6 +311,17 @@ public class AutoComplete {
             this.commandName = commandName;
             this.commandLine = commandLine;
         }
+
+        @Override
+        public String toString() {
+            return "CommandDescriptor{" +
+                    "functionName='" + functionName + '\'' +
+                    ", parentFunctionName='" + parentFunctionName + '\'' +
+                    ", parentWithoutTopLevelCommand='" + parentWithoutTopLevelCommand + '\'' +
+                    ", commandName='" + commandName + '\'' +
+                    ", commandLine=" + commandLine +
+                    '}';
+        }
     }
 
     private static final String SCRIPT_HEADER = "" +
@@ -537,6 +548,24 @@ public class AutoComplete {
             result.append(generateFunctionForCommand(descriptor.functionName, descriptor.commandName, descriptor.commandLine));
         }
         result.append(format(SCRIPT_FOOTER, scriptName));
+        return result.toString();
+    }
+
+
+    public static String fish(String scriptName, CommandLine commandLine) {
+        if (scriptName == null)  { throw new NullPointerException("scriptName"); }
+        if (commandLine == null) { throw new NullPointerException("commandLine"); }
+        List<CommandDescriptor> hierarchy = createHierarchy(scriptName, commandLine);
+        //print hierarchy
+        for (CommandDescriptor descriptor : hierarchy) {
+            System.out.println(descriptor.functionName + " " + descriptor.commandName);
+        }
+
+        StringBuilder result = new StringBuilder();
+        result.append("Hello from fish!").append("\n");
+        for (CommandDescriptor commandDescriptor : hierarchy) {
+            result.append(commandDescriptor.toString()).append("\n");
+        }
         return result.toString();
     }
 
