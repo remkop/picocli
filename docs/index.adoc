@@ -13447,7 +13447,7 @@ object MyApp {
 In order to get you started quickly, you may have a look at the https://github.com/remkop/picocli/tree/main/picocli-examples/src/main/scala/picocli/examples/scala[Scala examples] folder of the picocli code repository.
 
 == API JavaDoc
-Picocli API JavaDoc can be found link:apidocs-all/[here].
+Picocli API JavaDoc can be found link:apidocs-all/index.html?overview-summary.html[here].
 
 See also: https://picocli.info/man/3.x/apidocs[Picocli 3.x JavaDoc].
 
