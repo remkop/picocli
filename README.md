@@ -3,7 +3,6 @@
 [![GitHub Release](https://img.shields.io/github/release/remkop/picocli.svg)](https://github.com/remkop/picocli/releases)
 [![Maven Central](https://img.shields.io/maven-central/v/info.picocli/picocli.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22info.picocli%22%20AND%20a:%22picocli%22)
 [![GitHub Actions Build Status](https://github.com/remkop/picocli/actions/workflows/ci.yml/badge.svg)](https://github.com/remkop/picocli/actions/workflows/ci.yml)
-[![Travis Build Status](https://travis-ci.com/remkop/picocli.svg?branch=master)](https://travis-ci.com/remkop/picocli)
 [![codecov](https://codecov.io/gh/remkop/picocli/branch/master/graph/badge.svg)](https://codecov.io/gh/remkop/picocli)
 [![Follow @remkopopma](https://img.shields.io/twitter/follow/remkopopma.svg?style=social)](https://twitter.com/intent/follow?screen_name=remkopopma)
 [![Follow @picocli](https://img.shields.io/twitter/follow/picocli.svg?style=social)](https://twitter.com/intent/follow?screen_name=picocli)
