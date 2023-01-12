@@ -521,14 +521,14 @@ The Commons CLI version of CliBuilder, and previous versions of CliBuilder, expo
 If your application uses the `parser` property to set a different Commons CLI parser, consider using the `posix` property instead, or import `groovy.cli.commons.CliBuilder`.
 
 === Different Parser Behavior for `longOption`
-The Commons CLI `DefaultParser` recognizes `longOption` option names prefixed with a single hypen (e.g., `-option`)
+The Commons CLI `DefaultParser` recognizes `longOption` option names prefixed with a single hyphen (e.g., `-option`)
 as well as options prefixed with a double hyphen (e.g., `--option`).
 This is not always obvious since the usage help message only shows the double hyphen prefix for `longOption` option names.
 
 For backwards compatibility, the picocli version of CliBuilder has an `acceptLongOptionsWithSingleHyphen` property:
 set this property to `true` if the parser should recognize long option names with both
 a single hyphen and a double hyphen prefix. The default is `false`,
-so only long option names with a double hypen prefix (`--option`) are recognized.
+so only long option names with a double hyphen prefix (`--option`) are recognized.
 
 == Conclusion
 Groovy 2.5 CliBuilder offers a host of exciting new features. Try it out and let us know what you think!

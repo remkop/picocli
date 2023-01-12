@@ -116,7 +116,7 @@ public class AutoComplete {
                     "",
                     "Example",
                     "-------",
-                    "  java -cp \"myapp.jar;picocli-4.7.0-SNAPSHOT.jar\" \\",
+                    "  java -cp \"myapp.jar;picocli-4.7.1-SNAPSHOT.jar\" \\",
                     "              picocli.AutoComplete my.pkg.MyClass"
             },
             exitCodeListHeading = "%nExit Codes:%n",
@@ -422,6 +422,41 @@ public class AutoComplete {
             "  done\n" +
             "  echo \"$result\"\n" +
             "}\n" +
+            "\n" +
+            "# compReplyArray generates a list of completion suggestions based on an array, ensuring all values are properly escaped.\n" +
+            "#\n" +
+            "# compReplyArray takes a single parameter: the array of options to be displayed\n" +
+            "#\n" +
+            "# The output is echoed to std_out, one option per line.\n"
+            + "#\n"
+            + "# Example usage:\n"
+            + "# local options=(\"foo\", \"bar\", \"baz\")\n"
+            + "# local IFS=$'\\n'\n"
+            + "# COMPREPLY=($(compReplyArray \"${options[@]}\"))\n" +
+            "function compReplyArray() {\n" +
+            "  declare -a options\n" +
+            "  options=(\"$@\")\n" +
+            "  local curr_word=${COMP_WORDS[COMP_CWORD]}\n" +
+            "  local i\n" +
+            "  local quoted\n" +
+            "  local optionList=()\n" +
+            "\n" +
+            "  for (( i=0; i<${#options[@]}; i++ )); do\n" +
+            "    # Double escape, since we want escaped values, but compgen -W expands the argument\n" +
+            "    printf -v quoted %%q \"${options[i]}\"\n" +
+            "    quoted=\\'${quoted//\\'/\\'\\\\\\'\\'}\\'\n" +
+            "\n" +
+            "    optionList[i]=$quoted\n" +
+            "  done\n" +
+            "\n" +
+            "  # We also have to add another round of escaping to $curr_word.\n" +
+            "  curr_word=${curr_word//\\\\/\\\\\\\\}\n" +
+            "  curr_word=${curr_word//\\'/\\\\\\'}\n" +
+            "\n" +
+            "  # Actually generate completions.\n" +
+            "  local IFS=$'\\n'\n" +
+            "  echo -e \"$(compgen -W \"${optionList[*]}\" -- \"$curr_word\")\"\n" +
+            "}\n" +
             "\n";
 
     private static final String SCRIPT_FOOTER = "" +
@@ -641,7 +676,8 @@ public class AutoComplete {
                 "  else\n" +
                 "    local positionals=\"\"\n" +
                 "%s" +
-                "    COMPREPLY=( $(compgen -W \"${commands} ${positionals}\" -- \"${curr_word}\") )\n" +
+                "    local IFS=$'\\n'\n" +
+                "    COMPREPLY=( $(compgen -W \"${commands// /$'\\n'}${IFS}${positionals}\" -- \"${curr_word}\") )\n" +
                 "  fi\n" +
                 "}\n";
 
@@ -715,16 +751,16 @@ public class AutoComplete {
 
     private static void generatePositionParamCompletionCandidates(StringBuilder buff, PositionalParamSpec f) {
         String paramName = bashify(f.paramLabel());
-        buff.append(format("  local %s_pos_param_args=\"%s\" # %d-%d values\n",
+        buff.append(format("  local %s_pos_param_args=(\"%s\") # %d-%d values\n",
                 paramName,
-                concat(" ", extract(f.completionCandidates())).trim(),
+                concat("\" \"", extract(f.completionCandidates())).trim(),
                 f.index().min(), f.index().max()));
     }
 
     private static void generateCompletionCandidates(StringBuilder buff, OptionSpec f) {
-        buff.append(format("  local %s_option_args=\"%s\" # %s values\n",
+        buff.append(format("  local %s_option_args=(\"%s\") # %s values\n",
                 bashify(f.paramLabel()),
-                concat(" ", extract(f.completionCandidates())).trim(),
+                concat("\" \"", extract(f.completionCandidates())).trim(),
                 f.longestName()));
     }
     private static List<String> extract(Iterable<String> generator) {
@@ -749,7 +785,7 @@ public class AutoComplete {
             int max = param.index().max();
             if (param.completionCandidates() != null) {
                 buff.append(format("%s    %s (( currIndex >= %d && currIndex <= %d )); then\n", indent, ifOrElif, min, max));
-                buff.append(format("%s      positionals=$( compgen -W \"$%s_pos_param_args\" -- \"%s\" )\n", indent, paramName, currWord));
+                buff.append(format("%s      positionals=$( compReplyArray \"${%s_pos_param_args[@]}\" )\n", indent, paramName, currWord));
             } else if (type.equals(File.class) || "java.nio.file.Path".equals(type.getName())) {
                 buff.append(format("%s    %s (( currIndex >= %d && currIndex <= %d )); then\n", indent, ifOrElif, min, max));
                 buff.append(format("%s      local IFS=$'\\n'\n", indent));
@@ -792,7 +828,8 @@ public class AutoComplete {
             }
             if (option.completionCandidates() != null) {
                 buff.append(format("%s    %s)\n", indent, concat("|", option.names()))); // "    -u|--timeUnit)\n"
-                buff.append(format("%s      COMPREPLY=( $( compgen -W \"${%s_option_args}\" -- \"%s\" ) )\n", indent, bashify(option.paramLabel()), currWord));
+                buff.append(format("%s      local IFS=$'\\n'\n", indent));
+                buff.append(format("%s      COMPREPLY=( $( compReplyArray \"${%s_option_args[@]}\" ) )\n", indent, bashify(option.paramLabel()), currWord));
                 buff.append(format("%s      return $?\n", indent));
                 buff.append(format("%s      ;;\n", indent));
             } else if (type.equals(File.class) || "java.nio.file.Path".equals(type.getName())) {

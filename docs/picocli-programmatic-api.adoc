@@ -1,8 +1,8 @@
 = Programmatic API
 //:author: Remko Popma
 //:email: rpopma@apache.org
-:revnumber: 4.7.0-SNAPSHOT
-:revdate: 2022-02-09
+:revnumber: 4.7.1-SNAPSHOT
+:revdate: 2022-10-31
 :toc: left
 :numbered:
 :toclevels: 2
@@ -195,8 +195,8 @@ the parser will create a https://picocli.info/#_strongly_typed_everything[strong
 that was matched on the command line. Picocli stores this value in the `ArgSpec` by using its `IGetter` or `ISetter`.
 
 Most applications don't need to know the details of getter and setter bindings, and can just call
-https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.Model.ArgSpec.html#getValue--[getValue] or
-https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.Model.ArgSpec.html#setValue-T-[setValue].
+https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.Model.ArgSpec.html#getValue()[getValue] or
+https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.Model.ArgSpec.html#setValue(T)[setValue].
 The below may be of interest for applications or libraries that use picocli to design a domain-specific language, or implement some other dynamic behaviour.
 
 Picocli internally uses bindings to allow `@Option` and `@Parameters`-annotated fields and setter methods on implementation classes, and annotated getter methods on interfaces.

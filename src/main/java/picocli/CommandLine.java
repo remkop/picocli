@@ -148,7 +148,7 @@ import static picocli.CommandLine.Help.Column.Overflow.WRAP;
 public class CommandLine {
 
     /** This is picocli version {@value}. */
-    public static final String VERSION = "4.7.0-SNAPSHOT";
+    public static final String VERSION = "4.7.1-SNAPSHOT";
     private static final Tracer TRACER = new Tracer();
 
     private CommandSpec commandSpec;
@@ -834,7 +834,7 @@ public class CommandLine {
     }
 
     /** Returns whether abbreviation of subcommands should be allowed when matching subcommands. The default is {@code false}.
-     * @return {@code true} if subcommands can be matched when they are abbrevations of the {@code getCommandName()} value of a registered one, {@code false} otherwise.
+     * @return {@code true} if subcommands can be matched when they are abbreviations of the {@code getCommandName()} value of a registered one, {@code false} otherwise.
      *       For example, if true, for a subcommand with name {@code helpCommand}, inputs like {@code h}, {@code h-c} and {@code hC} are all recognized.
      * @since 4.4 */
     public boolean isAbbreviatedSubcommandsAllowed() {
@@ -860,7 +860,7 @@ public class CommandLine {
     }
 
     /** Returns whether abbreviation of option names should be allowed when matching options. The default is {@code false}.
-     * @return {@code true} if options can be matched when they are abbrevations of the {@code names()} value of a registered one, {@code false} otherwise.
+     * @return {@code true} if options can be matched when they are abbreviations of the {@code names()} value of a registered one, {@code false} otherwise.
      *       For example, if true, for a subcommand with name {@code --helpMe}, inputs like {@code --h}, {@code --h-m} and {@code --hM} are all recognized.
      * @since 4.4 */
     public boolean isAbbreviatedOptionsAllowed() {
@@ -979,7 +979,7 @@ public class CommandLine {
      * or whether such values should be rejected with a missing parameter exception.
      * The default is {@code false}, so by default input like {@code -x=subcommand} is rejected if {@code -x} is an option that takes a String parameter, and {@code subcommand} is a subcommand of this command.
      * @return {@code true} when options can have parameter values that match subcommand names or aliases, {@code false} when such values should be rejected with a missing parameter exception
-     * @since 4.7.0
+     * @since 4.7.1-SNAPSHOT
      * @see ParserSpec#allowSubcommandsAsOptionParameters()
      */
     public boolean isAllowSubcommandsAsOptionParameters() {
@@ -994,7 +994,7 @@ public class CommandLine {
      * subcommands, call the setter last, after adding subcommands.</p>
      * @param newValue the new setting. When {@code true}, options can have parameter values that match subcommand names or aliases, when {@code false}, such values are rejected with a missing parameter exception
      * @return this {@code CommandLine} object, to allow method chaining
-     * @since 4.7.0
+     * @since 4.7.1-SNAPSHOT
      * @see ParserSpec#allowSubcommandsAsOptionParameters(boolean)
      */
     public CommandLine setAllowSubcommandsAsOptionParameters(boolean newValue) {
@@ -1009,7 +1009,7 @@ public class CommandLine {
      * The default is {@code false}, so by default input like {@code -x=--some-option} is rejected if {@code -x} is an option that takes a String parameter, and {@code --some-option} is an option of this command.
      * <p>This method only considers actual options of this command, as opposed to {@link #isUnmatchedOptionsAllowedAsOptionParameters()}, which considers values that <em>resemble</em> options.</p>
      * @return {@code true} when options can have parameter values that match the name of an option in this command, {@code false} when such values should be rejected with a missing parameter exception
-     * @since 4.7.0
+     * @since 4.7.1-SNAPSHOT
      * @see #isUnmatchedOptionsAllowedAsOptionParameters()
      * @see ParserSpec#allowOptionsAsOptionParameters()
      */
@@ -1029,7 +1029,7 @@ public class CommandLine {
      * subcommands, call the setter last, after adding subcommands.</p>
      * @param newValue the new setting. When {@code true}, options can have parameter values that match the name of an option in this command, when {@code false}, such values are rejected with a missing parameter exception
      * @return this {@code CommandLine} object, to allow method chaining
-     * @since 4.7.0
+     * @since 4.7.1-SNAPSHOT
      * @see #setUnmatchedOptionsAllowedAsOptionParameters(boolean)
      * @see ParserSpec#allowOptionsAsOptionParameters(boolean)
      */
@@ -3629,7 +3629,7 @@ public class CommandLine {
     private static boolean isBoolean(Class<?>[] types) { return isBoolean(types[0]) || (isOptional(types[0]) && isBoolean(types[1])); }
     private static boolean isBoolean(Class<?> type) { return type == Boolean.class || type == Boolean.TYPE; }
     private static CommandLine toCommandLine(Object obj, IFactory factory) { return obj instanceof CommandLine ? (CommandLine) obj : new CommandLine(obj, factory, false);}
-    private static boolean isMultiValue(Class<?> cls) { return cls.isArray() || Collection.class.isAssignableFrom(cls) || Map.class.isAssignableFrom(cls); }
+    private static boolean isMultiValue(Class<?> cls) { return (cls.isArray() && cls != char[].class) || Collection.class.isAssignableFrom(cls) || Map.class.isAssignableFrom(cls); }
     private static boolean isOptional(Class<?> cls) { return cls != null && "java.util.Optional".equals(cls.getName()); } // #1108
     private static Object getOptionalEmpty() throws Exception {
         return Class.forName("java.util.Optional").getMethod("empty").invoke(null);
@@ -4737,7 +4737,7 @@ public class CommandLine {
          * Note that picocli cannot reliably detect declaration order in commands that have both {@code @Option}-annotated methods and {@code @Option}-annotated fields.
          * The default ({@code true}) is to sort alphabetically.
          * @return whether options in the synopsis should be shown in alphabetic order.
-         * @since 4.7.0 */
+         * @since 4.7.1-SNAPSHOT */
         boolean sortSynopsis() default true;
 
         /** Prefix required options with this character in the options list. The default is no marker: the synopsis
@@ -5033,7 +5033,7 @@ public class CommandLine {
      * </pre>
      *
      * The {@link #convert(String)} method of this class always throws an UnsupportedOperationException.
-     * @since 4.7.0
+     * @since 4.7.1-SNAPSHOT
      */
     public static final class UseDefaultConverter implements ITypeConverter<Object> {
         /** Always throws UnsupportedOperationException.
@@ -5995,6 +5995,16 @@ public class CommandLine {
          * @since 4.0
          */
         public interface IScope extends IGetter, ISetter {}
+
+        /** This interface provides access to an {@link IScope} instance.
+         * @since 4.7
+         */
+        public interface IScoped {
+            /** Get the {@link IScope} instance.
+             *
+             *  @return {@link IScope} instance */
+            IScope getScope();
+        }
 
         /** Customizable getter for obtaining the current value of an option or positional parameter.
          * When an option or positional parameter is matched on the command line, its getter or setter is invoked to capture the value.
@@ -7000,7 +7010,7 @@ public class CommandLine {
                 mixins.put(interpolator.interpolate(name), mixin);
 
                 initName(interpolator.interpolateCommandName(mixin.name()));
-                // TODO initAliases(mixin.aliases()); // should we?
+                initAliases(mixin.aliases()); // should we?
                 // TODO initCommandHierarchyWithResourceBundle(mixin.usageMessage().messages().resourceBundleBaseName(), );
                 initFrom(mixin);
 
@@ -7445,6 +7455,7 @@ public class CommandLine {
                 }
             }
 
+            void initAliases(String[] aliases)          { if (aliases != null) { this.aliases.addAll(Arrays.asList(aliases));}}
             void initName(String value)                 { if (initializable(name, value, DEFAULT_COMMAND_NAME))                           {name = value;} }
             void initHelpCommand(boolean value)         { if (initializable(isHelpCommand, value, DEFAULT_IS_HELP_COMMAND))               {isHelpCommand = value;} }
             void initVersion(String[] value)            { if (initializable(version, value, UsageMessageSpec.DEFAULT_MULTI_LINE))         {version = value.clone();} }
@@ -8173,7 +8184,7 @@ public class CommandLine {
             public boolean sortOptions() { return (sortOptions == null) ? DEFAULT_SORT_OPTIONS : sortOptions; }
 
             /** Returns whether the options in the synopsis should be sorted alphabetically.
-             * @since 4.7.0 */
+             * @since 4.7.1-SNAPSHOT */
             public boolean sortSynopsis() { return (sortSynopsis == null) ? DEFAULT_SORT_SYNOPSIS : sortSynopsis; }
 
             /** Returns the character used to prefix required options in the options list. */
@@ -8322,7 +8333,7 @@ public class CommandLine {
 
             /** Sets whether the options in the synopsis should be sorted alphabetically.
              * @return this UsageMessageSpec for method chaining
-             * @since 4.7.0 */
+             * @since 4.7.1-SNAPSHOT */
             public UsageMessageSpec sortSynopsis(boolean newValue) {sortSynopsis = newValue; return this;}
 
             /** Sets the character used to prefix required options in the options list.
@@ -8586,11 +8597,11 @@ public class CommandLine {
             public boolean unmatchedOptionsAllowedAsOptionParameters() { return unmatchedOptionsAllowedAsOptionParameters; }
             /**
              * @see CommandLine#isAllowSubcommandsAsOptionParameters()
-             * @since 4.7.0 */
+             * @since 4.7.1-SNAPSHOT */
             public boolean allowSubcommandsAsOptionParameters() { return allowSubcommandsAsOptionParameters; }
             /**
              * @see CommandLine#isAllowOptionsAsOptionParameters()
-             * @since 4.7.0 */
+             * @since 4.7.1-SNAPSHOT */
             public boolean allowOptionsAsOptionParameters() { return allowOptionsAsOptionParameters; }
             private boolean splitFirst()                       { return limitSplit(); }
             /** Returns true if arguments should be split first before any further processing and the number of
@@ -8650,11 +8661,11 @@ public class CommandLine {
             public ParserSpec unmatchedOptionsArePositionalParams(boolean unmatchedOptionsArePositionalParams) { this.unmatchedOptionsArePositionalParams = unmatchedOptionsArePositionalParams; return this; }
             /**
              * @see CommandLine#setAllowSubcommandsAsOptionParameters(boolean)
-             * @since 4.7.0 */
+             * @since 4.7.1-SNAPSHOT */
             public ParserSpec allowSubcommandsAsOptionParameters(boolean allowSubcommandsAsOptionParameters) { this.allowSubcommandsAsOptionParameters = allowSubcommandsAsOptionParameters; return this; }
             /**
              * @see CommandLine#setAllowOptionsAsOptionParameters(boolean)
-             * @since 4.7.0 */
+             * @since 4.7.1-SNAPSHOT */
             public ParserSpec allowOptionsAsOptionParameters(boolean allowOptionsAsOptionParameters) { this.allowOptionsAsOptionParameters = allowOptionsAsOptionParameters; return this; }
             /** Sets whether exceptions during parsing should be collected instead of thrown.
              * Multiple errors may be encountered during parsing. These can be obtained from {@link ParseResult#errors()}.
@@ -8871,7 +8882,7 @@ public class CommandLine {
             }
 
             /** Returns the original value of the option's required attribute, regardless of whether the option is used in an exclusive group or not.
-             * @since 4.7.0
+             * @since 4.7.1-SNAPSHOT
              * @see Option#required() */
             public boolean originallyRequired(){
                 return originallyRequired;
@@ -9167,8 +9178,25 @@ public class CommandLine {
              * @since 4.3 */
             public ScopeType scopeType() { return scopeType; }
 
+            /** Check whether the {@link #getValue()} method is able to get an actual value from the current {@link #getter()}.
+             * @since 4.7 */
+            public boolean isValueGettable() {
+                if (getter instanceof IScoped) {
+                    IScoped scoped = (IScoped) getter;
+                    IScope scope = scoped.getScope();
+                    if ( scope==null ) { return false; }
+                    try {
+                        return scope.get() != null;
+                    } catch (Exception e) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+
             /** Returns the current value of this argument. Delegates to the current {@link #getter()}. */
             public <T> T getValue() throws PicocliException {
+                if ( !isValueGettable() ) { return null; }
                 try {
                     return getter.<T>get();
                 } catch (PicocliException ex) { throw ex;
@@ -11085,12 +11113,15 @@ public class CommandLine {
         public interface ITypeInfo {
             /** Returns {@code true} if {@link #getType()} is {@code boolean} or {@code java.lang.Boolean}. */
             boolean isBoolean();
-            /** Returns {@code true} if {@link #getType()} is an array, map or collection. */
+            /** Returns {@code true} if {@link #getType()} is an array, map or collection.
+             * Note that from picocli 4.7, {@code char[]} arrays are considered single values (similar to String) and are not treated as arrays.*/
             boolean isMultiValue();
 
             /** Returns {@code true} if {@link #getType()} is {@code java.util.Optional}
              * @since 4.6 */
             boolean isOptional();
+            /** Returns {@code true} if this type is an array multi-value type.
+             * Note that from picocli 4.7, {@code char[]} arrays are considered single values (similar to String) and are not treated as arrays.*/
             boolean isArray();
             boolean isCollection();
             boolean isMap();
@@ -11164,8 +11195,8 @@ public class CommandLine {
                 }
                 if (auxiliaryTypes == null || auxiliaryTypes.length == 0) {
                     if (type.isArray()) {
-                        if (interactive && type.equals(char[].class)) {
-                            auxiliaryTypes = new Class<?>[]{char[].class};
+                        if (type.equals(char[].class)) {
+                            auxiliaryTypes = new Class<?>[]{char[].class}; // TODO is this still needed?
                         } else {
                             auxiliaryTypes = new Class<?>[]{type.getComponentType()};
                         }
@@ -11252,7 +11283,7 @@ public class CommandLine {
 
             public boolean isBoolean()            { return auxiliaryTypes[0] == boolean.class || auxiliaryTypes[0] == Boolean.class; }
             public boolean isMultiValue()         { return CommandLine.isMultiValue(type); }
-            public boolean isArray()              { return type.isArray(); }
+            public boolean isArray()              { return type.isArray() && type != char[].class; }
             public boolean isCollection()         { return Collection.class.isAssignableFrom(type); }
             public boolean isMap()                { return Map.class.isAssignableFrom(type); }
             public boolean isOptional()           { return CommandLine.isOptional(type); }
@@ -11568,6 +11599,7 @@ public class CommandLine {
          * @see CommandSpec#qualifiedName(String)
          * @since 3.6 */
         public static class Messages {
+            private static boolean loadBundles = true;
             private final CommandSpec spec;
             private final String bundleBaseName;
             private final ResourceBundle rb;
@@ -11589,7 +11621,19 @@ public class CommandLine {
                 }
             }
             private static ResourceBundle createBundle(String baseName) {
-                return ResourceBundle.getBundle(baseName);
+                if (loadBundles) {
+                    return ResourceBundle.getBundle(baseName);
+                } else {
+                    return new ResourceBundle() {
+                        @Override
+                        protected Object handleGetObject(String key) {
+                            return null;
+                        }
+                        @Override
+                        public Enumeration<String> getKeys() {
+                            return Collections.emptyEnumeration();                       }
+                    };
+                }
             }
             private static String extractName(ResourceBundle rb) {
                 try { // ResourceBundle.getBaseBundleName was introduced in Java 8
@@ -11616,6 +11660,18 @@ public class CommandLine {
                 Set<String> keys = new LinkedHashSet<String>();
                 for (Enumeration<String> k = rb.getKeys(); k.hasMoreElements(); keys.add(k.nextElement()));
                 return keys;
+            }
+            
+            /**
+             * During annotation processing, resource bundles may not be available on the
+             * classpath and thereby cause failures. This method allows for disabling
+             * loading of resource bundles during annotation processing, preventing such
+             * errors. 
+             * @since 4.7.1
+             * @param loadBundles true if bundles should be loaded (default), false if bundles should not be loaded
+             */
+            public static final void setLoadBundles(boolean loadBundles) {
+            	Messages.loadBundles = loadBundles;
             }
 
             /** Returns a copy of the specified Messages object with the CommandSpec replaced by the specified one.
@@ -12018,11 +12074,14 @@ public class CommandLine {
             }
         }
 
-        static class FieldBinding implements IGetter, ISetter {
+        static class FieldBinding implements IGetter, ISetter, IScoped {
             private final IScope scope;
             private final Field field;
             FieldBinding(Object scope, Field field) { this(ObjectScope.asScope(scope), field); }
             FieldBinding(IScope scope, Field field) { this.scope = scope; this.field = field; }
+            public IScope getScope() {
+                return scope;
+            }
             public <T> T get() throws PicocliException {
                 Object obj;
                 try { obj = scope.get(); }
@@ -12051,7 +12110,7 @@ public class CommandLine {
                         field.getDeclaringClass().getName(), field.getName());
             }
         }
-        static class MethodBinding implements IGetter, ISetter {
+        static class MethodBinding implements IGetter, ISetter, IScoped {
             private final IScope scope;
             private final Method method;
             private final CommandSpec spec;
@@ -12060,6 +12119,9 @@ public class CommandLine {
                 this.scope = scope;
                 this.method = method;
                 this.spec = spec;
+            }
+            public IScope getScope() {
+                return scope;
             }
             @SuppressWarnings("unchecked") public <T> T get() { return (T) currentValue; }
             public <T> T set(T value) throws PicocliException {
@@ -14032,11 +14094,11 @@ public class CommandLine {
             }
 
             int result;
-            if (argSpec.type().isArray() && !(argSpec.interactive() && argSpec.type() == char[].class)) {
+            if (argSpec.typeInfo().isArray()) {
                 result = applyValuesToArrayField(argSpec, negated, lookBehind, alreadyUnquoted, arity, workingStack, initialized, argDescription);
-            } else if (Collection.class.isAssignableFrom(argSpec.type())) {
+            } else if (argSpec.typeInfo().isCollection()) {
                 result = applyValuesToCollectionField(argSpec, negated, lookBehind, alreadyUnquoted, arity, workingStack, initialized, argDescription);
-            } else if (Map.class.isAssignableFrom(argSpec.type())) {
+            } else if (argSpec.typeInfo().isMap()) {
                 result = applyValuesToMapField(argSpec, lookBehind, alreadyUnquoted, arity, workingStack, initialized, argDescription);
             } else {
                 result = applyValueToSingleValuedField(argSpec, negated, lookBehind, alreadyUnquoted, arity, workingStack, initialized, argDescription);
@@ -14096,7 +14158,7 @@ public class CommandLine {
                     // boolean option with arity = 0..1 or 0..*: value MAY be a param
                     boolean optionalWithBooleanValue = arity.max > 0 && ("true".equalsIgnoreCase(value) || "false".equalsIgnoreCase(value));
                     if (!optionalWithBooleanValue && lookBehind != LookBehind.ATTACHED_WITH_SEPARATOR) { // if attached, try converting the value to boolean (and fail if invalid value)
-                        Boolean defaultValue = booleanValue(argSpec, argSpec.calcDefaultValue(true)); // #712 flip the default value
+                        boolean defaultValue = booleanValue(argSpec, argSpec.calcDefaultValue(true)); // #712 flip the default value
                         if (argSpec.isOption() && !empty(((OptionSpec) argSpec).fallbackValue())) {
                             defaultValue = !booleanValue(argSpec, ((OptionSpec) argSpec).fallbackValue()); // #754 Allow boolean options to get value from fallback instead of defaultProvider
                         }
@@ -15721,6 +15783,7 @@ public class CommandLine {
                 Text name = colorScheme.optionText(nameString);
                 Text param = parameterLabelRenderer.renderParameterLabel(option, colorScheme.ansi(), colorScheme.optionParamStyles);
                 text = text.concat(prefix);
+
                 if (option.required()) { // e.g., -x=VAL
                     text = text.concat(name).concat(param).concat("");
                     if (option.isMultiValue()) { // e.g., -x=VAL [-x=VAL]...
@@ -18242,7 +18305,7 @@ public class CommandLine {
     }
 
     /** Enumerates over the trace level values for filtering which internal debug statements should be printed.
-     * @since 4.7.0 */
+     * @since 4.7.1-SNAPSHOT */
     public enum TraceLevel { OFF, WARN, INFO, DEBUG;
         /** Returns whether messages at the specified {@code other} trace level would be printed for the current trace level. */
         public boolean isEnabled(TraceLevel other) { return ordinal() >= other.ordinal(); }
@@ -18255,7 +18318,7 @@ public class CommandLine {
 
     /** Utility class for printing internal debug statements.
      * @see CommandLine#tracer()
-     * @since 4.7.0 */
+     * @since 4.7.1-SNAPSHOT */
     public static final class Tracer {
         private PrintStream stream = System.err;
         private TraceLevel level = TraceLevel.lookup(System.getProperty("picocli.trace"));
@@ -18298,7 +18361,7 @@ public class CommandLine {
     }
     /** Returns the {@code Tracer} used internally for printing internal debug statements.
      * @return the {@code Tracer} used internally for printing internal debug statements
-     * @since 4.7.0 */
+     * @since 4.7.1-SNAPSHOT */
     public static Tracer tracer() {
         // TRACER is a static variable.
         // Refresh to pick up changes to the system property after the CommandLine class was loaded.

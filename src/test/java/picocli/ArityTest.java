@@ -480,14 +480,47 @@ public class ArityTest {
     @Test
     public void testArrayOptionArityNConsumeAllArguments() {
         class ArrayOptionArityNAndParameters {
-            @Parameters char[] charParams;
+            @Parameters int[] intParams;
+            @Option(names = "-ints", arity = "*") int[] intOptions;
+        }
+        ArrayOptionArityNAndParameters
+                params = CommandLine.populateCommand(new ArrayOptionArityNAndParameters(), "-ints 1 2 3 4".split(" "));
+        assertArrayEquals(Arrays.toString(params.intOptions),
+                new int[] {1, 2, 3, 4}, params.intOptions);
+        assertArrayEquals(null, params.intParams);
+    }
+
+    @Test
+    public void testCharacterArrayOptionArityNConsumeAllArguments() {
+        class ArrayOptionArityNAndParameters {
+            @Parameters Character[] cParams;
+            @Option(names = "-chars", arity = "*") Character[] cOptions;
+        }
+        ArrayOptionArityNAndParameters
+            params = CommandLine.populateCommand(new ArrayOptionArityNAndParameters(), "-chars a b c d".split(" "));
+        assertArrayEquals(Arrays.toString(params.cOptions),
+            new Character[] {'a', 'b', 'c', 'd'}, params.cOptions);
+        assertArrayEquals(null, params.cParams);
+    }
+
+    @Test
+    public void testCharArrayOptionArityNConsumeSingleArgDisallowsMultiArgs() {
+        class ArrayOptionArityNAndParameters {
+            @Parameters(arity = "0..1") char[] charParams;
             @Option(names = "-chars", arity = "*") char[] charOptions;
         }
         ArrayOptionArityNAndParameters
-                params = CommandLine.populateCommand(new ArrayOptionArityNAndParameters(), "-chars a b c d".split(" "));
+            params = CommandLine.populateCommand(new ArrayOptionArityNAndParameters(), "-chars abcd".split(" "));
         assertArrayEquals(Arrays.toString(params.charOptions),
-                new char[] {'a', 'b', 'c', 'd'}, params.charOptions);
+            new char[] {'a', 'b', 'c', 'd'}, params.charOptions);
         assertArrayEquals(null, params.charParams);
+
+        try {
+            CommandLine.populateCommand(new ArrayOptionArityNAndParameters(), "-chars a b c d".split(" "));
+            fail("expected MissingParameterException");
+        } catch (UnmatchedArgumentException ex) {
+            assertEquals("Unmatched arguments from index 3: 'c', 'd'", ex.getMessage());
+        }
     }
     @Test
     public void testMissingRequiredParams() {
@@ -1015,19 +1048,82 @@ public class ArityTest {
     @Test
     public void testArrayOptionWithoutArityConsumesOneArgument() { // #192
         class OptionsNoArityAndParameters {
-            @Parameters char[] charParams;
+            @Parameters int[] intParams;
+            @Option(names = "-ints") int[] intOptions;
+        }
+        OptionsNoArityAndParameters
+                params = CommandLine.populateCommand(new OptionsNoArityAndParameters(), "-ints 1 2 3 4".split(" "));
+        assertArrayEquals(Arrays.toString(params.intOptions),
+                new int[] {1, }, params.intOptions);
+        assertArrayEquals(Arrays.toString(params.intParams), new int[] {2, 3, 4}, params.intParams);
+
+        // repeated occurrence
+        params = CommandLine.populateCommand(new OptionsNoArityAndParameters(), "-ints 1 -ints 2 3 4".split(" "));
+        assertArrayEquals(Arrays.toString(params.intOptions),
+                new int[] {1, 2, }, params.intOptions);
+        assertArrayEquals(Arrays.toString(params.intParams), new int[] {3, 4}, params.intParams);
+
+        try {
+            CommandLine.populateCommand(new OptionsNoArityAndParameters(), "-ints".split(" "));
+            fail("expected MissingParameterException");
+        } catch (MissingParameterException ok) {
+            assertEquals("Missing required parameter for option '-ints' (<intOptions>)", ok.getMessage());
+            assertEquals(1, ok.getMissing().size());
+            assertTrue(ok.getMissing().get(0).toString(), ok.getMissing().get(0) instanceof Model.OptionSpec);
+        }
+    }
+
+    @Test
+    public void testCharacterArrayOptionWithoutArityConsumesOneArgument() { // #192
+        class OptionsNoArityAndParameters {
+            @Parameters Character[] cParams;
+            @Option(names = "-chars") Character[] cOptions;
+        }
+        OptionsNoArityAndParameters
+            params = CommandLine.populateCommand(new OptionsNoArityAndParameters(), "-chars 1 2 3 4".split(" "));
+        assertArrayEquals(Arrays.toString(params.cOptions),
+            new Character[] {'1', }, params.cOptions);
+        assertArrayEquals(Arrays.toString(params.cParams), new Character[] {'2', '3', '4'}, params.cParams);
+
+        // repeated occurrence
+        params = CommandLine.populateCommand(new OptionsNoArityAndParameters(), "-chars 1 -chars 2 3 4".split(" "));
+        assertArrayEquals(Arrays.toString(params.cOptions),
+            new Character[] {'1', '2', }, params.cOptions);
+        assertArrayEquals(Arrays.toString(params.cParams), new Character[] {'3', '4'}, params.cParams);
+
+        try {
+            CommandLine.populateCommand(new OptionsNoArityAndParameters(), "-chars".split(" "));
+            fail("expected MissingParameterException");
+        } catch (MissingParameterException ok) {
+            assertEquals("Missing required parameter for option '-chars' (<cOptions>)", ok.getMessage());
+            assertEquals(1, ok.getMissing().size());
+            assertTrue(ok.getMissing().get(0).toString(), ok.getMissing().get(0) instanceof Model.OptionSpec);
+        }
+    }
+
+    @Test
+    public void testCharArrayOption() { // #192
+        class OptionsNoArityAndParameters {
+            @Parameters(arity = "0..1") char[] charParams;
             @Option(names = "-chars") char[] charOptions;
         }
         OptionsNoArityAndParameters
-                params = CommandLine.populateCommand(new OptionsNoArityAndParameters(), "-chars a b c d".split(" "));
+            params = CommandLine.populateCommand(new OptionsNoArityAndParameters(), "-chars abcd".split(" "));
         assertArrayEquals(Arrays.toString(params.charOptions),
-                new char[] {'a', }, params.charOptions);
-        assertArrayEquals(Arrays.toString(params.charParams), new char[] {'b', 'c', 'd'}, params.charParams);
+            new char[] {'a', 'b', 'c', 'd'}, params.charOptions);
+        assertArrayEquals(Arrays.toString(params.charParams), null, params.charParams);
 
-        // repeated occurrence
-        params = CommandLine.populateCommand(new OptionsNoArityAndParameters(), "-chars a -chars b c d".split(" "));
+        // repeated occurrence disallowed
+        try {
+            CommandLine.populateCommand(new OptionsNoArityAndParameters(), "-chars ab -chars cd".split(" "));
+            fail("Expected exception");
+        } catch (OverwrittenOptionException ex) {
+            assertEquals("option '-chars' (<charOptions>) should be specified only once", ex.getMessage());
+        }
+
+        params = CommandLine.populateCommand(new OptionsNoArityAndParameters(), "-chars ab cd".split(" "));
         assertArrayEquals(Arrays.toString(params.charOptions),
-                new char[] {'a', 'b', }, params.charOptions);
+            new char[] {'a', 'b', }, params.charOptions);
         assertArrayEquals(Arrays.toString(params.charParams), new char[] {'c', 'd'}, params.charParams);
 
         try {

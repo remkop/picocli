@@ -37,7 +37,7 @@ get command line TAB auto-completion for a picocli-based application running in 
 <dependency>
     <groupId>info.picocli</groupId>
     <artifactId>picocli-shell-jline2</artifactId>
-    <version>4.6.3</version>
+    <version>4.7.0</version>
 </dependency>
 ```
 
@@ -136,7 +136,7 @@ public class Example {
      * Command that optionally reads and password interactively.
      */
     @Command(name = "pwd", mixinStandardHelpOptions = true,
-            description = "Interactivly reads a password", version = "1.0")
+            description = "Interactively reads a password", version = "1.0")
     static class ReadInteractive implements Callable<Void> {
         
         @Option(names = {"-p"}, parameterConsumer = InteractiveParameterConsumer.class)

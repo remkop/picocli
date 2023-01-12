@@ -55,12 +55,12 @@ Substrate VM is the name for the runtime components (like the deoptimizer, garba
 === Native Image Limitations
 
 To keep the implementation small and concise, and also to allow aggressive ahead-of-time optimizations, Native Image does not support all features of Java.
-The full set of https://www.graalvm.org/reference-manual/native-image/Limitations/[limitations] is documented in the GraalVM reference manual.
+The https://www.graalvm.org/latest/reference-manual/native-image/metadata/Compatibility/#features-that-may-operate-differently-in-a-native-image[features] that may operate differently are documented in the GraalVM reference manual.
 
 Two limitations are of particular interest:
 
-* https://www.graalvm.org/reference-manual/native-image/Limitations/#reflection[reflection]
-* https://www.graalvm.org/reference-manual/native-image/Resources/[resources]
+* https://www.graalvm.org/latest/reference-manual/native-image/dynamic-features/Reflection/[reflection]
+* https://www.graalvm.org/latest/reference-manual/native-image/dynamic-features/Resources/[resources]
 
 Basically, to create a self-contained binary, the native image compiler needs to know up-front all the classes of your application, their dependencies, and the resources they use. Reflection and resource bundles often require configuration. We will see an example of this later on.
 
@@ -198,7 +198,7 @@ Next, let’s take a look at turning it into a native executable.
 
 === Reflection Configuration
 
-We mentioned earlier that the native image compiler has some limitations: reflection is supported but https://www.graalvm.org/reference-manual/native-image/BuildConfiguration/[requires configuration].
+We mentioned earlier that the native image compiler has some limitations: reflection is supported but https://www.graalvm.org/latest/reference-manual/native-image/overview/BuildConfiguration/[requires configuration].
 
 This impacts picocli-based applications: at runtime, picocli uses reflection to discover any `@Command`-annotated subcommands, and the `@Option` and `@Parameters`-annotated command options and positional parameters.
 
@@ -239,7 +239,7 @@ This quickly becomes quite cumbersome for utilities with many options, but fortu
 The `picocli-codegen` module includes an annotation processor that can build a model from the picocli annotations at compile time rather than at runtime.
 
 The annotation processor generates Graal configuration files under `META-INF/native-image/picocli-generated/$project` during compilation, to be included in the application jar.
-This includes configuration files for https://www.graalvm.org/reference-manual/native-image/Reflection/[reflection], https://www.graalvm.org/reference-manual/native-image/Resources/[resources] and https://www.graalvm.org/reference-manual/native-image/DynamicProxy/[dynamic proxies].
+This includes configuration files for https://www.graalvm.org/latest/reference-manual/native-image/dynamic-features/Reflection/[reflection], https://www.graalvm.org/latest/reference-manual/native-image/dynamic-features/Resources/[resources] and https://www.graalvm.org/latest/reference-manual/native-image/dynamic-features/DynamicProxy/[dynamic proxies].
 By embedding these configuration files, your jar is instantly Graal-enabled.
 In most cases no further configuration is needed when generating a native image.
 

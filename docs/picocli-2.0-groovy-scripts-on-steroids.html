@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="generator" content="Asciidoctor 2.0.16">
+<meta name="generator" content="Asciidoctor 2.0.17">
 <title>Picocli 2.0: Groovy Scripts on Steroids</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
@@ -193,7 +193,8 @@ body.toc2.toc-right{padding-left:0;padding-right:20em}}
 #content h1>a.link:hover,h2>a.link:hover,h3>a.link:hover,#toctitle>a.link:hover,.sidebarblock>.content>.title>a.link:hover,h4>a.link:hover,h5>a.link:hover,h6>a.link:hover{color:#a53221}
 details,.audioblock,.imageblock,.literalblock,.listingblock,.stemblock,.videoblock{margin-bottom:1.25em}
 details{margin-left:1.25rem}
-details>summary{cursor:pointer;display:block;position:relative;line-height:1.6;margin-bottom:.625rem;-webkit-tap-highlight-color:transparent}
+details>summary{cursor:pointer;display:block;position:relative;line-height:1.6;margin-bottom:.625rem;outline:none;-webkit-tap-highlight-color:transparent}
+details>summary::-webkit-details-marker{display:none}
 details>summary::before{content:"";border:solid transparent;border-left:solid;border-width:.3em 0 .3em .5em;position:absolute;top:.5em;left:-1.25rem;transform:translateX(15%)}
 details[open]>summary::before{border:solid transparent;border-top:solid;border-width:.5em .3em 0;transform:translateY(15%)}
 details>summary::after{content:"";width:1.25rem;height:1em;position:absolute;top:.3em;left:-1.25rem}
@@ -235,9 +236,8 @@ pre.prettyprint li:not(:first-child) code[data-lang]::before{display:none}
 table.linenotable{border-collapse:separate;border:0;margin-bottom:0;background:none}
 table.linenotable td[class]{color:inherit;vertical-align:top;padding:0;line-height:inherit;white-space:normal}
 table.linenotable td.code{padding-left:.75em}
-table.linenotable td.linenos{border-right:1px solid;opacity:.35;padding-right:.5em}
-pre.pygments .lineno{border-right:1px solid;opacity:.35;display:inline-block;margin-right:.75em}
-pre.pygments .lineno::before{content:"";margin-right:-.125em}
+table.linenotable td.linenos,pre.pygments .linenos{border-right:1px solid;opacity:.35;padding-right:.5em;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}
+pre.pygments span.linenos{display:inline-block;margin-right:.75em}
 .quoteblock{margin:0 1em 1.25em 1.5em;display:table}
 .quoteblock:not(.excerpt)>.title{margin-left:-1.5em;margin-bottom:.75em}
 .quoteblock blockquote,.quoteblock p{color:rgba(0,0,0,.85);font-size:1.15rem;line-height:1.75;word-spacing:.1em;letter-spacing:0;font-style:italic;text-align:justify}
@@ -274,7 +274,7 @@ table.frame-none>colgroup+*>:first-child>*,table.frame-sides>colgroup+*>:first-c
 table.frame-none>:last-child>:last-child>*,table.frame-sides>:last-child>:last-child>*{border-bottom-width:0}
 table.frame-none>*>tr>:first-child,table.frame-ends>*>tr>:first-child{border-left-width:0}
 table.frame-none>*>tr>:last-child,table.frame-ends>*>tr>:last-child{border-right-width:0}
-table.stripes-all tr,table.stripes-odd tr:nth-of-type(odd),table.stripes-even tr:nth-of-type(even),table.stripes-hover tr:hover{background:#f8f8f7}
+table.stripes-all>*>tr,table.stripes-odd>*>tr:nth-of-type(odd),table.stripes-even>*>tr:nth-of-type(even),table.stripes-hover>*>tr:hover{background:#f8f8f7}
 th.halign-left,td.halign-left{text-align:left}
 th.halign-right,td.halign-right{text-align:right}
 th.halign-center,td.halign-center{text-align:center}
@@ -290,10 +290,11 @@ ol{margin-left:1.75em}
 ul li ol{margin-left:1.5em}
 dl dd{margin-left:1.125em}
 dl dd:last-child,dl dd:last-child>:last-child{margin-bottom:0}
-ol>li p,ul>li p,ul dd,ol dd,.olist .olist,.ulist .ulist,.ulist .olist,.olist .ulist{margin-bottom:.625em}
+li p,ul dd,ol dd,.olist .olist,.ulist .ulist,.ulist .olist,.olist .ulist{margin-bottom:.625em}
 ul.checklist,ul.none,ol.none,ul.no-bullet,ol.no-bullet,ol.unnumbered,ul.unstyled,ol.unstyled{list-style-type:none}
 ul.no-bullet,ol.no-bullet,ol.unnumbered{margin-left:.625em}
 ul.unstyled,ol.unstyled{margin-left:0}
+li>p:empty:only-child::before{content:"";display:inline-block}
 ul.checklist>li>p:first-child{margin-left:-1em}
 ul.checklist>li>p:first-child>.fa-square-o:first-child,ul.checklist>li>p:first-child>.fa-check-square-o:first-child{width:1.25em;font-size:.8em;position:relative;bottom:.125em}
 ul.checklist>li>p:first-child>input[type=checkbox]:first-child{margin-right:.25em}
@@ -336,8 +337,6 @@ sup.footnote a:active,sup.footnoteref a:active{text-decoration:underline}
 #footnotes .footnote a:first-of-type{font-weight:bold;text-decoration:none;margin-left:-1.05em}
 #footnotes .footnote:last-of-type{margin-bottom:0}
 #content #footnotes{margin-top:-.625em;margin-bottom:0;padding:.75em 0}
-.gist .file-data>table{border:0;background:#fff;width:100%;margin-bottom:0}
-.gist .file-data>table td.line-data{width:99%}
 div.unbreakable{page-break-inside:avoid}
 .big{font-size:larger}
 .small{font-size:smaller}
@@ -438,18 +437,18 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </style>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 <style>
-/* Stylesheet for CodeRay to match GitHub theme | MIT License | http://foundation.zurb.com */
+/*! Stylesheet for CodeRay to loosely match GitHub themes | MIT License */
 pre.CodeRay{background:#f7f7f8}
-.CodeRay .line-numbers{border-right:1px solid currentColor;opacity:.35;padding:0 .5em 0 0}
+.CodeRay .line-numbers{border-right:1px solid;opacity:.35;padding:0 .5em 0 0;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}
 .CodeRay span.line-numbers{display:inline-block;margin-right:.75em}
 .CodeRay .line-numbers strong{color:#000}
 table.CodeRay{border-collapse:separate;border:0;margin-bottom:0;background:none}
 table.CodeRay td{vertical-align:top;line-height:inherit}
 table.CodeRay td.line-numbers{text-align:right}
 table.CodeRay td.code{padding:0 0 0 .75em}
-.CodeRay .debug{color:#fff !important;background:#000080 !important}
+.CodeRay .debug{color:#fff!important;background:navy!important}
 .CodeRay .annotation{color:#007}
-.CodeRay .attribute-name{color:#000080}
+.CodeRay .attribute-name{color:navy}
 .CodeRay .attribute-value{color:#700}
 .CodeRay .binary{color:#509}
 .CodeRay .comment{color:#998;font-style:italic}
@@ -458,7 +457,7 @@ table.CodeRay td.code{padding:0 0 0 .75em}
 .CodeRay .char .delimiter{color:#039}
 .CodeRay .class{color:#458;font-weight:bold}
 .CodeRay .complex{color:#a08}
-.CodeRay .constant,.CodeRay .predefined-constant{color:#008080}
+.CodeRay .constant,.CodeRay .predefined-constant{color:teal}
 .CodeRay .color{color:#099}
 .CodeRay .class-variable{color:#369}
 .CodeRay .decorator{color:#b0b}
@@ -473,7 +472,7 @@ table.CodeRay td.code{padding:0 0 0 .75em}
 .CodeRay .exception{color:inherit}
 .CodeRay .filename{color:#099}
 .CodeRay .function{color:#900;font-weight:bold}
-.CodeRay .global-variable{color:#008080}
+.CodeRay .global-variable{color:teal}
 .CodeRay .hex{color:#058}
 .CodeRay .integer,.CodeRay .float{color:#099}
 .CodeRay .include{color:#555}
@@ -484,7 +483,7 @@ table.CodeRay td.code{padding:0 0 0 .75em}
 .CodeRay .inline-delimiter{color:#d14}
 .CodeRay .important{color:#555;font-weight:bold}
 .CodeRay .interpreted{color:#b2b}
-.CodeRay .instance-variable{color:#008080}
+.CodeRay .instance-variable{color:teal}
 .CodeRay .label{color:#970}
 .CodeRay .local-variable{color:#963}
 .CodeRay .octal{color:#40e}
@@ -494,7 +493,7 @@ table.CodeRay td.code{padding:0 0 0 .75em}
 .CodeRay .directive{font-weight:bold}
 .CodeRay .type{font-weight:bold}
 .CodeRay .predefined-type{color:inherit}
-.CodeRay .reserved,.CodeRay .keyword {color:#000;font-weight:bold}
+.CodeRay .reserved,.CodeRay .keyword{color:#000;font-weight:bold}
 .CodeRay .key{color:#808}
 .CodeRay .key .delimiter{color:#606}
 .CodeRay .key .char{color:#80f}
@@ -514,7 +513,7 @@ table.CodeRay td.code{padding:0 0 0 .75em}
 .CodeRay .symbol{color:#990073}
 .CodeRay .symbol .content{color:#a60}
 .CodeRay .symbol .delimiter{color:#630}
-.CodeRay .tag{color:#008080}
+.CodeRay .tag{color:teal}
 .CodeRay .tag-special{color:#d70}
 .CodeRay .variable{color:#036}
 .CodeRay .insert{background:#afa}
@@ -607,7 +606,7 @@ $(addBlockSwitches);
 <div id="header">
 <h1>Picocli 2.0: Groovy Scripts on Steroids</h1>
 <div class="details">
-<span id="revnumber">version 4.6.3</span>
+<span id="revnumber">version 4.7.0</span>
 </div>
 </div>
 <div id="content">
@@ -771,14 +770,14 @@ fields with the results. The run method does the following:</p>
 </ul>
 </div>
 <div class="paragraph">
-<p>This behavior can be customized, see the <a href="http://picocli.info/apidocs/picocli/groovy/PicocliBaseScript.html#run--">PicocliBaseScript javadoc</a> for more details.</p>
+<p>This behavior can be customized, see the <a href="http://picocli.info/apidocs-all/info.picocli.groovy/picocli/groovy/PicocliBaseScript.html#run--">PicocliBaseScript javadoc</a> for more details.</p>
 </div>
 <div class="paragraph">
 <p>In addition to changing the script base class, the <code>@PicocliScript</code> annotation also allows Groovy
 scripts to use the <code>@Command</code> annotation directly, without introducing a helper class.
 The picocli parser will look for this annotation on the
 class containing the <code>@Option</code> and <code>@Parameters</code>-annotated fields. The same custom
-<a href="http://picocli.info/apidocs/picocli/groovy/PicocliScriptASTTransformation.html">AST transformation</a>
+<a href="http://picocli.info/apidocs-all/info.picocli.groovy/picocli/groovy/PicocliScriptASTTransformation.html">AST transformation</a>
 that changes the script&#8217;s base class also moves any <code>@Command</code> annotation in the script to this
 transformed class so the picocli parser can pick it up.</p>
 </div>
@@ -886,8 +885,8 @@ In the final version of our example script, most of the code is actually descrip
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 4.6.3<br>
-Last updated 2020-10-08 09:52:07 +0900
+Version 4.7.0<br>
+Last updated 2022-02-28 04:05:51 -0500
 </div>
 </div>
 </body>
