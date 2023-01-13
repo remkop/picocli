@@ -13,10 +13,10 @@ import java.io.Reader;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
-@Command(name = "demo", mixinStandardHelpOptions = true, version = "3.9.3",
-        description = "Demonstrate parsing & type conversion",
-        defaultValueProvider = SimpleDefaultProvider.class)
-public class SimplePropertyDefaultProviderDemo implements Runnable { // ...
+@Command(name = "demo", mixinStandardHelpOptions = true, version = CommandLine.VERSION,
+        description = "Demonstrate property file based custom default provider",
+        defaultValueProvider = MyPropertyDefaultProvider.class)
+public class MyPropertyDefaultProviderDemo implements Runnable { // ...
 
     @Option(names = "-x", description = "Print count. ${DEFAULT-VALUE} by default.")
     int x;
@@ -32,11 +32,11 @@ public class SimplePropertyDefaultProviderDemo implements Runnable { // ...
     }
 
     public static void main(String[] args) {
-        new CommandLine(new SimplePropertyDefaultProviderDemo()).execute(args);
+        new CommandLine(new MyPropertyDefaultProviderDemo()).execute(args);
     }
 }
 
-class PropertyDefaultProvider implements IDefaultValueProvider {
+class MyPropertyDefaultProvider implements IDefaultValueProvider {
     private Properties properties;
 
     @Override
@@ -48,8 +48,9 @@ class PropertyDefaultProvider implements IDefaultValueProvider {
                 properties.load(reader);
             }
         }
-        return argSpec.isOption()
-                ? properties.getProperty(((OptionSpec) argSpec).longestName())
-                : properties.getProperty(argSpec.paramLabel());
+        String key = argSpec.isOption()
+                ? ((OptionSpec) argSpec).longestName()
+                : argSpec.paramLabel();
+        return properties.getProperty(key);
     }
 }

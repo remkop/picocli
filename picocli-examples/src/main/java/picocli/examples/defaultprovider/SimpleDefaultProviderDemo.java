@@ -32,7 +32,7 @@ public class SimpleDefaultProviderDemo implements Runnable { // ...
     }
 
     public static void main(String[] args) {
-        new CommandLine(new SimplePropertyDefaultProviderDemo()).execute(args);
+        new CommandLine(new SimpleDefaultProviderDemo()).execute(args);
     }
 }
 
