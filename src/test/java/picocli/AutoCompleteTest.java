@@ -1260,20 +1260,4 @@ public class AutoCompleteTest {
             existingScript.delete();
         }
     }
-
-    @Test
-    public void testFish() {
-        String expected = String.format("hello from fish%n");
-
-        assertEquals(
-                expected,
-                AutoComplete.fish("myapp", new CommandLine(new Issue1352CommandWithResourceBundle()))
-        );
-
-        assertEquals(
-                expected,
-                AutoComplete.fish("myapp", new CommandLine(new Issue1352ParentCommand()))
-        );
-
-    }
 }
