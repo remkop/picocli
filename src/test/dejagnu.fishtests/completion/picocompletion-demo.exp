@@ -1,0 +1,14 @@
+exp_internal 1
+set timeout 1
+
+# Setup completion and fake command
+send "source ../resources/picocompletion-demo_completion.fish\r"
+expect -re "(.+>)"
+
+send "function picocompletion-demo; echo 'do'; end\r"
+expect -re "(.+>)"
+
+set cmd "picocompletion-demo "
+set test "Tab should show sub1 and sub2 for '${cmd}'"
+set candidates "sub1.*sub1-alias.*sub2.*sub2-alias.*"
+run_completion_test $cmd $test $candidates

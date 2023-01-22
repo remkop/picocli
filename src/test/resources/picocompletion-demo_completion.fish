@@ -1,0 +1,68 @@
+
+# root completion
+set -l root
+complete -c picocompletion-demo -n "not __fish_seen_subcommand_from $root" -l version -d ''
+complete -c picocompletion-demo -n "not __fish_seen_subcommand_from $root" -s V -d ''
+complete -c picocompletion-demo -n "not __fish_seen_subcommand_from $root" -l help -d ''
+complete -c picocompletion-demo -n "not __fish_seen_subcommand_from $root" -s h -d ''
+
+# _picocli_picocompletion_demo completion
+set -l _picocli_picocompletion_demo sub1 sub1-alias sub2 sub2-alias
+complete -c picocompletion-demo -f -n "not __fish_seen_subcommand_from $_picocli_picocompletion_demo" -a sub1 -d 'First level subcommand 1'
+complete -c picocompletion-demo -n "__fish_seen_subcommand_from sub1" -l num -d 'a number'
+complete -c picocompletion-demo -n "__fish_seen_subcommand_from sub1" -l str -d 'a String'
+complete -c picocompletion-demo -n "__fish_seen_subcommand_from sub1" -l candidates -a 'aaa bbb ccc'  -d 'with candidates'
+complete -c picocompletion-demo -f -n "not __fish_seen_subcommand_from $_picocli_picocompletion_demo" -a sub1-alias -d 'First level subcommand 1'
+complete -c picocompletion-demo -n "__fish_seen_subcommand_from sub1-alias" -l num -d 'a number'
+complete -c picocompletion-demo -n "__fish_seen_subcommand_from sub1-alias" -l str -d 'a String'
+complete -c picocompletion-demo -n "__fish_seen_subcommand_from sub1-alias" -l candidates -a 'aaa bbb ccc'  -d 'with candidates'
+complete -c picocompletion-demo -f -n "not __fish_seen_subcommand_from $_picocli_picocompletion_demo" -a sub2 -d 'First level subcommand 2'
+complete -c picocompletion-demo -n "__fish_seen_subcommand_from sub2" -l num2 -d 'another number'
+complete -c picocompletion-demo -n "__fish_seen_subcommand_from sub2" -l directory -d 'a directory'
+complete -c picocompletion-demo -n "__fish_seen_subcommand_from sub2" -s d -d 'a directory'
+complete -c picocompletion-demo -f -n "not __fish_seen_subcommand_from $_picocli_picocompletion_demo" -a sub2-alias -d 'First level subcommand 2'
+complete -c picocompletion-demo -n "__fish_seen_subcommand_from sub2-alias" -l num2 -d 'another number'
+complete -c picocompletion-demo -n "__fish_seen_subcommand_from sub2-alias" -l directory -d 'a directory'
+complete -c picocompletion-demo -n "__fish_seen_subcommand_from sub2-alias" -s d -d 'a directory'
+
+# _picocli_picocompletion_demo_sub2 completion
+set -l _picocli_picocompletion_demo_sub2 subsub1 sub2child1-alias subsub2 sub2child2-alias subsub3 sub2child3-alias
+complete -c picocompletion-demo -f -n "not __fish_seen_subcommand_from $_picocli_picocompletion_demo_sub2" -n '__fish_seen_subcommand_from sub2' -a subsub1 -d 'Second level sub-subcommand 1'
+complete -c picocompletion-demo -n "__fish_seen_subcommand_from subsub1" -n '__fish_seen_subcommand_from sub2' -l host -d 'a host'
+complete -c picocompletion-demo -n "__fish_seen_subcommand_from subsub1" -n '__fish_seen_subcommand_from sub2' -s h -d 'a host'
+complete -c picocompletion-demo -f -n "not __fish_seen_subcommand_from $_picocli_picocompletion_demo_sub2" -n '__fish_seen_subcommand_from sub2' -a sub2child1-alias -d 'Second level sub-subcommand 1'
+complete -c picocompletion-demo -n "__fish_seen_subcommand_from sub2child1-alias" -n '__fish_seen_subcommand_from sub2' -l host -d 'a host'
+complete -c picocompletion-demo -n "__fish_seen_subcommand_from sub2child1-alias" -n '__fish_seen_subcommand_from sub2' -s h -d 'a host'
+complete -c picocompletion-demo -f -n "not __fish_seen_subcommand_from $_picocli_picocompletion_demo_sub2" -n '__fish_seen_subcommand_from sub2' -a subsub2 -d 'Second level sub-subcommand 2'
+complete -c picocompletion-demo -n "__fish_seen_subcommand_from subsub2" -n '__fish_seen_subcommand_from sub2' -l timeUnit -a 'NANOSECONDS MICROSECONDS MILLISECONDS SECONDS MINUTES HOURS DAYS'  -d ''
+complete -c picocompletion-demo -n "__fish_seen_subcommand_from subsub2" -n '__fish_seen_subcommand_from sub2' -s u -d ''
+complete -c picocompletion-demo -n "__fish_seen_subcommand_from subsub2" -n '__fish_seen_subcommand_from sub2' -l timeout -d ''
+complete -c picocompletion-demo -n "__fish_seen_subcommand_from subsub2" -n '__fish_seen_subcommand_from sub2' -s t -d ''
+complete -c picocompletion-demo -f -n "not __fish_seen_subcommand_from $_picocli_picocompletion_demo_sub2" -n '__fish_seen_subcommand_from sub2' -a sub2child2-alias -d 'Second level sub-subcommand 2'
+complete -c picocompletion-demo -n "__fish_seen_subcommand_from sub2child2-alias" -n '__fish_seen_subcommand_from sub2' -l timeUnit -a 'NANOSECONDS MICROSECONDS MILLISECONDS SECONDS MINUTES HOURS DAYS'  -d ''
+complete -c picocompletion-demo -n "__fish_seen_subcommand_from sub2child2-alias" -n '__fish_seen_subcommand_from sub2' -s u -d ''
+complete -c picocompletion-demo -n "__fish_seen_subcommand_from sub2child2-alias" -n '__fish_seen_subcommand_from sub2' -l timeout -d ''
+complete -c picocompletion-demo -n "__fish_seen_subcommand_from sub2child2-alias" -n '__fish_seen_subcommand_from sub2' -s t -d ''
+complete -c picocompletion-demo -f -n "not __fish_seen_subcommand_from $_picocli_picocompletion_demo_sub2" -n '__fish_seen_subcommand_from sub2' -a subsub3 -d 'Second level sub-subcommand 3'
+complete -c picocompletion-demo -f -n "not __fish_seen_subcommand_from $_picocli_picocompletion_demo_sub2" -n '__fish_seen_subcommand_from sub2' -a sub2child3-alias -d 'Second level sub-subcommand 3'
+
+# _picocli_picocompletion_demo_sub2alias completion
+set -l _picocli_picocompletion_demo_sub2alias subsub1 sub2child1-alias subsub2 sub2child2-alias subsub3 sub2child3-alias
+complete -c picocompletion-demo -f -n "not __fish_seen_subcommand_from $_picocli_picocompletion_demo_sub2alias" -n '__fish_seen_subcommand_from sub2-alias' -a subsub1 -d 'Second level sub-subcommand 1'
+complete -c picocompletion-demo -n "__fish_seen_subcommand_from subsub1" -n '__fish_seen_subcommand_from sub2-alias' -l host -d 'a host'
+complete -c picocompletion-demo -n "__fish_seen_subcommand_from subsub1" -n '__fish_seen_subcommand_from sub2-alias' -s h -d 'a host'
+complete -c picocompletion-demo -f -n "not __fish_seen_subcommand_from $_picocli_picocompletion_demo_sub2alias" -n '__fish_seen_subcommand_from sub2-alias' -a sub2child1-alias -d 'Second level sub-subcommand 1'
+complete -c picocompletion-demo -n "__fish_seen_subcommand_from sub2child1-alias" -n '__fish_seen_subcommand_from sub2-alias' -l host -d 'a host'
+complete -c picocompletion-demo -n "__fish_seen_subcommand_from sub2child1-alias" -n '__fish_seen_subcommand_from sub2-alias' -s h -d 'a host'
+complete -c picocompletion-demo -f -n "not __fish_seen_subcommand_from $_picocli_picocompletion_demo_sub2alias" -n '__fish_seen_subcommand_from sub2-alias' -a subsub2 -d 'Second level sub-subcommand 2'
+complete -c picocompletion-demo -n "__fish_seen_subcommand_from subsub2" -n '__fish_seen_subcommand_from sub2-alias' -l timeUnit -a 'NANOSECONDS MICROSECONDS MILLISECONDS SECONDS MINUTES HOURS DAYS'  -d ''
+complete -c picocompletion-demo -n "__fish_seen_subcommand_from subsub2" -n '__fish_seen_subcommand_from sub2-alias' -s u -d ''
+complete -c picocompletion-demo -n "__fish_seen_subcommand_from subsub2" -n '__fish_seen_subcommand_from sub2-alias' -l timeout -d ''
+complete -c picocompletion-demo -n "__fish_seen_subcommand_from subsub2" -n '__fish_seen_subcommand_from sub2-alias' -s t -d ''
+complete -c picocompletion-demo -f -n "not __fish_seen_subcommand_from $_picocli_picocompletion_demo_sub2alias" -n '__fish_seen_subcommand_from sub2-alias' -a sub2child2-alias -d 'Second level sub-subcommand 2'
+complete -c picocompletion-demo -n "__fish_seen_subcommand_from sub2child2-alias" -n '__fish_seen_subcommand_from sub2-alias' -l timeUnit -a 'NANOSECONDS MICROSECONDS MILLISECONDS SECONDS MINUTES HOURS DAYS'  -d ''
+complete -c picocompletion-demo -n "__fish_seen_subcommand_from sub2child2-alias" -n '__fish_seen_subcommand_from sub2-alias' -s u -d ''
+complete -c picocompletion-demo -n "__fish_seen_subcommand_from sub2child2-alias" -n '__fish_seen_subcommand_from sub2-alias' -l timeout -d ''
+complete -c picocompletion-demo -n "__fish_seen_subcommand_from sub2child2-alias" -n '__fish_seen_subcommand_from sub2-alias' -s t -d ''
+complete -c picocompletion-demo -f -n "not __fish_seen_subcommand_from $_picocli_picocompletion_demo_sub2alias" -n '__fish_seen_subcommand_from sub2-alias' -a subsub3 -d 'Second level sub-subcommand 3'
+complete -c picocompletion-demo -f -n "not __fish_seen_subcommand_from $_picocli_picocompletion_demo_sub2alias" -n '__fish_seen_subcommand_from sub2-alias' -a sub2child3-alias -d 'Second level sub-subcommand 3'

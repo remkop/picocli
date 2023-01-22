@@ -1,0 +1,11 @@
+proc run_completion_test {cmd test candidates} {
+    send "${cmd}\t"
+    expect {
+        -re "(\n${candidates}\u001b)" { pass $test }
+        timeout { fail $test }
+    }
+    puts "###Output"
+    puts "$expect_out(1,string)"
+    send "\x03"
+    expect ">"
+}

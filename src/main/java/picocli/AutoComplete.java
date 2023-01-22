@@ -539,9 +539,7 @@ public class AutoComplete {
         if (scriptName == null)  { throw new NullPointerException("scriptName"); }
         if (commandLine == null) { throw new NullPointerException("commandLine"); }
         List<CommandDescriptor> hierarchy = createHierarchy(scriptName, commandLine);
-        //print hierarchy
         StringBuilder result = new StringBuilder();
-        //result.append("complete --command ").append(scriptName).append(" --no-files").append("\n");
 
         String parentFunction = "";
         List<CommandDescriptor> currentLevel = new ArrayList<CommandDescriptor>();
@@ -554,22 +552,18 @@ public class AutoComplete {
                 continue;
             }
             if (!descriptor.parentFunctionName.equals(parentFunction)) {
-                if (!currentLevelCommands.isEmpty()) {
-                    processLevel(scriptName, result, currentLevel, currentLevelCommands, parentFunction, rootDescriptor);
-                    rootDescriptor = null;
+                processLevel(scriptName, result, currentLevel, currentLevelCommands, parentFunction, rootDescriptor);
+                rootDescriptor = null;
 
-                    currentLevel.clear();
-                    currentLevelCommands.clear();
-                }
+                currentLevel.clear();
+                currentLevelCommands.clear();
                 parentFunction = descriptor.parentFunctionName;
             }
 
             currentLevel.add(descriptor);
             currentLevelCommands.add(descriptor.commandName);
         }
-        if (!currentLevelCommands.isEmpty()) {
-            processLevel(scriptName, result, currentLevel, currentLevelCommands, parentFunction, rootDescriptor);
-        }
+        processLevel(scriptName, result, currentLevel, currentLevelCommands, parentFunction, rootDescriptor);
 
 
         return result.toString();
@@ -578,17 +572,31 @@ public class AutoComplete {
     private static void processLevel(String scriptName, StringBuilder result, List<CommandDescriptor> currentLevel,
                                      List<String> currentLevelCommands, String levelName,
                                      CommandDescriptor rootDescriptor) {
-        result.append("\n# ").append(levelName).append(" completion \n");
-        result.append("set -l ").append(levelName).append(" ").append(String.join(" ", currentLevelCommands)).append(
-                "\n");
+        if (levelName.equals("")) {
+            levelName = "root";
+        }
+
+        // fish doesn't like dashes in variable names
+        levelName = levelName.replaceAll("-", "_");
+
+        result.append("\n# ").append(levelName).append(" completion\n");
+        result.append("set -l ").append(levelName);
+        if (!currentLevelCommands.isEmpty()) {
+            result.append(" ").append(String.join(" ", currentLevelCommands));
+        }
+        result.append("\n");
         if (rootDescriptor != null) {
             for (OptionSpec optionSpec : rootDescriptor.commandLine.getCommandSpec().options()) {
                 result.append("complete -c ").append(scriptName);
                 result.append(" -n \"not __fish_seen_subcommand_from $").append(levelName).append("\"");
                 result.append(" -l ").append(optionSpec.longestName().replace("--", ""));
+
+                if (optionSpec.completionCandidates() != null) {
+                    result.append(" -f -a '").append(String.join(" ", extract(optionSpec.completionCandidates()))).append("' ");
+                }
+
                 String optionDescription =  sanitizeDescription(optionSpec.description().length > 0 ? optionSpec.description()[0] : "");
                 result.append(" -d '").append(optionDescription).append("'\n");
-
                 if (!optionSpec.shortestName().equals(optionSpec.longestName())) {
                     result.append("complete -c ").append(scriptName);
                     result.append(" -n \"not __fish_seen_subcommand_from $").append(levelName).append("\"");
@@ -617,8 +625,14 @@ public class AutoComplete {
                             commandDescriptor.parentWithoutTopLevelCommand).append("'");
                 }
                 result.append(" -l ").append(optionSpec.longestName().replace("--", ""));
+
+                if (optionSpec.completionCandidates() != null) {
+                    result.append(" -a '").append(String.join(" ", extract(optionSpec.completionCandidates()))).append("' ");
+                }
+
                 String optionDescription =  sanitizeDescription(optionSpec.description().length > 0 ? optionSpec.description()[0] : "");
                 result.append(" -d '").append(optionDescription).append("'\n");
+
 
                 if (!optionSpec.shortestName().equals(optionSpec.longestName())) {
                     result.append("complete -c ").append(scriptName);
