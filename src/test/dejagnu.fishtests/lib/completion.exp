@@ -1,0 +1,4 @@
+exp_spawn fish --no-config
+expect -re "(.+>)"
+
+source $::srcdir/lib/library.exp
