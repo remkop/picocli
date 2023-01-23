@@ -28,7 +28,7 @@ Artifacts in this release are signed by Remko Popma (6601 E5C0 8DCC BB96).
 * [#1880] DOC: Improve documentation for negatable options that are true by default. Thanks to [Sebastian Hoß](https://github.com/sebhoss) for raising this.
 * [#1815] DOC: Improve user manual section for non-validating ArgGroups. Thanks for [Paul Harris](https://github.com/rolfyone) for raising this.
 * [#1908] DOC: Update the user manual GraalVM section to use the new official native-maven-plugin. Thanks to [tison](https://github.com/tisonkun) for the pull request.
-
+* [#1924] DOC: Update `picocli-codegen/README.adoc`. Thanks to [Seyyed Emad Razavi](https://github.com/razavioo) for the pull request.
 
 ## <a name="4.7.1-deprecated"></a> Deprecations
 No features were deprecated in this release.
