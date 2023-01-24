@@ -4,8 +4,6 @@ permissions: read-all
 
 jobs:
   build-java-8-plus:
-    runs-on: ${{ matrix.os }}
-    continue-on-error: ${{ matrix.skippable }}
     strategy:
       matrix:
         java-version: [ 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18 ]
@@ -31,6 +29,8 @@ jobs:
           - java-version: 18
             skippable: true
 
+    runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.skippable }}
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@2e205a28d0e1da00c5f53b161f4067b052c61f34 # v1
