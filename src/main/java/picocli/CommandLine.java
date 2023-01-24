@@ -11626,12 +11626,9 @@ public class CommandLine {
                 } else {
                     return new ResourceBundle() {
                         @Override
-                        protected Object handleGetObject(String key) {
-                            return null;
-                        }
+                        protected Object handleGetObject(String key) { return null; }
                         @Override
-                        public Enumeration<String> getKeys() {
-                            return Collections.emptyEnumeration();                       }
+                        public Enumeration<String> getKeys() { return Collections.enumeration(Collections.<String>emptyList()); }
                     };
                 }
             }
@@ -11661,12 +11658,12 @@ public class CommandLine {
                 for (Enumeration<String> k = rb.getKeys(); k.hasMoreElements(); keys.add(k.nextElement()));
                 return keys;
             }
-            
+
             /**
              * During annotation processing, resource bundles may not be available on the
              * classpath and thereby cause failures. This method allows for disabling
              * loading of resource bundles during annotation processing, preventing such
-             * errors. 
+             * errors.
              * @since 4.7.1
              * @param loadBundles true if bundles should be loaded (default), false if bundles should not be loaded
              */
