@@ -8,29 +8,9 @@ jobs:
       matrix:
         java-version: [ 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18 ]
         os: [ubuntu-latest, macos-latest, windows-latest]
-        skippable: [false]
-        include:
-          - os: 'macos-latest'
-            skippable: true
-          - java-version: 9
-            skippable: true
-          - java-version: 10
-            skippable: true
-          - java-version: 12
-            skippable: true
-          - java-version: 13
-            skippable: true
-          - java-version: 14
-            skippable: true
-          - java-version: 15
-            skippable: true
-          - java-version: 16
-            skippable: true
-          - java-version: 18
-            skippable: true
 
-    runs-on: ${{ fromJSON(matrix.os) }}
-    continue-on-error: ${{ matrix.os == 'macos-latest' || fromJSON(matrix.skippable) }}
+    runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.os == 'macos-latest' || java-version == '9' || java-version == '10' || java-version == '12' || java-version == '13' || java-version == '14' || java-version == '15' || java-version == '16' }}
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@2e205a28d0e1da00c5f53b161f4067b052c61f34 # v1
