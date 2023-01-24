@@ -29,8 +29,8 @@ jobs:
           - java-version: 18
             skippable: true
 
-    runs-on: ${{ matrix.os }}
-    continue-on-error: ${{ matrix.skippable }}
+    runs-on: ${{ fromJSON(matrix.os) }}
+    continue-on-error: ${{ matrix.os == 'macos-latest' || fromJSON(matrix.skippable) }}
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@2e205a28d0e1da00c5f53b161f4067b052c61f34 # v1
