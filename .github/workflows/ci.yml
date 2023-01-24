@@ -30,6 +30,9 @@ jobs:
           java-version: ${{ matrix.java-version }}
           cache: gradle
 
+      - name: Show Gradle Version
+        run: ./gradlew --version
+
       - name: ShowToolChains
         run: ./gradlew -q javaToolchains
 
