@@ -25,6 +25,7 @@ Artifacts in this release are signed by Remko Popma (6601 E5C0 8DCC BB96).
 * [#1886][#1896] Bugfix: AsciiDoc generator now correctly outputs options even if all options are in ArgGroups. Thanks to [Ruud Senden](https://github.com/rsenden) for the discussion and the pull request.
 * [#1878][#1876] Bugfix: Annotation processor now avoids loading resource bundles at compile time. Thanks to [Ruud Senden](https://github.com/rsenden) for the discussion and the pull request.
 * [#1911] Avoid using boxed boolean in `CommandLine.Interpreter.applyValueToSingleValuedField`. Thanks to [Jiehong](https://github.com/Jiehong) for the pull request.
+* [#1870] Bugfix: `StringIndexOutOfBoundsException` in usage help when command has too many (and long) aliases. Thanks to [Martin](https://github.com/martlin2cz) for raising this.ji
 * [#1930] Bugfix: Ensure tests pass in environments for Java 5-18.
 * [#1881] DOC: Many documentation improvements. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1855][#1857] DOC: Add new user manual section called [Rare Use Cases](https://picocli.info/#_rare_use_cases) detailing `System.exit` usage. Thanks to [Tadaya Tsuyukubo](https://github.com/ttddyy) for the pull request.
