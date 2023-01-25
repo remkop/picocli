@@ -24,6 +24,7 @@ Artifacts in this release are signed by Remko Popma (6601 E5C0 8DCC BB96).
 * [#1874][#1885][#1933] Bugfix: The `picocli-groovy` module should not declare `org.codehaus.groovy:groovy-all` as dependency. Thanks to [Mattias Andersson](https://github.com/attiand) and [Michael Kutz](https://github.com/mkutz) for raising this, and to [Paul King](https://github.com/paulk-asert) for the analysis.
 * [#1886][#1896] Bugfix: AsciiDoc generator now correctly outputs options even if all options are in ArgGroups. Thanks to [Ruud Senden](https://github.com/rsenden) for the discussion and the pull request.
 * [#1878][#1876] Bugfix: Annotation processor now avoids loading resource bundles at compile time. Thanks to [Ruud Senden](https://github.com/rsenden) for the discussion and the pull request.
+* [#1911] Avoid using boxed boolean in `CommandLine.Interpreter.applyValueToSingleValuedField`. Thanks to [Jiehong](https://github.com/Jiehong) for the pull request.
 * [#1930] Bugfix: Ensure tests pass in environments for Java 5-18.
 * [#1881] DOC: Many documentation improvements. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1855][#1857] DOC: Add new user manual section called [Rare Use Cases](https://picocli.info/#_rare_use_cases) detailing `System.exit` usage. Thanks to [Tadaya Tsuyukubo](https://github.com/ttddyy) for the pull request.
@@ -31,6 +32,20 @@ Artifacts in this release are signed by Remko Popma (6601 E5C0 8DCC BB96).
 * [#1815] DOC: Improve user manual section for non-validating ArgGroups. Thanks for [Paul Harris](https://github.com/rolfyone) for raising this.
 * [#1908] DOC: Update the user manual GraalVM section to use the new official native-maven-plugin. Thanks to [tison](https://github.com/tisonkun) for the pull request.
 * [#1924] DOC: Update `picocli-codegen/README.adoc`. Thanks to [Seyyed Emad Razavi](https://github.com/razavioo) for the pull request.
+* [#1910][#1917] DOC: Fix broken link to Zero Bug Commitment. Thanks to [Jiehong](https://github.com/Jiehong) for raising this and thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+* [#1915] DOC: Improve default provider examples. Thanks to [David](https://github.com/DavidTheExplorer) for raising this.
+* [#1918][#1920] DOC: Removed unused Travis CI badge and associated broken link from README. Thanks to [Andreas Deininger](https://github.com/deining) for raising this and the pull request.
+* [#1887] DEP: Bump biz.aQute.bnd.gradle from 6.3.1 to 6.4.0
+* [#1865] DEP: Bump ivy from 2.5.0 to 2.5.1
+* [#1931] DEP: Bump springBootVersion from 2.7.5 to 3.0.2
+* [#1906] DEP: Bump kotlin-gradle-plugin from 1.7.20 to 1.8.0
+* [#1905] DEP: Bump kotlin-script-runtime from 1.7.20 to 1.8.0
+* [#1929] DEP: Bump github/codeql-action from 2.1.29 to 2.1.39
+* [#1926] DEP: Bump step-security/harden-runner from 1.5.0 to 2.1.0
+* [#1914] DEP: Bump actions/checkout from 3.1.0 to 3.3.0
+* [#1897] DEP: Bump actions/setup-java from 3.6.0 to 3.9.0
+* [#1902] DEP: Bump ossf/scorecard-action from 2.0.6 to 2.1.2
+
 
 ## <a name="4.7.1-deprecated"></a> Deprecations
 No features were deprecated in this release.
