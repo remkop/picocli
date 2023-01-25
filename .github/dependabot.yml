@@ -12,3 +12,7 @@ updates:
     ignore:
       # For Groovy, ignore all updates
       - dependency-name: "org.codehaus.groovy:groovy-all"
+      # For Spring-boot, version 3 requires Java 17
+      - dependency-name: "org.springframework.boot:spring-boot-starter"
+      - dependency-name: "org.springframework.boot:spring-boot-configuration-processor"
+      - dependency-name: "org.springframework.boot:spring-boot-starter-test"
