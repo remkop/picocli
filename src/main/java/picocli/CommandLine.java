@@ -16340,7 +16340,8 @@ public class CommandLine {
          * @since 4.4 */
         public String commandList(Map<String, Help> subcommands) {
             if (subcommands.isEmpty()) { return ""; }
-            int commandLength = maxLength(subcommands.keySet());
+            int maxCommandLength = width() / 2;
+            int commandLength = Math.min(maxLength(subcommands.keySet()), maxCommandLength);
             Help.TextTable textTable = Help.TextTable.forColumns(colorScheme().ansi(),
                     new Help.Column(commandLength + 2, 2, Help.Column.Overflow.SPAN),
                     new Help.Column(width() - (commandLength + 2), 2, Help.Column.Overflow.WRAP));
