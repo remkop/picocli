@@ -21,6 +21,7 @@ Artifacts in this release are signed by Remko Popma (6601 E5C0 8DCC BB96).
 ## <a name="4.7.1-new"></a> New and Noteworthy
 
 ## <a name="4.7.1-fixes"></a> Fixed issues
+* [#1874][#1885][#1933] Bugfix: The `picocli-groovy` module should not declare `org.codehaus.groovy:groovy-all` as dependency. Thanks to [Mattias Andersson](https://github.com/attiand) and [Michael Kutz](https://github.com/mkutz) for raising this, and to [Paul King](https://github.com/paulk-asert) for the analysis.
 * [#1886][#1896] Bugfix: AsciiDoc generator now correctly outputs options even if all options are in ArgGroups. Thanks to [Ruud Senden](https://github.com/rsenden) for the discussion and the pull request.
 * [#1878][#1876] Bugfix: Annotation processor now avoids loading resource bundles at compile time. Thanks to [Ruud Senden](https://github.com/rsenden) for the discussion and the pull request.
 * [#1930] Bugfix: Ensure tests pass in environments for Java 5-18.
