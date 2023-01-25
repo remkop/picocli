@@ -14,14 +14,14 @@ ext {
 
     // DEPENDENCIES
     asciidoctorGradlePluginVersion = "3.3.2"
-    compileTestingVersion          = "0.19"
+    compileTestingVersion          = "0.21.0"
     groovyVersion       = "2.4.21"
     hamcrestCoreVersion = "2.2"
     ivyVersion          = "2.5.1"
     jacocoVersion       = "0.8.2"
     jansiVersion        = "2.4.0"
     jline2Version       = "2.14.6"
-    jline3Version       = "3.21.0"
+    jline3Version       = "3.22.0"
     junitDepVersion     = "4.11.20120805.1225"
     junitVersion        = "4.13.2"
     log4j2Version       = "2.19.0"
