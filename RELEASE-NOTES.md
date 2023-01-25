@@ -46,7 +46,10 @@ Artifacts in this release are signed by Remko Popma (6601 E5C0 8DCC BB96).
 * [#1914] DEP: Bump actions/checkout from 3.1.0 to 3.3.0
 * [#1897] DEP: Bump actions/setup-java from 3.6.0 to 3.9.0
 * [#1902] DEP: Bump ossf/scorecard-action from 2.0.6 to 2.1.2
-
+* [#1938] DEP: Bump actions/upload-artifact from 3.1.1 to 3.1.2
+* [#1937] DEP: Bump asciidoctorj-pdf from 2.3.3 to 2.3.4
+* [#1936] DEP: Bump jline from 3.21.0 to 3.22.0
+* [#1935] DEP: Bump compile-testing from 0.19 to 0.21.0
 
 ## <a name="4.7.1-deprecated"></a> Deprecations
 No features were deprecated in this release.
