@@ -14,7 +14,7 @@ ext {
 
     // DEPENDENCIES
     asciidoctorGradlePluginVersion = "3.3.2"
-    compileTestingVersion          = "0.19"
+    compileTestingVersion          = "0.21.0"
     groovyVersion       = "2.4.21"
     hamcrestCoreVersion = "2.2"
     ivyVersion          = "2.5.1"
