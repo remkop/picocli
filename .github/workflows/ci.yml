@@ -1,7 +1,9 @@
 name: Build
 on: [ push, pull_request ]
-permissions: read-all
-
+permissions:
+  checks: write
+  pull-requests: write
+  
 jobs:
   build-java-8-plus:
     strategy:
