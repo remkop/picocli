@@ -38,6 +38,19 @@ jobs:
 
       - name: Build
         run: ./gradlew build --no-daemon
+        
+      - name: Publish Test Results (Linux)
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: ${{ always() && matrix.os == 'ubuntu-latest' }}
+        with:
+          junit_files: "test-results/junit/**/*.xml"
+        
+      - name: Publish Test Results (Win/Mac)
+        uses: EnricoMi/publish-unit-test-result-action/composite@v2
+        if: ${{ always() && (matrix.os == 'macos-latest' || matrix.os == 'windows-latest') }}
+        with:
+          junit_files: "test-results/junit/**/*.xml"
+        
 
   build-java-6-7:
     strategy:
