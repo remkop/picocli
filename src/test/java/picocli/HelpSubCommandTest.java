@@ -511,7 +511,6 @@ public class HelpSubCommandTest {
         @Parameters(arity = "1..*")
         public List<String> files;
 
-        @Override
         public void run() {
             System.out.println("ImportCommand.run()");
         }
