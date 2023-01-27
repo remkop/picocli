@@ -43,7 +43,7 @@ jobs:
 
       - name: Publish Test Results (Linux)
         uses: EnricoMi/publish-unit-test-result-action@v2
-        id: test-results
+        id: test-results-nix
         if: ${{ always() && matrix.os == 'ubuntu-latest' }}
         with:
           junit_files: |
@@ -59,7 +59,22 @@ jobs:
             build/test-results/test/**/*.xml
             picocli-*/build/test-results/test/**/*.xml
 
-      - name: Set badge color
+      - name: Set badge color (Linux)
+        shell: bash
+        run: |
+          case ${{ fromJSON( steps.test-results-nix.outputs.json ).conclusion }} in
+            success)
+              echo "BADGE_COLOR=31c653" >> $GITHUB_ENV
+              ;;
+            failure)
+              echo "BADGE_COLOR=800000" >> $GITHUB_ENV
+              ;;
+            neutral)
+              echo "BADGE_COLOR=696969" >> $GITHUB_ENV
+              ;;
+          esac
+
+      - name: Set badge color (Win/Mac)
         shell: bash
         run: |
           case ${{ fromJSON( steps.test-results.outputs.json ).conclusion }} in
