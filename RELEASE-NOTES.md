@@ -41,8 +41,6 @@ Artifacts in this release are signed by Remko Popma (6601 E5C0 8DCC BB96).
 * [#1887] DEP: Bump biz.aQute.bnd.gradle from 6.3.1 to 6.4.0
 * [#1865] DEP: Bump ivy from 2.5.0 to 2.5.1
 * [#1931] DEP: Bump springBootVersion from 2.7.5 to 3.0.2
-* [#1906] DEP: Bump kotlin-gradle-plugin from 1.7.20 to 1.8.0
-* [#1905] DEP: Bump kotlin-script-runtime from 1.7.20 to 1.8.0
 * [#1929] DEP: Bump github/codeql-action from 2.1.29 to 2.1.39
 * [#1926] DEP: Bump step-security/harden-runner from 1.5.0 to 2.1.0
 * [#1914] DEP: Bump actions/checkout from 3.1.0 to 3.3.0
