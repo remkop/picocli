@@ -31,10 +31,6 @@ This app does great things.
 // end::picocli-generated-man-section-description[]
 
 // tag::picocli-generated-man-section-options[]
-== Options
-
-*--*::
-  This option can be used to separate command-line options from the list of positional parameters.
 
 // end::picocli-generated-man-section-options[]
 

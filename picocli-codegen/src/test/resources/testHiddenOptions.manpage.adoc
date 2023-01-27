@@ -31,6 +31,7 @@ This app does great things.
 // end::picocli-generated-man-section-description[]
 
 // tag::picocli-generated-man-section-options[]
+
 // end::picocli-generated-man-section-options[]
 
 // tag::picocli-generated-man-section-arguments[]
