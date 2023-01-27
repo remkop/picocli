@@ -33,8 +33,8 @@ dependencies {
     testImplementation group: 'junit', name: 'junit', version: '4.13.1'
 }
 dependencies {
-    implementation "info.picocli:picocli:4.7.0"
-    annotationProcessor "info.picocli:picocli-codegen:4.7.0"
+    implementation "info.picocli:picocli:4.7.1"
+    annotationProcessor "info.picocli:picocli-codegen:4.7.1"
 }
 
 project.ext {

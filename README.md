@@ -79,7 +79,7 @@ The user manual has examples of integrating with [Guice](https://picocli.info/#_
 
 ### Releases
 * [All Releases](https://github.com/remkop/picocli/releases)
-* Latest: 4.7.0 [Release Notes](https://github.com/remkop/picocli/releases/tag/v4.7.0)
+* Latest: 4.7.1 [Release Notes](https://github.com/remkop/picocli/releases/tag/v4.7.1)
 * Older: Picocli 4.0 [Release Notes](https://github.com/remkop/picocli/releases/tag/v4.0.0)
 * Older: Picocli 3.0 [Release Notes](https://github.com/remkop/picocli/releases/tag/v3.0.0)
 * Older: Picocli 2.0 [Release Notes](https://github.com/remkop/picocli/releases/tag/v2.0.0)
@@ -88,7 +88,7 @@ The user manual has examples of integrating with [Guice](https://picocli.info/#_
 * [4.x User manual: https://picocli.info](https://picocli.info)
 * [4.x Quick Guide](https://picocli.info/quick-guide.html)
 * [4.x API Javadoc](https://picocli.info/apidocs/)
-* [PREVIEW: Modular Javadoc for all artifacts (4.7.0-SNAPSHOT)](https://picocli.info/apidocs-all/)
+* [PREVIEW: Modular Javadoc for all artifacts (4.7.1-SNAPSHOT)](https://picocli.info/apidocs-all/)
 * [Command line autocompletion](https://picocli.info/autocomplete.html)
 * [Programmatic API](https://picocli.info/picocli-programmatic-api.html)
 * [FAQ](https://github.com/remkop/picocli/wiki/FAQ)
@@ -270,9 +270,9 @@ If you like picocli, help others discover picocli:
 #### Spread the joy! :tada:
 * Tweet about picocli! What do you like about it? How has it helped you? How is it different from the alternatives?
 * Mention that your project uses picocli in the documentation of your project.
-* Show that your GitHub project uses picocli, with this badge in your README.md: [![picocli](https://img.shields.io/badge/picocli-4.7.0-green.svg)](https://github.com/remkop/picocli)
+* Show that your GitHub project uses picocli, with this badge in your README.md: [![picocli](https://img.shields.io/badge/picocli-4.7.1-green.svg)](https://github.com/remkop/picocli)
 ```
-[![picocli](https://img.shields.io/badge/picocli-4.7.0-green.svg)](https://github.com/remkop/picocli)
+[![picocli](https://img.shields.io/badge/picocli-4.7.1-green.svg)](https://github.com/remkop/picocli)
 ```
 
 #### Preach it! :muscle:
@@ -363,41 +363,41 @@ See the [source code](https://github.com/remkop/picocli/blob/main/src/main/java/
 
 ### Gradle
 ```
-implementation 'info.picocli:picocli:4.7.0'
+implementation 'info.picocli:picocli:4.7.1'
 ```
 ### Maven
 ```
 <dependency>
   <groupId>info.picocli</groupId>
   <artifactId>picocli</artifactId>
-  <version>4.7.0</version>
+  <version>4.7.1</version>
 </dependency>
 ```
 ### Scala SBT
 ```
-libraryDependencies += "info.picocli" % "picocli" % "4.7.0"
+libraryDependencies += "info.picocli" % "picocli" % "4.7.1"
 ```
 ### Ivy
 ```
-<dependency org="info.picocli" name="picocli" rev="4.7.0" />
+<dependency org="info.picocli" name="picocli" rev="4.7.1" />
 ```
 ### Grape
 ```groovy
 @Grapes(
-    @Grab(group='info.picocli', module='picocli', version='4.7.0')
+    @Grab(group='info.picocli', module='picocli', version='4.7.1')
 )
 ```
 ### Leiningen
 ```
-[info.picocli/picocli "4.7.0"]
+[info.picocli/picocli "4.7.1"]
 ```
 ### Buildr
 ```
-'info.picocli:picocli:jar:4.7.0'
+'info.picocli:picocli:jar:4.7.1'
 ```
 
 ### JBang
 ```
-//DEPS info.picocli:picocli:4.7.0
+//DEPS info.picocli:picocli:4.7.1
 ```
 

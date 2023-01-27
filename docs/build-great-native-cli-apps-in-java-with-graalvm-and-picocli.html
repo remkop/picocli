@@ -606,7 +606,7 @@ $(addBlockSwitches);
 <div id="header">
 <h1>Build great native CLI apps in Java with GraalVM and Picocli</h1>
 <div class="details">
-<span id="revnumber">version 4.7.0</span>
+<span id="revnumber">version 4.7.1</span>
 </div>
 </div>
 <div id="content">
@@ -681,7 +681,7 @@ Substrate VM is the name for the runtime components (like the deoptimizer, garba
 <h3 id="_native_image_limitations">Native Image Limitations</h3>
 <div class="paragraph">
 <p>To keep the implementation small and concise, and also to allow aggressive ahead-of-time optimizations, Native Image does not support all features of Java.
-The full set of <a href="https://www.graalvm.org/reference-manual/native-image/Limitations/">limitations</a> is documented in the GraalVM reference manual.</p>
+The <a href="https://www.graalvm.org/latest/reference-manual/native-image/metadata/Compatibility/#features-that-may-operate-differently-in-a-native-image">features</a> that may operate differently are documented in the GraalVM reference manual.</p>
 </div>
 <div class="paragraph">
 <p>Two limitations are of particular interest:</p>
@@ -689,10 +689,10 @@ The full set of <a href="https://www.graalvm.org/reference-manual/native-image/L
 <div class="ulist">
 <ul>
 <li>
-<p><a href="https://www.graalvm.org/reference-manual/native-image/Limitations/#reflection">reflection</a></p>
+<p><a href="https://www.graalvm.org/latest/reference-manual/native-image/dynamic-features/Reflection/">reflection</a></p>
 </li>
 <li>
-<p><a href="https://www.graalvm.org/22.2/reference-manual/native-image/dynamic-features/Resources/">resources</a></p>
+<p><a href="https://www.graalvm.org/latest/reference-manual/native-image/dynamic-features/Resources/">resources</a></p>
 </li>
 </ul>
 </div>
@@ -919,7 +919,7 @@ Next, let’s take a look at turning it into a native executable.</p>
 <div class="sect2">
 <h3 id="_reflection_configuration">Reflection Configuration</h3>
 <div class="paragraph">
-<p>We mentioned earlier that the native image compiler has some limitations: reflection is supported but <a href="https://www.graalvm.org/22.2/reference-manual/native-image/overview/BuildConfiguration/">requires configuration</a>.</p>
+<p>We mentioned earlier that the native image compiler has some limitations: reflection is supported but <a href="https://www.graalvm.org/latest/reference-manual/native-image/overview/BuildConfiguration/">requires configuration</a>.</p>
 </div>
 <div class="paragraph">
 <p>This impacts picocli-based applications: at runtime, picocli uses reflection to discover any <code>@Command</code>-annotated subcommands, and the <code>@Option</code> and <code>@Parameters</code>-annotated command options and positional parameters.</p>
@@ -966,7 +966,7 @@ Next, let’s take a look at turning it into a native executable.</p>
 </div>
 <div class="paragraph">
 <p>The annotation processor generates Graal configuration files under <code>META-INF/native-image/picocli-generated/$project</code> during compilation, to be included in the application jar.
-This includes configuration files for <a href="https://www.graalvm.org/22.2/reference-manual/native-image/dynamic-features/Reflection/">reflection</a>, <a href="https://www.graalvm.org/22.2/reference-manual/native-image/dynamic-features/Resources/">resources</a> and <a href="https://www.graalvm.org/22.2/reference-manual/native-image/dynamic-features/DynamicProxy/">dynamic proxies</a>.
+This includes configuration files for <a href="https://www.graalvm.org/latest/reference-manual/native-image/dynamic-features/Reflection/">reflection</a>, <a href="https://www.graalvm.org/latest/reference-manual/native-image/dynamic-features/Resources/">resources</a> and <a href="https://www.graalvm.org/latest/reference-manual/native-image/dynamic-features/DynamicProxy/">dynamic proxies</a>.
 By embedding these configuration files, your jar is instantly Graal-enabled.
 In most cases no further configuration is needed when generating a native image.</p>
 </div>
@@ -1367,8 +1367,8 @@ There is <a href="https://github.com/oracle/graal/issues/1762">work in progress<
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 4.7.0<br>
-Last updated 2022-09-01 21:02:34 -0400
+Version 4.7.1<br>
+Last updated 2022-12-17 09:41:25 +0900
 </div>
 </div>
 </body>
