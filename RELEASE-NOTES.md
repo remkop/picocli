@@ -37,6 +37,7 @@ Artifacts in this release are signed by Remko Popma (6601 E5C0 8DCC BB96).
 * [#1910][#1917] DOC: Fix broken link to Zero Bug Commitment. Thanks to [Jiehong](https://github.com/Jiehong) for raising this and thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1915] DOC: Improve default provider examples. Thanks to [David](https://github.com/DavidTheExplorer) for raising this.
 * [#1918][#1920] DOC: Removed unused Travis CI badge and associated broken link from README. Thanks to [Andreas Deininger](https://github.com/deining) for raising this and the pull request.
+* [#706] DOC: Add GitHub badge with test count to README.
 * [#1939] BUILD: Fix `picocli-annotation-processing-tests` failures on Java 16+: rewrite tests to avoid Google `compiler-test` API that internally uses `com.sun.tools.javac.util.Context`.
 * [#1887] DEP: Bump biz.aQute.bnd.gradle from 6.3.1 to 6.4.0
 * [#1865] DEP: Bump ivy from 2.5.0 to 2.5.1
