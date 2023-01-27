@@ -6,6 +6,5 @@ import picocli.issue769.MyMixin;
 
 @Command(name = "SubCommand")
 class SubCommand {
-    @Mixin
-    MyMixin someMixin;
+    @Mixin MyMixin someMixin;
 }

@@ -10,7 +10,7 @@ public class PopulateFlagsMain {
         private boolean buffered;
 
         @Option(names = "-o")
-        private boolean overwriteOutput; // TODO = true;
+        private boolean overwriteOutput;
 
         @Option(names = "-v")
         private boolean verbose;
