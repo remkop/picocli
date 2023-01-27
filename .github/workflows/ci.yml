@@ -61,6 +61,7 @@ jobs:
 
       - name: Set badge color (Linux)
         shell: bash
+        if: ${{ always() && matrix.os == 'ubuntu-latest' }}
         run: |
           case ${{ fromJSON( steps.test-results-nix.outputs.json ).conclusion }} in
             success)
@@ -76,6 +77,7 @@ jobs:
 
       - name: Set badge color (Win/Mac)
         shell: bash
+        if: ${{ always() && (matrix.os == 'macos-latest' || matrix.os == 'windows-latest') }}
         run: |
           case ${{ fromJSON( steps.test-results.outputs.json ).conclusion }} in
             success)
