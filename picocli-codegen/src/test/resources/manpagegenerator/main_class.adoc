@@ -1,9 +1,9 @@
 // tag::picocli-generated-full-manpage[]
 // tag::picocli-generated-man-section-header[]
 :doctype: manpage
-:revnumber:
+:revnumber: 
 :manmanual: <main class> Manual
-:mansource:
+:mansource: 
 :man-linkstyle: pass:[blue R < >]
 = <main class>(1)
 
@@ -12,7 +12,7 @@
 // tag::picocli-generated-man-section-name[]
 == Name
 
-<main class> -
+<main class> - 
 
 // end::picocli-generated-man-section-name[]
 
@@ -38,7 +38,7 @@
 == Arguments
 
 _<file>_::
-
+  
 
 // end::picocli-generated-man-section-arguments[]
 

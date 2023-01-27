@@ -28,6 +28,7 @@ Artifacts in this release are signed by Remko Popma (6601 E5C0 8DCC BB96).
 * [#1870] Bugfix: `StringIndexOutOfBoundsException` in usage help when command has too many (and long) aliases. Thanks to [Martin](https://github.com/martlin2cz) for raising this.
 * [#1904] Bugfix: Apply `fallbackValue` to vararg multi-value options, not just single-value options. Thanks to [Andreas Sewe](https://github.com/sewe) for raising this.
 * [#1930] Bugfix: Ensure tests pass in environments for Java 5-18.
+* [#1940] Bugfix: fix 3 failing tests in `ManPageGeneratorTest`. Thanks to [Mike Snowden](https://github.com/wtfacoconut) for the pull request.
 * [#1881] DOC: Many documentation improvements. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1855][#1857] DOC: Add new user manual section called [Rare Use Cases](https://picocli.info/#_rare_use_cases) detailing `System.exit` usage. Thanks to [Tadaya Tsuyukubo](https://github.com/ttddyy) for the pull request.
 * [#1880] DOC: Improve documentation for negatable options that are true by default. Thanks to [Sebastian Hoß](https://github.com/sebhoss) for raising this.
