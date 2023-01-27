@@ -43,6 +43,7 @@ jobs:
 
       - name: Publish Test Results (Linux)
         uses: EnricoMi/publish-unit-test-result-action@v2
+        id: test-results
         if: ${{ always() && matrix.os == 'ubuntu-latest' }}
         with:
           junit_files: |
@@ -51,6 +52,7 @@ jobs:
 
       - name: Publish Test Results (Win/Mac)
         uses: EnricoMi/publish-unit-test-result-action/composite@v2
+        id: test-results
         if: ${{ always() && (matrix.os == 'macos-latest' || matrix.os == 'windows-latest') }}
         with:
           junit_files: |
