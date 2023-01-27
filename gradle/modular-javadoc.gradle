@@ -65,6 +65,14 @@ def makeModulePath() {
                     result += it.absolutePath + System.getProperty('path.separator')
                 }
             }
+            if (it.name == 'picocli-groovy') { // we need groovy-all to be in the module path
+                it.sourceSets.main.compileClasspath.each {
+                    if (it.isFile() && !it.name.startsWith('picocli')) {
+                        logger.info("${it}")
+                        result += it.absolutePath + System.getProperty('path.separator')
+                    }
+                }
+            }
         }
     }
     result
