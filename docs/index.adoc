@@ -9261,9 +9261,27 @@ To show that the subcommand is mandatory, use the `synopsisSubcommandLabel` attr
 
 There are some scenarios where picocli can not parse an option with a default value which is the same as a subcommand name. To work around this, you can parse the option yourself using <<Custom Parameter Processing,`IParameterConsumer`>>. A simple implementation is shown below. See https://github.com/remkop/picocli/issues/1428[this issue] for more details.
 
+.Java
+[source,java,role="primary"]
+----
+class ExecParameterConsumer implements IParameterConsumer {
+  public void consumeParameters(Stack<String> args,
+                                ArgSpec argSpec,
+                                CommandSpec commandSpec) {
+    if (args.isEmpty()) {
+      throw new ParameterException(
+        commandSpec.commandLine(),
+        "Missing required parameter for option " +
+        ((OptionSpec) argSpec).longestName()
+      );
+    }
+    argSpec.setValue(args.pop());
+  }
+}
+----
 
 .Kotlin
-[source,kotlin,role="primary"]
+[source,kotlin,role="secondary"]
 ----
 class MyParameterConsumer : CommandLine.IParameterConsumer {
   override fun consumeParameters(
@@ -9278,7 +9296,7 @@ class MyParameterConsumer : CommandLine.IParameterConsumer {
             (argSpec as CommandLine.Model.OptionSpec).longestName()
       )
     }
-    argSpec.setValue(args.pop());
+    argSpec.setValue(args.pop())
   }
 }
 ----
