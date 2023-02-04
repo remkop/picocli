@@ -151,5 +151,5 @@ jobs:
         uses: gradle/gradle-build-action@3fbe033aaae657f011f88f29be9e65ed26bd29ef # v2
         with:
           gradle-version: 1.12
-          build-root-directory: picocli-legacy-tests/
+          build-root-directory: picocli-tests-java567/
           arguments: clean build --no-daemon
