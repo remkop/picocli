@@ -1,0 +1,33 @@
+plugins {
+    id 'java'
+}
+
+group 'info.picocli'
+description 'Picocli Tests Requiring Java 8 or greater'
+version "$projectVersion"
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+test {
+    useJUnitPlatform()
+}
+
+dependencies {
+    api rootProject
+    testImplementation supportDependencies.junit5Api
+    testRuntimeOnly    supportDependencies.junit5Engine
+    testImplementation supportDependencies.systemLambda
+}
+
+jar {
+    manifest {
+        attributes 'Specification-Title': 'Picocli Tests Requiring Java 8 or greater',
+                'Specification-Vendor'  : 'Remko Popma',
+                'Specification-Version' : archiveVersion.get(),
+                'Implementation-Title'  : 'Picocli Tests Requiring Java 8 or greater',
+                'Implementation-Vendor' : 'Remko Popma',
+                'Implementation-Version': archiveVersion.get(),
+                'Automatic-Module-Name' : 'info.picocli.tests.java8plus'
+    }
+}
