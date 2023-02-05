@@ -8,11 +8,11 @@ jobs:
   build-java-8-plus:
     strategy:
       matrix:
-        java-version: [ 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20-ea ]
+        java-version: [ 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 ]
         os: [ubuntu-latest, macos-latest, windows-latest]
 
     runs-on: ${{ matrix.os }}
-    continue-on-error: ${{ matrix.os == 'macos-latest' || matrix.java-version == '9' || matrix.java-version == '10' || matrix.java-version == '12' || matrix.java-version == '13' || matrix.java-version == '14' || matrix.java-version == '15' || matrix.java-version == '16' }}
+    continue-on-error: ${{ matrix.os == 'macos-latest' || matrix.java-version == '9' || matrix.java-version == '10' || matrix.java-version == '12' || matrix.java-version == '13' || matrix.java-version == '14' || matrix.java-version == '15' || matrix.java-version == '16' || matrix.java-version == '19' }}
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@18bf8ad2ca49c14cbb28b91346d626ccfb00c518 # v1
