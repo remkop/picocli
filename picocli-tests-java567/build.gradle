@@ -28,7 +28,7 @@ compileJava.options.encoding = "UTF-8"
 compileTestJava.options.encoding = "UTF-8"
 
 sourceSets.main.java.srcDirs = ['../src/main/java']
-sourceSets.test.java.srcDirs = ['../src/test/java']
+sourceSets.test.java.srcDirs += ['../src/test/java']
 sourceSets.test.resources.srcDirs = ['../src/test/resources']
 sourceSets {
     test {

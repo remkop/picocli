@@ -93,12 +93,10 @@ allprojects {
         testImplementation supportDependencies.jansi
         testImplementation supportDependencies.groovy
 
-        if (!project.name in ['picocli-tests-java8plus']) {
-            testImplementation supportDependencies.junit
-            testImplementation supportDependencies.hamcrestCore
-            testImplementation supportDependencies.systemRules
-            testImplementation supportDependencies.junitParams
-        }
+        testImplementation supportDependencies.junit
+        testImplementation supportDependencies.hamcrestCore
+        testImplementation supportDependencies.systemRules
+        testImplementation supportDependencies.junitParams
     }
     tasks.withType(JavaCompile) {
         options.compilerArgs << '-Xlint:unchecked' << '-Xlint:deprecation'
