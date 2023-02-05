@@ -6,13 +6,7 @@ target/
 tmp/
 picocli.iml
 /out/
-/picocli-annotation-processing-tests/out/
-/picocli-codegen/out/
-/picocli-examples/out/
-/picocli-groovy/out/
-/picocli-shell-jline2/out/
-/picocli-shell-jline3/out/
-/picocli-spring-boot-starter/out/
+/picocli-*/out/
 /src/test/dejagnu.tests/xtrace.log
 /src/test/dejagnu.tests/log/completion.sum
 /src/test/dejagnu.tests/log/completion.log
