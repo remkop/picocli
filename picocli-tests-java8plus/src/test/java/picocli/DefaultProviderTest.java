@@ -1,10 +1,7 @@
 package picocli;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.contrib.java.lang.system.ProvideSystemProperty;
-import org.junit.contrib.java.lang.system.RestoreSystemProperties;
-import org.junit.rules.TestRule;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.IDefaultValueProvider;
 import picocli.CommandLine.Model.ArgSpec;
@@ -13,20 +10,18 @@ import picocli.CommandLine.Parameters;
 import picocli.CommandLine.PropertiesDefaultProvider;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
-import static org.junit.Assert.*;
+import static com.github.stefanbirkner.systemlambda.SystemLambda.restoreSystemProperties;
+import static com.github.stefanbirkner.systemlambda.SystemLambda.withEnvironmentVariable;
+import static java.util.Arrays.asList;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 public class DefaultProviderTest {
-
-    // allows tests to set any kind of properties they like, without having to individually roll them back
-    @Rule
-    public final TestRule restoreSystemProperties = new RestoreSystemProperties();
-
-    @Rule
-    public final ProvideSystemProperty ansiOFF = new ProvideSystemProperty("picocli.ansi", "false");
 
     static class TestDefaultProvider implements IDefaultValueProvider {
         public String defaultValue(ArgSpec argSpec) {
@@ -140,15 +135,18 @@ public class DefaultProviderTest {
     }
 
     @SuppressWarnings("unchecked")
-    @Test(expected = UnsupportedOperationException.class)
+    @Test()
     public void testNoDefaultProviderThrowsUnsupportedOperation() throws Exception {
-        Class<IDefaultValueProvider> c = (Class<IDefaultValueProvider>) Class.forName("picocli.CommandLine$NoDefaultProvider");
+        UnsupportedOperationException thrown = Assertions.assertThrows(UnsupportedOperationException.class, () -> {
+            Class<IDefaultValueProvider> c = (Class<IDefaultValueProvider>) Class.forName("picocli.CommandLine$NoDefaultProvider");
 
-        IDefaultValueProvider provider = CommandLine.defaultFactory().create(c);
-        assertNotNull(provider);
-        provider.defaultValue(CommandLine.Model.PositionalParamSpec.builder().build());
+            IDefaultValueProvider provider = CommandLine.defaultFactory().create(c);
+            assertNotNull(provider);
+            provider.defaultValue(CommandLine.Model.PositionalParamSpec.builder().build());
+        });
+
+        Assertions.assertEquals(null, thrown.getMessage());
     }
-
     @Test
     public void testDefaultProviderReturnsSetValue() {
         CommandLine cmd = new CommandLine(Sub.class);
@@ -156,7 +154,6 @@ public class DefaultProviderTest {
         cmd.setDefaultValueProvider(provider);
         assertSame(provider, cmd.getDefaultValueProvider());
     }
-
     @Test
     public void testDefaultProviderPropagatedToSubCommand() {
         CommandLine cmd = new CommandLine(App.class);
@@ -183,7 +180,7 @@ public class DefaultProviderTest {
     }
 
     @Test
-    public void testDefaultValueInDescription() {
+    public void testDefaultValueInDescription() throws Exception {
         String expected = String.format("" +
                 "Usage: <main class> [OPTIONS] [<paramStringFieldWithoutDefaultNorInitialValue>] [<paramStringFieldWithAnnotatedDefault>] [<paramStringFieldWithInitDefault>]%n" +
                 "      [<paramStringFieldWithoutDefaultNorInitialValue>]%n" +
@@ -202,11 +199,14 @@ public class DefaultProviderTest {
                 "                   Default: Default provider string value%n" +
                 "  -d=<string>    Default: Default provider string value%n");
         CommandLine cmd = new CommandLine(App.class);
-        assertEquals(expected, cmd.getUsageMessage(CommandLine.Help.Ansi.OFF));
+        restoreSystemProperties(() -> {
+            System.setProperty("picocli.ansi", "false");
+            assertEquals(expected, cmd.getUsageMessage(CommandLine.Help.Ansi.OFF));
+        });
     }
 
     @Test
-    public void testDefaultValueInDescriptionAfterSetProvider() {
+    public void testDefaultValueInDescriptionAfterSetProvider() throws Exception {
         String expected2 = String.format("" +
                 "Usage: <main class> [OPTIONS] [<paramStringFieldWithoutDefaultNorInitialValue>] [<paramStringFieldWithAnnotatedDefault>] [<paramStringFieldWithInitDefault>]%n" +
                 "      [<paramStringFieldWithoutDefaultNorInitialValue>]%n" +
@@ -231,11 +231,14 @@ public class DefaultProviderTest {
                 return "XYZ";
             }
         });
-        assertEquals(expected2, cmd.getUsageMessage(CommandLine.Help.Ansi.OFF));
+        restoreSystemProperties(() -> {
+            System.setProperty("picocli.ansi", "false");
+            assertEquals(expected2, cmd.getUsageMessage(CommandLine.Help.Ansi.OFF));
+        });
     }
 
     @Test
-    public void testDefaultValueInDescriptionWithErrorProvider() {
+    public void testDefaultValueInDescriptionWithErrorProvider() throws Exception {
         String expected2 = String.format("" +
                 "Usage: <main class> [OPTIONS] [<paramStringFieldWithoutDefaultNorInitialValue>] [<paramStringFieldWithAnnotatedDefault>] [<paramStringFieldWithInitDefault>]%n" +
                 "      [<paramStringFieldWithoutDefaultNorInitialValue>]%n" +
@@ -259,7 +262,11 @@ public class DefaultProviderTest {
                 throw new IllegalStateException("abc");
             }
         });
-        assertEquals(expected2, cmd.getUsageMessage(CommandLine.Help.Ansi.OFF));
+        restoreSystemProperties(() -> {
+            System.setProperty("picocli.ansi", "false");
+            assertEquals(expected2, cmd.getUsageMessage(CommandLine.Help.Ansi.OFF));
+        });
+
     }
     static class FooDefaultProvider implements IDefaultValueProvider {
         public String defaultValue(ArgSpec argSpec) throws Exception {
@@ -303,7 +310,7 @@ public class DefaultProviderTest {
     }
 
     @Test
-    public void testIssue962DefaultNotUsedIfArgumentSpecifiedOnCommandLine() {
+    public void testIssue962DefaultNotUsedIfArgumentSpecifiedOnCommandLine() throws Exception {
         class App {
             List<Integer> specified = new ArrayList<Integer>();
 
@@ -315,12 +322,14 @@ public class DefaultProviderTest {
             @Option(names = "--field", defaultValue = "${sys:TEST_A_962}", required = true)
             Integer a;
         }
-        System.setProperty("TEST_PORT_962", "xxx");
-        System.setProperty("TEST_A_962", "xxx");
+        restoreSystemProperties(() -> {
+            System.setProperty("TEST_PORT_962", "xxx");
+            System.setProperty("TEST_A_962", "xxx");
 
-        App app1 = CommandLine.populateCommand(new App(), "--port=123", "--field=987");
-        assertEquals((Integer) 987, app1.a);
-        assertEquals(Arrays.asList(123), app1.specified);
+            App app1 = CommandLine.populateCommand(new App(), "--port=123", "--field=987");
+            assertEquals((Integer) 987, app1.a);
+            assertEquals(asList(123), app1.specified);
+        });
     }
 
     @Test
@@ -338,7 +347,7 @@ public class DefaultProviderTest {
         }
         App app1 = CommandLine.populateCommand(new App(), "--option=123", "--num=987");
         assertEquals((Integer) 987, app1.a);
-        assertEquals(Arrays.asList("123"), app1.specified);
+        assertEquals(asList("123"), app1.specified);
     }
 
     static class NullDefaultProvider implements IDefaultValueProvider {
@@ -359,15 +368,17 @@ public class DefaultProviderTest {
     }
 
     @Test
-    public void testDefaultValueWithVariable() {
+    public void testDefaultValueWithVariable() throws Exception {
         @Command
         class App {
             @Option(names = "-a", defaultValue = "${VARIABLE:-555}")
             int a;
         }
-        System.setProperty("VARIABLE", "123");
-        App app1 = CommandLine.populateCommand(new App());
-        assertEquals(123, app1.a);
+        restoreSystemProperties(() -> {
+            System.setProperty("VARIABLE", "123");
+            App app1 = CommandLine.populateCommand(new App());
+            assertEquals(123, app1.a);
+        });
     }
 
     @Test
@@ -400,15 +411,48 @@ public class DefaultProviderTest {
     }
 
     @Test
-    public void testDefaultValueProviderWithVariablesResolvesSystemProperty() {
+    public void testDefaultValueProviderWithVariablesResolvesSystemProperty() throws Exception {
         @Command(defaultValueProvider = DefaultProviderWithVariables.class)
         class App {
             @Option(names = "-a")
             int a;
         }
-        System.setProperty("VARIABLE", "123");
-        App app1 = CommandLine.populateCommand(new App());
-        assertEquals(123, app1.a);
+        restoreSystemProperties(() -> {
+            System.setProperty("VARIABLE", "123");
+            App app1 = CommandLine.populateCommand(new App());
+            assertEquals(123, app1.a);
+        });
+    }
+
+    @Test
+    public void testDefaultValueProviderWithVariablesPrefersSystemPropertyOverEnvVars() throws Exception {
+        @Command(defaultValueProvider = DefaultProviderWithVariables.class)
+        class App {
+            @Option(names = "-a")
+            int a;
+        }
+        restoreSystemProperties(() -> {
+            System.setProperty("VARIABLE", "123");
+            withEnvironmentVariable("VARIABLE", "456")
+                .execute(() -> {
+                    App app1 = CommandLine.populateCommand(new App());
+                    assertEquals(123, app1.a);
+                });
+        });
+    }
+
+    @Test
+    public void testDefaultValueProviderWithVariablesResolvesEnvironmentVariable() throws Exception {
+        @Command(defaultValueProvider = DefaultProviderWithVariables.class)
+        class App {
+            @Option(names = "-a")
+            int a;
+        }
+        withEnvironmentVariable("VARIABLE", "456")
+            .execute(() -> {
+                App app1 = CommandLine.populateCommand(new App());
+                assertEquals(456, app1.a);
+            });
     }
 
     @Test
@@ -424,16 +468,32 @@ public class DefaultProviderTest {
     }
 
     @Test
-    public void testDefaultValueProviderWithVariablesPrefersSystemPropertyOverResourceBundle() {
+    public void testDefaultValueProviderWithVariablesPrefersSystemPropertyOverResourceBundle() throws Exception {
         @Command(defaultValueProvider = DefaultProviderWithVariables.class,
             resourceBundle = "picocli.DefaultProviderTestBundle")
         class App {
             @Option(names = "-a")
             int a;
         }
-        System.setProperty("VARIABLE", "123");
-        App app1 = CommandLine.populateCommand(new App());
-        assertEquals(123, app1.a);
+        restoreSystemProperties(() -> {
+                System.setProperty("VARIABLE", "123");
+                App app1 = CommandLine.populateCommand(new App());
+                assertEquals(123, app1.a);
+            });
     }
 
+    @Test
+    public void testDefaultValueProviderWithVariablesPrefersEnvVarsOverResourceBundle() throws Exception {
+        @Command(defaultValueProvider = DefaultProviderWithVariables.class,
+            resourceBundle = "picocli.DefaultProviderTestBundle")
+        class App {
+            @Option(names = "-a")
+            int a;
+        }
+        withEnvironmentVariable("VARIABLE", "456")
+            .execute(() -> {
+                App app1 = CommandLine.populateCommand(new App());
+                assertEquals(456, app1.a);
+            });
+    }
 }

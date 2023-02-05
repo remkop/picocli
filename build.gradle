@@ -90,10 +90,11 @@ allprojects {
         }
     }
     dependencies {
-        testImplementation supportDependencies.junit
-        testImplementation supportDependencies.hamcrestCore
         testImplementation supportDependencies.jansi
         testImplementation supportDependencies.groovy
+
+        testImplementation supportDependencies.junit
+        testImplementation supportDependencies.hamcrestCore
         testImplementation supportDependencies.systemRules
         testImplementation supportDependencies.junitParams
     }

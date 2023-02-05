@@ -36,7 +36,7 @@ If you have multiple versions of Java installed, then before running this build,
 : (on Windows)
 : start command prompt if we are running in Powershell
 cmd
-cd picocli-legacy-tests
+cd picocli-tests-java567
 
 : now build the project with Java 5, 6 and 7
 set JAVA_HOME=C:\apps\jdk1.5.0_22

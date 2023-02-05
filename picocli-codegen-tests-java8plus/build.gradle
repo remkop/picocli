@@ -3,7 +3,7 @@ plugins {
 }
 
 group 'info.picocli'
-description 'Picocli Annotation Processing Tests - Tests Annotation Processors for picocli Annotations.'
+description 'Picocli Codegen Tests for Java 8+: Tests Annotation Processors for picocli Annotations.'
 version "$projectVersion"
 
 sourceCompatibility = 1.8
@@ -29,12 +29,12 @@ tasks.withType(Test.class) {
 
 jar {
     manifest {
-        attributes 'Specification-Title': 'Picocli Annotation Processing Tests',
+        attributes 'Specification-Title': 'Picocli Codegen Tests for Java 8+',
                 'Specification-Vendor'  : 'Remko Popma',
                 'Specification-Version' : archiveVersion.get(),
-                'Implementation-Title'  : 'Picocli Annotation Processing Tests',
+                'Implementation-Title'  : 'Picocli Codegen Tests for Java 8+',
                 'Implementation-Vendor' : 'Remko Popma',
                 'Implementation-Version': archiveVersion.get(),
-                'Automatic-Module-Name' : 'info.picocli.annotation.processing.tests'
+                'Automatic-Module-Name' : 'info.picocli.codegen.tests.java8plus'
     }
 }

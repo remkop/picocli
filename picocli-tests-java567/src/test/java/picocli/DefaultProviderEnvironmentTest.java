@@ -2,6 +2,7 @@ package picocli;
 
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.EnvironmentVariables;
 import org.junit.contrib.java.lang.system.ProvideSystemProperty;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.rules.TestRule;
@@ -15,11 +16,12 @@ import picocli.CommandLine.PropertiesDefaultProvider;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.ListResourceBundle;
 import java.util.Properties;
 
 import static org.junit.Assert.*;
 
-public class DefaultProviderTest {
+public class DefaultProviderEnvironmentTest {
 
     // allows tests to set any kind of properties they like, without having to individually roll them back
     @Rule
@@ -27,6 +29,9 @@ public class DefaultProviderTest {
 
     @Rule
     public final ProvideSystemProperty ansiOFF = new ProvideSystemProperty("picocli.ansi", "false");
+
+    @Rule
+    public final EnvironmentVariables envVars = new EnvironmentVariables();
 
     static class TestDefaultProvider implements IDefaultValueProvider {
         public String defaultValue(ArgSpec argSpec) {
@@ -412,9 +417,34 @@ public class DefaultProviderTest {
     }
 
     @Test
+    public void testDefaultValueProviderWithVariablesPrefersSystemPropertyOverEnvVars() {
+        @Command(defaultValueProvider = DefaultProviderWithVariables.class)
+        class App {
+            @Option(names = "-a")
+            int a;
+        }
+        System.setProperty("VARIABLE", "123");
+        envVars.set("VARIABLE", "456");
+        App app1 = CommandLine.populateCommand(new App());
+        assertEquals(123, app1.a);
+    }
+
+    @Test
+    public void testDefaultValueProviderWithVariablesResolvesEnvironmentVariable() {
+        @Command(defaultValueProvider = DefaultProviderWithVariables.class)
+        class App {
+            @Option(names = "-a")
+            int a;
+        }
+        envVars.set("VARIABLE", "456");
+        App app1 = CommandLine.populateCommand(new App());
+        assertEquals(456, app1.a);
+    }
+
+    @Test
     public void testDefaultValueProviderWithVariablesResolvesResourceBundle() {
         @Command(defaultValueProvider = DefaultProviderWithVariables.class,
-                resourceBundle = "picocli.DefaultProviderTestBundle")
+                resourceBundle = "picocli.DefaultProviderEnvironmentTestBundle")
         class App {
             @Option(names = "-a")
             int a;
@@ -426,7 +456,7 @@ public class DefaultProviderTest {
     @Test
     public void testDefaultValueProviderWithVariablesPrefersSystemPropertyOverResourceBundle() {
         @Command(defaultValueProvider = DefaultProviderWithVariables.class,
-            resourceBundle = "picocli.DefaultProviderTestBundle")
+            resourceBundle = "picocli.DefaultProviderEnvironmentTestBundle")
         class App {
             @Option(names = "-a")
             int a;
@@ -436,4 +466,16 @@ public class DefaultProviderTest {
         assertEquals(123, app1.a);
     }
 
+    @Test
+    public void testDefaultValueProviderWithVariablesPrefersEnvVarsOverResourceBundle() {
+        @Command(defaultValueProvider = DefaultProviderWithVariables.class,
+            resourceBundle = "picocli.DefaultProviderEnvironmentTestBundle")
+        class App {
+            @Option(names = "-a")
+            int a;
+        }
+        envVars.set("VARIABLE", "456");
+        App app1 = CommandLine.populateCommand(new App());
+        assertEquals(456, app1.a);
+    }
 }
