@@ -93,7 +93,7 @@ jobs:
 
       - name: Create badge (Linux)
         if: ${{ always() && matrix.os == 'ubuntu-latest' }}
-        uses: emibcn/badge-action@d6f51ff11b5c3382b3b88689ae2d6db22d9737d1
+        uses: emibcn/badge-action@4209421db54c8764d8932070ffd0f81715a629bf
         with:
           label: Tests
           status: '${{ fromJSON( steps.test-results-nix.outputs.json ).formatted.stats.tests }} tests, ${{ fromJSON( steps.test-results-nix.outputs.json ).formatted.stats.runs }} runs: ${{ fromJSON( steps.test-results-nix.outputs.json ).conclusion }}'
@@ -102,7 +102,7 @@ jobs:
 
       - name: Create badge (Win/Mac)
         if: ${{ always() && (matrix.os == 'macos-latest' || matrix.os == 'windows-latest') }}
-        uses: emibcn/badge-action@d6f51ff11b5c3382b3b88689ae2d6db22d9737d1
+        uses: emibcn/badge-action@4209421db54c8764d8932070ffd0f81715a629bf
         with:
           label: Tests
           status: '${{ fromJSON( steps.test-results.outputs.json ).formatted.stats.tests }} tests, ${{ fromJSON( steps.test-results.outputs.json ).formatted.stats.runs }} runs: ${{ fromJSON( steps.test-results.outputs.json ).conclusion }}'
