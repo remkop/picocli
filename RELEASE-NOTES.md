@@ -1,5 +1,40 @@
 # picocli Release Notes
 
+# <a name="4.7.2"></a> Picocli 4.7.2 (UNRELEASED)
+The picocli community is pleased to announce picocli 4.7.2.
+
+This release includes bugfixes and enhancements.
+
+
+
+This is the eighty-first public release.
+Picocli follows [semantic versioning](https://semver.org/).
+Artifacts in this release are signed by Remko Popma (6601 E5C0 8DCC BB96).
+
+## <a name="4.7.2-toc"></a> Table of Contents
+* [New and noteworthy](#4.7.2-new)
+* [Fixed issues](#4.7.2-fixes)
+* [Deprecations](#4.7.2-deprecated)
+* [Potential breaking changes](#4.7.2-breaking-changes)
+
+## <a name="4.7.2-new"></a> New and Noteworthy
+
+## <a name="4.7.2-fixes"></a> Fixed issues
+* [#1932] Enhancement: Move System-Rules tests to Java 5 test module; move System-Lambda tests to Java 8+ test module. Facilitate testing with recent JRE's.
+* [#1945] DOC: Code sample: add Java version. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+* [#1941] DEP: Bump emibcn/badge-action from 1.2.4 to 2.0.2
+* [#1942] DEP: Bump github/codeql-action from 2.1.39 to 2.2.1
+
+
+## <a name="4.7.2-deprecated"></a> Deprecations
+No features were deprecated in this release.
+
+## <a name="4.7.2-breaking-changes"></a> Potential breaking changes
+This release has no breaking changes.
+
+
+
+
 
 # <a name="4.7.1"></a> Picocli 4.7.1
 The picocli community is pleased to announce picocli 4.7.1.
