@@ -21,10 +21,15 @@ dependencies {
         testImplementation files(org.gradle.internal.jvm.Jvm.current().getToolsJar()) // needed on Java 8: https://github.com/google/compile-testing/issues/102 (and #28)
     }
 }
-tasks.withType(Test.class) {
-    if (org.gradle.api.JavaVersion.current().isJava12Compatible()) { // only a problem from Java 16, but okay
-        it.jvmArgs '--add-opens=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED' // https://github.com/google/compile-testing/issues/222
-    }
+
+test {
+    useJUnit()
+
+    jvmArgs('-XX:+IgnoreUnrecognizedVMOptions')
+    jvmArgs('--permit-illegal-access')
+
+    // https://github.com/google/compile-testing/issues/222
+    jvmArgs('--add-opens', 'jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED')
 }
 
 jar {
