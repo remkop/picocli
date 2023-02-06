@@ -39,7 +39,7 @@ jobs:
         run: ./gradlew -q javaToolchains
 
       - name: Build
-        run: ./gradlew build --no-daemon
+        run: ./gradlew --stop;./gradlew clean;./gradlew build --no-daemon
 
       - name: Publish Test Results (Linux)
         uses: EnricoMi/publish-unit-test-result-action@v2
