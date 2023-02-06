@@ -11,6 +11,10 @@ if (org.gradle.api.JavaVersion.current().isJava8Compatible()) {
     println("Excluding modules picocli-spring-boot-starter, picocli-shell-jline3: " +
         "they require Java 8+ but we have Java version ${org.gradle.api.JavaVersion.current()}")
 }
+
+// some subprojects have Java Modules-related requirements, for example:
+//   test {jvmArgs('--add-opens', 'java.base/java.util=ALL-UNNAMED')}
+// this syntax fails on Java 8, it requires Java 9+
 if (org.gradle.api.JavaVersion.current().isJava9Compatible()) {
     include 'picocli-codegen-tests-java8plus'
     include 'picocli-tests-java8plus'
