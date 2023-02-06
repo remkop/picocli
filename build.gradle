@@ -218,12 +218,7 @@ if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_18)) {
         systemProperty "java.security.manager", "allow"
     }
 }
-tasks.withType(Test.class) {
-    if (org.gradle.api.JavaVersion.current().isCompatibleWith(
-                org.gradle.api.JavaVersion.VERSION_19)) {
-        it.jvmArgs '--add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED'
-    }
-}
+
 // javadoc and asciidoc customization
 apply from: "${rootProject.projectDir}/gradle/docs.gradle"
 
