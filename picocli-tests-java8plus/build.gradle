@@ -11,13 +11,13 @@ targetCompatibility = 1.8
 
 test {
     useJUnitPlatform()
-}
-tasks.withType(Test.class) {
-    if (org.gradle.api.JavaVersion.current().isCompatibleWith(
-        org.gradle.api.JavaVersion.VERSION_18)) {
-        it.jvmArgs += ['--add-opens java.base/java.util=ALL-UNNAMED',
-                       '--add-opens java.base/java.lang=ALL-UNNAMED']
-    }
+
+//    if (org.gradle.api.JavaVersion.current().isCompatibleWith(
+//        org.gradle.api.JavaVersion.VERSION_18)) {
+    jvmArgs('-XX:+IgnoreUnrecognizedVMOptions')
+    jvmArgs('--permit-illegal-access')
+    jvmArgs('--add-opens', 'java.base/java.util=ALL-UNNAMED')
+    jvmArgs('--add-opens', 'java.base/java.lang=ALL-UNNAMED')
 }
 
 
