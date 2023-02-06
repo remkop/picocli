@@ -24,6 +24,8 @@ Artifacts in this release are signed by Remko Popma (6601 E5C0 8DCC BB96).
 * [#1945] DOC: Code sample: add Java version. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1941] DEP: Bump emibcn/badge-action from 1.2.4 to 2.0.2
 * [#1942] DEP: Bump github/codeql-action from 2.1.39 to 2.2.1
+* [#1947] DEP: Bump org.jetbrains.kotlin:kotlin-gradle-plugin from 1.7.20 to 1.8.10
+* [#1948] DEP: Bump org.jetbrains.kotlin:kotlin-script-runtime from 1.7.20 to 1.8.10
 
 
 ## <a name="4.7.2-deprecated"></a> Deprecations
