@@ -5,10 +5,17 @@ include 'picocli-shell-jline2'
 include 'picocli-codegen'
 
 if (org.gradle.api.JavaVersion.current().isJava8Compatible()) {
-    include 'picocli-annotation-processing-tests'
     include 'picocli-spring-boot-starter'
     include 'picocli-shell-jline3'
+} else {
+    println("Excluding modules picocli-spring-boot-starter, picocli-shell-jline3: " +
+        "they require Java 8+ but we have Java version ${org.gradle.api.JavaVersion.current()}")
+}
+if (org.gradle.api.JavaVersion.current().isJava9Compatible()) {
+    include 'picocli-codegen-tests-java8plus'
     include 'picocli-tests-java8plus'
 } else {
-    println("Excluding module picocli-annotation-processing-tests from the build: they require Java 8 but we have Java version ${org.gradle.api.JavaVersion.current()}")
+    println("Excluding modules picocli-codegen-tests-java8plus, " +
+        "picocli-tests-java8plus from the build: " +
+        "they require Java 8 9 but we have Java version ${org.gradle.api.JavaVersion.current()}")
 }
