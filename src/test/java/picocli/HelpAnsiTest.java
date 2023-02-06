@@ -20,12 +20,25 @@ import java.util.Locale;
 import static org.junit.Assert.*;
 import static picocli.TestUtil.usageString;
 
+/**
+ * <p>ANSI-related usage help tests.</p>
+ * <p>
+ * Note: Most of the tests related to the heuristics for enabling ANSI escape codes
+ * have been moved to separate classes.
+ * Those tests required modification of the environment variables and the mechanisms
+ * to accomplish that work in some versions of Java but not others.
+ * </p>
+ * <ul>
+ *   <li>Java 5, 6, 7: picocli-tests-java567/src/test/java/picocli/HelpAnsiHeuristicsTest.java</li>
+ *   <li>Java 8-18: picocli-tests-java8plus/src/test/java/picocli/HelpAnsiHeuristicsTest.java</li>
+ * </ul>
+ * <p>
+ *   The remaining tests in this class test ANSI escape codes when explicitly enabled
+ *   or disabled.
+ * </p>
+ */
 public class HelpAnsiTest {
     private static final String LINESEP = System.getProperty("line.separator");
-
-    private static final String[] ANSI_ENVIRONMENT_VARIABLES = new String[] {
-            "TERM", "OSTYPE", "NO_COLOR", "ANSICON", "CLICOLOR", "ConEmuANSI", "CLICOLOR_FORCE"
-    };
 
     @Rule
     // allows tests to set any kind of properties they like, without having to individually roll them back
