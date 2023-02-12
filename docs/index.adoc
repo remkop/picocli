@@ -7513,7 +7513,7 @@ Picocli-based applications will show ANSI colors in WSL by default.
 
 ===== For Reference: 3rd Party Software
 In Windows version prior to 10, the Windows command console doesn't support output coloring by default.
-One option is for end users to install either https://cmder.net/[Cmder], https://sourceforge.net/projects/conemu/[ConEmu], https://github.com/adoxa/ansicon/[ANSICON] or https://mintty.github.io/[Mintty] (used by default in GitBash and Cygwin) to add coloring support to their Windows command console.
+One option is for end users to install either https://cmder.app/[Cmder], https://sourceforge.net/projects/conemu/[ConEmu], https://github.com/adoxa/ansicon/[ANSICON] or https://mintty.github.io/[Mintty] (used by default in GitBash and Cygwin) to add coloring support to their Windows command console.
 
 
 
