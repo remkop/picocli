@@ -3,11 +3,12 @@ plugins {
 }
 
 group 'info.picocli'
-description 'Picocli Codegen Tests for Java 8+: Tests Annotation Processors for picocli Annotations.'
+description 'Picocli Codegen Tests for Java 9+: Tests Annotation Processors for picocli Annotations.'
 version "$projectVersion"
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+// since the tests need JVM arg --add-opens, this subproject requires Java 9 or later
+sourceCompatibility = 1.9
+targetCompatibility = 1.9
 
 dependencies {
     api rootProject
@@ -34,12 +35,12 @@ test {
 
 jar {
     manifest {
-        attributes 'Specification-Title': 'Picocli Codegen Tests for Java 8+',
+        attributes 'Specification-Title': 'Picocli Codegen Tests for Java 9+',
                 'Specification-Vendor'  : 'Remko Popma',
                 'Specification-Version' : archiveVersion.get(),
-                'Implementation-Title'  : 'Picocli Codegen Tests for Java 8+',
+                'Implementation-Title'  : 'Picocli Codegen Tests for Java 9+',
                 'Implementation-Vendor' : 'Remko Popma',
                 'Implementation-Version': archiveVersion.get(),
-                'Automatic-Module-Name' : 'info.picocli.codegen.tests.java8plus'
+                'Automatic-Module-Name' : 'info.picocli.codegen.tests.java9plus'
     }
 }
