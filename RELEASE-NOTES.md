@@ -22,11 +22,15 @@ Artifacts in this release are signed by Remko Popma (6601 E5C0 8DCC BB96).
 ## <a name="4.7.2-fixes"></a> Fixed issues
 * [#1932] Enhancement: Move System-Rules tests to Java 5 test module; move System-Lambda tests to Java 8+ test module. Facilitate testing with recent JRE's.
 * [#1945] DOC: Code sample: add Java version. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+* [#1956] Doc: Fix broken link in user manual. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+* [#1955] DEP: Bump asciidoctorj from 2.5.5 to 2.5.7. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+* [#1952] DEP: Bump actions/setup-java from 3.9.0 to 3.10.0
 * [#1941] DEP: Bump emibcn/badge-action from 1.2.4 to 2.0.2
 * [#1942] DEP: Bump github/codeql-action from 2.1.39 to 2.2.1
+* [#1953] DEP: Bump github/codeql-action from 2.2.1 to 2.2.3
+* [#1958] DEP: Bump github/codeql-action from 2.2.3 to 2.2.4
 * [#1947] DEP: Bump org.jetbrains.kotlin:kotlin-gradle-plugin from 1.7.20 to 1.8.10
 * [#1948] DEP: Bump org.jetbrains.kotlin:kotlin-script-runtime from 1.7.20 to 1.8.10
-
 
 ## <a name="4.7.2-deprecated"></a> Deprecations
 No features were deprecated in this release.
