@@ -94,6 +94,7 @@ import static javax.lang.model.element.ElementKind.ENUM;
 public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
     private static final String COMMAND_DEFAULT_NAME = CommandSpec.DEFAULT_COMMAND_NAME;
     private static Logger logger = Logger.getLogger(AbstractCommandSpecProcessor.class.getName());
+    private static boolean loadBundlesDuringAnnotationProcessing;
 
     /** The ProcessingEnvironment set by the {@link #init(ProcessingEnvironment)} method. */
     protected ProcessingEnvironment processingEnv;
@@ -172,6 +173,18 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
             return false;
         }
     }
+    /**
+     * During annotation processing, resource bundles may not be available on the
+     * classpath and thereby cause failures.
+     * For that reason, by default, resource bundles are not loaded during annotation processing.
+     * This method allows for enabling loading of resource bundles during annotation processing.
+     *
+     * @since 4.8.0
+     * @param loadBundles true if bundles should be loaded, false (default) if bundles should not be loaded
+     */
+    public static final void setLoadResourceBundles(boolean loadBundles) {
+        loadBundlesDuringAnnotationProcessing = loadBundles;
+    }
 
     private static String stacktrace(Exception e) {
         StringWriter writer = new StringWriter();
@@ -180,7 +193,7 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
     }
 
     private boolean tryProcess(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        Model.Messages.setLoadBundles(false);
+        Model.Messages.setLoadBundles(loadBundlesDuringAnnotationProcessing);
         new AnnotationValidator(processingEnv).validateAnnotations(roundEnv);
 
         Context context = new Context();

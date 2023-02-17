@@ -3,9 +3,9 @@ package picocli.annotation.processing.tests;
 import com.google.testing.compile.Compilation;
 import com.google.testing.compile.JavaFileObjects;
 import org.junit.Test;
+import picocli.codegen.annotation.processing.AbstractCommandSpecProcessor;
 
 import javax.annotation.processing.Processor;
-import javax.tools.StandardLocation;
 
 import static com.google.testing.compile.CompilationSubject.assertThat;
 import static com.google.testing.compile.Compiler.javac;
@@ -27,6 +27,7 @@ public class Issue1137Test {
 
     @Test
     public void testIssue1137Details() {
+        AbstractCommandSpecProcessor.setLoadResourceBundles(true);
 
         Compilation compilation = compareCommandYamlDump(slurp("/picocli/issue1137/Issue1137.yaml"),
                 JavaFileObjects.forResource("picocli/issue1137/Issue1137.java"));

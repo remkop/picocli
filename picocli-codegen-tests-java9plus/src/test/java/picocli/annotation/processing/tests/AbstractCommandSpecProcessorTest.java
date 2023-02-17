@@ -7,6 +7,7 @@ import org.hamcrest.MatcherAssert;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import picocli.codegen.annotation.processing.AbstractCommandSpecProcessor;
 
 import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
@@ -19,8 +20,7 @@ import java.util.Locale;
 import static com.google.testing.compile.CompilationSubject.assertThat;
 import static com.google.testing.compile.Compiler.javac;
 import static org.hamcrest.CoreMatchers.containsString;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static picocli.annotation.processing.tests.Resources.slurp;
 import static picocli.annotation.processing.tests.Resources.slurpAll;
 import static picocli.annotation.processing.tests.YamlAssert.compareCommandYamlDump;
@@ -282,9 +282,19 @@ public class AbstractCommandSpecProcessorTest {
     }
 
     @Test
-    public void testCommandWithBundle() {
+    public void testCommandWithBundleLoaded() {
+        AbstractCommandSpecProcessor.setLoadResourceBundles(true);
         Compilation compilation = compareCommandYamlDump(slurp("/picocli/examples/messages/CommandWithBundle.yaml"),
                 JavaFileObjects.forResource("picocli/examples/messages/CommandWithBundle.java"));
+
+        assertOnlySourceVersionWarning(compilation);
+    }
+
+    @Test
+    public void testCommandWithBundleNotLoaded() {
+        AbstractCommandSpecProcessor.setLoadResourceBundles(false);
+        Compilation compilation = compareCommandYamlDump(slurp("/picocli/examples/messages/CommandWithBundle-NotLoaded.yaml"),
+            JavaFileObjects.forResource("picocli/examples/messages/CommandWithBundle.java"));
 
         assertOnlySourceVersionWarning(compilation);
     }

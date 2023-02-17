@@ -3,6 +3,7 @@ package picocli.annotation.processing.tests;
 import com.google.testing.compile.Compilation;
 import com.google.testing.compile.JavaFileObjects;
 import org.junit.Test;
+import picocli.codegen.annotation.processing.AbstractCommandSpecProcessor;
 
 import javax.annotation.processing.Processor;
 
@@ -26,6 +27,7 @@ public class Issue1134Test {
 
     @Test
     public void testIssue1134Details() {
+        AbstractCommandSpecProcessor.setLoadResourceBundles(true);
 
         Compilation compilation = compareCommandYamlDump(slurp("/picocli/issue1134/Issue1134.yaml"),
                 JavaFileObjects.forResource("picocli/issue1134/Issue1134.java"));
