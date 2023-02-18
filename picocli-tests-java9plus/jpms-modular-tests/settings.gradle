@@ -1,0 +1,4 @@
+rootProject.name = 'picocli.jpms.modular.tests'
+
+include 'app'
+include 'app-it'
