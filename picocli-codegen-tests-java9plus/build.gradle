@@ -7,8 +7,8 @@ description 'Picocli Codegen Tests for Java 9+: Tests Annotation Processors for 
 version "$projectVersion"
 
 // since the tests need JVM arg --add-opens, this subproject requires Java 9 or later
-sourceCompatibility = 1.9
-targetCompatibility = 1.9
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
 dependencies {
     api rootProject
