@@ -20,6 +20,7 @@ Artifacts in this release are signed by Remko Popma (6601 E5C0 8DCC BB96).
 ## <a name="4.7.2-new"></a> New and Noteworthy
 
 ## <a name="4.7.2-fixes"></a> Fixed issues
+* [#1959] API: Add ability to enable loading resource bundles in annotation processor for tests.
 * [#1932] Enhancement: Move System-Rules tests to Java 5 test module; move System-Lambda tests to Java 8+ test module. Facilitate testing with recent JRE's.
 * [#1945] DOC: Code sample: add Java version. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1956] Doc: Fix broken link in user manual. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
