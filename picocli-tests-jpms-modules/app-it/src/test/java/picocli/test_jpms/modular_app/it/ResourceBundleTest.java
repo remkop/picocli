@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 
 
 public class ResourceBundleTest {
-    public static void main(String... args) {
+    public static void main(String... args) throws Exception {
         new ResourceBundleTest().testLoadBundleModular();
     }
 
