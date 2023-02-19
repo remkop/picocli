@@ -8,10 +8,7 @@ import org.junit.jupiter.api.Test;
 
 public class ResourceBundleTest {
     public static void main(String... args) {
-        Module module = JpmsModularApp.class.getModule();
-        ResourceBundle bundle = ResourceBundle.getBundle("picocli.test_jpms.modular_app.messages", module);
-        System.out.println(bundle);
-        System.out.println(bundle.getString("usage.headerHeading"));
+        new ResourceBundleTest().testLoadBundleModular();
     }
 
     @Test
