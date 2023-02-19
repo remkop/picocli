@@ -3,7 +3,11 @@ package picocli.test_jpms.modular_app;
 import picocli.CommandLine;
 import picocli.CommandLine.*;
 
-@Command(name = "jpms-app", description = "I'm a JPMS modular app for testing", version = CommandLine.VERSION)
+@Command( name = "jpms-app",
+   description = "I'm a JPMS modular app for testing",
+       version = CommandLine.VERSION,
+resourceBundle = "picocli.test_jpms.modular_app.messages"
+)
 public class JpmsModularApp implements Runnable {
 
     @Option(names = "-x")

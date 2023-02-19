@@ -2,7 +2,7 @@ plugins {
     id 'org.javamodularity.moduleplugin' version '1.8.12' apply false
 }
 
-apply from: '../../dependencies.gradle'
+apply from: '../dependencies.gradle'
 
 
 group 'info.picocli'
@@ -26,9 +26,11 @@ subprojects {
     test {
         useJUnitPlatform()
 
-        testLogging {
-            events 'PASSED', 'FAILED', 'SKIPPED'
-        }
+//        testLogging {
+//            events 'PASSED', 'FAILED', 'SKIPPED'
+//        }
+        outputs.upToDateWhen {false}
+        testLogging.showStandardStreams = true
     }
 
     dependencies {
