@@ -7,6 +7,7 @@ module picocli.test_jpms.modular_app {
     // Open this package for reflection to external frameworks.
     opens picocli.test_jpms.modular_app;
 
-    // or: limit access to picocli only
-//    opens picocli.test_jpms.modular_app to info.picocli;
+    // THE BELOW DOES NOT WORK!
+    // The below syntax results in MissingResourceException: Can't find bundle for base name XXX
+    //    opens picocli.test_jpms.modular_app to info.picocli;  // AVOID THIS
 }

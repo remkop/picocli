@@ -11,3 +11,9 @@ This project has two subprojects:
 
 * The `app-it` subproject contains integration tests for the `app` subproject.
 
+To run this project:
+
+```bash
+cd picocli-tests-jpms-modules
+../gradlew check
+```
