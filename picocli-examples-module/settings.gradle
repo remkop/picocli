@@ -1,4 +1,0 @@
-rootProject.name = 'picocli-examples-module'
-
-include 'info.picocli.examples.module.simple'
-
