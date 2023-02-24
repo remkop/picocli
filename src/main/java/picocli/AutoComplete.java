@@ -582,7 +582,7 @@ public class AutoComplete {
         result.append("\n# ").append(levelName).append(" completion\n");
         result.append("set -l ").append(levelName);
         if (!currentLevelCommands.isEmpty()) {
-            result.append(" ").append(String.join(" ", currentLevelCommands));
+            result.append(" ").append(join(" ", currentLevelCommands));
         }
         result.append("\n");
         if (rootDescriptor != null) {
@@ -592,7 +592,7 @@ public class AutoComplete {
                 result.append(" -l ").append(optionSpec.longestName().replace("--", ""));
 
                 if (optionSpec.completionCandidates() != null) {
-                    result.append(" -f -a '").append(String.join(" ", extract(optionSpec.completionCandidates()))).append("' ");
+                    result.append(" -f -a '").append(join(" ", extract(optionSpec.completionCandidates()))).append("' ");
                 }
 
                 String optionDescription =  sanitizeDescription(optionSpec.description().length > 0 ? optionSpec.description()[0] : "");
@@ -627,7 +627,7 @@ public class AutoComplete {
                 result.append(" -l ").append(optionSpec.longestName().replace("--", ""));
 
                 if (optionSpec.completionCandidates() != null) {
-                    result.append(" -a '").append(String.join(" ", extract(optionSpec.completionCandidates()))).append("' ");
+                    result.append(" -a '").append(join(" ", extract(optionSpec.completionCandidates()))).append("' ");
                 }
 
                 String optionDescription =  sanitizeDescription(optionSpec.description().length > 0 ? optionSpec.description()[0] : "");
@@ -646,11 +646,21 @@ public class AutoComplete {
                 }
             }
         }
-
     }
 
     private static String sanitizeDescription(String description) {
         return description.replace("'", "\\'");
+    }
+
+    private static String join(String delimeter, List<String> list) {
+        StringBuilder result = new StringBuilder();
+        for (int i = 0; i < list.size(); i++) {
+            if (i > 0) {
+                result.append(delimeter);
+            }
+            result.append(list.get(i));
+        }
+        return result.toString();
     }
 
     private static List<CommandDescriptor> createHierarchy(String scriptName, CommandLine commandLine) {
