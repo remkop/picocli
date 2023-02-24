@@ -1710,80 +1710,155 @@ new ClipboardJS('.clipboard', {
 });
 </script>
 <style>
+
 .hidden {
+
     display: none;
+
 }
+
+
 
 .switch {
+
     border-width: 1px 1px 0 1px;
+
     border-style: solid;
+
     border-color: #7a2518;
+
     display: inline-block;
+
 }
+
+
 
 .switch--item {
+
     padding: 10px;
+
     background-color: #ffffff;
+
     color: #7a2518;
+
     display: inline-block;
+
     cursor: pointer;
+
 }
+
+
 
 .switch--item.selected {
+
     background-color: #7a2519;
+
     color: #ffffff;
+
 }
+
+
 
 </style>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/zepto/1.2.0/zepto.min.js"></script>
+
 <script type="text/javascript">
+
 function addBlockSwitches() {
+
     $('.primary').each(function() {
+
         primary = $(this);
+
         createSwitchItem(primary, createBlockSwitch(primary)).item.addClass("selected");
+
         primary.children('.title').remove();
+
     });
+
     $('.secondary').each(function(idx, node) {
+
         secondary = $(node);
+
         primary = findPrimary(secondary);
+
         switchItem = createSwitchItem(secondary, primary.children('.switch'));
+
         switchItem.content.addClass('hidden');
+
         findPrimary(secondary).append(switchItem.content);
+
         secondary.remove();
+
     });
+
 }
+
+
 
 function createBlockSwitch(primary) {
+
     blockSwitch = $('<div class="switch"></div>');
+
     primary.prepend(blockSwitch);
+
     return blockSwitch;
+
 }
+
+
 
 function findPrimary(secondary) {
+
     candidate = secondary.prev();
+
     while (!candidate.is('.primary')) {
+
         candidate = candidate.prev();
+
     }
+
     return candidate;
+
 }
 
+
+
 function createSwitchItem(block, blockSwitch) {
+
     blockName = block.children('.title').text();
+
     content = block.children('.content').first().append(block.next('.colist'));
+
     item = $('<div class="switch--item">' + blockName + '</div>');
+
     item.on('click', '', content, function(e) {
+
         $(this).addClass('selected');
+
         $(this).siblings().removeClass('selected');
+
         e.data.siblings('.content').addClass('hidden');
+
         e.data.removeClass('hidden');
+
     });
+
     blockSwitch.append(item);
+
     return {'item': item, 'content': content};
+
 }
+
+
 
 $(addBlockSwitches);
 
+
+
 </script>
+
 
 </head>
 <body class="article toc2 toc-left">
@@ -2010,6 +2085,7 @@ $(addBlockSwitches);
 <li><a href="#_localizing_the_built_in_help">19.4. Localizing the Built-In Help</a></li>
 <li><a href="#_localizing_default_values">19.5. Localizing Default Values</a></li>
 <li><a href="#_controlling_the_locale">19.6. Controlling the locale</a></li>
+<li><a href="#_jpms_modules_internationalization">19.7. JPMS Modules Internationalization</a></li>
 </ul>
 </li>
 <li><a href="#_variable_interpolation">20. Variable Interpolation</a>
@@ -2052,6 +2128,7 @@ $(addBlockSwitches);
 <li><a href="#_java_9_jpms_modules">23. Java 9 JPMS Modules</a>
 <ul class="sectlevel2">
 <li><a href="#_module_configuration">23.1. Module Configuration</a></li>
+<li><a href="#_resource_bundles_in_jpms_modules">23.2. Resource Bundles in JPMS Modules</a></li>
 </ul>
 </li>
 <li><a href="#_osgi_bundle">24. OSGi Bundle</a></li>
@@ -11676,7 +11753,7 @@ Picocli-based applications will show ANSI colors in WSL by default.</p>
 <h5 id="_for_reference_3rd_party_software"><a class="anchor" href="#_for_reference_3rd_party_software"></a>For Reference: 3rd Party Software</h5>
 <div class="paragraph">
 <p>In Windows version prior to 10, the Windows command console doesn&#8217;t support output coloring by default.
-One option is for end users to install either <a href="https://cmder.net/">Cmder</a>, <a href="https://sourceforge.net/projects/conemu/">ConEmu</a>, <a href="https://github.com/adoxa/ansicon/">ANSICON</a> or <a href="https://mintty.github.io/">Mintty</a> (used by default in GitBash and Cygwin) to add coloring support to their Windows command console.</p>
+One option is for end users to install either <a href="https://cmder.app/">Cmder</a>, <a href="https://sourceforge.net/projects/conemu/">ConEmu</a>, <a href="https://github.com/adoxa/ansicon/">ANSICON</a> or <a href="https://mintty.github.io/">Mintty</a> (used by default in GitBash and Cygwin) to add coloring support to their Windows command console.</p>
 </div>
 </div>
 </div>
@@ -13726,6 +13803,25 @@ To show that the subcommand is mandatory, use the <code>synopsisSubcommandLabel<
 <p>There are some scenarios where picocli can not parse an option with a default value which is the same as a subcommand name. To work around this, you can parse the option yourself using <a href="#_custom_parameter_processing"><code>IParameterConsumer</code></a>. A simple implementation is shown below. See <a href="https://github.com/remkop/picocli/issues/1428">this issue</a> for more details.</p>
 </div>
 <div class="listingblock primary">
+<div class="title">Java</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="java"><span class="kd">class</span> <span class="nc">ExecParameterConsumer</span> <span class="kd">implements</span> <span class="nc">IParameterConsumer</span> <span class="o">{</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">consumeParameters</span><span class="o">(</span><span class="nc">Stack</span><span class="o">&lt;</span><span class="nc">String</span><span class="o">&gt;</span> <span class="n">args</span><span class="o">,</span>
+                                <span class="nc">ArgSpec</span> <span class="n">argSpec</span><span class="o">,</span>
+                                <span class="nc">CommandSpec</span> <span class="n">commandSpec</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">args</span><span class="o">.</span><span class="na">isEmpty</span><span class="o">())</span> <span class="o">{</span>
+      <span class="k">throw</span> <span class="k">new</span> <span class="nf">ParameterException</span><span class="o">(</span>
+        <span class="n">commandSpec</span><span class="o">.</span><span class="na">commandLine</span><span class="o">(),</span>
+        <span class="s">"Missing required parameter for option "</span> <span class="o">+</span>
+        <span class="o">((</span><span class="nc">OptionSpec</span><span class="o">)</span> <span class="n">argSpec</span><span class="o">).</span><span class="na">longestName</span><span class="o">()</span>
+      <span class="o">);</span>
+    <span class="o">}</span>
+    <span class="n">argSpec</span><span class="o">.</span><span class="na">setValue</span><span class="o">(</span><span class="n">args</span><span class="o">.</span><span class="na">pop</span><span class="o">());</span>
+  <span class="o">}</span>
+<span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
 <div class="title">Kotlin</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">class</span> <span class="nc">MyParameterConsumer</span> <span class="p">:</span> <span class="nc">CommandLine</span><span class="p">.</span><span class="nc">IParameterConsumer</span> <span class="p">{</span>
@@ -13741,7 +13837,7 @@ To show that the subcommand is mandatory, use the <code>synopsisSubcommandLabel<
             <span class="p">(</span><span class="n">argSpec</span> <span class="k">as</span> <span class="nc">CommandLine</span><span class="p">.</span><span class="nc">Model</span><span class="p">.</span><span class="nc">OptionSpec</span><span class="p">).</span><span class="nf">longestName</span><span class="p">()</span>
       <span class="p">)</span>
     <span class="p">}</span>
-    <span class="n">argSpec</span><span class="p">.</span><span class="nf">setValue</span><span class="p">(</span><span class="n">args</span><span class="p">.</span><span class="nf">pop</span><span class="p">());</span>
+    <span class="n">argSpec</span><span class="p">.</span><span class="nf">setValue</span><span class="p">(</span><span class="n">args</span><span class="p">.</span><span class="nf">pop</span><span class="p">())</span>
   <span class="p">}</span>
 <span class="p">}</span></code></pre>
 </div>
@@ -14975,6 +15071,12 @@ Hello Lea!</pre>
 <div class="paragraph">
 <p>Using the command line parameter <code>--locale</code>, one can also determine the language of the help output of your application.
 The <a href="https://github.com/remkop/picocli/blob/main/picocli-examples"><code>picocli-examples</code></a> module has examples with fully implemented, localized help output, coded both in <a href="https://github.com/remkop/picocli/blob/main/picocli-examples/src/main/java/picocli/examples/i18n/localecontrol/LocaleControl.java">Java</a> and <a href="https://github.com/remkop/picocli/tree/main/picocli-examples/src/main/kotlin/picocli/examples/kotlin/i18n/localecontrol/LocaleControl.kt">Kotlin</a>.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_jpms_modules_internationalization"><a class="anchor" href="#_jpms_modules_internationalization"></a>19.7. JPMS Modules Internationalization</h3>
+<div class="paragraph">
+<p>See <a href="#_resource_bundles_in_jpms_modules">Resource Bundles in JPMS Modules</a>.</p>
 </div>
 </div>
 </div>
@@ -17509,20 +17611,19 @@ To provide the best backward compatibility, the main picocli artifact is a <a hr
 <div class="paragraph">
 <p>Often applications want the annotated classes and fields to be <strong>private</strong>; there should be no need to make them part of the exported API of your module just to allow picocli to access them. The below settings make this possible.</p>
 </div>
-<div class="paragraph">
-<p>Example <code>module-info.java</code>:</p>
-</div>
 <div class="listingblock">
+<div class="title">Example <code>module-info.java</code></div>
 <div class="content">
-<pre class="rouge highlight"><code>module com.yourorg.yourapp {
-   requires info.picocli;
+<pre class="rouge highlight"><code data-lang="java"><span class="n">module</span> <span class="n">your</span><span class="o">.</span><span class="na">module</span> <span class="o">{</span>
+   <span class="n">requires</span> <span class="n">info</span><span class="o">.</span><span class="na">picocli</span><span class="o">;</span>
 
-   // Open this package for reflection to external frameworks.
-   opens your.package.using.picocli;
+   <span class="c1">// Open this package for reflection to external frameworks.</span>
+   <span class="n">opens</span> <span class="n">your</span><span class="o">.</span><span class="na">package</span><span class="o">.</span><span class="na">using</span><span class="o">.</span><span class="na">picocli</span><span class="o">;</span>
 
-   // or: limit access to picocli only
-   opens other.package.using.picocli to info.picocli;
-}</code></pre>
+   <span class="c1">// or: limit access to picocli only</span>
+   <span class="c1">// (Applications with ResourceBundles: see CAUTION section below!)</span>
+   <span class="n">opens</span> <span class="n">other</span><span class="o">.</span><span class="na">package</span><span class="o">.</span><span class="na">using</span><span class="o">.</span><span class="na">picocli</span> <span class="n">to</span> <span class="n">info</span><span class="o">.</span><span class="na">picocli</span><span class="o">;</span>
+<span class="o">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -17532,12 +17633,36 @@ To provide the best backward compatibility, the main picocli artifact is a <a hr
 <p>Alternatively:</p>
 </div>
 <div class="listingblock">
+<div class="title">Example compact <code>module-info.java</code></div>
 <div class="content">
-<pre class="rouge highlight"><code>// open all packages in the module to reflective access
-open module com.yourorg.yourapp {
-   requires info.picocli;
-}</code></pre>
+<pre class="rouge highlight"><code data-lang="java"><span class="c1">// open all packages in the module to reflective access</span>
+<span class="n">open</span> <span class="n">module</span> <span class="n">your</span><span class="o">.</span><span class="na">module</span> <span class="o">{</span>
+   <span class="n">requires</span> <span class="n">info</span><span class="o">.</span><span class="na">picocli</span><span class="o">;</span>
+<span class="o">}</span></code></pre>
 </div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resource_bundles_in_jpms_modules"><a class="anchor" href="#_resource_bundles_in_jpms_modules"></a>23.2. Resource Bundles in JPMS Modules</h3>
+<div class="paragraph">
+<p>Applications using the <code>@Command(resourceBundle="XXX")</code> annotation may encounter an error saying "MissingResourceException: Can&#8217;t find bundle for base name XXX".</p>
+</div>
+<div class="paragraph">
+<p>The only way I could get this annotation to work in a modular JPMS application was by using <code>opens packageName</code> in the <code>module-info</code> instead of <code>opens packageName to info.picocli</code>.
+For example:</p>
+</div>
+<div class="listingblock">
+<div class="title">Example <code>module-info.java</code> for applications with ResourceBundles</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="java"><span class="n">module</span> <span class="n">your</span><span class="o">.</span><span class="na">module</span> <span class="o">{</span>
+   <span class="n">requires</span> <span class="n">info</span><span class="o">.</span><span class="na">picocli</span><span class="o">;</span>
+   <span class="n">opens</span> <span class="n">your</span><span class="o">.</span><span class="na">package</span><span class="o">.</span><span class="na">containing</span><span class="o">.</span><span class="na">resourceBundle</span><span class="o">;</span>
+   <span class="c1">//opens your.package.containing.resourceBundle to info.picocli; //MissingResourceException</span>
+<span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Alternatively, a workaround is to call the programmatic API <a href="https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.html#setResourceBundle(java.util.ResourceBundle)"><code>CommandLine.setResourceBundle</code></a> instead of using the <code>@Command(resourceBundle="XXX")</code> annotation.</p>
 </div>
 </div>
 </div>

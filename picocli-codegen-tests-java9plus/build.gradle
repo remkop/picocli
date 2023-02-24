@@ -31,6 +31,10 @@ test {
 
     // https://github.com/google/compile-testing/issues/222
     jvmArgs('--add-opens', 'jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED')
+
+    testLogging {
+        //showStandardStreams = true
+    }
 }
 
 jar {

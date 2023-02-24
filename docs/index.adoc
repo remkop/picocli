@@ -10408,6 +10408,9 @@ Now our message texts are printed in Spanish:
 Using the command line parameter `--locale`, one can also determine the language of the help output of your application.
 The https://github.com/remkop/picocli/blob/main/picocli-examples[`picocli-examples`] module has examples with fully implemented, localized help output, coded both in https://github.com/remkop/picocli/blob/main/picocli-examples/src/main/java/picocli/examples/i18n/localecontrol/LocaleControl.java[Java] and https://github.com/remkop/picocli/tree/main/picocli-examples/src/main/kotlin/picocli/examples/kotlin/i18n/localecontrol/LocaleControl.kt[Kotlin].
 
+=== JPMS Modules Internationalization
+See <<Resource Bundles in JPMS Modules>>.
+
 == Variable Interpolation
 
 As of version 4.0, picocli supports variable interpolation (variable expansion) in annotation attributes as well as in text attributes of the programmatic API.
@@ -12447,27 +12450,50 @@ Applications that use Java 9's modules need to configure their module to allow p
 
 Often applications want the annotated classes and fields to be **private**; there should be no need to make them part of the exported API of your module just to allow picocli to access them. The below settings make this possible.
 
-Example `module-info.java`:
-```
-module com.yourorg.yourapp {
+[source,java]
+.Example `module-info.java`
+----
+module your.module {
    requires info.picocli;
 
    // Open this package for reflection to external frameworks.
    opens your.package.using.picocli;
 
    // or: limit access to picocli only
+   // (Applications with ResourceBundles: see CAUTION section below!)
    opens other.package.using.picocli to info.picocli;
 }
-```
+----
 Note that neither package is `exported`, so other modules cannot accidentally compile against types in these packages.
 
 Alternatively:
-```
+[source,java]
+.Example compact `module-info.java`
+----
 // open all packages in the module to reflective access
-open module com.yourorg.yourapp {
+open module your.module {
    requires info.picocli;
 }
-```
+----
+
+=== Resource Bundles in JPMS Modules
+Applications using the `@Command(resourceBundle="XXX")` annotation may encounter an error saying "MissingResourceException: Can't find bundle for base name XXX".
+
+The only way I could get this annotation to work in a modular JPMS application was by using `opens packageName` in the `module-info` instead of `opens packageName to info.picocli`.
+For example:
+
+[source,java]
+.Example `module-info.java` for applications with ResourceBundles
+----
+module your.module {
+   requires info.picocli;
+   opens your.package.containing.resourceBundle;
+   //opens your.package.containing.resourceBundle to info.picocli; //MissingResourceException
+}
+----
+
+Alternatively, a workaround is to call the programmatic API https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.html#setResourceBundle(java.util.ResourceBundle)[`CommandLine.setResourceBundle`] instead of using the `@Command(resourceBundle="XXX")` annotation.
+
 
 == OSGi Bundle
 
