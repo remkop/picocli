@@ -32,6 +32,11 @@ Artifacts in this release are signed by Remko Popma (6601 E5C0 8DCC BB96).
 * [#1958] DEP: Bump github/codeql-action from 2.2.3 to 2.2.4
 * [#1947] DEP: Bump org.jetbrains.kotlin:kotlin-gradle-plugin from 1.7.20 to 1.8.10
 * [#1948] DEP: Bump org.jetbrains.kotlin:kotlin-script-runtime from 1.7.20 to 1.8.10
+* [#1962] DEP: Bump log4j2Version from 2.19.0 to 2.20.0
+* [#1964] DEP: Bump springBootVersion from 2.7.8 to 2.7.9
+* [#1963] DEP: Bump step-security/harden-runner from 2.1.0 to 2.2.0
+* [#1961] DEP: Bump gradle/gradle-build-action from 2.3.3 to 2.4.0
+* [#1960] DEP: Bump gradle/wrapper-validation-action from 1.0.5 to 1.0.6
 
 ## <a name="4.7.2-deprecated"></a> Deprecations
 No features were deprecated in this release.
