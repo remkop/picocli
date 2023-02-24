@@ -15,6 +15,7 @@
  */
 package picocli;
 
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.ProvideSystemProperty;
@@ -774,6 +775,7 @@ public class I18nTest {
 
         String expected = String.format("" +
                 "[picocli DEBUG] Creating CommandSpec for picocli.I18nCommand@6bcae9 with factory picocli.CommandLine$DefaultFactory%n" +
+                "[picocli DEBUG] Messages: Loading ResourceBundle[base=picocli.SharedMessages]...%n" +
                 "[picocli DEBUG] Created Messages from resourceBundle[base=picocli.SharedMessages] for command 'i18n-top' (command 'i18n-top' (user object: picocli.I18nCommand@6bcae9))%n" +
                 "[picocli DEBUG] Creating CommandSpec for class picocli.CommandLine$HelpCommand with factory picocli.CommandLine$DefaultFactory%n" +
                 "[picocli DEBUG] Adding subcommand 'help' to 'i18n-top'%n" +
@@ -786,6 +788,7 @@ public class I18nTest {
                 "[picocli DEBUG] Created Messages from resourceBundle[base=picocli.SharedMessages] for command 'i18n-sub' (command 'i18n-sub' (user object: class picocli.I18nSubcommand))%n" +
                 "[picocli DEBUG] Created Messages from resourceBundle[base=picocli.SharedMessages] for command 'help' (command 'help' (user object: class picocli.CommandLine$HelpCommand))%n" +
                 "[picocli DEBUG] Creating CommandSpec for class picocli.I18nSubcommand2 with factory picocli.CommandLine$DefaultFactory%n" +
+                "[picocli DEBUG] Messages: Loading ResourceBundle[base=picocli.ResourceBundlePropagationTest]...%n" +
                 "[picocli DEBUG] Created Messages from resourceBundle[base=picocli.ResourceBundlePropagationTest] for command 'sub2' (command 'sub2' (user object: class picocli.I18nSubcommand2))%n" +
                 "[picocli DEBUG] Creating CommandSpec for class picocli.CommandLine$HelpCommand with factory picocli.CommandLine$DefaultFactory%n" +
                 "[picocli DEBUG] Adding subcommand 'help' to 'sub2'%n" +

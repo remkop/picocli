@@ -7,6 +7,7 @@ import org.hamcrest.MatcherAssert;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import picocli.CommandLine;
 import picocli.codegen.annotation.processing.AbstractCommandSpecProcessor;
 
 import javax.tools.Diagnostic;
@@ -283,20 +284,27 @@ public class AbstractCommandSpecProcessorTest {
 
     @Test
     public void testCommandWithBundleLoaded() {
+        CommandLine.tracer().setLevel(CommandLine.TraceLevel.DEBUG);
         AbstractCommandSpecProcessor.setLoadResourceBundles(true);
         Compilation compilation = compareCommandYamlDump(slurp("/picocli/examples/messages/CommandWithBundle.yaml"),
                 JavaFileObjects.forResource("picocli/examples/messages/CommandWithBundle.java"));
 
         assertOnlySourceVersionWarning(compilation);
+        CommandLine.tracer().setLevel(CommandLine.TraceLevel.WARN);
     }
 
     @Test
     public void testCommandWithBundleNotLoaded() {
+        CommandLine.tracer().setLevel(CommandLine.TraceLevel.DEBUG);
         AbstractCommandSpecProcessor.setLoadResourceBundles(false);
-        Compilation compilation = compareCommandYamlDump(slurp("/picocli/examples/messages/CommandWithBundle-NotLoaded.yaml"),
-            JavaFileObjects.forResource("picocli/examples/messages/CommandWithBundle.java"));
+        try {
+            Compilation compilation = compareCommandYamlDump(slurp("/picocli/examples/messages/CommandWithBundle-NotLoaded.yaml"),
+                JavaFileObjects.forResource("picocli/examples/messages/CommandWithBundle2.java"));
 
-        assertOnlySourceVersionWarning(compilation);
+            assertOnlySourceVersionWarning(compilation);
+        } finally {
+            CommandLine.tracer().setLevel(CommandLine.TraceLevel.WARN);
+        }
     }
 
     private void assertOnlySourceVersionWarning(Compilation compilation) {

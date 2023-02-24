@@ -8414,10 +8414,12 @@ public class CommandLine {
                 if (!empty(cmd.resourceBundle())) { // else preserve superclass bundle
                     if (loadResourceBundle) { // error if resource bundle does not exist
                         messages(new Messages(commandSpec, cmd.resourceBundle()));
-                    } else {
-                        ResourceBundle rb = null; // from annotation processor, we may not be able to load the ResourceBundle
-                        try { rb = ResourceBundle.getBundle(cmd.resourceBundle()); } catch (MissingResourceException ignored) {}
-                        messages(new Messages(commandSpec, cmd.resourceBundle(), rb));
+                    } else { // from annotation processor, we may not be able to load the ResourceBundle
+                        try {
+                            messages(new Messages(commandSpec, cmd.resourceBundle()));
+                        } catch (MissingResourceException ignored) {
+                            messages(new Messages(commandSpec, cmd.resourceBundle(), null));
+                        }
                     }
                 }
                 if (isNonDefault(cmd.abbreviateSynopsis(), DEFAULT_ABBREVIATE_SYNOPSIS))      {abbreviateSynopsis = cmd.abbreviateSynopsis();}
@@ -11622,8 +11624,10 @@ public class CommandLine {
             }
             private static ResourceBundle createBundle(String baseName) {
                 if (loadBundles) {
+                    tracer().debug("Messages: Loading ResourceBundle[base=%s]...", baseName);
                     return ResourceBundle.getBundle(baseName);
                 } else {
+                    tracer().debug("Messages: Returning new dummy ResourceBundle", loadBundles);
                     return new ResourceBundle() {
                         @Override
                         protected Object handleGetObject(String key) { return null; }
@@ -11668,6 +11672,7 @@ public class CommandLine {
              * @param loadBundles true if bundles should be loaded (default), false if bundles should not be loaded
              */
             public static final void setLoadBundles(boolean loadBundles) {
+                tracer().debug("Messages: loadBundles was set to %s", loadBundles);
             	Messages.loadBundles = loadBundles;
             }
 
