@@ -586,69 +586,62 @@ public class AutoComplete {
         }
         result.append("\n");
         if (rootDescriptor != null) {
+            String condition = " --condition \"not __fish_seen_subcommand_from $" + levelName + "\"";
             for (OptionSpec optionSpec : rootDescriptor.commandLine.getCommandSpec().options()) {
-                result.append("complete -c ").append(scriptName);
-                result.append(" -n \"not __fish_seen_subcommand_from $").append(levelName).append("\"");
-                result.append(" -l ").append(optionSpec.longestName().replace("--", ""));
-
-                if (optionSpec.completionCandidates() != null) {
-                    result.append(" -f -a '").append(join(" ", extract(optionSpec.completionCandidates()))).append("' ");
-                }
-
-                String optionDescription =  sanitizeDescription(optionSpec.description().length > 0 ? optionSpec.description()[0] : "");
-                result.append(" -d '").append(optionDescription).append("'\n");
-                if (!optionSpec.shortestName().equals(optionSpec.longestName())) {
-                    result.append("complete -c ").append(scriptName);
-                    result.append(" -n \"not __fish_seen_subcommand_from $").append(levelName).append("\"");
-                    result.append(" -s ").append(optionSpec.shortestName().replace("-", ""));
-                    result.append(" -d '").append(optionDescription).append("'\n");
-                }
+                completeFishOption(scriptName, optionSpec, condition, result);
             }
         }
         for (CommandDescriptor commandDescriptor : currentLevel) {
-            String[] descriptions = commandDescriptor.commandLine.getCommandSpec().usageMessage().description();
-            String description = descriptions.length > 0 ? descriptions[0] : "";
+
             result.append("complete -c ").append(scriptName);
-            result.append(" -f"); // do not show files
-            result.append(" -n \"not __fish_seen_subcommand_from $").append(levelName).append("\"");
+            result.append(" --no-files"); // do not show files
+            result.append(" --condition \"not __fish_seen_subcommand_from $").append(levelName).append("\"");
             if (!commandDescriptor.parentWithoutTopLevelCommand.equals("")) {
-                result.append(" -n '__fish_seen_subcommand_from ").append(
+                result.append(" --condition '__fish_seen_subcommand_from ").append(
                         commandDescriptor.parentWithoutTopLevelCommand).append("'");
             }
-            result.append(" -a ").append(commandDescriptor.commandName).append(" -d '").append(description).append("'\n");
 
+            result.append(" --arguments ").append(commandDescriptor.commandName);
+
+            String[] descriptions = commandDescriptor.commandLine.getCommandSpec().usageMessage().description();
+            String description = descriptions.length > 0 ? descriptions[0] : "";
+            result.append(" -d '").append(sanitizeFishDescription(description)).append("'\n");
+
+            String condition = getFishCondition(commandDescriptor);
             for (OptionSpec optionSpec : commandDescriptor.commandLine.getCommandSpec().options()) {
-                result.append("complete -c ").append(scriptName);
-                result.append(" -n \"__fish_seen_subcommand_from ").append(commandDescriptor.commandName).append("\"");
-                if (!commandDescriptor.parentWithoutTopLevelCommand.equals("")) {
-                    result.append(" -n '__fish_seen_subcommand_from ").append(
-                            commandDescriptor.parentWithoutTopLevelCommand).append("'");
-                }
-                result.append(" -l ").append(optionSpec.longestName().replace("--", ""));
-
-                if (optionSpec.completionCandidates() != null) {
-                    result.append(" -a '").append(join(" ", extract(optionSpec.completionCandidates()))).append("' ");
-                }
-
-                String optionDescription =  sanitizeDescription(optionSpec.description().length > 0 ? optionSpec.description()[0] : "");
-                result.append(" -d '").append(optionDescription).append("'\n");
-
-
-                if (!optionSpec.shortestName().equals(optionSpec.longestName())) {
-                    result.append("complete -c ").append(scriptName);
-                    result.append(" -n \"__fish_seen_subcommand_from ").append(commandDescriptor.commandName).append("\"");
-                    if (!commandDescriptor.parentWithoutTopLevelCommand.equals("")) {
-                        result.append(" -n '__fish_seen_subcommand_from ").append(
-                                commandDescriptor.parentWithoutTopLevelCommand).append("'");
-                    }
-                    result.append(" -s ").append(optionSpec.shortestName().replace("-", ""));
-                    result.append(" -d '").append(optionDescription).append("'\n");
-                }
+                completeFishOption(scriptName, optionSpec, condition, result);
             }
         }
     }
 
-    private static String sanitizeDescription(String description) {
+    private static String getFishCondition(CommandDescriptor commandDescriptor) {
+        StringBuilder condition = new StringBuilder();
+        condition.append(" --condition \"__fish_seen_subcommand_from ").append(commandDescriptor.commandName).append("\"");
+        if (!commandDescriptor.parentWithoutTopLevelCommand.equals("")) {
+            condition.append(" --condition '__fish_seen_subcommand_from ").append(
+                commandDescriptor.parentWithoutTopLevelCommand).append("'");
+        }
+        return condition.toString();
+    }
+
+    private static void completeFishOption(String scriptName, OptionSpec optionSpec, String conditions, StringBuilder result) {
+        result.append("complete -c ").append(scriptName);
+        result.append(conditions);
+        result.append(" --long-option ").append(optionSpec.longestName().replace("--", ""));
+
+        if (!optionSpec.shortestName().equals(optionSpec.longestName())) {
+            result.append(" --short-option ").append(optionSpec.shortestName().replace("-", ""));
+        }
+
+        if (optionSpec.completionCandidates() != null) {
+            result.append(" --no-files --arguments '").append(join(" ", extract(optionSpec.completionCandidates()))).append("' ");
+        }
+
+        String optionDescription =  sanitizeFishDescription(optionSpec.description().length > 0 ? optionSpec.description()[0] : "");
+        result.append(" -d '").append(optionDescription).append("'\n");
+    }
+
+    private static String sanitizeFishDescription(String description) {
         return description.replace("'", "\\'");
     }
 

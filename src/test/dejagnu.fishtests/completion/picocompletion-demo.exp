@@ -10,5 +10,16 @@ expect -re "(.+>)"
 
 set cmd "picocompletion-demo "
 set test "Tab should show sub1 and sub2 for '${cmd}'"
+# for some reason, bash completion doesn't show sub1-alias and sub2-alias
 set candidates "sub1.*sub1-alias.*sub2.*sub2-alias.*"
 run_completion_test $cmd $test $candidates
+
+# now we show files in this test
+# set cmd "picocompletion-demo sub1 "
+# set test "Tab should not show completions for '${cmd}'"
+
+# there is completion from root level
+# set cmd "picocompletion-demo sub1 -"
+# set test "Tab should show sub1 options for '${cmd}'"
+# set candidates "-h  --candidates  --candidates=  (with candidates)  --num  (a number)  --version"
+# run_completion_test $cmd $test $candidates
