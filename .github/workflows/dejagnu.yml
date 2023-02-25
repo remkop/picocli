@@ -1,0 +1,22 @@
+name: DejaGnu Tests
+
+on: [ push, pull_request ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Fish shell and DejaGnu
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y fish dejagnu
+      - name: Check versions
+        run: |
+          fish --version
+          runtest --version
+      - name: Checkout
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v2
+      - name: Run DejaGnu fish tests
+        run: |
+          cd src/test/dejagnu.fishtests
+          ./runCompletion

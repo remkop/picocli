@@ -19,6 +19,5 @@ run_completion_test $cmd $test $candidates
 
 set cmd "basicExample --timeUnit="
 set test "Tab should show time unit enum values for '$cmd'"
-#set candidates "1 2 3"
-set candidates "\u2026timeUnit=DAYS   \u2026timeUnit=MICROSECONDS  \u2026timeUnit=MINUTES      \u2026timeUnit=SECONDS\r\n\u2026timeUnit=HOURS  \u2026timeUnit=MILLISECONDS  \u2026timeUnit=NANOSECONDS  "
+set candidates ".*timeUnit=DAYS.*timeUnit=MICROSECONDS.*timeUnit=MINUTES.*timeUnit=SECONDS.*timeUnit=HOURS.*timeUnit=MILLISECONDS.*timeUnit=NANOSECONDS.*"
 run_completion_test $cmd $test $candidates

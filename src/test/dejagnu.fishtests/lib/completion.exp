@@ -1,4 +1,8 @@
 exp_spawn fish --no-config
 expect -re "(.+>)"
 
+# Set terminal size to my notebook's resolution
+send "stty rows 53 cols 190\r"
+expect -re "(.+>)"
+
 source $::srcdir/lib/library.exp
