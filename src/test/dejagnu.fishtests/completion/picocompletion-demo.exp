@@ -18,7 +18,6 @@ run_completion_test $cmd $test $candidates
 # set cmd "picocompletion-demo sub1 "
 # set test "Tab should not show completions for '${cmd}'"
 
-# there is completion from root level
 set cmd "picocompletion-demo sub1 -"
 set test "Tab should show sub1 options for '${cmd}'"
 set candidates "--candidates.*--candidates=.*--num.*--str.*"
