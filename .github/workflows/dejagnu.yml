@@ -10,7 +10,7 @@ jobs:
         run: |
           sudo apt-add-repository -y ppa:fish-shell/release-3
           sudo apt-get update
-          sudo apt-get install -y fish dejagnu
+          sudo apt-get install -y fish dejagnu tcllib
       - name: Check versions
         run: |
           fish --version
