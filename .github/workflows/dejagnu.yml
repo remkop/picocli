@@ -21,3 +21,7 @@ jobs:
         run: |
           cd src/test/dejagnu.fishtests
           ./runCompletion
+      - name: Run DejaGnu bash tests
+        run: |
+          cd src/test/dejagnu.tests
+          ./runCompletion
