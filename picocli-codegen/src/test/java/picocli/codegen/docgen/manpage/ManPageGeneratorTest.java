@@ -1,5 +1,6 @@
 package picocli.codegen.docgen.manpage;
 
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.ProvideSystemProperty;

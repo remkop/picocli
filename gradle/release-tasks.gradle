@@ -139,9 +139,47 @@ task extractReleaseNotesNext {
         }
     }
 }
+task gatherArtifacts(type: Copy) {
+    from('build/libs/') {
+        include '*.jar', '*.asc'
+        exclude '*test*', '*sources*'
+    }
+    from('picocli-codegen/build/libs/') {
+        include '*.jar', '*.asc'
+        exclude '*test*', '*sources*', '*javadoc*'
+    }
+    from('picocli-groovy/build/libs/') {
+        include '*.jar', '*.asc'
+        exclude '*test*', '*sources*', '*javadoc*'
+    }
+    from('picocli-shell-jline2/build/libs/') {
+        include '*.jar', '*.asc'
+        exclude '*test*', '*sources*', '*javadoc*'
+    }
+    from('picocli-shell-jline3/build/libs/') {
+        include '*.jar', '*.asc'
+        exclude '*test*', '*sources*', '*javadoc*'
+    }
+    from('picocli-spring-boot-starter/build/libs/') {
+        include '*.jar', '*.asc'
+        exclude '*test*', '*sources*', '*javadoc*'
+    }
+    from('build/distributions/') {
+        include '*.zip'
+    }
+    into 'build/artifacts'
+}
 
 /*
 Release procedure:
+0. Run tests in Java 5:
+    cmd
+    cd picocli-tests-java567
+
+    : now build the project with Java 5, 6 and 7
+    set JAVA_HOME=C:\apps\jdk1.5.0_22
+    gradlew clean build --no-daemon
+
 1. edit version numbers in dependencies.gradle: remove -SNAPSHOT classifier; edit releaseDate
 2. ./gradlew bumpVersion
 3. check modified files
@@ -171,7 +209,9 @@ Release procedure:
 
 18. Log in to GitHub, go to https://github.com/remkop/picocli/releases
 19. Click the new tag, click Edit button, update title and release notes (copy from RELEASE-NOTES.md)
-20. Upload picocli-$version.jar and picocli-all$version.zip to GitHub
+20. ./gradlew gatherArtifacts
+21. explorer C:\Users\remko\IdeaProjects\picocli3\build\artifacts
+22. Upload all files in build/artifacts to GitHub
 
 
 (When releasing from branch)

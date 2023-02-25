@@ -13,7 +13,7 @@ configurations {
 }
 dependencies {
     api            rootProject
-    api            supportDependencies.groovy
+    compileOnly    supportDependencies.groovy
     ivy            supportDependencies.ivy // for Gradle
 }
 tasks.withType(GroovyCompile) {

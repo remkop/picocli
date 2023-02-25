@@ -1,0 +1,50 @@
+plugins {
+    id 'java'
+}
+
+group 'info.picocli'
+description 'Picocli Codegen Tests for Java 9+: Tests Annotation Processors for picocli Annotations.'
+version "$projectVersion"
+
+// since the tests need JVM arg --add-opens, this subproject requires Java 9 or later
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+dependencies {
+    api rootProject
+    api project(':picocli-codegen')
+    testImplementation  supportDependencies.compileTesting,
+                        supportDependencies.log4j2api,
+                        supportDependencies.log4j2core
+
+    if (org.gradle.api.JavaVersion.current().isJava8Compatible() && !org.gradle.api.JavaVersion.current().isJava9Compatible()) {
+        // only use tools.jar on Java 8, it was removed in Java 9 // https://github.com/google/compile-testing/issues/134
+        testImplementation files(org.gradle.internal.jvm.Jvm.current().getToolsJar()) // needed on Java 8: https://github.com/google/compile-testing/issues/102 (and #28)
+    }
+}
+
+test {
+    useJUnit()
+
+    jvmArgs('-XX:+IgnoreUnrecognizedVMOptions')
+    jvmArgs('--permit-illegal-access')
+
+    // https://github.com/google/compile-testing/issues/222
+    jvmArgs('--add-opens', 'jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED')
+
+    testLogging {
+        //showStandardStreams = true
+    }
+}
+
+jar {
+    manifest {
+        attributes 'Specification-Title': 'Picocli Codegen Tests for Java 9+',
+                'Specification-Vendor'  : 'Remko Popma',
+                'Specification-Version' : archiveVersion.get(),
+                'Implementation-Title'  : 'Picocli Codegen Tests for Java 9+',
+                'Implementation-Vendor' : 'Remko Popma',
+                'Implementation-Version': archiveVersion.get(),
+                'Automatic-Module-Name' : 'info.picocli.codegen.tests.java9plus'
+    }
+}

@@ -1,0 +1,42 @@
+plugins {
+    id 'java'
+}
+
+group 'info.picocli'
+description 'Picocli Tests Requiring Java 9 or greater'
+version "$projectVersion"
+
+// since the tests need JVM arg --add-opens, this subproject requires Java 9 or later
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+test {
+    useJUnitPlatform()
+
+//    if (org.gradle.api.JavaVersion.current().isCompatibleWith(
+//        org.gradle.api.JavaVersion.VERSION_18)) {
+    jvmArgs('-XX:+IgnoreUnrecognizedVMOptions')
+    jvmArgs('--permit-illegal-access')
+    jvmArgs('--add-opens', 'java.base/java.util=ALL-UNNAMED')
+    jvmArgs('--add-opens', 'java.base/java.lang=ALL-UNNAMED')
+}
+
+
+dependencies {
+    api rootProject
+    testImplementation supportDependencies.junit5Api
+    testRuntimeOnly    supportDependencies.junit5Engine
+    testImplementation supportDependencies.systemLambda
+}
+
+jar {
+    manifest {
+        attributes 'Specification-Title': 'Picocli Tests Requiring Java 9 or greater',
+                'Specification-Vendor'  : 'Remko Popma',
+                'Specification-Version' : archiveVersion.get(),
+                'Implementation-Title'  : 'Picocli Tests Requiring Java 9 or greater',
+                'Implementation-Vendor' : 'Remko Popma',
+                'Implementation-Version': archiveVersion.get(),
+                'Automatic-Module-Name' : 'info.picocli.tests.java9plus'
+    }
+}

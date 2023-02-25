@@ -15,9 +15,9 @@ buildscript {
 
     dependencies {
         classpath "org.asciidoctor:asciidoctor-gradle-jvm:$asciidoctorGradlePluginVersion"
-        classpath 'org.asciidoctor:asciidoctorj-pdf:2.3.3'
+        classpath 'org.asciidoctor:asciidoctorj-pdf:2.3.4'
         classpath "org.beryx:badass-jar:2.0.0"
-        classpath 'biz.aQute.bnd:biz.aQute.bnd.gradle:6.3.1'
+        classpath 'biz.aQute.bnd:biz.aQute.bnd.gradle:6.4.0'
         classpath "io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.30.0"
     }
 }
@@ -90,10 +90,11 @@ allprojects {
         }
     }
     dependencies {
-        testImplementation supportDependencies.junit
-        testImplementation supportDependencies.hamcrestCore
         testImplementation supportDependencies.jansi
         testImplementation supportDependencies.groovy
+
+        testImplementation supportDependencies.junit
+        testImplementation supportDependencies.hamcrestCore
         testImplementation supportDependencies.systemRules
         testImplementation supportDependencies.junitParams
     }

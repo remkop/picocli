@@ -1,40 +1,125 @@
 name: Build
 on: [ push, pull_request ]
-permissions: read-all
+permissions:
+  checks: write
+  pull-requests: write
 
 jobs:
   build-java-8-plus:
     strategy:
       matrix:
-        java-version: [ 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18-ea ]
+        java-version: [ 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 ]
         os: [ubuntu-latest, macos-latest, windows-latest]
 
     runs-on: ${{ matrix.os }}
-    continue-on-error: ${{ matrix.os == 'macos-latest' }}
+    continue-on-error: ${{ matrix.os == 'macos-latest' || matrix.java-version == '9' || matrix.java-version == '10' || matrix.java-version == '12' || matrix.java-version == '13' || matrix.java-version == '14' || matrix.java-version == '15' || matrix.java-version == '16' || matrix.java-version == '19' }}
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@2e205a28d0e1da00c5f53b161f4067b052c61f34 # v1
+        uses: step-security/harden-runner@c8454efe5d0bdefd25384362fe217428ca277d57 # v1
         with:
           egress-policy: audit
 
       - name: Checkout
-        uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # v2
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v2
 
       - name: Validate Gradle Wrapper
-        uses: gradle/wrapper-validation-action@55e685c48d84285a5b0418cd094606e199cca3b6 # v1
+        uses: gradle/wrapper-validation-action@8d49e559aae34d3e0eb16cde532684bc9702762b # v1
 
       - name: Configure JDK ${{ matrix.java-version }}
-        uses: actions/setup-java@de1bb2b0c5634f0fc4438d7aa9944e68f9bf86cc # v2
+        uses: actions/setup-java@3f07048e3d294f56e9b90ac5ea2c6f74e9ad0f98 # v2
         with:
           distribution: 'zulu'
           java-version: ${{ matrix.java-version }}
           cache: gradle
 
+      - name: Show Gradle Version
+        run: ./gradlew --version
+
       - name: ShowToolChains
         run: ./gradlew -q javaToolchains
 
       - name: Build
-        run: ./gradlew build --no-daemon
+        run: ./gradlew --stop;./gradlew clean;./gradlew build --no-daemon
+
+      - name: Publish Test Results (Linux)
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        id: test-results-nix
+        if: ${{ always() && matrix.os == 'ubuntu-latest' }}
+        with:
+          junit_files: |
+            build/test-results/test/**/*.xml
+            picocli-*/build/test-results/test/**/*.xml
+
+      - name: Publish Test Results (Win/Mac)
+        uses: EnricoMi/publish-unit-test-result-action/composite@v2
+        id: test-results
+        if: ${{ always() && (matrix.os == 'macos-latest' || matrix.os == 'windows-latest') }}
+        with:
+          junit_files: |
+            build/test-results/test/**/*.xml
+            picocli-*/build/test-results/test/**/*.xml
+
+      - name: Set badge color (Linux)
+        shell: bash
+        if: ${{ always() && matrix.os == 'ubuntu-latest' }}
+        run: |
+          case ${{ fromJSON( steps.test-results-nix.outputs.json ).conclusion }} in
+            success)
+              echo "BADGE_COLOR=31c653" >> $GITHUB_ENV
+              ;;
+            failure)
+              echo "BADGE_COLOR=800000" >> $GITHUB_ENV
+              ;;
+            neutral)
+              echo "BADGE_COLOR=696969" >> $GITHUB_ENV
+              ;;
+          esac
+
+      - name: Set badge color (Win/Mac)
+        shell: bash
+        if: ${{ always() && (matrix.os == 'macos-latest' || matrix.os == 'windows-latest') }}
+        run: |
+          case ${{ fromJSON( steps.test-results.outputs.json ).conclusion }} in
+            success)
+              echo "BADGE_COLOR=31c653" >> $GITHUB_ENV
+              ;;
+            failure)
+              echo "BADGE_COLOR=800000" >> $GITHUB_ENV
+              ;;
+            neutral)
+              echo "BADGE_COLOR=696969" >> $GITHUB_ENV
+              ;;
+          esac
+
+      - name: Create badge (Linux)
+        if: ${{ always() && matrix.os == 'ubuntu-latest' }}
+        uses: emibcn/badge-action@4209421db54c8764d8932070ffd0f81715a629bf
+        with:
+          label: Tests
+          status: '${{ fromJSON( steps.test-results-nix.outputs.json ).formatted.stats.tests }} tests, ${{ fromJSON( steps.test-results-nix.outputs.json ).formatted.stats.runs }} runs: ${{ fromJSON( steps.test-results-nix.outputs.json ).conclusion }}'
+          color: ${{ env.BADGE_COLOR }}
+          path: badge.svg
+
+      - name: Create badge (Win/Mac)
+        if: ${{ always() && (matrix.os == 'macos-latest' || matrix.os == 'windows-latest') }}
+        uses: emibcn/badge-action@4209421db54c8764d8932070ffd0f81715a629bf
+        with:
+          label: Tests
+          status: '${{ fromJSON( steps.test-results.outputs.json ).formatted.stats.tests }} tests, ${{ fromJSON( steps.test-results.outputs.json ).formatted.stats.runs }} runs: ${{ fromJSON( steps.test-results.outputs.json ).conclusion }}'
+          color: ${{ env.BADGE_COLOR }}
+          path: badge.svg
+
+      - name: Upload badge to Gist
+        # Upload only for main branch
+        if: >
+          github.event_name == 'workflow_run' && github.event.workflow_run.head_branch == 'main' ||
+          github.event_name != 'workflow_run' && github.ref == 'refs/heads/main'
+        uses: andymckay/append-gist-action@1fbfbbce708a39bd45846f0955ed5521f2099c6d
+        with:
+          token: ${{ secrets.GIST_TOKEN }}
+          gistURL: https://gist.githubusercontent.com/remkop/36bc8a3b4395f2fbdb9bc271e97ba2dd
+          file: badge.svg
+
 
   build-java-6-7:
     strategy:
@@ -45,26 +130,26 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@2e205a28d0e1da00c5f53b161f4067b052c61f34 # v1
+        uses: step-security/harden-runner@c8454efe5d0bdefd25384362fe217428ca277d57 # v1
         with:
           egress-policy: audit
 
       - name: Checkout
-        uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # v2
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v2
 
       - name: Validate Gradle Wrapper
-        uses: gradle/wrapper-validation-action@55e685c48d84285a5b0418cd094606e199cca3b6 # v1
+        uses: gradle/wrapper-validation-action@8d49e559aae34d3e0eb16cde532684bc9702762b # v1
 
       - name: Configure JDK ${{ matrix.java-version }}
-        uses: actions/setup-java@de1bb2b0c5634f0fc4438d7aa9944e68f9bf86cc # v2
+        uses: actions/setup-java@3f07048e3d294f56e9b90ac5ea2c6f74e9ad0f98 # v2
         with:
           distribution: 'zulu'
           java-version: ${{ matrix.java-version }}
           cache: gradle
 
       - name: Build
-        uses: gradle/gradle-build-action@3fbe033aaae657f011f88f29be9e65ed26bd29ef # v2
+        uses: gradle/gradle-build-action@6095a76664413da4c8c134ee32e8a8ae900f0f1f # v2
         with:
           gradle-version: 1.12
-          build-root-directory: picocli-legacy-tests/
+          build-root-directory: picocli-tests-java567/
           arguments: clean build --no-daemon

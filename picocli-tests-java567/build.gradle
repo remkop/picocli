@@ -1,0 +1,47 @@
+group 'info.picocli'
+description 'Compile and test the picocli project in legacy Java environments.'
+version "CURRENT"
+
+apply plugin: 'java'
+
+repositories {
+    flatDir { // Java 5 has problems with HTTPS links, but Maven requires HTTPS
+        dirs 'lib'
+    }
+    // (BELOW LINES ARE OBSOLETE)
+    // do not use mavenCentral(): it uses HTTP in this old version of Gradle
+    //maven { url "https://repo.maven.apache.org/maven2/" }
+}
+
+dependencies {
+    testCompile "junit:junit:4.12",
+        "org.hamcrest:hamcrest-core:1.3",
+        "org.fusesource.jansi:jansi:1.15", // latest Jansi compiled on Java 5
+        "com.github.stefanbirkner:system-rules:1.17.1" // ,
+        // "pl.pragmatists:JUnitParams:1.1.1" // excluded, requires Java 6
+}
+
+sourceCompatibility = 1.5
+targetCompatibility = 1.5
+
+compileJava.options.encoding = "UTF-8"
+compileTestJava.options.encoding = "UTF-8"
+
+sourceSets.main.java.srcDirs = ['../src/main/java']
+sourceSets.test.java.srcDirs += ['../src/test/java']
+sourceSets.test.resources.srcDirs = ['../src/test/resources']
+sourceSets {
+    test {
+        java {
+            exclude 'picocli/ArgGroupParameterizedTest.java' // JUnitParams requires Java 6
+        }
+    }
+}
+
+tasks.withType(JavaCompile) {
+    options.compilerArgs << '-Xlint:unchecked' << '-Xlint:deprecation'
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '1.12'
+}

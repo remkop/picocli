@@ -14,6 +14,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 
 import static java.lang.String.format;
 import static org.junit.Assert.*;
@@ -500,5 +501,32 @@ public class HelpSubCommandTest {
 
         assertEquals(1, help.subcommands().size());
         assertEquals(new HashSet<String>(Arrays.asList("foo")), help.subcommands().keySet());
+    }
+
+    @Command(name = "import-from-excel",
+        aliases = { "import-from-xls", "import-from-xlsx", "import-from-csv", "import-from-txt" },
+        description = "Imports the data from various excel files (xls, xlsx, csv or even txt).")
+    static class ImportCommand implements Runnable {
+
+        @Parameters(arity = "1..*")
+        public List<String> files;
+
+        public void run() {
+            System.out.println("ImportCommand.run()");
+        }
+    }
+    @Test
+    public void testIssue1870StringIndexOutOfBounds() {
+        @Command(name = "top", subcommands = ImportCommand.class) class Top { }
+        String actual = usageString(new CommandLine(new Top()), Help.Ansi.OFF);
+        String expected = String.format("" +
+            "Usage: top [COMMAND]%n" +
+            "Commands:%n" +
+            "  import-from-excel, import-from-xls, import-from-xlsx, import-from-csv,%n" +
+            "    import-from-txt%n" +
+            "                                            Imports the data from various excel%n" +
+            "                                              files (xls, xlsx, csv or even%n" +
+            "                                              txt).%n");
+        assertEquals(expected, actual);
     }
 }

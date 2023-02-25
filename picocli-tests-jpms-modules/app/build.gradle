@@ -1,0 +1,5 @@
+dependencies {
+    //implementation "info.picocli:picocli:4.7.1"
+    implementation "info.picocli:picocli:$projectVersion"
+}
+

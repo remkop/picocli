@@ -3,6 +3,7 @@
 [![GitHub Release](https://img.shields.io/github/release/remkop/picocli.svg)](https://github.com/remkop/picocli/releases)
 [![Maven Central](https://img.shields.io/maven-central/v/info.picocli/picocli.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22info.picocli%22%20AND%20a:%22picocli%22)
 [![GitHub Actions Build Status](https://github.com/remkop/picocli/actions/workflows/ci.yml/badge.svg)](https://github.com/remkop/picocli/actions/workflows/ci.yml)
+[![Tests](https://gist.githubusercontent.com/remkop/36bc8a3b4395f2fbdb9bc271e97ba2dd/raw/badge.svg)](https://github.com/remkop/picocli/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/remkop/picocli/branch/master/graph/badge.svg)](https://codecov.io/gh/remkop/picocli)
 [![Follow @remkopopma](https://img.shields.io/twitter/follow/remkopopma.svg?style=social)](https://twitter.com/intent/follow?screen_name=remkopopma)
 [![Follow @picocli](https://img.shields.io/twitter/follow/picocli.svg?style=social)](https://twitter.com/intent/follow?screen_name=picocli)
@@ -78,7 +79,7 @@ The user manual has examples of integrating with [Guice](https://picocli.info/#_
 
 ### Releases
 * [All Releases](https://github.com/remkop/picocli/releases)
-* Latest: 4.7.0 [Release Notes](https://github.com/remkop/picocli/releases/tag/v4.7.0)
+* Latest: 4.7.1 [Release Notes](https://github.com/remkop/picocli/releases/tag/v4.7.1)
 * Older: Picocli 4.0 [Release Notes](https://github.com/remkop/picocli/releases/tag/v4.0.0)
 * Older: Picocli 3.0 [Release Notes](https://github.com/remkop/picocli/releases/tag/v3.0.0)
 * Older: Picocli 2.0 [Release Notes](https://github.com/remkop/picocli/releases/tag/v2.0.0)
@@ -87,7 +88,7 @@ The user manual has examples of integrating with [Guice](https://picocli.info/#_
 * [4.x User manual: https://picocli.info](https://picocli.info)
 * [4.x Quick Guide](https://picocli.info/quick-guide.html)
 * [4.x API Javadoc](https://picocli.info/apidocs/)
-* [PREVIEW: Modular Javadoc for all artifacts (4.7.0-SNAPSHOT)](https://picocli.info/apidocs-all/)
+* [PREVIEW: Modular Javadoc for all artifacts (4.7.1-SNAPSHOT)](https://picocli.info/apidocs-all/)
 * [Command line autocompletion](https://picocli.info/autocomplete.html)
 * [Programmatic API](https://picocli.info/picocli-programmatic-api.html)
 * [FAQ](https://github.com/remkop/picocli/wiki/FAQ)
@@ -202,8 +203,9 @@ Join the [picocli Google group](https://groups.google.com/d/forum/picocli) if yo
 ## Adoption
 
 <div>
-<img src="https://picocli.info/images/groovy-logo.png" height="50">  <img src="https://picocli.info/images/1x1.png" width="10"> <img src="https://objectcomputing.com/files/3416/2275/4315/micronaut_horizontal_black.svg" height="50"><img src="https://picocli.info/images/1x1.png" width="10"><img src="https://quarkus.io/assets/images/quarkus_logo_horizontal_rgb_reverse.svg" style="background-color:#33475b" height="50"><img src="https://picocli.info/images/1x1.png" width="10"><img src="https://picocli.info/images/junit5logo-172x50.png" height="50"> <img src="https://picocli.info/images/1x1.png" width="10"> <img src="https://picocli.info/images/debian-logo-192x50.png" height="50"> <img src="https://picocli.info/images/1x1.png" width="10">
-<img src="https://spring.io/images/spring-logo.svg" height="50">
+<img src="https://picocli.info/images/groovy-logo.png" height="50"> <!--groovy--> <img src="https://picocli.info/images/1x1.png" width="10"> <img src="https://objectcomputing.com/files/3416/2275/4315/micronaut_horizontal_black.svg" height="50"><!--micronaut--><img src="https://picocli.info/images/1x1.png" width="10"><img src="https://avatars.githubusercontent.com/u/47638783?s=200&v=4" height="50"><!--quarkus--><img src="https://picocli.info/images/1x1.png" width="10"><img src="https://picocli.info/images/junit5logo-172x50.png" height="50"><!--junit5--> <img src="https://picocli.info/images/1x1.png" width="10"> <img src="https://picocli.info/images/debian-logo-192x50.png" height="50"> <img src="https://picocli.info/images/1x1.png" width="10"> <img src="https://avatars.githubusercontent.com/u/8433081?s=200&v=4" height="50"><!--intel--> <img src="https://picocli.info/images/1x1.png" width="10"> <img src="https://avatars.githubusercontent.com/u/4430336?s=200&v=4" height="50"><!--oracle--> <img src="https://picocli.info/images/1x1.png" width="10"> <img src="https://avatars.githubusercontent.com/u/1666512?s=200&v=4" height="50"><!--JOOQ--> <img src="https://picocli.info/images/1x1.png" width="10"><img src="https://avatars.githubusercontent.com/u/545988?s=200&v=4" height="50"><!--SonarSource--> <img src="https://picocli.info/images/1x1.png" width="10"> <img src="https://avatars.githubusercontent.com/u/47359?s=200&v=4" height="50"><!--Apache--> <img src="https://picocli.info/images/1x1.png" width="10"> <img src="https://avatars.githubusercontent.com/u/3287599?s=200&v=4" height="50"><!--ESA--> <img src="https://picocli.info/images/1x1.png" width="10"> <img src="https://avatars.githubusercontent.com/u/438548?s=200&v=4" height="50"><!--Liquibase--> <img src="https://picocli.info/images/1x1.png" width="10"> <img src="https://avatars.githubusercontent.com/u/8976946?s=200&v=4" height="50"><!--Harvard PL--> <img src="https://picocli.info/images/1x1.png" width="10"> <img src="https://avatars.githubusercontent.com/u/2810941?s=200&v=4" height="50"><!--Google Cloud services--> <img src="https://picocli.info/images/1x1.png" width="10">
+
+<img src="https://avatars.githubusercontent.com/u/317776?s=200&v=4" height="50"><!--Spring-->
 <img src="https://avatars0.githubusercontent.com/u/3299148?s=200&v=4" height="50">
 <img src="https://avatars3.githubusercontent.com/u/39734771?s=200&v=4" height="50">
 <img src="https://avatars3.githubusercontent.com/u/1453152?s=200&v=4" height="50">
@@ -227,10 +229,9 @@ Join the [picocli Google group](https://groups.google.com/d/forum/picocli) if yo
 <img src="https://www.e-contract.be/images/logo.svg" height="50">
 <img src="https://present.co/images/logn-new@2x.png" height="50">
 <img src="https://avatars2.githubusercontent.com/u/13641167?s=200&v=4" height="50">
-<img src="https://files.pvs-studio.com/static/images/logo.svg" height="50">
 <img src="https://concord.walmartlabs.com/assets/img/logo.png" height="50">
 <img src="https://res-3.cloudinary.com/crunchbase-production/image/upload/c_lpad,h_120,w_120,f_auto,b_white,q_auto:eco/etxip1k2sx4sphvwgkdu" height="50">
-<img src="https://www.minecraftforge.net/forum/uploads/set_resources_2/4eeef9d314eb4c008c0f37dacad2cdd5_logo.svg" height="50">
+<img src="https://avatars.githubusercontent.com/u/1390178?s=200&v=4" height="50"><!-- minecraft forge-->
 
 </div>
 
@@ -269,9 +270,9 @@ If you like picocli, help others discover picocli:
 #### Spread the joy! :tada:
 * Tweet about picocli! What do you like about it? How has it helped you? How is it different from the alternatives?
 * Mention that your project uses picocli in the documentation of your project.
-* Show that your GitHub project uses picocli, with this badge in your README.md: [![picocli](https://img.shields.io/badge/picocli-4.7.0-green.svg)](https://github.com/remkop/picocli)
+* Show that your GitHub project uses picocli, with this badge in your README.md: [![picocli](https://img.shields.io/badge/picocli-4.7.1-green.svg)](https://github.com/remkop/picocli)
 ```
-[![picocli](https://img.shields.io/badge/picocli-4.7.0-green.svg)](https://github.com/remkop/picocli)
+[![picocli](https://img.shields.io/badge/picocli-4.7.1-green.svg)](https://github.com/remkop/picocli)
 ```
 
 #### Preach it! :muscle:
@@ -362,41 +363,41 @@ See the [source code](https://github.com/remkop/picocli/blob/main/src/main/java/
 
 ### Gradle
 ```
-implementation 'info.picocli:picocli:4.7.0'
+implementation 'info.picocli:picocli:4.7.1'
 ```
 ### Maven
 ```
 <dependency>
   <groupId>info.picocli</groupId>
   <artifactId>picocli</artifactId>
-  <version>4.7.0</version>
+  <version>4.7.1</version>
 </dependency>
 ```
 ### Scala SBT
 ```
-libraryDependencies += "info.picocli" % "picocli" % "4.7.0"
+libraryDependencies += "info.picocli" % "picocli" % "4.7.1"
 ```
 ### Ivy
 ```
-<dependency org="info.picocli" name="picocli" rev="4.7.0" />
+<dependency org="info.picocli" name="picocli" rev="4.7.1" />
 ```
 ### Grape
 ```groovy
 @Grapes(
-    @Grab(group='info.picocli', module='picocli', version='4.7.0')
+    @Grab(group='info.picocli', module='picocli', version='4.7.1')
 )
 ```
 ### Leiningen
 ```
-[info.picocli/picocli "4.7.0"]
+[info.picocli/picocli "4.7.1"]
 ```
 ### Buildr
 ```
-'info.picocli:picocli:jar:4.7.0'
+'info.picocli:picocli:jar:4.7.1'
 ```
 
 ### JBang
 ```
-//DEPS info.picocli:picocli:4.7.0
+//DEPS info.picocli:picocli:4.7.1
 ```
 

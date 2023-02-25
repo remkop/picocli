@@ -15,10 +15,10 @@ import java.util.List;
 public class ParseResultDemo implements Runnable {
     @Spec CommandSpec spec;
 
-    @Option(names = "-x")
+    @Option(names = {"-x", "--x-long"})
     int x = 10;
 
-    @Option(names = "-y", defaultValue = "20")
+    @Option(names = {"-y", "--y-long"}, defaultValue = "20")
     int y;
 
     @Parameters
@@ -28,8 +28,8 @@ public class ParseResultDemo implements Runnable {
     public void run() {
         ParseResult pr = spec.commandLine().getParseResult();
 
-        System.out.println(pr.expandedArgs());
-        System.out.println(pr.originalArgs());
+        System.out.printf("ExpandedArgs: %s%n", pr.expandedArgs());
+        System.out.printf("OriginalArgs: %s%n", pr.originalArgs());
 
         List<OptionSpec> options = spec.options();
         for (OptionSpec opt : options) {

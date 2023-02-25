@@ -1,8 +1,8 @@
 = picocli - a mighty tiny command line interface
 //:author: Remko Popma
 //:email: rpopma@apache.org
-:revnumber: 4.7.1-SNAPSHOT
-:revdate: 2022-10-31
+:revnumber: 4.7.2-SNAPSHOT
+:revdate: 2023-01-27
 :toc: left
 :numbered:
 :toclevels: 2
@@ -120,7 +120,7 @@ class CheckSum implements Callable<Integer> {
 [[CheckSum-App-Groovy]]
 [source,groovy,role="secondary"]
 ----
-@Grab('info.picocli:picocli-groovy:4.7.1-SNAPSHOT')
+@Grab('info.picocli:picocli-groovy:4.7.2-SNAPSHOT')
 import picocli.CommandLine
 import static picocli.CommandLine.*
 
@@ -152,7 +152,7 @@ class Checksum implements Callable<Integer> {
 [[CheckSum-App-Groovy-Script]]
 [source,groovy,role="secondary"]
 ----
-@Grab('info.picocli:picocli-groovy:4.7.1-SNAPSHOT')
+@Grab('info.picocli:picocli-groovy:4.7.2-SNAPSHOT')
 import static picocli.CommandLine.*
 import groovy.transform.Field
 import java.security.MessageDigest
@@ -279,7 +279,7 @@ Below are examples of configuring Gradle or Maven to use picocli as an external 
 [source,groovy,role="primary"]
 ----
 dependencies {
-    implementation 'info.picocli:picocli:4.7.1-SNAPSHOT'
+    implementation 'info.picocli:picocli:4.7.2-SNAPSHOT'
 }
 ----
 .Maven
@@ -288,7 +288,7 @@ dependencies {
 <dependency>
   <groupId>info.picocli</groupId>
   <artifactId>picocli</artifactId>
-  <version>4.7.1-SNAPSHOT</version>
+  <version>4.7.2-SNAPSHOT</version>
 </dependency>
 ----
 
@@ -325,8 +325,8 @@ https://immutables.github.io/apt.html[This page] shows the steps to configure Ec
 [source,groovy,role="primary"]
 ----
 dependencies {
-    implementation 'info.picocli:picocli:4.7.1-SNAPSHOT'
-    annotationProcessor 'info.picocli:picocli-codegen:4.7.1-SNAPSHOT'
+    implementation 'info.picocli:picocli:4.7.2-SNAPSHOT'
+    annotationProcessor 'info.picocli:picocli-codegen:4.7.2-SNAPSHOT'
 }
 
 
@@ -348,7 +348,7 @@ compileJava {
       <path>
         <groupId>info.picocli</groupId>
         <artifactId>picocli-codegen</artifactId>
-        <version>4.7.1-SNAPSHOT</version>
+        <version>4.7.2-SNAPSHOT</version>
       </path>
     </annotationProcessorPaths>
     <compilerArgs>
@@ -368,7 +368,7 @@ then replace `annotationProcessor` with `kapt`:
 apply plugin: 'kotlin-kapt' // required
 dependencies {
     // ...
-    kapt 'info.picocli:picocli-codegen:4.7.1-SNAPSHOT'
+    kapt 'info.picocli:picocli-codegen:4.7.2-SNAPSHOT'
 }
 ```
 
@@ -399,7 +399,7 @@ Now, assuming we created a jar named `checksum.jar` containing our compiled `Che
 
 [source,bash]
 ----
-java -cp "picocli-4.7.1-SNAPSHOT.jar:checksum.jar" CheckSum --algorithm SHA-1 hello.txt
+java -cp "picocli-4.7.2-SNAPSHOT.jar:checksum.jar" CheckSum --algorithm SHA-1 hello.txt
 ----
 
 You may want to package your application in such a way that end users can invoke it with a short command like this:
@@ -7513,7 +7513,7 @@ Picocli-based applications will show ANSI colors in WSL by default.
 
 ===== For Reference: 3rd Party Software
 In Windows version prior to 10, the Windows command console doesn't support output coloring by default.
-One option is for end users to install either https://cmder.net/[Cmder], https://sourceforge.net/projects/conemu/[ConEmu], https://github.com/adoxa/ansicon/[ANSICON] or https://mintty.github.io/[Mintty] (used by default in GitBash and Cygwin) to add coloring support to their Windows command console.
+One option is for end users to install either https://cmder.app/[Cmder], https://sourceforge.net/projects/conemu/[ConEmu], https://github.com/adoxa/ansicon/[ANSICON] or https://mintty.github.io/[Mintty] (used by default in GitBash and Cygwin) to add coloring support to their Windows command console.
 
 
 
@@ -9261,9 +9261,27 @@ To show that the subcommand is mandatory, use the `synopsisSubcommandLabel` attr
 
 There are some scenarios where picocli can not parse an option with a default value which is the same as a subcommand name. To work around this, you can parse the option yourself using <<Custom Parameter Processing,`IParameterConsumer`>>. A simple implementation is shown below. See https://github.com/remkop/picocli/issues/1428[this issue] for more details.
 
+.Java
+[source,java,role="primary"]
+----
+class ExecParameterConsumer implements IParameterConsumer {
+  public void consumeParameters(Stack<String> args,
+                                ArgSpec argSpec,
+                                CommandSpec commandSpec) {
+    if (args.isEmpty()) {
+      throw new ParameterException(
+        commandSpec.commandLine(),
+        "Missing required parameter for option " +
+        ((OptionSpec) argSpec).longestName()
+      );
+    }
+    argSpec.setValue(args.pop());
+  }
+}
+----
 
 .Kotlin
-[source,kotlin,role="primary"]
+[source,kotlin,role="secondary"]
 ----
 class MyParameterConsumer : CommandLine.IParameterConsumer {
   override fun consumeParameters(
@@ -9278,7 +9296,7 @@ class MyParameterConsumer : CommandLine.IParameterConsumer {
             (argSpec as CommandLine.Model.OptionSpec).longestName()
       )
     }
-    argSpec.setValue(args.pop());
+    argSpec.setValue(args.pop())
   }
 }
 ----
@@ -10363,7 +10381,7 @@ Eventually, we are ready to run our application:
 
 [source,bash]
 ----
-java -cp "picocli-4.7.1-SNAPSHOT.jar;myapp.jar" org.myorg.GreetingApp Sarah Lea
+java -cp "picocli-4.7.2-SNAPSHOT.jar;myapp.jar" org.myorg.GreetingApp Sarah Lea
 ----
 
 With no command line parameter `--locale` given, the message texts are printed in the default language (here: English):
@@ -10377,7 +10395,7 @@ In order to control the locale chosen for our output, we have to make use of the
 
 [source,bash]
 ----
-java -cp "picocli-4.7.1-SNAPSHOT.jar;myapp.jar" org.myorg.GreetingApp --locale=es Sarah Lea
+java -cp "picocli-4.7.2-SNAPSHOT.jar;myapp.jar" org.myorg.GreetingApp --locale=es Sarah Lea
 ----
 
 Now our message texts are printed in Spanish:
@@ -10389,6 +10407,9 @@ Now our message texts are printed in Spanish:
 
 Using the command line parameter `--locale`, one can also determine the language of the help output of your application.
 The https://github.com/remkop/picocli/blob/main/picocli-examples[`picocli-examples`] module has examples with fully implemented, localized help output, coded both in https://github.com/remkop/picocli/blob/main/picocli-examples/src/main/java/picocli/examples/i18n/localecontrol/LocaleControl.java[Java] and https://github.com/remkop/picocli/tree/main/picocli-examples/src/main/kotlin/picocli/examples/kotlin/i18n/localecontrol/LocaleControl.kt[Kotlin].
+
+=== JPMS Modules Internationalization
+See <<Resource Bundles in JPMS Modules>>.
 
 == Variable Interpolation
 
@@ -11693,21 +11714,21 @@ Since picocli dependencies are not available in the Spring Initializr, we have t
 <dependency>
   <groupId>info.picocli</groupId>
   <artifactId>picocli-spring-boot-starter</artifactId>
-  <version>4.7.1-SNAPSHOT</version>
+  <version>4.7.2-SNAPSHOT</version>
 </dependency>
 ----
 .Gradle (Groovy)
 [source,groovy,role="secondary"]
 ----
 dependencies {
-    implementation 'info.picocli:picocli-spring-boot-starter:4.7.1-SNAPSHOT'
+    implementation 'info.picocli:picocli-spring-boot-starter:4.7.2-SNAPSHOT'
 }
 ----
 .Gradle (Kotlin)
 [source,kotlin,role="secondary"]
 ----
 dependencies {
-    implementation("info.picocli:picocli-spring-boot-starter:4.7.1-SNAPSHOT")
+    implementation("info.picocli:picocli-spring-boot-starter:4.7.2-SNAPSHOT")
 }
 ----
 
@@ -12429,27 +12450,50 @@ Applications that use Java 9's modules need to configure their module to allow p
 
 Often applications want the annotated classes and fields to be **private**; there should be no need to make them part of the exported API of your module just to allow picocli to access them. The below settings make this possible.
 
-Example `module-info.java`:
-```
-module com.yourorg.yourapp {
+[source,java]
+.Example `module-info.java`
+----
+module your.module {
    requires info.picocli;
 
    // Open this package for reflection to external frameworks.
    opens your.package.using.picocli;
 
    // or: limit access to picocli only
+   // (Applications with ResourceBundles: see CAUTION section below!)
    opens other.package.using.picocli to info.picocli;
 }
-```
+----
 Note that neither package is `exported`, so other modules cannot accidentally compile against types in these packages.
 
 Alternatively:
-```
+[source,java]
+.Example compact `module-info.java`
+----
 // open all packages in the module to reflective access
-open module com.yourorg.yourapp {
+open module your.module {
    requires info.picocli;
 }
-```
+----
+
+=== Resource Bundles in JPMS Modules
+Applications using the `@Command(resourceBundle="XXX")` annotation may encounter an error saying "MissingResourceException: Can't find bundle for base name XXX".
+
+The only way I could get this annotation to work in a modular JPMS application was by using `opens packageName` in the `module-info` instead of `opens packageName to info.picocli`.
+For example:
+
+[source,java]
+.Example `module-info.java` for applications with ResourceBundles
+----
+module your.module {
+   requires info.picocli;
+   opens your.package.containing.resourceBundle;
+   //opens your.package.containing.resourceBundle to info.picocli; //MissingResourceException
+}
+----
+
+Alternatively, a workaround is to call the programmatic API https://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.html#setResourceBundle(java.util.ResourceBundle)[`CommandLine.setResourceBundle`] instead of using the `@Command(resourceBundle="XXX")` annotation.
+
 
 == OSGi Bundle
 
@@ -13034,7 +13078,7 @@ As mentioned in <<Running the Application>>, earlier in this manual, one way to 
 
 [source,bash]
 ----
-java -cp "picocli-4.7.1-SNAPSHOT.jar;myapp.jar" org.myorg.MyMainClass --option=value arg0 arg1
+java -cp "picocli-4.7.2-SNAPSHOT.jar;myapp.jar" org.myorg.MyMainClass --option=value arg0 arg1
 ----
 
 That is quite verbose. You may want to package your application in such a way that end users can invoke it by its command name like this:
@@ -13053,7 +13097,7 @@ On unix-based operating systems, you can ask your users to define an alias. For 
 
 [source,bash]
 ----
-alias mycommand='java -cp "/path/to/picocli-4.7.1-SNAPSHOT.jar:/path/to/myapp.jar" org.myorg.MainClass'
+alias mycommand='java -cp "/path/to/picocli-4.7.2-SNAPSHOT.jar:/path/to/myapp.jar" org.myorg.MainClass'
 ----
 
 Append the above line to your `~/.bashrc` file to make this alias available in every new shell session.
@@ -13102,7 +13146,7 @@ After installing GraalVM and installing the `native-image` generator utility (wi
 you can then create a native image by invoking the `native-image` command:
 
 ----
-path/to/native-image -cp picocli-4.7.1-SNAPSHOT.jar --static -jar myapp.jar
+path/to/native-image -cp picocli-4.7.2-SNAPSHOT.jar --static -jar myapp.jar
 ----
 
 CAUTION: To create a native image, the compiler toolchain for your platform needs to be installed. See https://www.infoq.com/articles/java-native-cli-graalvm-picocli/[Build Great Native CLI Apps in Java with Graalvm and Picocli] for details.
@@ -13242,7 +13286,7 @@ The script body is executed if the user input was valid and did not request usag
 
 [source,groovy]
 ----
-@Grab('info.picocli:picocli-groovy:4.7.1-SNAPSHOT')
+@Grab('info.picocli:picocli-groovy:4.7.2-SNAPSHOT')
 @GrabConfig(systemClassLoader=true)
 @Command(name = "myScript",
         mixinStandardHelpOptions = true, // add --help and --version options
@@ -13283,7 +13327,7 @@ The table below compares these two base classes.
 
 
 WARNING: When upgrading scripts from picocli versions older than 4.0, just changing the version number is not enough!
-Scripts should use `@Grab('info.picocli:picocli-groovy:4.7.1-SNAPSHOT')`. The old artifact id `@Grab('info.picocli:picocli:4.7.1-SNAPSHOT')` will not work,
+Scripts should use `@Grab('info.picocli:picocli-groovy:4.7.2-SNAPSHOT')`. The old artifact id `@Grab('info.picocli:picocli:4.7.2-SNAPSHOT')` will not work,
 because the `@picocli.groovy.PicocliScript` annotation class and supporting classes have been moved into a separate module, `picocli-groovy`.
 
 ==== Closures in Annotations
@@ -13341,7 +13385,7 @@ NOTE: When using a Groovy version older than 2.4.7, use this workaround for the 
 
 [source,groovy]
 ----
-@Grab('info.picocli:picocli-groovy:4.7.1-SNAPSHOT')
+@Grab('info.picocli:picocli-groovy:4.7.2-SNAPSHOT')
 @GrabExclude('org.codehaus.groovy:groovy-all') // work around GROOVY-7613
 ...
 ----
@@ -13484,13 +13528,13 @@ You can add picocli as an external dependency to your project, or you can includ
 .Gradle
 [source,groovy,role="primary"]
 ----
-implementation 'info.picocli:picocli:4.7.1-SNAPSHOT'
+implementation 'info.picocli:picocli:4.7.2-SNAPSHOT'
 ----
 
 .Gradle (Kotlin)
 [source,kotlin,role="secondary"]
 ----
-implementation("info.picocli:picocli:4.7.1-SNAPSHOT")
+implementation("info.picocli:picocli:4.7.2-SNAPSHOT")
 ----
 
 .Maven
@@ -13499,50 +13543,50 @@ implementation("info.picocli:picocli:4.7.1-SNAPSHOT")
 <dependency>
   <groupId>info.picocli</groupId>
   <artifactId>picocli</artifactId>
-  <version>4.7.1-SNAPSHOT</version>
+  <version>4.7.2-SNAPSHOT</version>
 </dependency>
 ----
 
 .Scala SBT
 [source,role="secondary"]
 ----
-libraryDependencies += "info.picocli" % "picocli" % "4.7.1-SNAPSHOT"
+libraryDependencies += "info.picocli" % "picocli" % "4.7.2-SNAPSHOT"
 ----
 
 .Ivy
 [source,role="secondary"]
 ----
-<dependency org="info.picocli" name="picocli" rev="4.7.1-SNAPSHOT" />
+<dependency org="info.picocli" name="picocli" rev="4.7.2-SNAPSHOT" />
 ----
 
 .Grape
 [source,role="secondary"]
 ----
 @Grapes(
-    @Grab(group='info.picocli', module='picocli', version='4.7.1-SNAPSHOT')
+    @Grab(group='info.picocli', module='picocli', version='4.7.2-SNAPSHOT')
 )
 ----
 
 .Leiningen
 [source,role="secondary"]
 ----
-[info.picocli/picocli "4.7.1-SNAPSHOT"]
+[info.picocli/picocli "4.7.2-SNAPSHOT"]
 ----
 
 .Buildr
 [source,role="secondary"]
 ----
-'info.picocli:picocli:jar:4.7.1-SNAPSHOT'
+'info.picocli:picocli:jar:4.7.2-SNAPSHOT'
 ----
 
 .JBang
 [source,role="secondary"]
 ----
-//DEPS info.picocli:picocli:4.7.1-SNAPSHOT
+//DEPS info.picocli:picocli:4.7.2-SNAPSHOT
 ----
 
 === Source
 
 By using picocli in source form, you can avoid having an external dependency on picocli.
-Picocli has only one source file: link:https://github.com/remkop/picocli/blob/v4.7.1-SNAPSHOT/src/main/java/picocli/CommandLine.java[CommandLine.java].
+Picocli has only one source file: link:https://github.com/remkop/picocli/blob/v4.7.2-SNAPSHOT/src/main/java/picocli/CommandLine.java[CommandLine.java].
 This facilitates including picocli in your project: simply copy and paste the code of this file into a file called `CommandLine.java`, add it to your project, and enjoy!

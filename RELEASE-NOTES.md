@@ -1,7 +1,54 @@
 # picocli Release Notes
 
+# <a name="4.7.2"></a> Picocli 4.7.2 (UNRELEASED)
+The picocli community is pleased to announce picocli 4.7.2.
 
-# <a name="4.7.1"></a> Picocli 4.7.1 (UNRELEASED)
+This release includes bugfixes and enhancements.
+
+
+
+This is the eighty-first public release.
+Picocli follows [semantic versioning](https://semver.org/).
+Artifacts in this release are signed by Remko Popma (6601 E5C0 8DCC BB96).
+
+## <a name="4.7.2-toc"></a> Table of Contents
+* [New and noteworthy](#4.7.2-new)
+* [Fixed issues](#4.7.2-fixes)
+* [Deprecations](#4.7.2-deprecated)
+* [Potential breaking changes](#4.7.2-breaking-changes)
+
+## <a name="4.7.2-new"></a> New and Noteworthy
+
+## <a name="4.7.2-fixes"></a> Fixed issues
+* [#1959] API: Add ability to enable loading resource bundles in annotation processor for tests.
+* [#1932] Enhancement: Move System-Rules tests to Java 5 test module; move System-Lambda tests to Java 8+ test module. Facilitate testing with recent JRE's.
+* [#1945] DOC: Code sample: add Java version. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+* [#1956] Doc: Fix broken link in user manual. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+* [#1955] DEP: Bump asciidoctorj from 2.5.5 to 2.5.7. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+* [#1952] DEP: Bump actions/setup-java from 3.9.0 to 3.10.0
+* [#1941] DEP: Bump emibcn/badge-action from 1.2.4 to 2.0.2
+* [#1942] DEP: Bump github/codeql-action from 2.1.39 to 2.2.1
+* [#1953] DEP: Bump github/codeql-action from 2.2.1 to 2.2.3
+* [#1958] DEP: Bump github/codeql-action from 2.2.3 to 2.2.4
+* [#1947] DEP: Bump org.jetbrains.kotlin:kotlin-gradle-plugin from 1.7.20 to 1.8.10
+* [#1948] DEP: Bump org.jetbrains.kotlin:kotlin-script-runtime from 1.7.20 to 1.8.10
+* [#1962] DEP: Bump log4j2Version from 2.19.0 to 2.20.0
+* [#1964] DEP: Bump springBootVersion from 2.7.8 to 2.7.9
+* [#1963] DEP: Bump step-security/harden-runner from 2.1.0 to 2.2.0
+* [#1961] DEP: Bump gradle/gradle-build-action from 2.3.3 to 2.4.0
+* [#1960] DEP: Bump gradle/wrapper-validation-action from 1.0.5 to 1.0.6
+
+## <a name="4.7.2-deprecated"></a> Deprecations
+No features were deprecated in this release.
+
+## <a name="4.7.2-breaking-changes"></a> Potential breaking changes
+This release has no breaking changes.
+
+
+
+
+
+# <a name="4.7.1"></a> Picocli 4.7.1
 The picocli community is pleased to announce picocli 4.7.1.
 
 This release includes bugfixes and enhancements.
@@ -21,14 +68,37 @@ Artifacts in this release are signed by Remko Popma (6601 E5C0 8DCC BB96).
 ## <a name="4.7.1-new"></a> New and Noteworthy
 
 ## <a name="4.7.1-fixes"></a> Fixed issues
+* [#1874][#1885][#1933] Bugfix: The `picocli-groovy` module should not declare `org.codehaus.groovy:groovy-all` as dependency. Thanks to [Mattias Andersson](https://github.com/attiand) and [Michael Kutz](https://github.com/mkutz) for raising this, and to [Paul King](https://github.com/paulk-asert) for the analysis.
 * [#1886][#1896] Bugfix: AsciiDoc generator now correctly outputs options even if all options are in ArgGroups. Thanks to [Ruud Senden](https://github.com/rsenden) for the discussion and the pull request.
 * [#1878][#1876] Bugfix: Annotation processor now avoids loading resource bundles at compile time. Thanks to [Ruud Senden](https://github.com/rsenden) for the discussion and the pull request.
+* [#1911] Avoid using boxed boolean in `CommandLine.Interpreter.applyValueToSingleValuedField`. Thanks to [Jiehong](https://github.com/Jiehong) for the pull request.
+* [#1870] Bugfix: `StringIndexOutOfBoundsException` in usage help when command has too many (and long) aliases. Thanks to [Martin](https://github.com/martlin2cz) for raising this.
+* [#1904] Bugfix: Apply `fallbackValue` to vararg multi-value options, not just single-value options. Thanks to [Andreas Sewe](https://github.com/sewe) for raising this.
+* [#1930] Bugfix: Ensure tests pass in environments for Java 5-18.
+* [#1940] Bugfix: fix 3 failing tests in `ManPageGeneratorTest`. Thanks to [Mike Snowden](https://github.com/wtfacoconut) for the pull request.
 * [#1881] DOC: Many documentation improvements. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1855][#1857] DOC: Add new user manual section called [Rare Use Cases](https://picocli.info/#_rare_use_cases) detailing `System.exit` usage. Thanks to [Tadaya Tsuyukubo](https://github.com/ttddyy) for the pull request.
 * [#1880] DOC: Improve documentation for negatable options that are true by default. Thanks to [Sebastian Hoß](https://github.com/sebhoss) for raising this.
 * [#1815] DOC: Improve user manual section for non-validating ArgGroups. Thanks for [Paul Harris](https://github.com/rolfyone) for raising this.
 * [#1908] DOC: Update the user manual GraalVM section to use the new official native-maven-plugin. Thanks to [tison](https://github.com/tisonkun) for the pull request.
-
+* [#1924] DOC: Update `picocli-codegen/README.adoc`. Thanks to [Seyyed Emad Razavi](https://github.com/razavioo) for the pull request.
+* [#1910][#1917] DOC: Fix broken link to Zero Bug Commitment. Thanks to [Jiehong](https://github.com/Jiehong) for raising this and thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+* [#1915] DOC: Improve default provider examples. Thanks to [David](https://github.com/DavidTheExplorer) for raising this.
+* [#1918][#1920] DOC: Removed unused Travis CI badge and associated broken link from README. Thanks to [Andreas Deininger](https://github.com/deining) for raising this and the pull request.
+* [#706] DOC: Add GitHub badge with test count to README.
+* [#1939] BUILD: Fix `picocli-annotation-processing-tests` failures on Java 16+: rewrite tests to avoid Google `compiler-test` API that internally uses `com.sun.tools.javac.util.Context`.
+* [#1887] DEP: Bump biz.aQute.bnd.gradle from 6.3.1 to 6.4.0
+* [#1865] DEP: Bump ivy from 2.5.0 to 2.5.1
+* [#1931] DEP: Bump springBootVersion from 2.7.5 to 3.0.2
+* [#1929] DEP: Bump github/codeql-action from 2.1.29 to 2.1.39
+* [#1926] DEP: Bump step-security/harden-runner from 1.5.0 to 2.1.0
+* [#1914] DEP: Bump actions/checkout from 3.1.0 to 3.3.0
+* [#1897] DEP: Bump actions/setup-java from 3.6.0 to 3.9.0
+* [#1902] DEP: Bump ossf/scorecard-action from 2.0.6 to 2.1.2
+* [#1938] DEP: Bump actions/upload-artifact from 3.1.1 to 3.1.2
+* [#1937] DEP: Bump asciidoctorj-pdf from 2.3.3 to 2.3.4
+* [#1936] DEP: Bump jline from 3.21.0 to 3.22.0
+* [#1935] DEP: Bump compile-testing from 0.19 to 0.21.0
 
 ## <a name="4.7.1-deprecated"></a> Deprecations
 No features were deprecated in this release.

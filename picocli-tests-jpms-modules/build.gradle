@@ -1,0 +1,44 @@
+plugins {
+    id 'org.javamodularity.moduleplugin' version '1.8.12' apply false
+}
+
+apply from: '../dependencies.gradle'
+
+
+group 'info.picocli'
+description 'JPMS modular CLI application tests'
+version "$projectVersion"
+
+subprojects {
+    apply plugin: 'java'
+    apply plugin: "org.javamodularity.moduleplugin"
+
+    version "$projectVersion"
+
+    sourceCompatibility = 1.9
+    targetCompatibility = 1.9
+
+    repositories {
+        mavenLocal()
+        mavenCentral()
+    }
+
+    test {
+        useJUnitPlatform()
+
+//        testLogging {
+//            events 'PASSED', 'FAILED', 'SKIPPED'
+//        }
+        outputs.upToDateWhen {false}
+        testLogging.showStandardStreams = true
+    }
+
+    dependencies {
+        implementation     supportDependencies.junit5Api
+        testRuntimeOnly    supportDependencies.junit5Engine
+        implementation     supportDependencies.systemLambda
+//        testImplementation supportDependencies.junit5Api
+//        testRuntimeOnly    supportDependencies.junit5Engine
+//        testImplementation supportDependencies.systemLambda
+    }
+}
