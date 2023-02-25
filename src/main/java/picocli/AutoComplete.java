@@ -549,6 +549,7 @@ public class AutoComplete {
         for (CommandDescriptor descriptor : hierarchy) {
             if (descriptor.parentFunctionName.equals("")) {
                 rootDescriptor = descriptor;
+                parentFunction = descriptor.functionName;
                 continue;
             }
             if (!descriptor.parentFunctionName.equals(parentFunction)) {

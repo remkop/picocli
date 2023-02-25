@@ -1,11 +1,8 @@
 
-# root completion
-set -l root
-complete -c picocompletion-demo --condition "not __fish_seen_subcommand_from $root" --long-option version --short-option V -d ''
-complete -c picocompletion-demo --condition "not __fish_seen_subcommand_from $root" --long-option help --short-option h -d ''
-
 # _picocli_picocompletion_demo completion
 set -l _picocli_picocompletion_demo sub1 sub1-alias sub2 sub2-alias
+complete -c picocompletion-demo --condition "not __fish_seen_subcommand_from $_picocli_picocompletion_demo" --long-option version --short-option V -d ''
+complete -c picocompletion-demo --condition "not __fish_seen_subcommand_from $_picocli_picocompletion_demo" --long-option help --short-option h -d ''
 complete -c picocompletion-demo --no-files --condition "not __fish_seen_subcommand_from $_picocli_picocompletion_demo" --arguments sub1 -d 'First level subcommand 1'
 complete -c picocompletion-demo --condition "__fish_seen_subcommand_from sub1" --long-option num -d 'a number'
 complete -c picocompletion-demo --condition "__fish_seen_subcommand_from sub1" --long-option str -d 'a String'
