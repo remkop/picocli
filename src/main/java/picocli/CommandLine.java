@@ -17805,7 +17805,14 @@ public class CommandLine {
                 if (!isTTY() && !isPseudoTTY())               { return false; }
                 return hintEnabled() || !isWindows() || isXterm() || isCygwin() || hasOsType();
             }
+            /** Cache the result for isJansiConsoleInstalled so it doesn't repeatedly
+             *  call Class#forName, which can cause performance issues. */
+            static Boolean jansiConsole;
             static boolean isJansiConsoleInstalled() {
+                if (jansiConsole == null) { jansiConsole = calcIsJansiConsoleInstalled(); }
+                return jansiConsole;
+            }
+            static boolean calcIsJansiConsoleInstalled() {
                 try {
                     // first check if JANSI was explicitly disabled _without loading any JANSI classes_:
                     // see https://github.com/remkop/picocli/issues/1106
