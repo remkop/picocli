@@ -360,6 +360,11 @@ public class HelpAnsiHeuristicsTest {
         environmentVariables.clear(ANSI_ENVIRONMENT_VARIABLES);
         environmentVariables.set("CLICOLOR", "0"); // hint disabled
         System.setProperty("os.name", "Windows");
+        // Clear the globally cached jansiConsole value that might
+        // have been set in a previous test to force the
+        // Ansi#isJansiConsoleInstalled method to recalculate
+        // the cached value.
+        Ansi.jansiConsole = null;
         assertTrue(Ansi.isWindows());
         assertFalse(Ansi.isPseudoTTY());
         assertFalse(Ansi.forceDisabled());
