@@ -612,6 +612,12 @@ public class HelpAnsiHeuristicsTest {
                     assertFalse(Ansi.hintEnabled());
 
                     assertFalse(Ansi.isJansiConsoleInstalled());
+
+                    // Clear the globally cached jansiConsole value that might
+                    // have been set in a previous test to force the
+                    // Ansi#isJansiConsoleInstalled method to recalculate
+                    // the cached value.
+                    Ansi.jansiConsole = null;
                     AnsiConsole.systemInstall();
                     try {
                         assertTrue(Ansi.isJansiConsoleInstalled());
@@ -628,6 +634,7 @@ public class HelpAnsiHeuristicsTest {
         restoreSystemProperties(() -> {
 
             System.setProperty("os.name", "Windows");
+            Ansi.jansiConsole = null;
             withEnvironmentVariable(ANSI_ENVIRONMENT_VARIABLES[0], null)
                 .and(ANSI_ENVIRONMENT_VARIABLES[1], null)
                 .and(ANSI_ENVIRONMENT_VARIABLES[2], null)
@@ -688,6 +695,7 @@ public class HelpAnsiHeuristicsTest {
                 restoreSystemProperties(() -> {
 
                     System.setProperty("os.name", "Windows");
+                    Ansi.jansiConsole = null;
                     assertTrue(Ansi.isWindows());
                     assertFalse(Ansi.isPseudoTTY());
                     assertFalse(Ansi.isJansiConsoleInstalled());
