@@ -36,7 +36,7 @@ public class ModelTransformerTest {
     public void testUsage() {
         StringWriter sw = new StringWriter();
         // Explicitly disable Ansi to make sure that the cached isJansiConsoleInstalled
-        // value doesn't inadvertently cause the usage help to be enabled.
+        // value doesn't inadvertently cause the usage help to enable ansi.
         new CommandLine(new MyCommand()).usage(new PrintWriter(sw), Ansi.OFF);
         String expected = String.format("" +
             "Usage: mycmd [-hV] [COMMAND]%n" +
