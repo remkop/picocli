@@ -2,6 +2,7 @@ package picocli;
 
 import org.junit.Test;
 import picocli.CommandLine.Command;
+import picocli.CommandLine.Help.Ansi;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -34,7 +35,9 @@ public class ModelTransformerTest {
     @Test
     public void testUsage() {
         StringWriter sw = new StringWriter();
-        new CommandLine(new MyCommand()).usage(new PrintWriter(sw));
+        // Explicitly disable Ansi to make sure that the cached isJansiConsoleInstalled
+        // value doesn't inadvertently cause the usage help to be enabled.
+        new CommandLine(new MyCommand()).usage(new PrintWriter(sw), Ansi.OFF);
         String expected = String.format("" +
             "Usage: mycmd [-hV] [COMMAND]%n" +
             "  -h, --help      Show this help message and exit.%n" +
