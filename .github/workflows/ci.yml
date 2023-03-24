@@ -101,7 +101,7 @@ jobs:
           path: badge.svg
 
       - name: Create badge (Win/Mac)
-        if: ${{ always() && (matrix.os == 'macos-latest' || matrix.os == 'windows-latest') && test-results.outputs.json }}
+        if: ${{ always() && (matrix.os == 'macos-latest' || matrix.os == 'windows-latest') && steps.test-results.outputs.json }}
         uses: emibcn/badge-action@4209421db54c8764d8932070ffd0f81715a629bf
         with:
           label: Tests
