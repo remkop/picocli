@@ -63,7 +63,7 @@ jobs:
         shell: bash
         if: ${{ always() && matrix.os == 'ubuntu-latest' }}
         run: |
-          case ${{ fromJSON( steps.test-results-nix.outputs.json ).conclusion }} in
+          case ${{ steps.test-results-nix.outputs.json && fromJSON( steps.test-results-nix.outputs.json ).conclusion }} in
             success)
               echo "BADGE_COLOR=31c653" >> $GITHUB_ENV
               ;;
@@ -79,7 +79,7 @@ jobs:
         shell: bash
         if: ${{ always() && (matrix.os == 'macos-latest' || matrix.os == 'windows-latest') }}
         run: |
-          case ${{ fromJSON( steps.test-results.outputs.json ).conclusion }} in
+          case ${{ steps.test-results.outputs.json && fromJSON( steps.test-results.outputs.json ).conclusion }} in
             success)
               echo "BADGE_COLOR=31c653" >> $GITHUB_ENV
               ;;
@@ -92,7 +92,7 @@ jobs:
           esac
 
       - name: Create badge (Linux)
-        if: ${{ always() && matrix.os == 'ubuntu-latest' }}
+        if: ${{ always() && matrix.os == 'ubuntu-latest' && steps.test-results-nix.outputs.json }}
         uses: emibcn/badge-action@4209421db54c8764d8932070ffd0f81715a629bf
         with:
           label: Tests
@@ -101,7 +101,7 @@ jobs:
           path: badge.svg
 
       - name: Create badge (Win/Mac)
-        if: ${{ always() && (matrix.os == 'macos-latest' || matrix.os == 'windows-latest') }}
+        if: ${{ always() && (matrix.os == 'macos-latest' || matrix.os == 'windows-latest') && test-results.outputs.json }}
         uses: emibcn/badge-action@4209421db54c8764d8932070ffd0f81715a629bf
         with:
           label: Tests
