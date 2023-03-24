@@ -360,11 +360,11 @@ public class HelpAnsiHeuristicsTest {
         environmentVariables.clear(ANSI_ENVIRONMENT_VARIABLES);
         environmentVariables.set("CLICOLOR", "0"); // hint disabled
         System.setProperty("os.name", "Windows");
-        // Clear the globally cached jansiConsole value that might
+        // Clear the globally cached jansiInstalled value that might
         // have been set in a previous test to force the
         // Ansi#isJansiConsoleInstalled method to recalculate
         // the cached value.
-        Ansi.jansiConsole = null;
+        Ansi.jansiInstalled = null;
         assertTrue(Ansi.isWindows());
         assertFalse(Ansi.isPseudoTTY());
         assertFalse(Ansi.forceDisabled());
@@ -372,13 +372,26 @@ public class HelpAnsiHeuristicsTest {
         assertTrue(Ansi.hintDisabled());
         assertFalse(Ansi.hintEnabled());
 
+
+        // Clear the globally cached jansiInstalled value that might
+        // have been set in a previous test to force the
+        // Ansi#isJansiConsoleInstalled method to recalculate
+        // the cached value.
+        Ansi.jansiInstalled = null;
         assertFalse(Ansi.isJansiConsoleInstalled());
         AnsiConsole.systemInstall();
         try {
+
+            // Clear the cached jansiInstalled value to force the
+            // Ansi#isJansiConsoleInstalled method to recalculate
+            Ansi.jansiInstalled = null;
             assertTrue(Ansi.isJansiConsoleInstalled());
             assertTrue(Ansi.AUTO.enabled());
         } finally {
             AnsiConsole.systemUninstall();
+
+            // Clear the cached jansiInstalled value
+            Ansi.jansiInstalled = null;
         }
     }
 
@@ -395,6 +408,12 @@ public class HelpAnsiHeuristicsTest {
         assertTrue(Ansi.isPseudoTTY());
 
         assertFalse(Ansi.isJansiConsoleInstalled());
+
+        // Clear the globally cached jansiInstalled value that might
+        // have been set in a previous test to force the
+        // Ansi#isJansiConsoleInstalled method to recalculate
+        // the cached value.
+        Ansi.jansiInstalled = null;
 
         assertFalse(Ansi.forceDisabled());
         assertFalse(Ansi.forceEnabled());
@@ -413,6 +432,12 @@ public class HelpAnsiHeuristicsTest {
         assertFalse(Ansi.isPseudoTTY());
         assertFalse(Ansi.isJansiConsoleInstalled());
 
+        // Clear the globally cached jansiInstalled value that might
+        // have been set in a previous test to force the
+        // Ansi#isJansiConsoleInstalled method to recalculate
+        // the cached value.
+        Ansi.jansiInstalled = null;
+
         assertFalse(Ansi.forceDisabled());
         assertFalse(Ansi.forceEnabled());
         assertFalse(Ansi.hintDisabled());
@@ -430,6 +455,12 @@ public class HelpAnsiHeuristicsTest {
         assertFalse(Ansi.isPseudoTTY()); // TODO Mock this?
         assertFalse(Ansi.isJansiConsoleInstalled());
 
+        // Clear the globally cached jansiInstalled value that might
+        // have been set in a previous test to force the
+        // Ansi#isJansiConsoleInstalled method to recalculate
+        // the cached value.
+        Ansi.jansiInstalled = null;
+
         assertFalse(Ansi.forceDisabled());
         assertFalse(Ansi.forceEnabled());
         assertFalse(Ansi.hintDisabled());
@@ -444,6 +475,12 @@ public class HelpAnsiHeuristicsTest {
         System.setProperty("os.name", "Windows");
         assertTrue(Ansi.isWindows());
         assertFalse(Ansi.isJansiConsoleInstalled());
+
+        // Clear the globally cached jansiInstalled value that might
+        // have been set in a previous test to force the
+        // Ansi#isJansiConsoleInstalled method to recalculate
+        // the cached value.
+        Ansi.jansiInstalled = null;
 
         assertFalse(Ansi.forceDisabled());
         assertFalse(Ansi.forceEnabled());

@@ -17805,12 +17805,12 @@ public class CommandLine {
                 if (!isTTY() && !isPseudoTTY())               { return false; }
                 return hintEnabled() || !isWindows() || isXterm() || isCygwin() || hasOsType();
             }
-            /** Cache the result for isJansiConsoleInstalled so it doesn't repeatedly
+            /** Caches the result of method isJansiConsoleInstalled so it doesn't repeatedly
              *  call Class#forName, which can cause performance issues. */
-            static Boolean jansiConsole;
+            static Boolean jansiInstalled;
             static boolean isJansiConsoleInstalled() {
-                if (jansiConsole == null) { jansiConsole = calcIsJansiConsoleInstalled(); }
-                return jansiConsole;
+                if (jansiInstalled == null) { jansiInstalled = calcIsJansiConsoleInstalled(); }
+                return jansiInstalled;
             }
             static boolean calcIsJansiConsoleInstalled() {
                 try {

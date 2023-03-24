@@ -190,7 +190,7 @@ Release procedure:
 8. ./gradlew bumpReadmeVersion
 9. update README.md (latest version, release notes)
 10. (in new cmd prompt session)
-    cd picocli-legacy-tests & set JAVA_HOME=C:\apps\jdk1.5.0_22\&& echo ++%JAVA_HOME%++ && gradlew clean build --no-daemon
+    cd picocli-tests-java567 & set JAVA_HOME=C:\apps\jdk1.5.0_22\&& echo ++%JAVA_HOME%++ && gradlew clean build --no-daemon
 11. commit -m "Release picocli version ..."
 12. tag v$version
 13 ./gradlew publishReleasePublicationToSonatypeRepository - creates a Sonatype staging repository, and uploads artifacts
