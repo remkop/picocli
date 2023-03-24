@@ -512,11 +512,11 @@ public class AutoCompleteSystemExitTest {
 
     @BeforeAll
     static void disableAnsi() {
-        // Clear the globally cached jansiConsole value that might
+        // Clear the globally cached jansiInstalled value that might
         // have been set in a previous test to force the
         // Ansi#isJansiConsoleInstalled method to recalculate
         // the cached value.
-        Ansi.jansiConsole = null;
+        Ansi.jansiInstalled = null;
     }
 
     @Test
