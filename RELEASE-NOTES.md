@@ -21,6 +21,7 @@ Artifacts in this release are signed by Remko Popma (6601 E5C0 8DCC BB96).
 
 ## <a name="4.7.2-fixes"></a> Fixed issues
 * [#1959] API: Add ability to enable loading resource bundles in annotation processor for tests.
+* [#1975][#1976] Enhancement: Fixed `isJansiConsoleInstalled` performance issue. Thanks to [ChrisTrenkamp](https://github.com/ChrisTrenkamp) for the pull request.
 * [#1932] Enhancement: Move System-Rules tests to Java 5 test module; move System-Lambda tests to Java 8+ test module. Facilitate testing with recent JRE's.
 * [#1945] DOC: Code sample: add Java version. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1956] Doc: Fix broken link in user manual. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
@@ -37,6 +38,11 @@ Artifacts in this release are signed by Remko Popma (6601 E5C0 8DCC BB96).
 * [#1963] DEP: Bump step-security/harden-runner from 2.1.0 to 2.2.0
 * [#1961] DEP: Bump gradle/gradle-build-action from 2.3.3 to 2.4.0
 * [#1960] DEP: Bump gradle/wrapper-validation-action from 1.0.5 to 1.0.6
+* [#1968] DEP: Bump org.jline:jline from 3.22.0 to 3.23.0
+* [#1970] DEP: Bump step-security/harden-runner from 2.2.0 to 2.2.1
+* [#1978] DEP: Bump springBootVersion from 2.7.9 to 2.7.10
+* [#1979] DEP: Bump github/codeql-action from 2.2.4 to 2.2.8
+* [#1980] DEP: Bump actions/checkout from 3.3.0 to 3.5.0
 
 ## <a name="4.7.2-deprecated"></a> Deprecations
 No features were deprecated in this release.
