@@ -25,7 +25,7 @@ ext {
     junitDepVersion     = "4.11.20120805.1225"
     junitVersion        = "4.13.2"
     log4j2Version       = "2.20.0"
-    springBootVersion   = "2.7.9" // Spring Boot 3.0 requires Java 17 as a minimum version
+    springBootVersion   = "2.7.10" // Spring Boot 3.0 requires Java 17 as a minimum version
     systemRulesVersion  = "1.19.0"
     systemLambdaVersion = '1.2.1'
     junit5Version       = '5.9.2'
