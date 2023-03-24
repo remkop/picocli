@@ -17805,13 +17805,21 @@ public class CommandLine {
                 if (!isTTY() && !isPseudoTTY())               { return false; }
                 return hintEnabled() || !isWindows() || isXterm() || isCygwin() || hasOsType();
             }
-            /** Caches the result of method isJansiConsoleInstalled so it doesn't repeatedly
+            /** Caches the result of method {@link #isJansiConsoleInstalled()} so it doesn't repeatedly
              *  call Class#forName, which can cause performance issues. */
             static Boolean jansiInstalled;
+            /** The first time this method is called, it invokes the
+             * {@link #calcIsJansiConsoleInstalled()} method, caches its result and returns this result;
+             * subsequently it returns the cached result. */
             static boolean isJansiConsoleInstalled() {
                 if (jansiInstalled == null) { jansiInstalled = calcIsJansiConsoleInstalled(); }
                 return jansiInstalled;
             }
+            /** Returns {@code false} if system property {@code org.fusesource.jansi.Ansi.disable} is set to {@code "true"}
+             * (case-insensitive); otherwise, returns {@code false} if the Jansi library is in the classpath but has been disabled
+             * (either via system property {@code org.fusesource.jansi.Ansi.disable} or via a Jansi API call);
+             * otherwise, returns {@code true} if the Jansi library is in the classpath and has been installed.
+             */
             static boolean calcIsJansiConsoleInstalled() {
                 try {
                     // first check if JANSI was explicitly disabled _without loading any JANSI classes_:
