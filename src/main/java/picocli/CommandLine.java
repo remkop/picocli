@@ -7536,7 +7536,7 @@ public class CommandLine {
                 if (arg == null) { return false; }
                 Tracer tracer = tracer();
                 if (arg.length() == 1) {
-                    if (tracer != null && tracer.isDebug()) {tracer.debug("Single-character arguments that don't match known options are considered positional parameters", arg);}
+                    if (tracer != null && tracer.isDebug()) {tracer.debug("Single-character arguments that don't match known options are considered positional parameters: %s", arg);}
                     return false;
                 }
                 try { Long.decode(arg);        return false; } catch (NumberFormatException nan) {} // negative numbers are not unknown options
