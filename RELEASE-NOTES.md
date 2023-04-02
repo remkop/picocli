@@ -23,6 +23,7 @@ Artifacts in this release are signed by Remko Popma (6601 E5C0 8DCC BB96).
 * [#1959] API: Add ability to enable loading resource bundles in annotation processor for tests.
 * [#1975][#1976] Enhancement: Fixed `isJansiConsoleInstalled` performance issue. Thanks to [ChrisTrenkamp](https://github.com/ChrisTrenkamp) for the pull request.
 * [#1932] Enhancement: Move System-Rules tests to Java 5 test module; move System-Lambda tests to Java 8+ test module. Facilitate testing with recent JRE's.
+* [#1984] Enhancement (Kotlin): improve `paramLabel` string auto-generated from Kotlin `internal` methods which have mangled names with embedded "$". Thanks to [Ken Yee](https://github.com/kenyee) for raising this.
 * [#1945] DOC: Code sample: add Java version. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1956] Doc: Fix broken link in user manual. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1955] DEP: Bump asciidoctorj from 2.5.5 to 2.5.7. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.

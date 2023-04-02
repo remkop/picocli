@@ -9547,7 +9547,7 @@ public class CommandLine {
                     arity = Range.optionArity(annotatedElement);
                     required = option.required();
 
-                    paramLabel = inferLabel(option.paramLabel(), annotatedElement.getName(), annotatedElement.getTypeInfo());
+                    paramLabel = inferLabel(option.paramLabel(), annotatedElement);
 
                     hideParamSyntax = option.hideParamSyntax();
                     interactive = option.interactive();
@@ -9585,9 +9585,9 @@ public class CommandLine {
 
                     // method parameters may be positional parameters without @Parameters annotation
                     if (parameters == null) {
-                        paramLabel = inferLabel(null, annotatedElement.getName(), annotatedElement.getTypeInfo());
+                        paramLabel = inferLabel(null, annotatedElement);
                     } else {
-                        paramLabel = inferLabel(parameters.paramLabel(), annotatedElement.getName(), annotatedElement.getTypeInfo());
+                        paramLabel = inferLabel(parameters.paramLabel(), annotatedElement);
 
                         hideParamSyntax = parameters.hideParamSyntax();
                         interactive = parameters.interactive();
@@ -9619,14 +9619,20 @@ public class CommandLine {
                         }
                     }
                 }
-                private static String inferLabel(String label, String fieldName, ITypeInfo typeInfo) {
+                private static String inferLabel(String label, IAnnotatedElement annotatedElement) {
                     if (!empty(label)) { return label.trim(); }
-                    String name = fieldName;
-                    if (typeInfo.isMap()) { // #195 better param labels for map fields
-                        List<ITypeInfo> aux = typeInfo.getAuxiliaryTypeInfos();
+                    String name = annotatedElement.getName();
+                    if (annotatedElement.getTypeInfo().isMap()) { // #195 better param labels for map fields
+                        List<ITypeInfo> aux = annotatedElement.getTypeInfo().getAuxiliaryTypeInfos();
                         if (aux.size() < 2 || aux.get(0) == null || aux.get(1) == null) {
                             name = "String=String";
                         } else { name = aux.get(0).getClassSimpleName() + "=" + aux.get(1).getClassSimpleName(); }
+                    } else {
+                        int dollar = name.indexOf('$');
+                        if (dollar >= 0 && Method.class.equals(annotatedElement.userObject().getClass())) {
+                            // #1984 Kotlin internal members have mangled names with "$" followed by random postfix
+                            name = name.substring(0, dollar);
+                        }
                     }
                     return "<" + name + ">";
                 }
