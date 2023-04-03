@@ -13184,6 +13184,12 @@ ____
 
 ====
 
+=== Spring Boot Maven Plugin
+
+The https://docs.spring.io/spring-boot/docs/current/maven-plugin/reference/htmlsingle/#packaging[Spring Boot Maven Plugin] provides a `repakcage` goal to create executable archives that contain all of an application’s dependencies. It thus functions as an executable, is portable across operating systems and architectures, and is still a valid JAR file that can be executed explicitly or otherwise used as a JAR.
+
+http://github.com/korandoru/hawkeye[korandoru/hawkeye] provides a real-world example to pacakge a picocli application into an executable file. You can read the `pom.xml` file of https://github.com/korandoru/hawkeye/blob/main/hawkeye-cli/pom.xml[hawkeye-cli] module for details. Note that the default `embeddedLaunchScript.sh` assumes that the application may be a Spring Application while the hawkeye-cli example uses a customized tidy script.
+
 === Really Executable JAR
 
 A https://skife.org/java/unix/2011/06/20/really_executable_jars.html[really executable JAR]
