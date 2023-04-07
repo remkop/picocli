@@ -14551,7 +14551,8 @@ public class CommandLine {
             String fallback = consumed == 0 && argSpec.isOption() && !OptionSpec.DEFAULT_FALLBACK_VALUE.equals(((OptionSpec) argSpec).fallbackValue())
                     ? ((OptionSpec) argSpec).fallbackValue()
                     : null;
-            if (fallback != null && (args.isEmpty() || !varargCanConsumeNextValue(argSpec, args.peek())
+            boolean hasFallback = fallback != null || (argSpec.isOption() && Option.NULL_VALUE.equals(((OptionSpec) argSpec).originalFallbackValue));
+            if (hasFallback && (args.isEmpty() || !varargCanConsumeNextValue(argSpec, args.peek())
                     || (!canConsumeOneArgument(argSpec, lookBehind, alreadyUnquoted, arity, consumed, args.peek(), argDescription)))) {
                 args.push(fallback);
             }
