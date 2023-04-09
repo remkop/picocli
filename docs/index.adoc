@@ -13151,10 +13151,7 @@ path/to/native-image -cp picocli-4.7.2-SNAPSHOT.jar --static -jar myapp.jar
 
 CAUTION: To create a native image, the compiler toolchain for your platform needs to be installed. See https://www.infoq.com/articles/java-native-cli-graalvm-picocli/[Build Great Native CLI Apps in Java with Graalvm and Picocli] for details.
 
-GraalVM includes a https://graalvm.github.io/native-build-tools/latest/maven-plugin.html[Maven plugin]
-to generate a native image during the build.
-Gradle users may be interested in the https://github.com/palantir/gradle-graal[gradle-graal] plugin by Palantir, or the https://plugins.gradle.org/plugin/org.mikeneck.graalvm-native-image[graalvm-native-image] plugin by Mike Neck.
-(Documentation for both Maven and Gradle plugins seems sparse at time of this writing.)
+GraalVM includes a https://graalvm.github.io/native-build-tools/latest/maven-plugin.html[Maven plugin] and a https://graalvm.github.io/native-build-tools/latest/gradle-plugin.html[Gradle plugin] to generate a native image during the build. Gradle users may be interested in the https://github.com/palantir/gradle-graal[gradle-graal] plugin by Palantir also.
 
 ==== Where can I get More Details?
 
@@ -13164,6 +13161,8 @@ It pays special attention to Windows, where setting up the compiler toolchain ca
 This https://picocli.info/picocli-on-graalvm.html[older article], "Picocli on GraalVM: Blazingly Fast Command Line Apps", may still be useful.
 
 See also this https://github.com/remkop/picocli-native-image-demo[demo Gradle project] and this https://github.com/remkop/picocli-native-image-maven-demo[demo Maven project] that provide a simple complete CLI app, with build instructions, that developers can clone, and build to get the stand-alone executable.
+
+See also the http://github.com/korandoru/hawkeye[korandoru/hawkeye] for a real-world Maven project that provide a native image and a slim Docker image powered by native image.
 
 [TIP]
 ====
@@ -13184,6 +13183,12 @@ If you embed `MSVCR100.DLL` or `VCRUNTIME140.DLL` in your exe rather than create
 ____
 
 ====
+
+=== Spring Boot Maven Plugin
+
+The https://docs.spring.io/spring-boot/docs/current/maven-plugin/reference/htmlsingle/#packaging[Spring Boot Maven Plugin] provides a `repackage` goal to create executable archives that contain all of an application’s dependencies. It thus functions as an executable, is portable across operating systems and architectures, and is still a valid JAR file that can be executed explicitly or otherwise used as a JAR.
+
+http://github.com/korandoru/hawkeye[korandoru/hawkeye] provides a real-world example to package a picocli application into an executable file. You can read the `pom.xml` file of https://github.com/korandoru/hawkeye/blob/main/hawkeye-cli/pom.xml[hawkeye-cli] module for details. Note that the default `embeddedLaunchScript.sh` assumes that the application may be a Spring Application while the hawkeye-cli example uses a customized tidy script.
 
 === Really Executable JAR
 

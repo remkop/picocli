@@ -11,6 +11,7 @@ import picocli.CommandLine.Option;
 import picocli.CommandLine.ParameterException;
 import picocli.CommandLine.Parameters;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -184,5 +185,46 @@ public class FallbackTest {
         Issue1904 obj = CommandLine.populateCommand(new Issue1904(), "--map", "123"); // positional
         assertEquals(Collections.singletonList(Issue1904.DebugFacility.DEFAULT), obj.facilities);
         assertEquals(Collections.singletonMap(Issue1904.DebugFacility.FALLBACK, "1"), obj.map);
+    }
+
+    @Command
+    static class Issue1993 {
+        @Option(names = {"--list"}, arity = "0..1", fallbackValue = CommandLine.Option.NULL_VALUE)
+        List<String> list;
+
+        @Option(names = {"--array"}, arity = "0..1", fallbackValue = CommandLine.Option.NULL_VALUE)
+        String[] array;
+
+        @Option(names = {"--map"}, arity = "0..1", fallbackValue = "KEY="+CommandLine.Option.NULL_VALUE)
+        Map<String, String> map;
+    }
+
+    @Test
+    public void testIssue1993List() {
+        Issue1993 main = new Issue1993();
+        CommandLine commandLine = new CommandLine(main);
+        commandLine.parseArgs("--list", "--list", "pepa");
+
+        assertEquals(Arrays.asList(null, "pepa"), main.list);
+    }
+
+    @Test
+    public void testIssue1993Array() {
+        Issue1993 main = new Issue1993();
+        CommandLine commandLine = new CommandLine(main);
+        commandLine.parseArgs("--array", "--array", "FOO");
+
+        assertArrayEquals(new String[]{null, "FOO"}, main.array);
+    }
+
+    @Test
+    public void testIssue1993Map() {
+        Issue1993 main = new Issue1993();
+        CommandLine commandLine = new CommandLine(main);
+        commandLine.parseArgs("--map", "--map", "FOO=123");
+
+        // Should this sentinel value be replaced with Java `null`?
+        Map<String, String> expected = TestUtil.mapOf("KEY", CommandLine.Option.NULL_VALUE, "FOO", "123");
+        assertEquals(expected, main.map);
     }
 }
