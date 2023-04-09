@@ -200,7 +200,7 @@ Release procedure:
   b. Automatically with the codearte.nexus-staging plugin:
      ./gradlew closeAndReleaseRepository
 
-15. edit version numbers: increase minor version and add -SNAPSHOT classifier
+15. edit version numbers: increase minor version and add -SNAPSHOT classifier, update releaseDatePreviousRegex
 16. ./gradlew bumpVersion
 17. check modified files
 18. delete RELEASE-NOTES-NEXT.md
