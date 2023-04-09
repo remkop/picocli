@@ -7536,7 +7536,7 @@ public class CommandLine {
                 if (arg == null) { return false; }
                 Tracer tracer = tracer();
                 if (arg.length() == 1) {
-                    if (tracer != null && tracer.isDebug()) {tracer.debug("Single-character arguments that don't match known options are considered positional parameters", arg);}
+                    if (tracer != null && tracer.isDebug()) {tracer.debug("Single-character arguments that don't match known options are considered positional parameters: %s", arg);}
                     return false;
                 }
                 try { Long.decode(arg);        return false; } catch (NumberFormatException nan) {} // negative numbers are not unknown options
@@ -9547,7 +9547,7 @@ public class CommandLine {
                     arity = Range.optionArity(annotatedElement);
                     required = option.required();
 
-                    paramLabel = inferLabel(option.paramLabel(), annotatedElement.getName(), annotatedElement.getTypeInfo());
+                    paramLabel = inferLabel(option.paramLabel(), annotatedElement);
 
                     hideParamSyntax = option.hideParamSyntax();
                     interactive = option.interactive();
@@ -9585,9 +9585,9 @@ public class CommandLine {
 
                     // method parameters may be positional parameters without @Parameters annotation
                     if (parameters == null) {
-                        paramLabel = inferLabel(null, annotatedElement.getName(), annotatedElement.getTypeInfo());
+                        paramLabel = inferLabel(null, annotatedElement);
                     } else {
-                        paramLabel = inferLabel(parameters.paramLabel(), annotatedElement.getName(), annotatedElement.getTypeInfo());
+                        paramLabel = inferLabel(parameters.paramLabel(), annotatedElement);
 
                         hideParamSyntax = parameters.hideParamSyntax();
                         interactive = parameters.interactive();
@@ -9619,14 +9619,20 @@ public class CommandLine {
                         }
                     }
                 }
-                private static String inferLabel(String label, String fieldName, ITypeInfo typeInfo) {
+                private static String inferLabel(String label, IAnnotatedElement annotatedElement) {
                     if (!empty(label)) { return label.trim(); }
-                    String name = fieldName;
-                    if (typeInfo.isMap()) { // #195 better param labels for map fields
-                        List<ITypeInfo> aux = typeInfo.getAuxiliaryTypeInfos();
+                    String name = annotatedElement.getName();
+                    if (annotatedElement.getTypeInfo().isMap()) { // #195 better param labels for map fields
+                        List<ITypeInfo> aux = annotatedElement.getTypeInfo().getAuxiliaryTypeInfos();
                         if (aux.size() < 2 || aux.get(0) == null || aux.get(1) == null) {
                             name = "String=String";
                         } else { name = aux.get(0).getClassSimpleName() + "=" + aux.get(1).getClassSimpleName(); }
+                    } else {
+                        int dollar = name.indexOf('$');
+                        if (dollar >= 0 && Method.class.equals(annotatedElement.userObject().getClass())) {
+                            // #1984 Kotlin internal members have mangled names with "$" followed by random postfix
+                            name = name.substring(0, dollar);
+                        }
                     }
                     return "<" + name + ">";
                 }
@@ -14545,7 +14551,8 @@ public class CommandLine {
             String fallback = consumed == 0 && argSpec.isOption() && !OptionSpec.DEFAULT_FALLBACK_VALUE.equals(((OptionSpec) argSpec).fallbackValue())
                     ? ((OptionSpec) argSpec).fallbackValue()
                     : null;
-            if (fallback != null && (args.isEmpty() || !varargCanConsumeNextValue(argSpec, args.peek())
+            boolean hasFallback = fallback != null || (argSpec.isOption() && Option.NULL_VALUE.equals(((OptionSpec) argSpec).originalFallbackValue));
+            if (hasFallback && (args.isEmpty() || !varargCanConsumeNextValue(argSpec, args.peek())
                     || (!canConsumeOneArgument(argSpec, lookBehind, alreadyUnquoted, arity, consumed, args.peek(), argDescription)))) {
                 args.push(fallback);
             }
@@ -17805,13 +17812,21 @@ public class CommandLine {
                 if (!isTTY() && !isPseudoTTY())               { return false; }
                 return hintEnabled() || !isWindows() || isXterm() || isCygwin() || hasOsType();
             }
-            /** Caches the result of method isJansiConsoleInstalled so it doesn't repeatedly
+            /** Caches the result of method {@link #isJansiConsoleInstalled()} so it doesn't repeatedly
              *  call Class#forName, which can cause performance issues. */
             static Boolean jansiInstalled;
+            /** The first time this method is called, it invokes the
+             * {@link #calcIsJansiConsoleInstalled()} method, caches its result and returns this result;
+             * subsequently it returns the cached result. */
             static boolean isJansiConsoleInstalled() {
                 if (jansiInstalled == null) { jansiInstalled = calcIsJansiConsoleInstalled(); }
                 return jansiInstalled;
             }
+            /** Returns {@code false} if system property {@code org.fusesource.jansi.Ansi.disable} is set to {@code "true"}
+             * (case-insensitive); otherwise, returns {@code false} if the Jansi library is in the classpath but has been disabled
+             * (either via system property {@code org.fusesource.jansi.Ansi.disable} or via a Jansi API call);
+             * otherwise, returns {@code true} if the Jansi library is in the classpath and has been installed.
+             */
             static boolean calcIsJansiConsoleInstalled() {
                 try {
                     // first check if JANSI was explicitly disabled _without loading any JANSI classes_:
