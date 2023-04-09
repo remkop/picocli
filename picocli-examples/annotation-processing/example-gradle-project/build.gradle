@@ -17,9 +17,9 @@ dependencies {
     testImplementation group: 'junit', name: 'junit', version: '4.13.1'
 }
 dependencies {
-    implementation 'info.picocli:picocli:4.7.1'
-    annotationProcessor 'info.picocli:picocli-codegen:4.7.1'
-    //compileOnly 'info.picocli:picocli-codegen:4.7.1' // in pre-Gradle 4.6
+    implementation 'info.picocli:picocli:4.7.2'
+    annotationProcessor 'info.picocli:picocli-codegen:4.7.2'
+    //compileOnly 'info.picocli:picocli-codegen:4.7.2' // in pre-Gradle 4.6
 }
 compileJava {
     // minimum 1.6

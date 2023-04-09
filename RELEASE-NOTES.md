@@ -1,11 +1,9 @@
 # picocli Release Notes
 
-# <a name="4.7.2"></a> Picocli 4.7.2 (UNRELEASED)
+# <a name="4.7.2"></a> Picocli 4.7.2
 The picocli community is pleased to announce picocli 4.7.2.
 
 This release includes bugfixes and enhancements.
-
-
 
 This is the eighty-first public release.
 Picocli follows [semantic versioning](https://semver.org/).
@@ -19,6 +17,11 @@ Artifacts in this release are signed by Remko Popma (6601 E5C0 8DCC BB96).
 
 ## <a name="4.7.2-new"></a> New and Noteworthy
 
+* Bugfix: `fallbackValue=Option.NULL_VALUE` did not work for `Collection` or array options.
+* Fixed `isJansiConsoleInstalled` performance issue.
+* Kotlin enhancement: improved `paramLabel` string auto-generated from Kotlin `internal` methods which have mangled names with embedded "$".
+* Various documentation fixes.
+
 ## <a name="4.7.2-fixes"></a> Fixed issues
 * [#1959] API: Add ability to enable loading resource bundles in annotation processor for tests.
 * [#1993] Bugfix: `fallbackValue=Option.NULL_VALUE` did not work for `Collection` or array options. Thanks to [Jiri Daněk](https://github.com/jiridanek) for raising this.
@@ -29,8 +32,8 @@ Artifacts in this release are signed by Remko Popma (6601 E5C0 8DCC BB96).
 * [#1956] Doc: Fix broken link in user manual. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1955] DEP: Bump asciidoctorj from 2.5.5 to 2.5.7. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1980] DEP: Bump actions/checkout from 3.3.0 to 3.5.0
-* [#1985] DEP: Bump actions/setup-java from 3.10.0 to 3.11.0
 * [#1952] DEP: Bump actions/setup-java from 3.9.0 to 3.10.0
+* [#1985] DEP: Bump actions/setup-java from 3.10.0 to 3.11.0
 * [#1941] DEP: Bump emibcn/badge-action from 1.2.4 to 2.0.2
 * [#1942] DEP: Bump github/codeql-action from 2.1.39 to 2.2.1
 * [#1953] DEP: Bump github/codeql-action from 2.2.1 to 2.2.3

@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="generator" content="Asciidoctor 2.0.17">
+<meta name="generator" content="Asciidoctor 2.0.18">
 <title>Autocomplete for Java Command Line Applications</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
@@ -84,10 +84,10 @@ code{font-family:"Droid Sans Mono","DejaVu Sans Mono",monospace;font-weight:400;
 ul,ol,dl{line-height:1.6;margin-bottom:1.25em;list-style-position:outside;font-family:inherit}
 ul,ol{margin-left:1.5em}
 ul li ul,ul li ol{margin-left:1.25em;margin-bottom:0}
-ul.square li ul,ul.circle li ul,ul.disc li ul{list-style:inherit}
-ul.square{list-style-type:square}
 ul.circle{list-style-type:circle}
 ul.disc{list-style-type:disc}
+ul.square{list-style-type:square}
+ul.circle ul:not([class]),ul.disc ul:not([class]),ul.square ul:not([class]){list-style:inherit}
 ol li ul,ol li ol{margin-left:1.25em;margin-bottom:0}
 dl dt{margin-bottom:.3125em;font-weight:bold}
 dl dd{margin-bottom:1.25em}
@@ -1564,163 +1564,88 @@ new ClipboardJS('.clipboard', {
 });
 </script>
 <style>
-
 .hidden {
-
     display: none;
-
 }
-
-
 
 .switch {
-
     border-width: 1px 1px 0 1px;
-
     border-style: solid;
-
     border-color: #7a2518;
-
     display: inline-block;
-
 }
-
-
 
 .switch--item {
-
     padding: 10px;
-
     background-color: #ffffff;
-
     color: #7a2518;
-
     display: inline-block;
-
     cursor: pointer;
-
 }
-
-
 
 .switch--item.selected {
-
     background-color: #7a2519;
-
     color: #ffffff;
-
 }
-
-
 
 </style>
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/zepto/1.2.0/zepto.min.js"></script>
-
 <script type="text/javascript">
-
 function addBlockSwitches() {
-
     $('.primary').each(function() {
-
         primary = $(this);
-
         createSwitchItem(primary, createBlockSwitch(primary)).item.addClass("selected");
-
         primary.children('.title').remove();
-
     });
-
     $('.secondary').each(function(idx, node) {
-
         secondary = $(node);
-
         primary = findPrimary(secondary);
-
         switchItem = createSwitchItem(secondary, primary.children('.switch'));
-
         switchItem.content.addClass('hidden');
-
         findPrimary(secondary).append(switchItem.content);
-
         secondary.remove();
-
     });
-
 }
-
-
 
 function createBlockSwitch(primary) {
-
     blockSwitch = $('<div class="switch"></div>');
-
     primary.prepend(blockSwitch);
-
     return blockSwitch;
-
 }
-
-
 
 function findPrimary(secondary) {
-
     candidate = secondary.prev();
-
     while (!candidate.is('.primary')) {
-
         candidate = candidate.prev();
-
     }
-
     return candidate;
-
 }
-
-
 
 function createSwitchItem(block, blockSwitch) {
-
     blockName = block.children('.title').text();
-
     content = block.children('.content').first().append(block.next('.colist'));
-
     item = $('<div class="switch--item">' + blockName + '</div>');
-
     item.on('click', '', content, function(e) {
-
         $(this).addClass('selected');
-
         $(this).siblings().removeClass('selected');
-
         e.data.siblings('.content').addClass('hidden');
-
         e.data.removeClass('hidden');
-
     });
-
     blockSwitch.append(item);
-
     return {'item': item, 'content': content};
-
 }
-
-
 
 $(addBlockSwitches);
 
-
-
 </script>
-
 
 </head>
 <body class="article toc2 toc-left">
 <div id="header">
 <h1>Autocomplete for Java Command Line Applications</h1>
 <div class="details">
-<span id="revnumber">version 4.7.1,</span>
-<span id="revdate">2023-01-27</span>
+<span id="revnumber">version 4.7.2,</span>
+<span id="revdate">2023-04-09</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
@@ -2402,8 +2327,8 @@ Setting system property <code>picocli.autocomplete.systemExitOnError</code> ensu
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 4.7.1<br>
-Last updated 2023-01-27 18:22:37 +0900
+Version 4.7.2<br>
+Last updated 2023-04-09 17:42:19 +0900
 </div>
 </div>
 </body>

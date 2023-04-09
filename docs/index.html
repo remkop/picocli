@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="generator" content="Asciidoctor 2.0.17">
+<meta name="generator" content="Asciidoctor 2.0.18">
 <title>picocli - a mighty tiny command line interface</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
@@ -84,10 +84,10 @@ code{font-family:"Droid Sans Mono","DejaVu Sans Mono",monospace;font-weight:400;
 ul,ol,dl{line-height:1.6;margin-bottom:1.25em;list-style-position:outside;font-family:inherit}
 ul,ol{margin-left:1.5em}
 ul li ul,ul li ol{margin-left:1.25em;margin-bottom:0}
-ul.square li ul,ul.circle li ul,ul.disc li ul{list-style:inherit}
-ul.square{list-style-type:square}
 ul.circle{list-style-type:circle}
 ul.disc{list-style-type:disc}
+ul.square{list-style-type:square}
+ul.circle ul:not([class]),ul.disc ul:not([class]),ul.square ul:not([class]){list-style:inherit}
 ol li ul,ol li ol{margin-left:1.25em;margin-bottom:0}
 dl dt{margin-bottom:.3125em;font-weight:bold}
 dl dd{margin-bottom:1.25em}
@@ -1710,163 +1710,88 @@ new ClipboardJS('.clipboard', {
 });
 </script>
 <style>
-
 .hidden {
-
     display: none;
-
 }
-
-
 
 .switch {
-
     border-width: 1px 1px 0 1px;
-
     border-style: solid;
-
     border-color: #7a2518;
-
     display: inline-block;
-
 }
-
-
 
 .switch--item {
-
     padding: 10px;
-
     background-color: #ffffff;
-
     color: #7a2518;
-
     display: inline-block;
-
     cursor: pointer;
-
 }
-
-
 
 .switch--item.selected {
-
     background-color: #7a2519;
-
     color: #ffffff;
-
 }
-
-
 
 </style>
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/zepto/1.2.0/zepto.min.js"></script>
-
 <script type="text/javascript">
-
 function addBlockSwitches() {
-
     $('.primary').each(function() {
-
         primary = $(this);
-
         createSwitchItem(primary, createBlockSwitch(primary)).item.addClass("selected");
-
         primary.children('.title').remove();
-
     });
-
     $('.secondary').each(function(idx, node) {
-
         secondary = $(node);
-
         primary = findPrimary(secondary);
-
         switchItem = createSwitchItem(secondary, primary.children('.switch'));
-
         switchItem.content.addClass('hidden');
-
         findPrimary(secondary).append(switchItem.content);
-
         secondary.remove();
-
     });
-
 }
-
-
 
 function createBlockSwitch(primary) {
-
     blockSwitch = $('<div class="switch"></div>');
-
     primary.prepend(blockSwitch);
-
     return blockSwitch;
-
 }
-
-
 
 function findPrimary(secondary) {
-
     candidate = secondary.prev();
-
     while (!candidate.is('.primary')) {
-
         candidate = candidate.prev();
-
     }
-
     return candidate;
-
 }
-
-
 
 function createSwitchItem(block, blockSwitch) {
-
     blockName = block.children('.title').text();
-
     content = block.children('.content').first().append(block.next('.colist'));
-
     item = $('<div class="switch--item">' + blockName + '</div>');
-
     item.on('click', '', content, function(e) {
-
         $(this).addClass('selected');
-
         $(this).siblings().removeClass('selected');
-
         e.data.siblings('.content').addClass('hidden');
-
         e.data.removeClass('hidden');
-
     });
-
     blockSwitch.append(item);
-
     return {'item': item, 'content': content};
-
 }
-
-
 
 $(addBlockSwitches);
 
-
-
 </script>
-
 
 </head>
 <body class="article toc2 toc-left">
 <div id="header">
 <h1>picocli - a mighty tiny command line interface</h1>
 <div class="details">
-<span id="revnumber">version 4.7.1,</span>
-<span id="revdate">2023-01-27</span>
+<span id="revnumber">version 4.7.2,</span>
+<span id="revdate">2023-04-09</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Features</div>
@@ -2154,13 +2079,14 @@ $(addBlockSwitches);
 <li><a href="#_alias">29.1. Alias</a></li>
 <li><a href="#_launcher_script">29.2.  Launcher Script</a></li>
 <li><a href="#_graalvm_native_image">29.3. GraalVM Native Image</a></li>
-<li><a href="#_really_executable_jar">29.4. Really Executable JAR</a></li>
-<li><a href="#_launch4j">29.5. launch4j</a></li>
-<li><a href="#_javapackager_java_8">29.6. javapackager (Java 8)</a></li>
-<li><a href="#_jlink_java_9">29.7. jlink (Java 9+)</a></li>
-<li><a href="#_jpackage">29.8. jpackage</a></li>
-<li><a href="#_jbang">29.9. jbang</a></li>
-<li><a href="#_jreleaser">29.10. JReleaser</a></li>
+<li><a href="#_spring_boot_maven_plugin">29.4. Spring Boot Maven Plugin</a></li>
+<li><a href="#_really_executable_jar">29.5. Really Executable JAR</a></li>
+<li><a href="#_launch4j">29.6. launch4j</a></li>
+<li><a href="#_javapackager_java_8">29.7. javapackager (Java 8)</a></li>
+<li><a href="#_jlink_java_9">29.8. jlink (Java 9+)</a></li>
+<li><a href="#_jpackage">29.9. jpackage</a></li>
+<li><a href="#_jbang">29.10. jbang</a></li>
+<li><a href="#_jreleaser">29.11. JReleaser</a></li>
 </ul>
 </li>
 <li><a href="#_picocli_in_other_languages">30. Picocli in Other Languages</a>
@@ -2306,7 +2232,7 @@ Picocli also provides a <a href="#_programmatic_api">programmatic API</a>, separ
 <div id="CheckSum-App-Groovy" class="listingblock secondary">
 <div class="title">Groovy</div>
 <div class="content">
-<pre class="rouge highlight"><code data-lang="groovy"><span class="nd">@Grab</span><span class="o">(</span><span class="s1">'info.picocli:picocli-groovy:4.7.1'</span><span class="o">)</span>
+<pre class="rouge highlight"><code data-lang="groovy"><span class="nd">@Grab</span><span class="o">(</span><span class="s1">'info.picocli:picocli-groovy:4.7.2'</span><span class="o">)</span>
 <span class="kn">import</span> <span class="nn">picocli.CommandLine</span>
 <span class="kn">import</span> <span class="nn">static</span> <span class="n">picocli</span><span class="o">.</span><span class="na">CommandLine</span><span class="o">.*</span>
 
@@ -2337,7 +2263,7 @@ Picocli also provides a <a href="#_programmatic_api">programmatic API</a>, separ
 <div id="CheckSum-App-Groovy-Script" class="listingblock secondary">
 <div class="title">Groovy script</div>
 <div class="content">
-<pre class="rouge highlight"><code data-lang="groovy"><span class="nd">@Grab</span><span class="o">(</span><span class="s1">'info.picocli:picocli-groovy:4.7.1'</span><span class="o">)</span>
+<pre class="rouge highlight"><code data-lang="groovy"><span class="nd">@Grab</span><span class="o">(</span><span class="s1">'info.picocli:picocli-groovy:4.7.2'</span><span class="o">)</span>
 <span class="kn">import</span> <span class="nn">static</span> <span class="n">picocli</span><span class="o">.</span><span class="na">CommandLine</span><span class="o">.*</span>
 <span class="kn">import</span> <span class="nn">groovy.transform.Field</span>
 <span class="kn">import</span> <span class="nn">java.security.MessageDigest</span>
@@ -2496,7 +2422,7 @@ The example <code>main</code> method calls <code>CommandLine.execute</code> to p
 <div class="title">Gradle</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="groovy"><span class="n">dependencies</span> <span class="o">{</span>
-    <span class="n">implementation</span> <span class="s1">'info.picocli:picocli:4.7.1'</span>
+    <span class="n">implementation</span> <span class="s1">'info.picocli:picocli:4.7.2'</span>
 <span class="o">}</span></code></pre>
 </div>
 </div>
@@ -2506,7 +2432,7 @@ The example <code>main</code> method calls <code>CommandLine.execute</code> to p
 <pre class="rouge highlight"><code data-lang="xml"><span class="nt">&lt;dependency&gt;</span>
   <span class="nt">&lt;groupId&gt;</span>info.picocli<span class="nt">&lt;/groupId&gt;</span>
   <span class="nt">&lt;artifactId&gt;</span>picocli<span class="nt">&lt;/artifactId&gt;</span>
-  <span class="nt">&lt;version&gt;</span>4.7.1<span class="nt">&lt;/version&gt;</span>
+  <span class="nt">&lt;version&gt;</span>4.7.2<span class="nt">&lt;/version&gt;</span>
 <span class="nt">&lt;/dependency&gt;</span></code></pre>
 </div>
 </div>
@@ -2562,8 +2488,8 @@ In most cases no further configuration is needed when generating a native image.
 <div class="title">Gradle</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="groovy"><span class="n">dependencies</span> <span class="o">{</span>
-    <span class="n">implementation</span> <span class="s1">'info.picocli:picocli:4.7.1'</span>
-    <span class="n">annotationProcessor</span> <span class="s1">'info.picocli:picocli-codegen:4.7.1'</span>
+    <span class="n">implementation</span> <span class="s1">'info.picocli:picocli:4.7.2'</span>
+    <span class="n">annotationProcessor</span> <span class="s1">'info.picocli:picocli-codegen:4.7.2'</span>
 <span class="o">}</span>
 
 
@@ -2585,7 +2511,7 @@ In most cases no further configuration is needed when generating a native image.
       <span class="nt">&lt;path&gt;</span>
         <span class="nt">&lt;groupId&gt;</span>info.picocli<span class="nt">&lt;/groupId&gt;</span>
         <span class="nt">&lt;artifactId&gt;</span>picocli-codegen<span class="nt">&lt;/artifactId&gt;</span>
-        <span class="nt">&lt;version&gt;</span>4.7.1<span class="nt">&lt;/version&gt;</span>
+        <span class="nt">&lt;version&gt;</span>4.7.2<span class="nt">&lt;/version&gt;</span>
       <span class="nt">&lt;/path&gt;</span>
     <span class="nt">&lt;/annotationProcessorPaths&gt;</span>
     <span class="nt">&lt;compilerArgs&gt;</span>
@@ -2610,7 +2536,7 @@ then replace <code>annotationProcessor</code> with <code>kapt</code>:</p>
 <pre class="rouge highlight"><code>apply plugin: 'kotlin-kapt' // required
 dependencies {
     // ...
-    kapt 'info.picocli:picocli-codegen:4.7.1'
+    kapt 'info.picocli:picocli-codegen:4.7.2'
 }</code></pre>
 </div>
 </div>
@@ -2653,7 +2579,7 @@ dependencies {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="rouge highlight"><code data-lang="bash">java <span class="nt">-cp</span> <span class="s2">"picocli-4.7.1.jar:checksum.jar"</span> CheckSum <span class="nt">--algorithm</span> SHA-1 hello.txt</code></pre>
+<pre class="rouge highlight"><code data-lang="bash">java <span class="nt">-cp</span> <span class="s2">"picocli-4.7.2.jar:checksum.jar"</span> CheckSum <span class="nt">--algorithm</span> SHA-1 hello.txt</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -15039,7 +14965,7 @@ The minimal example below demonstrates how to implement this two phase approach:
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="rouge highlight"><code data-lang="bash">java <span class="nt">-cp</span> <span class="s2">"picocli-4.7.1.jar;myapp.jar"</span> org.myorg.GreetingApp Sarah Lea</code></pre>
+<pre class="rouge highlight"><code data-lang="bash">java <span class="nt">-cp</span> <span class="s2">"picocli-4.7.2.jar;myapp.jar"</span> org.myorg.GreetingApp Sarah Lea</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -15056,7 +14982,7 @@ Hello Lea!</pre>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="rouge highlight"><code data-lang="bash">java <span class="nt">-cp</span> <span class="s2">"picocli-4.7.1.jar;myapp.jar"</span> org.myorg.GreetingApp <span class="nt">--locale</span><span class="o">=</span>es Sarah Lea</code></pre>
+<pre class="rouge highlight"><code data-lang="bash">java <span class="nt">-cp</span> <span class="s2">"picocli-4.7.2.jar;myapp.jar"</span> org.myorg.GreetingApp <span class="nt">--locale</span><span class="o">=</span>es Sarah Lea</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -16688,7 +16614,7 @@ Extract the archive file to a directory of your choice and open a shell or comma
 <pre class="rouge highlight"><code data-lang="xml"><span class="nt">&lt;dependency&gt;</span>
   <span class="nt">&lt;groupId&gt;</span>info.picocli<span class="nt">&lt;/groupId&gt;</span>
   <span class="nt">&lt;artifactId&gt;</span>picocli-spring-boot-starter<span class="nt">&lt;/artifactId&gt;</span>
-  <span class="nt">&lt;version&gt;</span>4.7.1<span class="nt">&lt;/version&gt;</span>
+  <span class="nt">&lt;version&gt;</span>4.7.2<span class="nt">&lt;/version&gt;</span>
 <span class="nt">&lt;/dependency&gt;</span></code></pre>
 </div>
 </div>
@@ -16696,7 +16622,7 @@ Extract the archive file to a directory of your choice and open a shell or comma
 <div class="title">Gradle (Groovy)</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="groovy"><span class="n">dependencies</span> <span class="o">{</span>
-    <span class="n">implementation</span> <span class="s1">'info.picocli:picocli-spring-boot-starter:4.7.1'</span>
+    <span class="n">implementation</span> <span class="s1">'info.picocli:picocli-spring-boot-starter:4.7.2'</span>
 <span class="o">}</span></code></pre>
 </div>
 </div>
@@ -16704,7 +16630,7 @@ Extract the archive file to a directory of your choice and open a shell or comma
 <div class="title">Gradle (Kotlin)</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="kotlin"><span class="nf">dependencies</span> <span class="p">{</span>
-    <span class="nf">implementation</span><span class="p">(</span><span class="s">"info.picocli:picocli-spring-boot-starter:4.7.1"</span><span class="p">)</span>
+    <span class="nf">implementation</span><span class="p">(</span><span class="s">"info.picocli:picocli-spring-boot-starter:4.7.2"</span><span class="p">)</span>
 <span class="p">}</span></code></pre>
 </div>
 </div>
@@ -18394,7 +18320,7 @@ To mock commands with subcommands you will need to use <code>mock()</code> inste
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="rouge highlight"><code data-lang="bash">java <span class="nt">-cp</span> <span class="s2">"picocli-4.7.1.jar;myapp.jar"</span> org.myorg.MyMainClass <span class="nt">--option</span><span class="o">=</span>value arg0 arg1</code></pre>
+<pre class="rouge highlight"><code data-lang="bash">java <span class="nt">-cp</span> <span class="s2">"picocli-4.7.2.jar;myapp.jar"</span> org.myorg.MyMainClass <span class="nt">--option</span><span class="o">=</span>value arg0 arg1</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -18418,7 +18344,7 @@ To mock commands with subcommands you will need to use <code>mock()</code> inste
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="rouge highlight"><code data-lang="bash"><span class="nb">alias </span><span class="nv">mycommand</span><span class="o">=</span><span class="s1">'java -cp "/path/to/picocli-4.7.1.jar:/path/to/myapp.jar" org.myorg.MainClass'</span></code></pre>
+<pre class="rouge highlight"><code data-lang="bash"><span class="nb">alias </span><span class="nv">mycommand</span><span class="o">=</span><span class="s1">'java -cp "/path/to/picocli-4.7.2.jar:/path/to/myapp.jar" org.myorg.MainClass'</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -18495,7 +18421,7 @@ you can then create a native image by invoking the <code>native-image</code> com
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>path/to/native-image -cp picocli-4.7.1.jar --static -jar myapp.jar</pre>
+<pre>path/to/native-image -cp picocli-4.7.2.jar --static -jar myapp.jar</pre>
 </div>
 </div>
 <div class="admonitionblock caution">
@@ -18511,10 +18437,7 @@ To create a native image, the compiler toolchain for your platform needs to be i
 </table>
 </div>
 <div class="paragraph">
-<p>GraalVM includes a <a href="https://graalvm.github.io/native-build-tools/latest/maven-plugin.html">Maven plugin</a>
-to generate a native image during the build.
-Gradle users may be interested in the <a href="https://github.com/palantir/gradle-graal">gradle-graal</a> plugin by Palantir, or the <a href="https://plugins.gradle.org/plugin/org.mikeneck.graalvm-native-image">graalvm-native-image</a> plugin by Mike Neck.
-(Documentation for both Maven and Gradle plugins seems sparse at time of this writing.)</p>
+<p>GraalVM includes a <a href="https://graalvm.github.io/native-build-tools/latest/maven-plugin.html">Maven plugin</a> and a <a href="https://graalvm.github.io/native-build-tools/latest/gradle-plugin.html">Gradle plugin</a> to generate a native image during the build. Gradle users may be interested in the <a href="https://github.com/palantir/gradle-graal">gradle-graal</a> plugin by Palantir also.</p>
 </div>
 </div>
 <div class="sect3">
@@ -18528,6 +18451,9 @@ It pays special attention to Windows, where setting up the compiler toolchain ca
 </div>
 <div class="paragraph">
 <p>See also this <a href="https://github.com/remkop/picocli-native-image-demo">demo Gradle project</a> and this <a href="https://github.com/remkop/picocli-native-image-maven-demo">demo Maven project</a> that provide a simple complete CLI app, with build instructions, that developers can clone, and build to get the stand-alone executable.</p>
+</div>
+<div class="paragraph">
+<p>See also the <a href="http://github.com/korandoru/hawkeye">korandoru/hawkeye</a> for a real-world Maven project that provide a native image and a slim Docker image powered by native image.</p>
 </div>
 <div class="admonitionblock tip">
 <table>
@@ -18564,7 +18490,16 @@ It pays special attention to Windows, where setting up the compiler toolchain ca
 </div>
 </div>
 <div class="sect2">
-<h3 id="_really_executable_jar"><a class="anchor" href="#_really_executable_jar"></a>29.4. Really Executable JAR</h3>
+<h3 id="_spring_boot_maven_plugin"><a class="anchor" href="#_spring_boot_maven_plugin"></a>29.4. Spring Boot Maven Plugin</h3>
+<div class="paragraph">
+<p>The <a href="https://docs.spring.io/spring-boot/docs/current/maven-plugin/reference/htmlsingle/#packaging">Spring Boot Maven Plugin</a> provides a <code>repackage</code> goal to create executable archives that contain all of an application’s dependencies. It thus functions as an executable, is portable across operating systems and architectures, and is still a valid JAR file that can be executed explicitly or otherwise used as a JAR.</p>
+</div>
+<div class="paragraph">
+<p><a href="http://github.com/korandoru/hawkeye">korandoru/hawkeye</a> provides a real-world example to package a picocli application into an executable file. You can read the <code>pom.xml</code> file of <a href="https://github.com/korandoru/hawkeye/blob/main/hawkeye-cli/pom.xml">hawkeye-cli</a> module for details. Note that the default <code>embeddedLaunchScript.sh</code> assumes that the application may be a Spring Application while the hawkeye-cli example uses a customized tidy script.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_really_executable_jar"><a class="anchor" href="#_really_executable_jar"></a>29.5. Really Executable JAR</h3>
 <div class="paragraph">
 <p>A <a href="https://skife.org/java/unix/2011/06/20/really_executable_jars.html">really executable JAR</a>
 is a JAR file that is also a shell script which executes the JAR by running it with <code>java</code>.
@@ -18578,19 +18513,19 @@ as the JAR needs to be standalone, containing all of its dependencies.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_launch4j"><a class="anchor" href="#_launch4j"></a>29.5. launch4j</h3>
+<h3 id="_launch4j"><a class="anchor" href="#_launch4j"></a>29.6. launch4j</h3>
 <div class="paragraph">
 <p><a href="http://launch4j.sourceforge.net/docs.html">launch4j</a> can create a native launcher executable. It can bundle a JRE (~200MB) or use a pre-installed one.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_javapackager_java_8"><a class="anchor" href="#_javapackager_java_8"></a>29.6. javapackager (Java 8)</h3>
+<h3 id="_javapackager_java_8"><a class="anchor" href="#_javapackager_java_8"></a>29.7. javapackager (Java 8)</h3>
 <div class="paragraph">
 <p>JDK 8 <a href="https://docs.oracle.com/javase/8/docs/technotes/tools/windows/javapackager.html">javapackager</a> can create a native launcher executable. It can bundle a JRE (~200MB) or use a pre-installed one.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_jlink_java_9"><a class="anchor" href="#_jlink_java_9"></a>29.7. jlink (Java 9+)</h3>
+<h3 id="_jlink_java_9"><a class="anchor" href="#_jlink_java_9"></a>29.8. jlink (Java 9+)</h3>
 <div class="paragraph">
 <p>With the JPMS module system introduced in Java 9 it became possible to use <a href="https://docs.oracle.com/javase/9/tools/jlink.htm#JSWOR-GUID-CECAC52B-CFEE-46CB-8166-F17A8E9280E9">jlink</a> to create a custom light-weight JRE with only the necessary modules.
 This JRE may be as small as 30-40MB.
@@ -18605,7 +18540,7 @@ and <a href="https://badass-jlink-plugin.beryx.org/releases/latest/">org.beryx B
 </div>
 </div>
 <div class="sect2">
-<h3 id="_jpackage"><a class="anchor" href="#_jpackage"></a>29.8. jpackage</h3>
+<h3 id="_jpackage"><a class="anchor" href="#_jpackage"></a>29.9. jpackage</h3>
 <div class="paragraph">
 <p>jpackage is a packaging tool according to <a href="https://openjdk.java.net/jeps/343">JEP 343</a> which ships with JDK 14.
 JPackage can take the custom light-weight JRE produced by <code>jlink</code> and create an installer and a native application launcher.
@@ -18619,7 +18554,7 @@ This <a href="https://www.infoq.com/news/2019/03/jep-343-jpackage/">InfoQ articl
 </div>
 </div>
 <div class="sect2">
-<h3 id="_jbang"><a class="anchor" href="#_jbang"></a>29.9. jbang</h3>
+<h3 id="_jbang"><a class="anchor" href="#_jbang"></a>29.10. jbang</h3>
 <div class="paragraph">
 <p><a href="https://github.com/maxandersen/jbang">jbang</a> allows you to write scripts in Java that use external dependencies.
 You use it with a <code>//DEPS</code> comment, similar to the <a href="https://groovy-lang.org/grape.html"><code>@Grab</code></a> annotation in Groovy.</p>
@@ -18630,7 +18565,7 @@ This <a href="https://asciinema.org/a/AVwA19yijKRNKEO0bJENN2ME3?autoplay=true&am
 </div>
 </div>
 <div class="sect2">
-<h3 id="_jreleaser"><a class="anchor" href="#_jreleaser"></a>29.10. JReleaser</h3>
+<h3 id="_jreleaser"><a class="anchor" href="#_jreleaser"></a>29.11. JReleaser</h3>
 <div class="paragraph">
 <p><a href="https://jreleaser.org">JReleaser</a> enables several packaging options such as <a href="https://brew.sh/">Homebrew</a>, <a href="https://chocolatey.org/">Chocolatey</a>,
 <a href="https://snapcraft.io/">Snapcraft</a>, <a href="https://scoop.sh/">Scoop</a>, <a href="https://www.jbang.dev/">jbang</a>, <a href="https://www.docker.com/">Docker</a>, among others.
@@ -18707,7 +18642,7 @@ The script body is executed if the user input was valid and did not request usag
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="rouge highlight"><code data-lang="groovy"><span class="nd">@Grab</span><span class="o">(</span><span class="s1">'info.picocli:picocli-groovy:4.7.1'</span><span class="o">)</span>
+<pre class="rouge highlight"><code data-lang="groovy"><span class="nd">@Grab</span><span class="o">(</span><span class="s1">'info.picocli:picocli-groovy:4.7.2'</span><span class="o">)</span>
 <span class="nd">@GrabConfig</span><span class="o">(</span><span class="n">systemClassLoader</span><span class="o">=</span><span class="kc">true</span><span class="o">)</span>
 <span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s2">"myScript"</span><span class="o">,</span>
         <span class="n">mixinStandardHelpOptions</span> <span class="o">=</span> <span class="kc">true</span><span class="o">,</span> <span class="c1">// add --help and --version options</span>
@@ -18793,7 +18728,7 @@ The table below compares these two base classes.</p>
 </td>
 <td class="content">
 When upgrading scripts from picocli versions older than 4.0, just changing the version number is not enough!
-Scripts should use <code>@Grab('info.picocli:picocli-groovy:4.7.1')</code>. The old artifact id <code>@Grab('info.picocli:picocli:4.7.1')</code> will not work,
+Scripts should use <code>@Grab('info.picocli:picocli-groovy:4.7.2')</code>. The old artifact id <code>@Grab('info.picocli:picocli:4.7.2')</code> will not work,
 because the <code>@picocli.groovy.PicocliScript</code> annotation class and supporting classes have been moved into a separate module, <code>picocli-groovy</code>.
 </td>
 </tr>
@@ -18900,7 +18835,7 @@ When using a Groovy version older than 2.4.7, use this workaround for the <a hre
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="rouge highlight"><code data-lang="groovy"><span class="nd">@Grab</span><span class="o">(</span><span class="s1">'info.picocli:picocli-groovy:4.7.1'</span><span class="o">)</span>
+<pre class="rouge highlight"><code data-lang="groovy"><span class="nd">@Grab</span><span class="o">(</span><span class="s1">'info.picocli:picocli-groovy:4.7.2'</span><span class="o">)</span>
 <span class="nd">@GrabExclude</span><span class="o">(</span><span class="s1">'org.codehaus.groovy:groovy-all'</span><span class="o">)</span> <span class="c1">// work around GROOVY-7613</span>
 <span class="o">...</span></code></pre>
 </div>
@@ -19091,13 +19026,13 @@ so be aware that you will have to write <code>Array(&#8230;&#8203;)</code> for t
 <div class="listingblock primary">
 <div class="title">Gradle</div>
 <div class="content">
-<pre class="rouge highlight"><code data-lang="groovy"><span class="n">implementation</span> <span class="s1">'info.picocli:picocli:4.7.1'</span></code></pre>
+<pre class="rouge highlight"><code data-lang="groovy"><span class="n">implementation</span> <span class="s1">'info.picocli:picocli:4.7.2'</span></code></pre>
 </div>
 </div>
 <div class="listingblock secondary">
 <div class="title">Gradle (Kotlin)</div>
 <div class="content">
-<pre class="rouge highlight"><code data-lang="kotlin"><span class="nf">implementation</span><span class="p">(</span><span class="s">"info.picocli:picocli:4.7.1"</span><span class="p">)</span></code></pre>
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nf">implementation</span><span class="p">(</span><span class="s">"info.picocli:picocli:4.7.2"</span><span class="p">)</span></code></pre>
 </div>
 </div>
 <div class="listingblock secondary">
@@ -19106,46 +19041,46 @@ so be aware that you will have to write <code>Array(&#8230;&#8203;)</code> for t
 <pre class="rouge highlight"><code data-lang="xml"><span class="nt">&lt;dependency&gt;</span>
   <span class="nt">&lt;groupId&gt;</span>info.picocli<span class="nt">&lt;/groupId&gt;</span>
   <span class="nt">&lt;artifactId&gt;</span>picocli<span class="nt">&lt;/artifactId&gt;</span>
-  <span class="nt">&lt;version&gt;</span>4.7.1<span class="nt">&lt;/version&gt;</span>
+  <span class="nt">&lt;version&gt;</span>4.7.2<span class="nt">&lt;/version&gt;</span>
 <span class="nt">&lt;/dependency&gt;</span></code></pre>
 </div>
 </div>
 <div class="listingblock secondary">
 <div class="title">Scala SBT</div>
 <div class="content">
-<pre class="rouge highlight"><code>libraryDependencies += "info.picocli" % "picocli" % "4.7.1"</code></pre>
+<pre class="rouge highlight"><code>libraryDependencies += "info.picocli" % "picocli" % "4.7.2"</code></pre>
 </div>
 </div>
 <div class="listingblock secondary">
 <div class="title">Ivy</div>
 <div class="content">
-<pre class="rouge highlight"><code>&lt;dependency org="info.picocli" name="picocli" rev="4.7.1" /&gt;</code></pre>
+<pre class="rouge highlight"><code>&lt;dependency org="info.picocli" name="picocli" rev="4.7.2" /&gt;</code></pre>
 </div>
 </div>
 <div class="listingblock secondary">
 <div class="title">Grape</div>
 <div class="content">
 <pre class="rouge highlight"><code>@Grapes(
-    @Grab(group='info.picocli', module='picocli', version='4.7.1')
+    @Grab(group='info.picocli', module='picocli', version='4.7.2')
 )</code></pre>
 </div>
 </div>
 <div class="listingblock secondary">
 <div class="title">Leiningen</div>
 <div class="content">
-<pre class="rouge highlight"><code>[info.picocli/picocli "4.7.1"]</code></pre>
+<pre class="rouge highlight"><code>[info.picocli/picocli "4.7.2"]</code></pre>
 </div>
 </div>
 <div class="listingblock secondary">
 <div class="title">Buildr</div>
 <div class="content">
-<pre class="rouge highlight"><code>'info.picocli:picocli:jar:4.7.1'</code></pre>
+<pre class="rouge highlight"><code>'info.picocli:picocli:jar:4.7.2'</code></pre>
 </div>
 </div>
 <div class="listingblock secondary">
 <div class="title">JBang</div>
 <div class="content">
-<pre class="rouge highlight"><code>//DEPS info.picocli:picocli:4.7.1</code></pre>
+<pre class="rouge highlight"><code>//DEPS info.picocli:picocli:4.7.2</code></pre>
 </div>
 </div>
 </div>
@@ -19153,7 +19088,7 @@ so be aware that you will have to write <code>Array(&#8230;&#8203;)</code> for t
 <h3 id="_source"><a class="anchor" href="#_source"></a>37.2. Source</h3>
 <div class="paragraph">
 <p>By using picocli in source form, you can avoid having an external dependency on picocli.
-Picocli has only one source file: <a href="https://github.com/remkop/picocli/blob/v4.7.1/src/main/java/picocli/CommandLine.java">CommandLine.java</a>.
+Picocli has only one source file: <a href="https://github.com/remkop/picocli/blob/v4.7.2/src/main/java/picocli/CommandLine.java">CommandLine.java</a>.
 This facilitates including picocli in your project: simply copy and paste the code of this file into a file called <code>CommandLine.java</code>, add it to your project, and enjoy!</p>
 </div>
 </div>
@@ -19162,8 +19097,8 @@ This facilitates including picocli in your project: simply copy and paste the co
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 4.7.1<br>
-Last updated 2023-01-27 18:22:36 +0900
+Version 4.7.2<br>
+Last updated 2023-04-09 17:42:19 +0900
 </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/tocbot/3.0.7/tocbot.min.js"></script>
