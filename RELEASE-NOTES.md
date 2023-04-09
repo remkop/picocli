@@ -21,28 +21,30 @@ Artifacts in this release are signed by Remko Popma (6601 E5C0 8DCC BB96).
 
 ## <a name="4.7.2-fixes"></a> Fixed issues
 * [#1959] API: Add ability to enable loading resource bundles in annotation processor for tests.
+* [#1993] Bugfix: `fallbackValue=Option.NULL_VALUE` did not work for `Collection` or array options. Thanks to [Jiri Daněk](https://github.com/jiridanek) for raising this.
 * [#1975][#1976] Enhancement: Fixed `isJansiConsoleInstalled` performance issue. Thanks to [ChrisTrenkamp](https://github.com/ChrisTrenkamp) for the pull request.
 * [#1932] Enhancement: Move System-Rules tests to Java 5 test module; move System-Lambda tests to Java 8+ test module. Facilitate testing with recent JRE's.
+* [#1984] Enhancement (Kotlin): improve `paramLabel` string auto-generated from Kotlin `internal` methods which have mangled names with embedded "$". Thanks to [Ken Yee](https://github.com/kenyee) for raising this.
 * [#1945] DOC: Code sample: add Java version. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1956] Doc: Fix broken link in user manual. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1955] DEP: Bump asciidoctorj from 2.5.5 to 2.5.7. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+* [#1980] DEP: Bump actions/checkout from 3.3.0 to 3.5.0
 * [#1952] DEP: Bump actions/setup-java from 3.9.0 to 3.10.0
 * [#1941] DEP: Bump emibcn/badge-action from 1.2.4 to 2.0.2
 * [#1942] DEP: Bump github/codeql-action from 2.1.39 to 2.2.1
 * [#1953] DEP: Bump github/codeql-action from 2.2.1 to 2.2.3
 * [#1958] DEP: Bump github/codeql-action from 2.2.3 to 2.2.4
-* [#1947] DEP: Bump org.jetbrains.kotlin:kotlin-gradle-plugin from 1.7.20 to 1.8.10
-* [#1948] DEP: Bump org.jetbrains.kotlin:kotlin-script-runtime from 1.7.20 to 1.8.10
-* [#1962] DEP: Bump log4j2Version from 2.19.0 to 2.20.0
-* [#1964] DEP: Bump springBootVersion from 2.7.8 to 2.7.9
-* [#1963] DEP: Bump step-security/harden-runner from 2.1.0 to 2.2.0
+* [#1979] DEP: Bump github/codeql-action from 2.2.4 to 2.2.8
 * [#1961] DEP: Bump gradle/gradle-build-action from 2.3.3 to 2.4.0
 * [#1960] DEP: Bump gradle/wrapper-validation-action from 1.0.5 to 1.0.6
+* [#1962] DEP: Bump log4j2Version from 2.19.0 to 2.20.0
+* [#1947] DEP: Bump org.jetbrains.kotlin:kotlin-gradle-plugin from 1.7.20 to 1.8.10
+* [#1948] DEP: Bump org.jetbrains.kotlin:kotlin-script-runtime from 1.7.20 to 1.8.10
 * [#1968] DEP: Bump org.jline:jline from 3.22.0 to 3.23.0
-* [#1970] DEP: Bump step-security/harden-runner from 2.2.0 to 2.2.1
+* [#1964] DEP: Bump springBootVersion from 2.7.8 to 2.7.9
 * [#1978] DEP: Bump springBootVersion from 2.7.9 to 2.7.10
-* [#1979] DEP: Bump github/codeql-action from 2.2.4 to 2.2.8
-* [#1980] DEP: Bump actions/checkout from 3.3.0 to 3.5.0
+* [#1963] DEP: Bump step-security/harden-runner from 2.1.0 to 2.2.0
+* [#1970] DEP: Bump step-security/harden-runner from 2.2.0 to 2.2.1
 
 ## <a name="4.7.2-deprecated"></a> Deprecations
 No features were deprecated in this release.
