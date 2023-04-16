@@ -74,8 +74,9 @@ public class AutoCompleteSystemExitTest {
         "%n" +
         "Example%n" +
         "-------%n" +
-        "  java -cp \"myapp.jar;picocli-4.7.2-SNAPSHOT.jar\" \\%n" +
-        "              picocli.AutoComplete my.pkg.MyClass%n");
+        "  java -cp \"myapp.jar;picocli-%s.jar\" \\%n" +
+        "              picocli.AutoComplete my.pkg.MyClass%n",
+        CommandLine.VERSION);
 
     private String expectedCompletionScriptForAutoCompleteApp() {
         return String.format("" +
