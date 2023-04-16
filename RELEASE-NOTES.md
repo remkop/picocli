@@ -25,6 +25,7 @@ Also, this release fixes broken links in the Javadoc.
 
 ## <a name="4.7.3-fixes"></a> Fixed issues
 * [#1998] Bugfix: ParameterException: NullPointerException: null while processing argument at or before arg[0]. Thanks to [Jiri Daněk](https://github.com/jiridanek) for raising this.
+* [#1957] DOC: Fixed broken links in the javadoc. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
 * [#2002] DEP: Bump actions/checkout from 3.5.0 to 3.5.2
 * [#2005] DEP: Bump gradle/gradle-build-action from 2.4.0 to 2.4.2
 * [#2003] DEP: Bump github/codeql-action from 2.2.11 to 2.2.12
