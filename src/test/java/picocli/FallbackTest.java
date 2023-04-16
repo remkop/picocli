@@ -227,4 +227,60 @@ public class FallbackTest {
         Map<String, String> expected = TestUtil.mapOf("KEY", CommandLine.Option.NULL_VALUE, "FOO", "123");
         assertEquals(expected, main.map);
     }
+
+
+    static class Issue1998NPE {
+        static final String MY_NULL_VALUE = "_MY_" + CommandLine.Option.NULL_VALUE;
+
+        @CommandLine.Option(names = {"--item"}, arity = "0..1", fallbackValue = CommandLine.Option.NULL_VALUE)
+        List<String> item;
+        @CommandLine.Option(names = {"--item2"}, arity = "0..1", fallbackValue = MY_NULL_VALUE, converter = ItemNullValueConverter.class)
+        List<String> item2;
+    }
+
+    static class ItemNullValueConverter implements CommandLine.ITypeConverter<String> {
+        public String convert(String value) throws Exception {
+            if (value.equals(Issue1998NPE.MY_NULL_VALUE)) {
+                return null;
+            }
+            return value;
+        }
+    }
+
+    @Test  // PASS
+    public void testIssue1998_item__null() {
+        Issue1998NPE main = new Issue1998NPE();
+        CommandLine commandLine = new CommandLine(main);
+        commandLine.parseArgs("--item", "--item", "pepa");
+
+        assertEquals(Arrays.asList(null, "pepa"), main.item);
+    }
+
+    @Test  // FAIL
+    public void testIssue1998_item__empty_equals() {
+        Issue1998NPE main = new Issue1998NPE();
+        CommandLine commandLine = new CommandLine(main);
+        commandLine.parseArgs("--item=", "--item", "pepa");
+
+        assertEquals(Arrays.asList("", "pepa"), main.item);
+    }
+
+    @Test  // PASS
+    public void testIssue1998_item2__null() {
+        Issue1998NPE main = new Issue1998NPE();
+        CommandLine commandLine = new CommandLine(main);
+        commandLine.parseArgs("--item2", "--item2", "pepa");
+
+        assertEquals(Arrays.asList(null, "pepa"), main.item2);
+    }
+
+    @Test  // PASS
+    public void testIssue1998_item2__empty_equals() {
+        Issue1998NPE main = new Issue1998NPE();
+        CommandLine commandLine = new CommandLine(main);
+        commandLine.parseArgs("--item2=", "--item2", "pepa");
+
+        assertEquals(Arrays.asList("", "pepa"), main.item2);
+    }
+
 }
