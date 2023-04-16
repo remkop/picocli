@@ -1,5 +1,43 @@
 # picocli Release Notes
 
+# <a name="4.7.3"></a> Picocli 4.7.3 (UNRELEASED)
+The picocli community is pleased to announce picocli 4.7.3.
+
+This release includes bugfixes and enhancements.
+
+This is the eighty-second public release.
+Picocli follows [semantic versioning](https://semver.org/).
+Artifacts in this release are signed by Remko Popma (6601 E5C0 8DCC BB96).
+
+## <a name="4.7.3-toc"></a> Table of Contents
+* [New and noteworthy](#4.7.3-new)
+* [Fixed issues](#4.7.3-fixes)
+* [Deprecations](#4.7.3-deprecated)
+* [Potential breaking changes](#4.7.3-breaking-changes)
+
+## <a name="4.7.3-new"></a> New and Noteworthy
+
+Fixed a regression introduced in picocli 4.7.2.
+Multi-value options whose `fallbackValue` is set to `CommandLine.Option.NULL_VALUE`, may see a `NullPointerException` if the option is specified on the command line without a parameter but with a `=` attached, like `--option=`.
+
+Also, this release fixes broken links in the Javadoc.
+
+
+## <a name="4.7.3-fixes"></a> Fixed issues
+* [#1998] Bugfix: ParameterException: NullPointerException: null while processing argument at or before arg[0]. Thanks to [Jiri Daněk](https://github.com/jiridanek) for raising this.
+* [#2002] DEP: Bump actions/checkout from 3.5.0 to 3.5.2
+* [#2005] DEP: Bump gradle/gradle-build-action from 2.4.0 to 2.4.2
+* [#2003] DEP: Bump github/codeql-action from 2.2.11 to 2.2.12
+* [#1997] DEP: Bump org.asciidoctor:asciidoctorj-pdf from 2.3.4 to 2.3.6
+
+## <a name="4.7.3-deprecated"></a> Deprecations
+No features were deprecated in this release.
+
+## <a name="4.7.3-breaking-changes"></a> Potential breaking changes
+This release has no breaking changes.
+
+
+
 # <a name="4.7.2"></a> Picocli 4.7.2
 The picocli community is pleased to announce picocli 4.7.2.
 
