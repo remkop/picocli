@@ -1,6 +1,6 @@
 # picocli Release Notes
 
-# <a name="4.7.3"></a> Picocli 4.7.3 (UNRELEASED)
+# <a name="4.7.3"></a> Picocli 4.7.3
 The picocli community is pleased to announce picocli 4.7.3.
 
 This release includes bugfixes and enhancements.
