@@ -17,6 +17,7 @@ import picocli.CommandLine.Model.OptionSpec.Builder;
 import picocli.CommandLine.Model.PositionalParamSpec;
 import picocli.CommandLine.Model.RuntimeTypeInfo;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -223,15 +224,59 @@ public class ModelArgSpecTest {
         assertEquals(candidates, positional.completionCandidates());
     }
 
+    private static class AnnotatedImpl implements CommandLine.Model.IAnnotatedElement {
+        Object userObject;
+        String name;
+        ITypeInfo typeInfo;
+
+        AnnotatedImpl() {}
+        AnnotatedImpl(String name, ITypeInfo typeInfo) {
+            this(null, name, typeInfo);
+        }
+        AnnotatedImpl(Object userObject, String name, ITypeInfo typeInfo) {
+            this.userObject = userObject;
+            this.name = name;
+            this.typeInfo = typeInfo;
+        }
+
+        public Object userObject() { return userObject; }
+        public boolean isAnnotationPresent(Class<? extends Annotation> annotationClass) { return false;}
+        public <T extends Annotation> T getAnnotation(Class<T> annotationClass) { return null;}
+        public String getName() {return name;}
+        public String getMixinName() {return null;}
+        public boolean isArgSpec() {return false;}
+        public boolean isOption() {return false;}
+        public boolean isParameter() {return false;}
+        public boolean isArgGroup() {return false;}
+        public boolean isMixin() {return false;}
+        public boolean isUnmatched() { return false;}
+        public boolean isSpec() {return false;}
+        public boolean isParentCommand() {return false;}
+        public boolean isMultiValue() {return false;}
+        public boolean isInteractive() {return false;}
+        public boolean hasInitialValue() {return false;}
+        public boolean isMethodParameter() {return false;}
+        public int getMethodParamPosition() {return 0;}
+        public IScope scope() {return null;}
+        public IGetter getter() {return null;}
+        public ISetter setter() {return null;}
+        public ITypeInfo getTypeInfo() {return typeInfo;}
+        public String getToString() {return null;}
+    }
+
     @Test
     public void testArgSpecBuilderInferLabel() throws Exception{
-        Method m = ArgSpec.Builder.class.getDeclaredMethod("inferLabel", String.class, String.class, ITypeInfo.class);
+        Method m = ArgSpec.Builder.class.getDeclaredMethod("inferLabel", String.class, CommandLine.Model.IAnnotatedElement.class);
         m.setAccessible(true);
-        assertEquals("<String=String>", m.invoke(null, "", "fieldName", typeInfo(new Class[0])));
-        assertEquals("<String=String>", m.invoke(null, "", "fieldName", typeInfo(new Class[]{Integer.class})));
-        assertEquals("<String=String>", m.invoke(null, "", "fieldName", typeInfo(new Class[]{null, Integer.class})));
-        assertEquals("<String=String>", m.invoke(null, "", "fieldName", typeInfo(new Class[]{Integer.class, null})));
-        assertEquals("<Integer=Integer>", m.invoke(null, "", "fieldName", typeInfo(new Class[]{Integer.class, Integer.class})));
+
+        assertEquals("<String=String>", m.invoke(null, "",   new AnnotatedImpl("fieldName", typeInfo(new Class[0]))));
+        assertEquals("<String=String>", m.invoke(null, "",   new AnnotatedImpl("fieldName", typeInfo(new Class[]{Integer.class}))));
+        assertEquals("<String=String>", m.invoke(null, "",   new AnnotatedImpl("fieldName", typeInfo(new Class[]{null, Integer.class}))));
+        assertEquals("<String=String>", m.invoke(null, "",   new AnnotatedImpl("fieldName", typeInfo(new Class[]{Integer.class, null}))));
+        assertEquals("<Integer=Integer>", m.invoke(null, "", new AnnotatedImpl("fieldName", typeInfo(new Class[]{Integer.class, Integer.class}))));
+
+        assertEquals("<prefix>", m.invoke(null, null, new AnnotatedImpl(m,"prefix$postfix", new TypeInfoAdapter())));
+
     }
 
     private ITypeInfo typeInfo(final Class<?>[] aux) {

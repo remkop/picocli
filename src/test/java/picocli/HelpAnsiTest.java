@@ -128,6 +128,10 @@ public class HelpAnsiTest {
 
         if (isWindows && !Ansi.AUTO.enabled()) {
             AnsiConsole.systemInstall();
+
+            // The previous Ansi.enabled() call caches the result for whether or not jansi is enabled.  Reset the cache value
+            // and force the Ansi.enabled() call to rescan the classpath for the jansi classes.
+            Ansi.jansiInstalled = null;
             try {
                 assertTrue(Ansi.AUTO.enabled());
             } finally {

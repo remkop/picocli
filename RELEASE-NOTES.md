@@ -1,11 +1,48 @@
 # picocli Release Notes
 
-# <a name="4.7.2"></a> Picocli 4.7.2 (UNRELEASED)
-The picocli community is pleased to announce picocli 4.7.2.
+# <a name="4.7.3"></a> Picocli 4.7.3
+The picocli community is pleased to announce picocli 4.7.3.
 
 This release includes bugfixes and enhancements.
 
+This is the eighty-second public release.
+Picocli follows [semantic versioning](https://semver.org/).
+Artifacts in this release are signed by Remko Popma (6601 E5C0 8DCC BB96).
 
+## <a name="4.7.3-toc"></a> Table of Contents
+* [New and noteworthy](#4.7.3-new)
+* [Fixed issues](#4.7.3-fixes)
+* [Deprecations](#4.7.3-deprecated)
+* [Potential breaking changes](#4.7.3-breaking-changes)
+
+## <a name="4.7.3-new"></a> New and Noteworthy
+
+Fixed a regression introduced in picocli 4.7.2.
+Multi-value options whose `fallbackValue` is set to `CommandLine.Option.NULL_VALUE`, may see a `NullPointerException` if the option is specified on the command line without a parameter but with a `=` attached, like `--option=`.
+
+Also, this release fixes broken links in the Javadoc.
+
+
+## <a name="4.7.3-fixes"></a> Fixed issues
+* [#1998] Bugfix: ParameterException: NullPointerException: null while processing argument at or before arg[0]. Thanks to [Jiri Daněk](https://github.com/jiridanek) for raising this.
+* [#1957] DOC: Fixed broken links in the javadoc. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
+* [#2002] DEP: Bump actions/checkout from 3.5.0 to 3.5.2
+* [#2005] DEP: Bump gradle/gradle-build-action from 2.4.0 to 2.4.2
+* [#2003] DEP: Bump github/codeql-action from 2.2.11 to 2.2.12
+* [#1997] DEP: Bump org.asciidoctor:asciidoctorj-pdf from 2.3.4 to 2.3.6
+
+## <a name="4.7.3-deprecated"></a> Deprecations
+No features were deprecated in this release.
+
+## <a name="4.7.3-breaking-changes"></a> Potential breaking changes
+This release has no breaking changes.
+
+
+
+# <a name="4.7.2"></a> Picocli 4.7.2
+The picocli community is pleased to announce picocli 4.7.2.
+
+This release includes bugfixes and enhancements.
 
 This is the eighty-first public release.
 Picocli follows [semantic versioning](https://semver.org/).
@@ -19,24 +56,44 @@ Artifacts in this release are signed by Remko Popma (6601 E5C0 8DCC BB96).
 
 ## <a name="4.7.2-new"></a> New and Noteworthy
 
+* Bugfix: `fallbackValue=Option.NULL_VALUE` did not work for `Collection` or array options.
+* Fixed `isJansiConsoleInstalled` performance issue.
+* Kotlin enhancement: improved `paramLabel` string auto-generated from Kotlin `internal` methods which have mangled names with embedded "$".
+* Various documentation fixes.
+
 ## <a name="4.7.2-fixes"></a> Fixed issues
 * [#1959] API: Add ability to enable loading resource bundles in annotation processor for tests.
+* [#1993] Bugfix: `fallbackValue=Option.NULL_VALUE` did not work for `Collection` or array options. Thanks to [Jiri Daněk](https://github.com/jiridanek) for raising this.
+* [#1975][#1976] Enhancement: Fixed `isJansiConsoleInstalled` performance issue. Thanks to [ChrisTrenkamp](https://github.com/ChrisTrenkamp) for the pull request.
 * [#1932] Enhancement: Move System-Rules tests to Java 5 test module; move System-Lambda tests to Java 8+ test module. Facilitate testing with recent JRE's.
+* [#1984] Enhancement (Kotlin): improve `paramLabel` string auto-generated from Kotlin `internal` methods which have mangled names with embedded "$". Thanks to [Ken Yee](https://github.com/kenyee) for raising this.
 * [#1945] DOC: Code sample: add Java version. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1956] Doc: Fix broken link in user manual. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1955] DEP: Bump asciidoctorj from 2.5.5 to 2.5.7. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+* [#1980] DEP: Bump actions/checkout from 3.3.0 to 3.5.0
 * [#1952] DEP: Bump actions/setup-java from 3.9.0 to 3.10.0
+* [#1985] DEP: Bump actions/setup-java from 3.10.0 to 3.11.0
 * [#1941] DEP: Bump emibcn/badge-action from 1.2.4 to 2.0.2
 * [#1942] DEP: Bump github/codeql-action from 2.1.39 to 2.2.1
 * [#1953] DEP: Bump github/codeql-action from 2.2.1 to 2.2.3
 * [#1958] DEP: Bump github/codeql-action from 2.2.3 to 2.2.4
-* [#1947] DEP: Bump org.jetbrains.kotlin:kotlin-gradle-plugin from 1.7.20 to 1.8.10
-* [#1948] DEP: Bump org.jetbrains.kotlin:kotlin-script-runtime from 1.7.20 to 1.8.10
-* [#1962] DEP: Bump log4j2Version from 2.19.0 to 2.20.0
-* [#1964] DEP: Bump springBootVersion from 2.7.8 to 2.7.9
-* [#1963] DEP: Bump step-security/harden-runner from 2.1.0 to 2.2.0
+* [#1979] DEP: Bump github/codeql-action from 2.2.4 to 2.2.8
+* [#1995] DEP: Bump github/codeql-action from 2.2.8 to 2.2.11
 * [#1961] DEP: Bump gradle/gradle-build-action from 2.3.3 to 2.4.0
 * [#1960] DEP: Bump gradle/wrapper-validation-action from 1.0.5 to 1.0.6
+* [#1962] DEP: Bump log4j2Version from 2.19.0 to 2.20.0
+* [#1947] DEP: Bump org.jetbrains.kotlin:kotlin-gradle-plugin from 1.7.20 to 1.8.10
+* [#1989] DEP: Bump org.jetbrains.kotlin:kotlin-gradle-plugin from 1.8.10 to 1.8.20
+* [#1948] DEP: Bump org.jetbrains.kotlin:kotlin-script-runtime from 1.7.20 to 1.8.10
+* [#1988] DEP: Bump org.jetbrains.kotlin:kotlin-script-runtime from 1.8.10 to 1.8.20
+* [#1968] DEP: Bump org.jline:jline from 3.22.0 to 3.23.0
+* [#1990] DEP: Bump ossf/scorecard-action from 2.1.2 to 2.1.3
+* [#1964] DEP: Bump springBootVersion from 2.7.8 to 2.7.9
+* [#1978] DEP: Bump springBootVersion from 2.7.9 to 2.7.10
+* [#1963] DEP: Bump step-security/harden-runner from 2.1.0 to 2.2.0
+* [#1970] DEP: Bump step-security/harden-runner from 2.2.0 to 2.2.1
+* [#1992] DEP: Bump step-security/harden-runner from 2.2.1 to 2.3.0
+
 
 ## <a name="4.7.2-deprecated"></a> Deprecations
 No features were deprecated in this release.

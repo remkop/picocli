@@ -15,18 +15,18 @@ jobs:
     continue-on-error: ${{ matrix.os == 'macos-latest' || matrix.java-version == '9' || matrix.java-version == '10' || matrix.java-version == '12' || matrix.java-version == '13' || matrix.java-version == '14' || matrix.java-version == '15' || matrix.java-version == '16' || matrix.java-version == '19' }}
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@c8454efe5d0bdefd25384362fe217428ca277d57 # v1
+        uses: step-security/harden-runner@03bee3930647ebbf994244c21ddbc0d4933aab4f # v1
         with:
           egress-policy: audit
 
       - name: Checkout
-        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v2
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v2
 
       - name: Validate Gradle Wrapper
         uses: gradle/wrapper-validation-action@8d49e559aae34d3e0eb16cde532684bc9702762b # v1
 
       - name: Configure JDK ${{ matrix.java-version }}
-        uses: actions/setup-java@3f07048e3d294f56e9b90ac5ea2c6f74e9ad0f98 # v2
+        uses: actions/setup-java@5ffc13f4174014e2d4d4572b3d74c3fa61aeb2c2 # v2
         with:
           distribution: 'zulu'
           java-version: ${{ matrix.java-version }}
@@ -61,7 +61,7 @@ jobs:
 
       - name: Set badge color (Linux)
         shell: bash
-        if: ${{ always() && matrix.os == 'ubuntu-latest' }}
+        if: ${{ always() && matrix.os == 'ubuntu-latest' && steps.test-results-nix.outputs.json }}
         run: |
           case ${{ fromJSON( steps.test-results-nix.outputs.json ).conclusion }} in
             success)
@@ -77,7 +77,7 @@ jobs:
 
       - name: Set badge color (Win/Mac)
         shell: bash
-        if: ${{ always() && (matrix.os == 'macos-latest' || matrix.os == 'windows-latest') }}
+        if: ${{ always() && (matrix.os == 'macos-latest' || matrix.os == 'windows-latest') && steps.test-results.outputs.json }}
         run: |
           case ${{ fromJSON( steps.test-results.outputs.json ).conclusion }} in
             success)
@@ -92,7 +92,7 @@ jobs:
           esac
 
       - name: Create badge (Linux)
-        if: ${{ always() && matrix.os == 'ubuntu-latest' }}
+        if: ${{ always() && matrix.os == 'ubuntu-latest' && steps.test-results-nix.outputs.json }}
         uses: emibcn/badge-action@4209421db54c8764d8932070ffd0f81715a629bf
         with:
           label: Tests
@@ -101,7 +101,7 @@ jobs:
           path: badge.svg
 
       - name: Create badge (Win/Mac)
-        if: ${{ always() && (matrix.os == 'macos-latest' || matrix.os == 'windows-latest') }}
+        if: ${{ always() && (matrix.os == 'macos-latest' || matrix.os == 'windows-latest') && steps.test-results.outputs.json }}
         uses: emibcn/badge-action@4209421db54c8764d8932070ffd0f81715a629bf
         with:
           label: Tests
@@ -130,25 +130,25 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@c8454efe5d0bdefd25384362fe217428ca277d57 # v1
+        uses: step-security/harden-runner@03bee3930647ebbf994244c21ddbc0d4933aab4f # v1
         with:
           egress-policy: audit
 
       - name: Checkout
-        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v2
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v2
 
       - name: Validate Gradle Wrapper
         uses: gradle/wrapper-validation-action@8d49e559aae34d3e0eb16cde532684bc9702762b # v1
 
       - name: Configure JDK ${{ matrix.java-version }}
-        uses: actions/setup-java@3f07048e3d294f56e9b90ac5ea2c6f74e9ad0f98 # v2
+        uses: actions/setup-java@5ffc13f4174014e2d4d4572b3d74c3fa61aeb2c2 # v2
         with:
           distribution: 'zulu'
           java-version: ${{ matrix.java-version }}
           cache: gradle
 
       - name: Build
-        uses: gradle/gradle-build-action@6095a76664413da4c8c134ee32e8a8ae900f0f1f # v2
+        uses: gradle/gradle-build-action@749f47bda3e44aa060e82d7b3ef7e40d953bd629 # v2
         with:
           gradle-version: 1.12
           build-root-directory: picocli-tests-java567/

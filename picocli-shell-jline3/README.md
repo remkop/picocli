@@ -75,7 +75,7 @@ JLine [Wiki](https://github.com/jline/jline3/wiki) and some more [Demos](https:/
 <dependency>
     <groupId>info.picocli</groupId>
     <artifactId>picocli-shell-jline3</artifactId>
-    <version>4.7.1</version>
+    <version>4.7.3</version>
 </dependency>
 ```
 

@@ -5,12 +5,12 @@ ext {
     // PICOCLI VERSION
 
     // projectPreviousPublishedVersion is non-SNAPSHOT, only published releases
-    projectPreviousPublishedVersion = "4\\.7\\.1"      // for task bumpReadmeVersion
+    projectPreviousPublishedVersion = "4\\.7\\.3"      // for task bumpReadmeVersion
     // projectPreviousVersionRegex may be a SNAPSHOT
-    projectPreviousVersionRegex     = "4\\.7\\.1"      // for task bumpVersion
-    projectVersion                  = "4.7.2-SNAPSHOT" // for all build tasks
-    releaseDate                     = "2023-01-27"     // for task bumpVersion
-    releaseDatePreviousRegex        = "2023\\-01\\-27" // for task bumpVersion
+    projectPreviousVersionRegex     = "4\\.7\\.3"      // for task bumpVersion
+    projectVersion                  = "4.7.4-SNAPSHOT" // for all build tasks
+    releaseDate                     = "2023-04-16"     // for task bumpVersion
+    releaseDatePreviousRegex        = "2023\\-04\\-16" // for task bumpVersion
 
     // DEPENDENCIES
     asciidoctorGradlePluginVersion = "3.3.2"
@@ -21,11 +21,11 @@ ext {
     jacocoVersion       = "0.8.2"
     jansiVersion        = "2.4.0"
     jline2Version       = "2.14.6"
-    jline3Version       = "3.22.0"
+    jline3Version       = "3.23.0"
     junitDepVersion     = "4.11.20120805.1225"
     junitVersion        = "4.13.2"
     log4j2Version       = "2.20.0"
-    springBootVersion   = "2.7.9" // Spring Boot 3.0 requires Java 17 as a minimum version
+    springBootVersion   = "2.7.10" // Spring Boot 3.0 requires Java 17 as a minimum version
     systemRulesVersion  = "1.19.0"
     systemLambdaVersion = '1.2.1'
     junit5Version       = '5.9.2'
@@ -58,6 +58,6 @@ ext {
         hibernate_validator_annproc: "org.hibernate.validator:hibernate-validator-annotation-processor:8.0.0.Final",
         hibernate_validator        : "org.hibernate.validator:hibernate-validator:8.0.0.Final",
 
-        kotlin_script_runtime      : "org.jetbrains.kotlin:kotlin-script-runtime:1.8.10",
+        kotlin_script_runtime      : "org.jetbrains.kotlin:kotlin-script-runtime:1.8.20",
     ]
 }

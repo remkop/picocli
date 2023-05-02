@@ -119,7 +119,7 @@ task generateJavadocOptions {
 }
 task generateJavadocAllModules(type: Exec) {
     dependsOn(generateJavadocOptions)
-    String javadocPath = System.getenv('JDK11') ? "${System.getenv('JDK11')}/bin" : 'C:\\apps\\jdk-11\\bin'
+    String javadocPath = System.getenv('JDK11') ? "${System.getenv('JDK11')}/bin" : 'C:\\apps\\jdk-11.0.17\\bin'
     logger.info("javadocPath=$javadocPath")
     commandLine "$javadocPath/javadoc", '--release', '9', '@' + new File(project.buildDir, "tmp/javadocOptions").absolutePath
 }

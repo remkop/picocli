@@ -9,6 +9,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.SystemErrRule;
 import picocli.CommandLine.Command;
+import picocli.CommandLine.Help.Ansi;
 import picocli.CommandLine.IParameterPreprocessor;
 import picocli.CommandLine.Model.ArgSpec;
 import picocli.CommandLine.Model.CommandSpec;
@@ -111,6 +112,11 @@ public class Issue1125_1538_OptionNameOrSubcommandAsOptionValue {
         //-x -y=123
         MyCommand obj = new MyCommand();
         CommandLine cmdLine = new CommandLine(obj);
+        // Clear the globally cached jansiInstalled value that might
+        // have been set in a previous test to force the
+        // Ansi#isJansiConsoleInstalled method to recalculate
+        // the cached value.
+        Ansi.jansiInstalled = null;
         int exitCode = cmdLine.execute("-x", "-y=123");
         assertEquals(2, exitCode);
         String expected = String.format("" +

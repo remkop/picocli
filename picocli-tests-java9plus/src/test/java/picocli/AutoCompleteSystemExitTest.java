@@ -1,9 +1,11 @@
 package picocli;
 
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledForJreRange;
 import org.junit.jupiter.api.condition.JRE;
+import picocli.CommandLine.Help.Ansi;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -72,8 +74,9 @@ public class AutoCompleteSystemExitTest {
         "%n" +
         "Example%n" +
         "-------%n" +
-        "  java -cp \"myapp.jar;picocli-4.7.2-SNAPSHOT.jar\" \\%n" +
-        "              picocli.AutoComplete my.pkg.MyClass%n");
+        "  java -cp \"myapp.jar;picocli-%s.jar\" \\%n" +
+        "              picocli.AutoComplete my.pkg.MyClass%n",
+        CommandLine.VERSION);
 
     private String expectedCompletionScriptForAutoCompleteApp() {
         return String.format("" +
@@ -506,6 +509,15 @@ public class AutoCompleteSystemExitTest {
                 "# default Bash completions and the Readline default filename completions are performed.\n" +
                 "complete -F _complete_nondefault -o default nondefault nondefault.sh nondefault.bash\n",
             CommandLine.VERSION);
+    }
+
+    @BeforeAll
+    static void disableAnsi() {
+        // Clear the globally cached jansiInstalled value that might
+        // have been set in a previous test to force the
+        // Ansi#isJansiConsoleInstalled method to recalculate
+        // the cached value.
+        Ansi.jansiInstalled = null;
     }
 
     @Test
