@@ -6634,7 +6634,7 @@ These are converted to the platform-specific line separator when the usage help 
 
 See the https://docs.oracle.com/javase/8/docs/api/java/util/Formatter.html[java.util.Formatter JavaDoc] for details.
 
-IMPORTANT: Note that to show percent `'%'` characters in the usage help message, they need to be escaped with another `%`. For example: `@Parameters(description = "%%-age of the total")` is rendered as `%-age of the total`.
+IMPORTANT: Note that to show percent `'%'` characters in the usage help message, they need to be escaped with another `%`. For example: `@Parameters(description = "%%-age of the total")` is rendered as `%-age of the total`. Unescaped `'%'` characters in the usage help message may result in picocli printing "Unrecognized conversion specifier" errors to the console.
 
 An alternative way to control the layout of the usage help message is that some sections (`header`, `footer`, and `description`) can be specified as an array of Strings,
 where each element of the array is displayed on a separate line in the usage help message.
