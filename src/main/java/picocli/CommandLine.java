@@ -18487,7 +18487,7 @@ public class CommandLine {
     /** Exception indicating something went wrong while parsing command line options. */
     public static class ParameterException extends PicocliException {
         private static final long serialVersionUID = 1477112829129763139L;
-        private final CommandLine commandLine;
+        protected final CommandLine commandLine;
         private ArgSpec argSpec = null;
         private String value = null;
 
@@ -18659,7 +18659,7 @@ public class CommandLine {
             if (!suggestions.isEmpty()) {
                 writer.println(isUnknownOption()
                         ? "Possible solutions: " + str(suggestions)
-                        : "Did you mean: " + str(suggestions).replace(", ", " or ") + "?");
+                        : "Did you mean: " + this.commandLine.commandSpec.name + " " + str(suggestions).replace(", ", " or ") + "?");
                 writer.flush();
             }
             return !suggestions.isEmpty();
