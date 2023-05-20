@@ -18659,7 +18659,7 @@ public class CommandLine {
             if (!suggestions.isEmpty()) {
                 writer.println(isUnknownOption()
                         ? "Possible solutions: " + str(suggestions)
-                        : "Did you mean: " + this.commandLine.commandSpec.name + " " + str(suggestions).replace(", ", " or ") + "?");
+                        : "Did you mean: " + str(prefixCommandName(suggestions)).replace(", ", " or ") + "?");
                 writer.flush();
             }
             return !suggestions.isEmpty();
@@ -18668,6 +18668,18 @@ public class CommandLine {
             String s = list.toString();
             return s.substring(0, s.length() - 1).substring(1);
         }
+
+        private List<String> prefixCommandName(List<String> suggestions)
+        {
+            String commandName = this.commandLine.commandSpec.name;
+            if(commandName == null || commandName.trim().isEmpty()) { return suggestions; }
+            List<String> prefixedSuggestions = new ArrayList<String>();
+            for (String s : suggestions) {
+                prefixedSuggestions.add(commandName + " " + s);    
+            }
+            return prefixedSuggestions;
+        }
+
         /** Returns suggested solutions if such solutions exist, otherwise returns an empty list.
          * @since 3.3.0 */
         public List<String> getSuggestions() {
