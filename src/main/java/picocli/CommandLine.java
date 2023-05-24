@@ -13025,12 +13025,15 @@ public class CommandLine {
             }
 
             private boolean containsRequiredOptionsOrSubgroups(ArgGroupSpec argGroupSpec) {
-                return containsRequiredOptions(argGroupSpec) || containsRequiredSubgroups(argGroupSpec);
+                return containsRequiredOptionsOrParameters(argGroupSpec) || containsRequiredSubgroups(argGroupSpec);
             }
 
-            private boolean containsRequiredOptions(ArgGroupSpec argGroupSpec) {
+            private boolean containsRequiredOptionsOrParameters(ArgGroupSpec argGroupSpec) {
                 for ( OptionSpec option : argGroupSpec.options() ) {
                     if ( option.required() ) { return true; }
+                }
+                for ( PositionalParamSpec param : argGroupSpec.positionalParameters() ){
+                    if( param.required() ){return true;}
                 }
                 return false;
             }
@@ -13043,7 +13046,7 @@ public class CommandLine {
                         for ( ArgGroupSpec subsubgroup : subgroup.subgroups() ) {
                             result &= containsRequiredOptionsOrSubgroups(subsubgroup);
                         }
-                        return result && containsRequiredOptions(subgroup);
+                        return result && containsRequiredOptionsOrParameters(subgroup);
                     } else {
                         return containsRequiredOptionsOrSubgroups(subgroup);
                     }
