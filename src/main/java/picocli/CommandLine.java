@@ -15045,7 +15045,15 @@ public class CommandLine {
     static Charset charsetForName(String encoding) {
         if (encoding != null) {
             if ("cp65001".equalsIgnoreCase(encoding)) { encoding = "UTF-8"; } // #1474 MS Windows uses code page 65001 for UTF8
-            return Charset.forName(encoding);
+            try {
+                return Charset.forName(encoding);
+            } catch (Exception e) {
+                // fallback to default charset if the requested encoding is not available
+                final Charset defaultCharset = Charset.defaultCharset();
+                CommandLine.tracer().info("The %s encoding in not available, falling back to %s", encoding,
+                    defaultCharset.name());
+                return defaultCharset;
+            }
         }
         return Charset.defaultCharset();
     }
@@ -18705,7 +18713,7 @@ public class CommandLine {
             if(commandName == null || commandName.trim().isEmpty()) { return suggestions; }
             List<String> prefixedSuggestions = new ArrayList<String>();
             for (String s : suggestions) {
-                prefixedSuggestions.add(commandName + " " + s);    
+                prefixedSuggestions.add(commandName + " " + s);
             }
             return prefixedSuggestions;
         }
