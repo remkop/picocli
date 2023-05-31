@@ -12994,7 +12994,7 @@ public class CommandLine {
 
                 validationResult = matches.isEmpty() ? GroupValidationResult.SUCCESS_ABSENT : GroupValidationResult.SUCCESS_PRESENT;
                 for (ArgGroupSpec missing : unmatchedSubgroups) {
-                    if (missing.validate() && missing.multiplicity().min > 0) {
+                    if (missing.validate() && missing.multiplicity().min > 0 && containsRequiredOptionsOrSubgroups(missing)) {
                         int presentCount = 0;
                         boolean haveMissing = true;
                         boolean someButNotAllSpecified = false;
@@ -13022,6 +13022,36 @@ public class CommandLine {
                         commandLine.interpreter.maybeThrow(validationResult.exception);
                     }
                 }
+            }
+
+            private boolean containsRequiredOptionsOrSubgroups(ArgGroupSpec argGroupSpec) {
+                return containsRequiredOptionsOrParameters(argGroupSpec) || containsRequiredSubgroups(argGroupSpec);
+            }
+
+            private boolean containsRequiredOptionsOrParameters(ArgGroupSpec argGroupSpec) {
+                for ( OptionSpec option : argGroupSpec.options() ) {
+                    if ( option.required() ) { return true; }
+                }
+                for ( PositionalParamSpec param : argGroupSpec.positionalParameters() ){
+                    if( param.required() ){return true;}
+                }
+                return false;
+            }
+
+            private boolean containsRequiredSubgroups(ArgGroupSpec argGroupSpec) {
+                for ( ArgGroupSpec subgroup : argGroupSpec.subgroups() ) {
+                    if ( subgroup.exclusive() ) {
+                        // Only return true if all of the subgroups contain required options or subgroups
+                        boolean result = true;
+                        for ( ArgGroupSpec subsubgroup : subgroup.subgroups() ) {
+                            result &= containsRequiredOptionsOrSubgroups(subsubgroup);
+                        }
+                        return result && containsRequiredOptionsOrParameters(subgroup);
+                    } else {
+                        return containsRequiredOptionsOrSubgroups(subgroup);
+                    }
+                }
+                return false;
             }
 
             private void failGroupMultiplicityExceeded(List<ParseResult.GroupMatch> groupMatches, CommandLine commandLine) {
