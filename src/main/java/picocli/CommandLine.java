@@ -9526,6 +9526,7 @@ public class CommandLine {
                     setter = original.setter;
                     scope = original.scope;
                     scopeType = original.scopeType;
+                    mapFallbackValue = original.mapFallbackValue;
                     originalDefaultValue = original.originalDefaultValue;
                     originalMapFallbackValue = original.originalMapFallbackValue;
                 }
