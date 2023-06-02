@@ -22,13 +22,13 @@ ext {
     jansiVersion        = "2.4.0"
     jline2Version       = "2.14.6"
     jline3Version       = "3.23.0"
-    junitDepVersion     = "4.11.20120805.1225"
+    junitDepVersion     = "4.11"
     junitVersion        = "4.13.2"
     log4j2Version       = "2.20.0"
-    springBootVersion   = "2.7.10" // Spring Boot 3.0 requires Java 17 as a minimum version
+    springBootVersion   = "2.7.11" // Spring Boot 3.0 requires Java 17 as a minimum version
     systemRulesVersion  = "1.19.0"
     systemLambdaVersion = '1.2.1'
-    junit5Version       = '5.9.2'
+    junit5Version       = '5.9.3'
 
     supportDependencies = [
         junit             : "junit:junit:$junitVersion",
@@ -58,6 +58,6 @@ ext {
         hibernate_validator_annproc: "org.hibernate.validator:hibernate-validator-annotation-processor:8.0.0.Final",
         hibernate_validator        : "org.hibernate.validator:hibernate-validator:8.0.0.Final",
 
-        kotlin_script_runtime      : "org.jetbrains.kotlin:kotlin-script-runtime:1.8.20",
+        kotlin_script_runtime      : "org.jetbrains.kotlin:kotlin-script-runtime:1.8.21",
     ]
 }
