@@ -5,6 +5,7 @@ import org.junit.Test;
 import org.junit.contrib.java.lang.system.ProvideSystemProperty;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.rules.TestRule;
+import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.ParameterException;
 import picocli.CommandLine.Parameters;
@@ -12,6 +13,7 @@ import picocli.CommandLine.Parameters;
 import java.util.Map;
 
 import static org.junit.Assert.*;
+import static picocli.CommandLine.ScopeType.INHERIT;
 
 /**
  * Verifies https://github.com/remkop/picocli/issues/1214
@@ -76,11 +78,62 @@ public class MapOptionsTest {
     }
 
     @Test
+    public void testInheritedOptionMapFallbackValueEmptyString() {
+        class App {
+            @Option(names = "-D", mapFallbackValue = "", scope = INHERIT) Map<String, String> map;
+        }
+        @Command(name = "sub")
+        class Sub {
+        }
+        App app = new App();
+        Sub sub = new Sub();
+        new CommandLine(app)
+                .addSubcommand(sub)
+                .parseArgs("sub", "-Dkey");
+        assertEquals(1, app.map.size());
+        assertEquals("", app.map.get("key"));
+    }
+
+    @Test
+    public void testInheritedOptionMapFallbackValueNull() {
+        class App {
+            @Option(names = "-D", mapFallbackValue = Option.NULL_VALUE, scope = INHERIT) Map<String, String> map;
+        }
+        @Command(name = "sub")
+        class Sub {
+        }
+        App app = new App();
+        Sub sub = new Sub();
+        new CommandLine(app)
+                .addSubcommand(sub)
+                .parseArgs("sub", "-Dkey");
+        assertEquals(1, app.map.size());
+        assertEquals(null, app.map.get("key"));
+    }
+
+    @Test
     public void testPositionalMapFallbackValueNull() {
         class App {
             @Parameters(mapFallbackValue = Option.NULL_VALUE) Map<String, String> map;
         }
         App app = CommandLine.populateCommand(new App(), "key");
+        assertEquals(1, app.map.size());
+        assertEquals(null, app.map.get("key"));
+    }
+
+    @Test
+    public void testInheritedPositionalMapFallbackValueNull() {
+        class App {
+            @Parameters(mapFallbackValue = Option.NULL_VALUE, scope = INHERIT) Map<String, String> map;
+        }
+        @Command(name = "sub")
+        class Sub {
+        }
+        App app = new App();
+        Sub sub = new Sub();
+        new CommandLine(app)
+                .addSubcommand(sub)
+                .parseArgs("sub", "key");
         assertEquals(1, app.map.size());
         assertEquals(null, app.map.get("key"));
     }
