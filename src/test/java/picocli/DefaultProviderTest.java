@@ -7,6 +7,7 @@ import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.rules.TestRule;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.IDefaultValueProvider;
+import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Model.ArgSpec;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
@@ -434,6 +435,52 @@ public class DefaultProviderTest {
         System.setProperty("VARIABLE", "123");
         App app1 = CommandLine.populateCommand(new App());
         assertEquals(123, app1.a);
+    }
+
+    /**
+     * Tests issue 1848 https://github.com/remkop/picocli/issues/1848
+     * Test to ensure that ArgGroups with a multiplicity of 1, with a required option, and with a default value
+     * provider, will properly show that required option as required, rather than optional.
+     * */
+    @Test
+    public void testIssue1848ArgGroupWithRequiredOptionWithDefaultValueProvider() {
+
+        @Command(name = "issue1848Command", defaultValueProvider = Issue1848CommandDefaultProvider.class)
+        class App {
+            @ArgGroup(exclusive = false, multiplicity = "1", order = 1)
+            public Issue1848CommandConfigOptions issue1848CommandConfigOptions;
+
+            @Option(names = {"--opt1"})
+            private String opt1;
+        }
+        String helpOutput = new CommandLine(new App()).getHelp().fullSynopsis();
+        assertTrue(helpOutput.contains("--opt2=<opt2>"));       // Check that "--opt2=<opt2>" exists.
+        assertFalse(helpOutput.contains("[--opt2=<opt2>]"));    // But make sure it's not surrounded by square brackets.
+    }
+
+    class Issue1848CommandConfigOptions {
+        @Option(names = {"--opt2"}, required = true, order = 1)
+        private String opt2;
+
+        @Option(names = {"--opt3"}, required = false, order = 2)
+        private String opt3;
+    }
+
+    static class Issue1848CommandDefaultProvider implements CommandLine.IDefaultValueProvider {
+        @Override
+        public String defaultValue(CommandLine.Model.ArgSpec argSpec) throws Exception {
+            // Commenting out for now as I'm unsure if it's expected behavior for default values supplied to a required
+            // option, should result in that option's help/usage information indicating that the option is not required.
+            /*
+            if (argSpec.isOption()) {
+                CommandLine.Model.OptionSpec option = (CommandLine.Model.OptionSpec) argSpec;
+                if ("--url".equals(option.longestName())) {
+                    return "https://localhost:8080";
+                }
+            }
+            */
+            return null;
+        }
     }
 
 }

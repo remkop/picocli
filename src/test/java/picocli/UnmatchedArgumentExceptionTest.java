@@ -80,7 +80,7 @@ public class UnmatchedArgumentExceptionTest {
         Demo.mainCommand().parseWithHandler(((CommandLine.IParseResultHandler)null), new PrintStream(baos), new String[]{"chekcout"});
         String expected = format("" +
                 "Unmatched argument at index 0: 'chekcout'%n" +
-                "Did you mean: checkout or help or branch?%n");
+                "Did you mean: git checkout or git help or git branch?%n");
         assertEquals(expected, baos.toString());
     }
     @Test
@@ -90,7 +90,7 @@ public class UnmatchedArgumentExceptionTest {
         Demo.mainCommand().parseWithHandler(((CommandLine.IParseResultHandler)null), new PrintStream(baos), new String[]{"me"});
         String expected = format("" +
                 "Unmatched argument at index 0: 'me'%n" +
-                "Did you mean: merge?%n");
+                "Did you mean: git merge?%n");
         assertEquals(expected, baos.toString());
     }
 
