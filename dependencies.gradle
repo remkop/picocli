@@ -5,12 +5,12 @@ ext {
     // PICOCLI VERSION
 
     // projectPreviousPublishedVersion is non-SNAPSHOT, only published releases
-    projectPreviousPublishedVersion = "4\\.7\\.3"      // for task bumpReadmeVersion
+    projectPreviousPublishedVersion = "4\\.7\\.4"      // for task bumpReadmeVersion
     // projectPreviousVersionRegex may be a SNAPSHOT
-    projectPreviousVersionRegex     = "4\\.7\\.4-SNAPSHOT"      // for task bumpVersion
-    projectVersion                  = "4.7.4" // for all build tasks
+    projectPreviousVersionRegex     = "4\\.7\\.4"      // for task bumpVersion
+    projectVersion                  = "4.7.5-SNAPSHOT" // for all build tasks
     releaseDate                     = "2023-06-03"     // for task bumpVersion
-    releaseDatePreviousRegex        = "2023\\-04\\-16" // for task bumpVersion
+    releaseDatePreviousRegex        = "2023\\-06\\-03" // for task bumpVersion
 
     // DEPENDENCIES
     asciidoctorGradlePluginVersion = "3.3.2"
