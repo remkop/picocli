@@ -18711,7 +18711,7 @@ public class CommandLine {
         private List<String> prefixCommandName(List<String> suggestions)
         {
             String commandName = this.commandLine.commandSpec.name;
-            if(commandName == null || commandName.trim().isEmpty()) { return suggestions; }
+            if(commandName == null || commandName.trim().length() == 0) { return suggestions; }
             List<String> prefixedSuggestions = new ArrayList<String>();
             for (String s : suggestions) {
                 prefixedSuggestions.add(commandName + " " + s);
