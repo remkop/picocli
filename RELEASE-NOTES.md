@@ -1,5 +1,48 @@
 # picocli Release Notes
 
+# <a name="4.7.4"></a> Picocli 4.7.4
+The picocli community is pleased to announce picocli 4.7.4.
+
+This release includes bugfixes and enhancements.
+
+Many thanks to the picocli community for raising these issues and providing the pull requests to address them!
+
+This is the eighty-third public release.
+Picocli follows [semantic versioning](https://semver.org/).
+Artifacts in this release are signed by Remko Popma (6601 E5C0 8DCC BB96).
+
+## <a name="4.7.4-toc"></a> Table of Contents
+* [New and noteworthy](#4.7.4-new)
+* [Fixed issues](#4.7.4-fixes)
+* [Deprecations](#4.7.4-deprecated)
+* [Potential breaking changes](#4.7.4-breaking-changes)
+
+## <a name="4.7.4-new"></a> New and Noteworthy
+
+See fixed items below.
+
+
+## <a name="4.7.4-fixes"></a> Fixed issues
+* [#2026][#2027] Enhancement: Improved feedback on mistyped subcommands. Thanks to [David Pond](https://github.com/mauvo) for the pull request.
+* [#2029][#2034] Enhancement: prevent `java.nio.charset.UnsupportedCharsetException: cp0` on windows, and fall back to the default charset if the charset provided by System property `sun.stdout.encoding` is invalid. Thanks to [
+  Bartosz Spyrko-Smietanko](https://github.com/spyrkob) for the pull request.
+* [#2035][#2036] Bugfix: Option "mapFallbackValue" ignored when inherited to subcommand. Thanks to [Dan Ziemba](https://github.com/zman0900) for the pull request.
+* [#1848][#2030] Bugfix: fix issue with required options in `ArgGroup` becoming optional when combined with `DefaultValueProvider`. Thanks to [Ruud Senden](https://github.com/rsenden) and [Mike Snowden](https://github.com/wtfacoconut) for the pull request.
+* [#2020] DEP: Bump step-security/harden-runner from 2.3.0 to 2.4.0
+* [#2033] DEP: Bump github/codeql-action from 2.2.12 to 2.3.5
+* [#2015] DEP: Bump junit5Version from 5.9.2 to 5.9.3
+* [#2014] DEP: Bump org.jetbrains.kotlin:kotlin-gradle-plugin from 1.8.20 to 1.8.21
+* [#2013] DEP: Bump org.jetbrains.kotlin:kotlin-script-runtime from 1.8.20 to 1.8.21
+* [#2008] DEP: Bump springBootVersion from 2.7.10 to 2.7.11
+* [#2007] DEP: Bump org.asciidoctor:asciidoctorj-pdf from 2.3.6 to 2.3.7
+
+## <a name="4.7.4-deprecated"></a> Deprecations
+No features were deprecated in this release.
+
+## <a name="4.7.4-breaking-changes"></a> Potential breaking changes
+This release has no breaking changes.
+
+
 # <a name="4.7.3"></a> Picocli 4.7.3
 The picocli community is pleased to announce picocli 4.7.3.
 
