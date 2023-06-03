@@ -21,8 +21,11 @@ Artifacts in this release are signed by Remko Popma (6601 E5C0 8DCC BB96).
 
 See fixed items below.
 
+I cheated on the semantic versioning in this release: a public setter method was added in a class in the `picocli.shell.jline3` module. In spite of that, the version number went from 4.7.3 to 4.7.4 (not 4.8.0). My apologies.
+
 
 ## <a name="4.7.4-fixes"></a> Fixed issues
+* [#2028][#2031] API: Add setter for name in `picocli.shell.jline3.PicocliCommands`. Thanks to [Irina Leontyuk](https://github.com/irinaleo) for raising this.
 * [#2026][#2027] Enhancement: Improved feedback on mistyped subcommands. Thanks to [David Pond](https://github.com/mauvo) for the pull request.
 * [#2029][#2034] Enhancement: prevent `java.nio.charset.UnsupportedCharsetException: cp0` on windows, and fall back to the default charset if the charset provided by System property `sun.stdout.encoding` is invalid. Thanks to [
   Bartosz Spyrko-Smietanko](https://github.com/spyrkob) for the pull request.
