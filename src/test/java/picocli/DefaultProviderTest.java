@@ -467,7 +467,6 @@ public class DefaultProviderTest {
     }
 
     static class Issue1848CommandDefaultProvider implements CommandLine.IDefaultValueProvider {
-        @Override
         public String defaultValue(CommandLine.Model.ArgSpec argSpec) throws Exception {
             // Commenting out for now as I'm unsure if it's expected behavior for default values supplied to a required
             // option, should result in that option's help/usage information indicating that the option is not required.
