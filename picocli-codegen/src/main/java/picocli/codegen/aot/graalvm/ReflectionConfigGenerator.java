@@ -95,7 +95,7 @@ public class ReflectionConfigGenerator {
             },
             footerHeading = "%nExample%n",
             footer = {
-                    "  java -cp \"myapp.jar;picocli-4.7.4-SNAPSHOT.jar;picocli-codegen-4.7.4-SNAPSHOT.jar\" " +
+                    "  java -cp \"myapp.jar;picocli-4.7.4.jar;picocli-codegen-4.7.4.jar\" " +
                             "picocli.codegen.aot.graalvm.ReflectionConfigGenerator my.pkg.MyClass"
             },
             mixinStandardHelpOptions = true, sortOptions = false,

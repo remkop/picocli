@@ -13,7 +13,7 @@ command line applications with Spring and picocli.
 
 ## Dependency Management
 
-Picocli 4.7.3 has been tested with Spring Boot 2.5, 2.6 and 2.7 up to 2.7.5.
+Picocli 4.7.4 has been tested with Spring Boot 2.5, 2.6 and 2.7 up to 2.7.5.
 
 Add the following dependency:
 
@@ -22,14 +22,14 @@ Maven:
 <dependency>
   <groupId>info.picocli</groupId>
   <artifactId>picocli-spring-boot-starter</artifactId>
-  <version>4.7.3</version>
+  <version>4.7.4</version>
 </dependency>
 ```
 
 Gradle:
 ```
 dependencies {
-    implementation "info.picocli:picocli-spring-boot-starter:4.7.3"
+    implementation "info.picocli:picocli-spring-boot-starter:4.7.4"
 }
 ```
 
