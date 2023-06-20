@@ -15,7 +15,7 @@ jobs:
     continue-on-error: ${{ matrix.os == 'macos-latest' || matrix.java-version == '9' || matrix.java-version == '10' || matrix.java-version == '12' || matrix.java-version == '13' || matrix.java-version == '14' || matrix.java-version == '15' || matrix.java-version == '16' || matrix.java-version == '19' }}
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@128a63446a954579617e875aaab7d2978154e969 # v1
+        uses: step-security/harden-runner@55d479fb1c5bcad5a4f9099a5d9f37c8857b2845 # v1
         with:
           egress-policy: audit
 
@@ -130,7 +130,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@128a63446a954579617e875aaab7d2978154e969 # v1
+        uses: step-security/harden-runner@55d479fb1c5bcad5a4f9099a5d9f37c8857b2845 # v1
         with:
           egress-policy: audit
 
