@@ -177,6 +177,7 @@ public class PicocliCommands implements CommandRegistry {
                 String buffer = word.substring(0, commandLine.wordCursor());
                 int eq = buffer.indexOf('=');
                 for (OptionSpec option : sub.getCommandSpec().options()) {
+                    if (option.hidden()) continue;
                     if (option.arity().max() == 0 && eq < 0) {
                         addCandidates(candidates, Arrays.asList(option.names()));
                     } else {
@@ -193,7 +194,9 @@ public class PicocliCommands implements CommandRegistry {
             } else {
                 addCandidates(candidates, sub.getSubcommands().keySet());
                 for (CommandLine s : sub.getSubcommands().values()) {
-                    addCandidates(candidates, Arrays.asList(s.getCommandSpec().aliases()));
+                    if (!s.getCommandSpec().usageMessage().hidden()) {
+                        addCandidates(candidates, Arrays.asList(s.getCommandSpec().aliases()));
+                    }
                 }
             }
         }
