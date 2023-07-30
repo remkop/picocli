@@ -31,6 +31,7 @@ I cheated on the semantic versioning in this release: a public setter method was
   Bartosz Spyrko-Smietanko](https://github.com/spyrkob) for the pull request.
 * [#2035][#2036] Bugfix: Option "mapFallbackValue" ignored when inherited to subcommand. Thanks to [Dan Ziemba](https://github.com/zman0900) for the pull request.
 * [#1848][#2030] Bugfix: fix issue with required options in `ArgGroup` becoming optional when combined with `DefaultValueProvider`. Thanks to [Ruud Senden](https://github.com/rsenden) and [Mike Snowden](https://github.com/wtfacoconut) for the pull request.
+* [#2074][#2075] Don't generate auto-complete for hidden attributes in `picocli.shell.jline3.PicoCommand`. Thanks to [clebertsuconic](https://github.com/clebertsuconic) for the pull request.
 * [#2020] DEP: Bump step-security/harden-runner from 2.3.0 to 2.4.0
 * [#2033] DEP: Bump github/codeql-action from 2.2.12 to 2.3.5
 * [#2015] DEP: Bump junit5Version from 5.9.2 to 5.9.3
