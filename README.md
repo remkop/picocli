@@ -156,6 +156,8 @@ The user manual has examples of integrating with [Guice](https://picocli.info/#_
 * [Интерфейсы командной строки Java: picocli](https://habr.com/ru/company/otus/blog/419401/) (2018-08-06): Russian translation by [MaxRokatansky](https://habr.com/ru/users/MaxRokatansky/) of Dustin Marx' blog post.
 
 #### Español
+* [picocli, un poderoso framework para la creación de aplicaciones de línea de comandos](https://laboratoriolinux.es/index.php/-noticias-mundo-linux-/software/34261-picocli-un-poderoso-framework-para-la-creacion-de-aplicaciones-de-linea-de-comandos.html) (2023-09-09) by [Darkcrizt](https://ubunlog.com/author/darkcrizt/)
+* [picocli, un poderoso framework para la creación de aplicaciones de línea de comandos](https://ubunlog.com/picocli-un-poderoso-framework-para-la-creacion-de-aplicaciones-de-linea-de-comandos/) (2023-09-09) by [Darkcrizt](https://ubunlog.com/author/darkcrizt/)
 * [Quarkus + Picocli: Web scaper para extraer proyectos dependientes en GitHub](https://blog.marcnuri.com/quarkus-picocli-web-scaper-dependientes-github/) (2020-08-15) by [Marc Nuri](https://twitter.com/MarcNuri).
 * [Quarkus - Introducción: picocli](https://gerardo.dev/aws-quarkus-picocli.html) (2020-06-15) by [Gerardo Arroyo](https://twitter.com/codewarrior506).
 * [VIDEO] [Picocli - Spring Boot example](https://youtu.be/y9ayfjfrTF4) (2020-05-24) 7-minute quick introduction by Gonzalo H. Mendoza.
