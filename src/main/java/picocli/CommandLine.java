@@ -6887,6 +6887,9 @@ public class CommandLine {
                 arg.commandSpec = this;
                 if (arg.arity().isUnresolved()) {
                     arg.arity = Range.valueOf(interpolator.interpolate(arg.arity().originalValue));
+                    if (arg.isPositional()) { // #2060 fix bug with late-resolved arity variable
+                        arg.required = arg.arity.min > 0; // Builder may have set `required` flag before arity was resolved
+                    }
                 }
                 // do this last: arg.required() needs to resolve variables in arg.defaultValue()
                 if (arg.required() && arg.group() == null && !arg.inherited()) { requiredArgs.add(arg); }
@@ -9582,7 +9585,7 @@ public class CommandLine {
                 Builder(Parameters parameters, IAnnotatedElement annotatedElement, IFactory factory) {
                     this(annotatedElement);
                     arity = Range.parameterArity(annotatedElement);
-                    required = arity.min > 0;
+                    required = arity.min > 0; //but arity may still be unresolved...
 
                     // method parameters may be positional parameters without @Parameters annotation
                     if (parameters == null) {

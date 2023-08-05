@@ -8,11 +8,13 @@ import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.rules.TestRule;
 import picocli.CommandLine.Model.Interpolator;
 import picocli.CommandLine.Model.CommandSpec;
+import picocli.CommandLine.Parameters;
 
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
@@ -71,7 +73,7 @@ public class InterpolatorTest {
         System.clearProperty("myProp");
         assertEquals(expected, interpolator.interpolate(original));
     }
-    
+
     @Test
     public void issue676interpolateReturnsNullIfNotFound() {
         CommandSpec hierarchy = createTestSpec();
@@ -250,6 +252,41 @@ public class InterpolatorTest {
                 return new Vector<String>(map.keySet()).elements();
             }
         };
+    }
+
+    @Test(expected = CommandLine.MissingParameterException.class)
+    public void testRequiredPositionalWithoutVariable() {
+        class Cmd {
+            @Parameters(arity = "1..*") List<String> positional;
+        }
+        new CommandLine(new Cmd()).parseArgs(); // missing params
+    }
+
+    @Test(expected = CommandLine.MissingParameterException.class)
+    public void testRequiredPositionalWithUndefinedVariable() {
+        class Cmd {
+            @Parameters(arity = "${xxx1:-1..*}") List<String> positional;
+        }
+        new CommandLine(new Cmd()).parseArgs(); // missing params
+        System.out.println();
+    }
+
+    @Test(expected = CommandLine.MissingParameterException.class)
+    public void testRequiredPositionalWithDefinedVariable() {
+        class Cmd {
+            @Parameters(arity = "${xxx2:-1..*}") List<String> positional;
+        }
+        System.setProperty("xxx2", "2..3");
+        new CommandLine(new Cmd()).parseArgs(); // missing params
+    }
+
+    @Test()
+    public void testOptionalPositionalWithDefinedVariable() {
+        class Cmd {
+            @Parameters(arity = "${xxx3:-1..*}") List<String> positional;
+        }
+        System.setProperty("xxx3", "0..*");
+        new CommandLine(new Cmd()).parseArgs();
     }
 }
 
