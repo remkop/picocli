@@ -1,6 +1,9 @@
 // This file works around dependabot issue https://github.com/dependabot/dependabot-core/issues/1618
 // See https://www.sameerkulkarni.de/posts/dependabot-with-gradle/
 
+// Spring Boot 3.0 requires Java 17 as a minimum version
+boolean useSpring3 = JavaVersion.current().majorVersion.compareTo("17") >= 0;
+
 ext {
     // PICOCLI VERSION
 
@@ -25,7 +28,7 @@ ext {
     junitDepVersion     = "4.11"
     junitVersion        = "4.13.2"
     log4j2Version       = "2.20.0"
-    springBootVersion   = "2.7.11" // Spring Boot 3.0 requires Java 17 as a minimum version
+    springBootVersion   = useSpring3 ? "3.1.2" : "2.7.11" // Spring Boot 3.0 requires Java 17 as a minimum version
     systemRulesVersion  = "1.19.0"
     systemLambdaVersion = '1.2.1'
     junit5Version       = '5.9.3'
