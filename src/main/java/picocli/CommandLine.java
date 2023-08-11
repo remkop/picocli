@@ -17846,7 +17846,7 @@ public class CommandLine {
                         return false;
                     }
                     try {
-                        Method isTerminal = Console.class.getDeclaredMethod("isTerminal");
+                        Method isTerminal = Class.forName("java.io.Console").getDeclaredMethod("isTerminal");
                         return (boolean) isTerminal.invoke(console);
                     } catch (NoSuchMethodException e) {
                         return true;
