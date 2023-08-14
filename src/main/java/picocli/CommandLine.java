@@ -17840,7 +17840,18 @@ public class CommandLine {
                     && !"0".equals(System.getenv("CLICOLOR_FORCE"));}
             /** http://stackoverflow.com/questions/1403772/how-can-i-check-if-a-java-programs-input-output-streams-are-connected-to-a-term */
             static boolean calcTTY() {
-                try { return System.class.getDeclaredMethod("console").invoke(null) != null; }
+                try {
+                    Object console = System.class.getDeclaredMethod("console").invoke(null);
+                    if (console == null) {
+                        return false;
+                    }
+                    try {
+                        Method isTerminal = Class.forName("java.io.Console").getDeclaredMethod("isTerminal");
+                        return (boolean) isTerminal.invoke(console);
+                    } catch (NoSuchMethodException e) {
+                        return true;
+                    }
+                }
                 catch (Throwable reflectionFailed) { return true; }
             }
             /** Cygwin and MSYS use pseudo-tty and console is always null... */
