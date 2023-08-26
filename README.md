@@ -79,7 +79,7 @@ The user manual has examples of integrating with [Guice](https://picocli.info/#_
 
 ### Releases
 * [All Releases](https://github.com/remkop/picocli/releases)
-* Latest: 4.7.4 [Release Notes](https://github.com/remkop/picocli/releases/tag/v4.7.4)
+* Latest: 4.7.5 [Release Notes](https://github.com/remkop/picocli/releases/tag/v4.7.5)
 * Older: Picocli 4.0 [Release Notes](https://github.com/remkop/picocli/releases/tag/v4.0.0)
 * Older: Picocli 3.0 [Release Notes](https://github.com/remkop/picocli/releases/tag/v3.0.0)
 * Older: Picocli 2.0 [Release Notes](https://github.com/remkop/picocli/releases/tag/v2.0.0)
@@ -88,7 +88,7 @@ The user manual has examples of integrating with [Guice](https://picocli.info/#_
 * [4.x User manual: https://picocli.info](https://picocli.info)
 * [4.x Quick Guide](https://picocli.info/quick-guide.html)
 * [4.x API Javadoc](https://picocli.info/apidocs/)
-* [PREVIEW: Modular Javadoc for all artifacts (4.7.4-SNAPSHOT)](https://picocli.info/apidocs-all/)
+* [PREVIEW: Modular Javadoc for all artifacts (4.7.5-SNAPSHOT)](https://picocli.info/apidocs-all/)
 * [Command line autocompletion](https://picocli.info/autocomplete.html)
 * [Programmatic API](https://picocli.info/picocli-programmatic-api.html)
 * [FAQ](https://github.com/remkop/picocli/wiki/FAQ)
@@ -156,6 +156,8 @@ The user manual has examples of integrating with [Guice](https://picocli.info/#_
 * [Интерфейсы командной строки Java: picocli](https://habr.com/ru/company/otus/blog/419401/) (2018-08-06): Russian translation by [MaxRokatansky](https://habr.com/ru/users/MaxRokatansky/) of Dustin Marx' blog post.
 
 #### Español
+* [picocli, un poderoso framework para la creación de aplicaciones de línea de comandos](https://laboratoriolinux.es/index.php/-noticias-mundo-linux-/software/34261-picocli-un-poderoso-framework-para-la-creacion-de-aplicaciones-de-linea-de-comandos.html) (2023-09-09) by [Darkcrizt](https://ubunlog.com/author/darkcrizt/)
+* [picocli, un poderoso framework para la creación de aplicaciones de línea de comandos](https://ubunlog.com/picocli-un-poderoso-framework-para-la-creacion-de-aplicaciones-de-linea-de-comandos/) (2023-09-09) by [Darkcrizt](https://ubunlog.com/author/darkcrizt/)
 * [Quarkus + Picocli: Web scaper para extraer proyectos dependientes en GitHub](https://blog.marcnuri.com/quarkus-picocli-web-scaper-dependientes-github/) (2020-08-15) by [Marc Nuri](https://twitter.com/MarcNuri).
 * [Quarkus - Introducción: picocli](https://gerardo.dev/aws-quarkus-picocli.html) (2020-06-15) by [Gerardo Arroyo](https://twitter.com/codewarrior506).
 * [VIDEO] [Picocli - Spring Boot example](https://youtu.be/y9ayfjfrTF4) (2020-05-24) 7-minute quick introduction by Gonzalo H. Mendoza.
@@ -270,9 +272,9 @@ If you like picocli, help others discover picocli:
 #### Spread the joy! :tada:
 * Tweet about picocli! What do you like about it? How has it helped you? How is it different from the alternatives?
 * Mention that your project uses picocli in the documentation of your project.
-* Show that your GitHub project uses picocli, with this badge in your README.md: [![picocli](https://img.shields.io/badge/picocli-4.7.4-green.svg)](https://github.com/remkop/picocli)
+* Show that your GitHub project uses picocli, with this badge in your README.md: [![picocli](https://img.shields.io/badge/picocli-4.7.5-green.svg)](https://github.com/remkop/picocli)
 ```
-[![picocli](https://img.shields.io/badge/picocli-4.7.4-green.svg)](https://github.com/remkop/picocli)
+[![picocli](https://img.shields.io/badge/picocli-4.7.5-green.svg)](https://github.com/remkop/picocli)
 ```
 
 #### Preach it! :muscle:
@@ -363,41 +365,41 @@ See the [source code](https://github.com/remkop/picocli/blob/main/src/main/java/
 
 ### Gradle
 ```
-implementation 'info.picocli:picocli:4.7.4'
+implementation 'info.picocli:picocli:4.7.5'
 ```
 ### Maven
 ```
 <dependency>
   <groupId>info.picocli</groupId>
   <artifactId>picocli</artifactId>
-  <version>4.7.4</version>
+  <version>4.7.5</version>
 </dependency>
 ```
 ### Scala SBT
 ```
-libraryDependencies += "info.picocli" % "picocli" % "4.7.4"
+libraryDependencies += "info.picocli" % "picocli" % "4.7.5"
 ```
 ### Ivy
 ```
-<dependency org="info.picocli" name="picocli" rev="4.7.4" />
+<dependency org="info.picocli" name="picocli" rev="4.7.5" />
 ```
 ### Grape
 ```groovy
 @Grapes(
-    @Grab(group='info.picocli', module='picocli', version='4.7.4')
+    @Grab(group='info.picocli', module='picocli', version='4.7.5')
 )
 ```
 ### Leiningen
 ```
-[info.picocli/picocli "4.7.4"]
+[info.picocli/picocli "4.7.5"]
 ```
 ### Buildr
 ```
-'info.picocli:picocli:jar:4.7.4'
+'info.picocli:picocli:jar:4.7.5'
 ```
 
 ### JBang
 ```
-//DEPS info.picocli:picocli:4.7.4
+//DEPS info.picocli:picocli:4.7.5
 ```
 
