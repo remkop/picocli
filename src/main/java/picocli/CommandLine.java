@@ -8789,6 +8789,7 @@ public class CommandLine {
             private       Object initialValue;
             private final boolean hasInitialValue;
             private       InitialValueState initialValueState;
+            protected boolean valueIsDefaultValue;
             protected final IAnnotatedElement annotatedElement;
             private final IGetter getter;
             private final ISetter setter;
@@ -12998,7 +12999,8 @@ public class CommandLine {
 
                 validationResult = matches.isEmpty() ? GroupValidationResult.SUCCESS_ABSENT : GroupValidationResult.SUCCESS_PRESENT;
                 for (ArgGroupSpec missing : unmatchedSubgroups) {
-                    if (missing.validate() && missing.multiplicity().min > 0 && containsRequiredOptionsOrSubgroups(missing)) {
+                    // error is 1+ occurrence is required, unless all required options have a default
+                    if (missing.validate() && !isGroupEffectivelyOptional(missing)) {
                         int presentCount = 0;
                         boolean haveMissing = true;
                         boolean someButNotAllSpecified = false;
@@ -13028,31 +13030,51 @@ public class CommandLine {
                 }
             }
 
-            private boolean containsRequiredOptionsOrSubgroups(ArgGroupSpec argGroupSpec) {
-                return containsRequiredOptionsOrParameters(argGroupSpec) || containsRequiredSubgroups(argGroupSpec);
+            /**
+             * A group is optional if <ul>
+             * <li>its minimum <code>multiplicity</code> is zero</li>
+             * <li>otherwise, if the group has at least one required option and all required options have default values</li>
+             * </ul>
+             *
+             * Conversely, a group is required if <ul>
+             * <li>if its minimum <code>multiplicity</code> is <code>1</code> or more <em>AND</em></li>
+             * <li>
+             *   <ul>
+             *     <li>either the group has no required options</li>
+             *     <li>or the group has at least one required option without a default value</li>
+             *   </ul>
+             * </li>
+             * </ul>
+             * @see <a href="https://github.com/remkop/picocli/issues/1848">https://github.com/remkop/picocli/issues/1848</a>
+             *  and <a href="https://github.com/remkop/picocli/issues/2059">https://github.com/remkop/picocli/issues/2059</a>
+             */
+            private boolean isGroupEffectivelyOptional(ArgGroupSpec argGroupSpec) {
+                if (argGroupSpec.multiplicity().min == 0) {return true; }
+                return requiredOptionsExistAndAllHaveDefaultValues(argGroupSpec) && !containsRequiredSubgroups(argGroupSpec);
             }
 
-            private boolean containsRequiredOptionsOrParameters(ArgGroupSpec argGroupSpec) {
-                for ( OptionSpec option : argGroupSpec.options() ) {
-                    if ( option.required() ) { return true; }
+            private boolean requiredOptionsExistAndAllHaveDefaultValues(ArgGroupSpec argGroupSpec) {
+                if (argGroupSpec.requiredArgs().size() == 0) { return false; }
+                for (OptionSpec option : argGroupSpec.options()) {
+                    if (option.required() && !option.valueIsDefaultValue) { return false; }
                 }
-                for ( PositionalParamSpec param : argGroupSpec.positionalParameters() ){
-                    if( param.required() ){return true;}
+                for (PositionalParamSpec param : argGroupSpec.positionalParameters()) {
+                    if (param.required() && !param.valueIsDefaultValue) { return false; }
                 }
-                return false;
+                return true;
             }
 
             private boolean containsRequiredSubgroups(ArgGroupSpec argGroupSpec) {
-                for ( ArgGroupSpec subgroup : argGroupSpec.subgroups() ) {
-                    if ( subgroup.exclusive() ) {
+                for (ArgGroupSpec subgroup : argGroupSpec.subgroups()) {
+                    if (subgroup.exclusive()) {
                         // Only return true if all of the subgroups contain required options or subgroups
                         boolean result = true;
-                        for ( ArgGroupSpec subsubgroup : subgroup.subgroups() ) {
-                            result &= containsRequiredOptionsOrSubgroups(subsubgroup);
+                        for (ArgGroupSpec subsubgroup : subgroup.subgroups()) {
+                            result &= !isGroupEffectivelyOptional(subsubgroup);
                         }
-                        return result && containsRequiredOptionsOrParameters(subgroup);
+                        return result && !requiredOptionsExistAndAllHaveDefaultValues(subgroup);
                     } else {
-                        return containsRequiredOptionsOrSubgroups(subgroup);
+                        return !isGroupEffectivelyOptional(subgroup);
                     }
                 }
                 return false;
@@ -13691,11 +13713,13 @@ public class CommandLine {
                     tracer.debug("Applying defaultValue (%s)%s to %s on %s", defaultValue, provider, arg, arg.scopeString());}
                 Range arity = arg.arity().min(Math.max(1, arg.arity().min));
                 applyOption(arg, false, LookBehind.SEPARATE, false, arity, stack(defaultValue), new HashSet<ArgSpec>(), arg.toString);
+                arg.valueIsDefaultValue = true;
             } else {
                 if (arg.typeInfo().isOptional()) {
                     if (tracer.isDebug()) {
                         tracer.debug("Applying Optional.empty() to %s on %s", arg, arg.scopeString());}
                     arg.setValue(getOptionalEmpty());
+                    arg.valueIsDefaultValue = true;
                 } else if (ArgSpec.UNSPECIFIED.equals(arg.originalDefaultValue)) {
                     tracer.debug("defaultValue not defined for %s", arg);
                     return false;
@@ -13705,6 +13729,7 @@ public class CommandLine {
                         if (tracer.isDebug()) {
                             tracer.debug("Applying defaultValue (%s)%s to %s on %s", defaultValue, provider, arg, arg.scopeString());}
                         arg.setValue(defaultValue);
+                        arg.valueIsDefaultValue = true;
                         return true;
                     }
                     tracer.debug("defaultValue not defined for %s", arg);
@@ -17845,9 +17870,9 @@ public class CommandLine {
                     if (console == null) {
                         return false;
                     }
-                    try {
+                    try { // [#2083][#2084] Java 22 update
                         Method isTerminal = Class.forName("java.io.Console").getDeclaredMethod("isTerminal");
-                        return (boolean) isTerminal.invoke(console);
+                        return (Boolean) isTerminal.invoke(console);
                     } catch (NoSuchMethodException e) {
                         return true;
                     }
