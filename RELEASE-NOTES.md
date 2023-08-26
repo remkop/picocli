@@ -25,6 +25,7 @@ Artifacts in this release are signed by Remko Popma (6601 E5C0 8DCC BB96).
 * [#2060] Bugfix: Fix positional parameters bug with late-resolved arity variable. Thanks to [daisukeoto](https://github.com/daisukeoto) for raising this.
 * [#2074][#2075] Bugfix: Don't generate auto-complete for hidden attributes in `picocli.shell.jline3.PicoCommand`. Thanks to [clebertsuconic](https://github.com/clebertsuconic) for the pull request.
 * [#2083][#2084] Enhancement: Java 22 update: improve logic for detecting if the output stream is connected to a terminal. Thanks to [Liam Miller-Cushon](https://github.com/cushon) for the pull request.
+* [#2059] Bugfix: ArgGroup with `exclusive=false` and `multiplicity=1` should require at least one option; fix regression and refine solution introduced in [#1848][#2030].  Thanks to [Utkarsh Mittal](https://github.com/utmittal) for raising this.
 * [#2080] DOC: Improve GraalVM documentation: add `graalvm-native-image-plugin`. Thanks to [Bhavik Patel](https://github.com/bhavikp19) for the pull request.
 
 ## <a name="4.7.5-deprecated"></a> Deprecations

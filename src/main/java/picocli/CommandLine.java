@@ -13028,8 +13028,27 @@ public class CommandLine {
                 }
             }
 
-            private boolean containsRequiredOptionsOrSubgroups(ArgGroupSpec argGroupSpec) {
-                return containsRequiredOptionsOrParameters(argGroupSpec) || containsRequiredSubgroups(argGroupSpec);
+            /**
+             * A group is optional if <ul>
+             * <li>its minimum <code>multiplicity</code> is zero</li>
+             * <li>otherwise, if the group has at least one required option and all required options have default values</li>
+             * </ul>
+             *
+             * Conversely, a group is required if <ul>
+             * <li>if its minimum <code>multiplicity</code> is <code>1</code> or more <em>AND</em></li>
+             * <li>
+             *   <ul>
+             *     <li>either the group has no required options</li>
+             *     <li>or the group has at least one required option without a default value</li>
+             *   </ul>
+             * </li>
+             * </ul>
+             * @see <a href="https://github.com/remkop/picocli/issues/1848">https://github.com/remkop/picocli/issues/1848</a>
+             *  and <a href="https://github.com/remkop/picocli/issues/2059">https://github.com/remkop/picocli/issues/2059</a>
+             */
+            private boolean isGroupEffectivelyOptional(ArgGroupSpec argGroupSpec) {
+                if (argGroupSpec.multiplicity().min == 0) {return true; }
+                return requiredOptionsExistAndAllHaveDefaultValues(argGroupSpec) && !containsRequiredSubgroups(argGroupSpec);
             }
 
             private boolean containsRequiredOptionsOrParameters(ArgGroupSpec argGroupSpec) {
