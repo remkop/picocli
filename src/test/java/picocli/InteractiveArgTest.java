@@ -1,5 +1,6 @@
 package picocli;
 
+import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.ProvideSystemProperty;
@@ -85,6 +86,11 @@ public class InteractiveArgTest {
         String err() {
             return errBaos.toString();
         }
+    }
+
+    @After
+    public void afterEachTest() {
+//        CommandLine.tracer().setLevel(CommandLine.TraceLevel.WARN);
     }
 
     @Test
@@ -894,6 +900,188 @@ public class InteractiveArgTest {
             } catch (UnmatchedArgumentException ex) {
                 assertEquals("Unknown options: '-y', '-w'", ex.getMessage());
             }
+        } finally {
+            streams.reset();
+        }
+    }
+
+    @Test
+    public void testIssue2087InteractiveEchoOffOptionWithDefault() {
+        class Issue2087a {
+            @Option(names = "-a", interactive = true, echo = false, defaultValue = "DEFAULT") String a;
+        }
+
+        System.setProperty("picocli.trace", "DEBUG");
+        Streams streams = new Streams();
+        try {
+            Capture capture = new Capture();
+
+            Issue2087a app = new Issue2087a();
+            new CommandLine(app).parseArgs();
+            assertEquals("DEFAULT", app.a);
+
+            assertEquals("", capture.out());
+            assertThat(capture.err(), containsString("Applying defaultValue (*****(masked)) to field String picocli.InteractiveArgTest$1Issue2087a.a"));
+            assertThat(capture.err(), containsString("Setting field String picocli.InteractiveArgTest$1Issue2087a.a to '*****(masked)' (was 'null') for"));
+        } finally {
+            streams.reset();
+        }
+    }
+
+    @Test
+    public void testIssue2087InteractiveEchoOnOptionWithDefault() {
+        class Issue2087b {
+            @Option(names = "-a", interactive = true, echo = true, defaultValue = "DEFAULT") String a;
+        }
+
+        System.setProperty("picocli.trace", "DEBUG");
+        Streams streams = new Streams();
+        try {
+            Capture capture = new Capture();
+
+            Issue2087b app = new Issue2087b();
+            new CommandLine(app).parseArgs();
+            assertEquals("DEFAULT", app.a);
+
+            assertEquals("", capture.out());
+            assertThat(capture.err(), containsString("Applying defaultValue (DEFAULT) to field String picocli.InteractiveArgTest$1Issue2087b.a"));
+            assertThat(capture.err(), containsString("Setting field String picocli.InteractiveArgTest$1Issue2087b.a to 'DEFAULT' (was 'null') for"));
+        } finally {
+            streams.reset();
+        }
+    }
+
+    static class Issue2087DefaultProvider1 implements CommandLine.IDefaultValueProvider {
+        public String defaultValue(ArgSpec argSpec) throws Exception {
+            return "DEFAULT1";
+        }
+    }
+
+    @Test
+    public void testIssue2087InteractiveOptionEchoOffWithDefaultProvider() {
+        @CommandLine.Command(defaultValueProvider = Issue2087DefaultProvider1.class)
+        class Issue2087c {
+            @Option(names = "-a", interactive = true, echo = false) String a;
+        }
+        System.setProperty("picocli.trace", "DEBUG");
+        Streams streams = new Streams();
+        try {
+            Capture capture = new Capture();
+            Issue2087c app = new Issue2087c();
+            new CommandLine(app).parseArgs();
+            assertEquals("DEFAULT1", app.a);
+
+            assertEquals("", capture.out());
+            assertThat(capture.err(), containsString("Applying defaultValue (*****(masked)) from picocli.InteractiveArgTest$Issue2087DefaultProvider1"));
+            assertThat(capture.err(), containsString("Setting field String picocli.InteractiveArgTest$1Issue2087c.a to '*****(masked)' (was 'null') for"));
+        } finally {
+            streams.reset();
+        }
+    }
+
+    @Test
+    public void testIssue2087InteractiveOptionEchoOnWithDefaultProvider() {
+        @CommandLine.Command(defaultValueProvider = Issue2087DefaultProvider1.class)
+        class Issue2087d {
+            @Option(names = "-a", interactive = true, echo = true) String a;
+        }
+        System.setProperty("picocli.trace", "DEBUG");
+        Streams streams = new Streams();
+        try {
+            Capture capture = new Capture();
+            Issue2087d app = new Issue2087d();
+            new CommandLine(app).parseArgs();
+            assertEquals("DEFAULT1", app.a);
+
+            assertEquals("", capture.out());
+            assertThat(capture.err(), containsString("Applying defaultValue (DEFAULT1) from picocli.InteractiveArgTest$Issue2087DefaultProvider1"));
+            assertThat(capture.err(), containsString("Setting field String picocli.InteractiveArgTest$1Issue2087d.a to 'DEFAULT1' (was 'null') for"));
+        } finally {
+            streams.reset();
+        }
+    }
+
+    @Test
+    public void testIssue2087InteractiveEchoOnPositionalWithDefault() {
+        class Issue2087e {
+            @Parameters(interactive = true, echo = true, defaultValue = "DEFAULT") String a;
+        }
+        System.setProperty("picocli.trace", "DEBUG");
+        Streams streams = new Streams();
+        try {
+            Capture capture = new Capture();
+            Issue2087e app = new Issue2087e();
+            new CommandLine(app).parseArgs();
+            assertEquals("DEFAULT", app.a);
+
+            assertEquals("", capture.out());
+            assertThat(capture.err(), containsString("Applying defaultValue (DEFAULT) "));
+            assertThat(capture.err(), containsString("Setting field String picocli.InteractiveArgTest$1Issue2087e.a to 'DEFAULT' (was 'null') for"));
+        } finally {
+            streams.reset();
+        }
+    }
+
+    @Test
+    public void testIssue2087InteractiveEchoOffPositionalWithDefault() {
+        class Issue2087g {
+            @Parameters(interactive = true, echo = false, defaultValue = "DEFAULT") String a;
+        }
+        System.setProperty("picocli.trace", "DEBUG");
+        Streams streams = new Streams();
+        try {
+            Capture capture = new Capture();
+            Issue2087g app = new Issue2087g();
+            new CommandLine(app).parseArgs();
+            assertEquals("DEFAULT", app.a);
+
+            assertEquals("", capture.out());
+            assertThat(capture.err(), containsString("Applying defaultValue (*****(masked)) "));
+            assertThat(capture.err(), containsString("Setting field String picocli.InteractiveArgTest$1Issue2087g.a to '*****(masked)' (was 'null') for"));
+        } finally {
+            streams.reset();
+        }
+    }
+
+    @Test
+    public void testIssue2087InteractiveEchoOnPositionalWithDefaultProvider() {
+        @CommandLine.Command(defaultValueProvider = Issue2087DefaultProvider1.class)
+        class Issue2087f {
+            @Parameters(interactive = true, echo = true) String a;
+        }
+        System.setProperty("picocli.trace", "DEBUG");
+        Streams streams = new Streams();
+        try {
+            Capture capture = new Capture();
+            Issue2087f app = new Issue2087f();
+            new CommandLine(app).parseArgs();
+            assertEquals("DEFAULT1", app.a);
+
+            assertEquals("", capture.out());
+            assertThat(capture.err(), containsString("Applying defaultValue (DEFAULT1) from picocli.InteractiveArgTest$Issue2087DefaultProvider1"));
+            assertThat(capture.err(), containsString("Setting field String picocli.InteractiveArgTest$1Issue2087f.a to 'DEFAULT1' (was 'null') for"));
+        } finally {
+            streams.reset();
+        }
+    }
+
+    @Test
+    public void testIssue2087InteractiveEchoOffPositionalWithDefaultProvider() {
+        @CommandLine.Command(defaultValueProvider = Issue2087DefaultProvider1.class)
+        class Issue2087h {
+            @Parameters(interactive = true, echo = false) String a;
+        }
+        System.setProperty("picocli.trace", "DEBUG");
+        Streams streams = new Streams();
+        try {
+            Capture capture = new Capture();
+            Issue2087h app = new Issue2087h();
+            new CommandLine(app).parseArgs();
+            assertEquals("DEFAULT1", app.a);
+
+            assertEquals("", capture.out());
+            assertThat(capture.err(), containsString("Applying defaultValue (*****(masked)) from picocli.InteractiveArgTest$Issue2087DefaultProvider1"));
+            assertThat(capture.err(), containsString("Setting field String picocli.InteractiveArgTest$1Issue2087h.a to '*****(masked)' (was 'null') for"));
         } finally {
             streams.reset();
         }
