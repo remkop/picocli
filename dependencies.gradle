@@ -3,9 +3,9 @@
 
 // Spring Boot 3.0 requires Java 17 as a minimum version
 boolean useSpring3 = JavaVersion.current().majorVersion.compareTo("17") >= 0;
-logger.info("JavaVersion=${JavaVersion.current()}")
-logger.info("JavaVersion.majorVersion=${JavaVersion.current().majorVersion}")
-logger.info("useSpring3=${useSpring3}")
+logger.quiet("JavaVersion=${JavaVersion.current()}")
+logger.quiet("JavaVersion.majorVersion=${JavaVersion.current().majorVersion}")
+logger.quiet("useSpring3=${useSpring3}")
 
 ext {
     // PICOCLI VERSION
