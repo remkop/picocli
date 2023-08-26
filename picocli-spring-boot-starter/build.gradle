@@ -7,8 +7,18 @@ description 'Picocli Spring Boot Starter - Enables Spring Dependency Injection a
 version "$projectVersion"
 ext.moduleName = 'info.picocli.spring.boot'
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+// Spring 3 requires Java 17
+boolean useJava17 = JavaVersion.current().majorVersion.compareTo("17") >= 0;
+if (useJava17) {
+    logger.quiet("picocli-spring-boot-starter/build.gradle: JavaVersion=${JavaVersion.current()}")
+    logger.quiet("picocli-spring-boot-starter/build.gradle: sourceCompatibility = 17")
+    logger.quiet("picocli-spring-boot-starter/build.gradle: targetCompatibility = 17")
+    sourceCompatibility = 17
+    targetCompatibility = 17
+} else { // from Java 9 and up
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+}
 
 dependencies {
     api                 rootProject
