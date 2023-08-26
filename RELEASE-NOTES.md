@@ -1,5 +1,43 @@
 # picocli Release Notes
 
+# <a name="4.7.5"></a> Picocli 4.7.5
+The picocli community is pleased to announce picocli 4.7.5.
+
+This release includes bugfixes and enhancements.
+
+Many thanks to the picocli community for raising these issues and providing the pull requests to address them!
+
+This is the eighty-forth public release.
+Picocli follows [semantic versioning](https://semver.org/).
+Artifacts in this release are signed by Remko Popma (6601 E5C0 8DCC BB96).
+
+## <a name="4.7.5-toc"></a> Table of Contents
+* [New and noteworthy](#4.7.5-new)
+* [Fixed issues](#4.7.5-fixes)
+* [Deprecations](#4.7.5-deprecated)
+* [Potential breaking changes](#4.7.5-breaking-changes)
+
+## <a name="4.7.5-new"></a> New and Noteworthy
+
+
+
+## <a name="4.7.5-fixes"></a> Fixed issues
+* [#2083][#2084] Enhancement: Java 22 update: improve logic for detecting if the output stream is connected to a terminal. Thanks to [Liam Miller-Cushon](https://github.com/cushon) for the pull request.
+* [#2087] Enhancement: Mask parameters in trace log when `echo=false` for `interactive` options and positional parameters. Thanks to [szzsolt](https://github.com/szzsolt) for raising this.
+* [#2060] Bugfix: Fix positional parameters bug with late-resolved arity variable. Thanks to [daisukeoto](https://github.com/daisukeoto) for raising this.
+* [#2074][#2075] Bugfix: Don't generate auto-complete for hidden attributes in `picocli.shell.jline3.PicoCommand`. Thanks to [clebertsuconic](https://github.com/clebertsuconic) for the pull request.
+* [#2059] Bugfix: ArgGroup with `exclusive=false` and `multiplicity=1` should require at least one option; fix regression and refine solution introduced in [#1848][#2030].  Thanks to [Utkarsh Mittal](https://github.com/utmittal) for raising this.
+* [#2080] DOC: Improve GraalVM documentation: add `graalvm-native-image-plugin`. Thanks to [Bhavik Patel](https://github.com/bhavikp19) for the pull request.
+* [#2045] DOC: Commit html files with LF line-endings. Thanks to [Fridrich Strba](https://github.com/fridrich) for the pull request.
+
+## <a name="4.7.5-deprecated"></a> Deprecations
+No features were deprecated in this release.
+
+## <a name="4.7.5-breaking-changes"></a> Potential breaking changes
+This release has no breaking changes.
+
+
+
 # <a name="4.7.4"></a> Picocli 4.7.4
 The picocli community is pleased to announce picocli 4.7.4.
 

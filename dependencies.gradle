@@ -5,12 +5,12 @@ ext {
     // PICOCLI VERSION
 
     // projectPreviousPublishedVersion is non-SNAPSHOT, only published releases
-    projectPreviousPublishedVersion = "4\\.7\\.4"      // for task bumpReadmeVersion
+    projectPreviousPublishedVersion = "4\\.7\\.5"      // for task bumpReadmeVersion
     // projectPreviousVersionRegex may be a SNAPSHOT
-    projectPreviousVersionRegex     = "4\\.7\\.4"      // for task bumpVersion
-    projectVersion                  = "4.7.5-SNAPSHOT" // for all build tasks
-    releaseDate                     = "2023-06-03"     // for task bumpVersion
-    releaseDatePreviousRegex        = "2023\\-06\\-03" // for task bumpVersion
+    projectPreviousVersionRegex     = "4\\.7\\.5"      // for task bumpVersion
+    projectVersion                  = "4.7.6-SNAPSHOT" // for all build tasks
+    releaseDate                     = "2023-08-27"     // for task bumpVersion
+    releaseDatePreviousRegex        = "2023\\-08\\-27" // for task bumpVersion
 
     // DEPENDENCIES
     asciidoctorGradlePluginVersion = "3.3.2"
@@ -25,7 +25,7 @@ ext {
     junitDepVersion     = "4.11"
     junitVersion        = "4.13.2"
     log4j2Version       = "2.20.0"
-    springBootVersion   = "2.7.11" // Spring Boot 3.0 requires Java 17 as a minimum version
+    springBootVersion   = "3.1.2" // Spring Boot 3.0 requires Java 17 as a minimum version
     systemRulesVersion  = "1.19.0"
     systemLambdaVersion = '1.2.1'
     junit5Version       = '5.9.3'
@@ -50,7 +50,7 @@ ext {
         log4j2api         : "org.apache.logging.log4j:log4j-api:$log4j2Version",
         log4j2core        : "org.apache.logging.log4j:log4j-core:$log4j2Version",
         kotlin_stdlib     : "org.jetbrains.kotlin:kotlin-stdlib",
-        scala_lang        : "org.scala-lang:scala-library:2.13.10",
+        scala_lang        : "org.scala-lang:scala-library:2.13.11",
         validation_api    : "jakarta.validation:jakarta.validation-api:3.0.2",
         //el_api            : "jakarta.el:jakarta.el-api:3.0.3",
         el_impl           : "org.glassfish:jakarta.el:4.0.2",
