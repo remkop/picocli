@@ -36,9 +36,9 @@ dependencies {
         logger.quiet("picocli-spring-boot-starter/build.gradle: testImplementation  ${supportDependencies.springboottest}")
     } else {
         // These should not be updated by dependabot
-        String springbootstarterOld = "org.springframework.boot:spring-boot-starter:2.7.11"
-        String springbootannprocOld = "org.springframework.boot:spring-boot-configuration-processor:2.7.11"
-        String springboottestOld    = "org.springframework.boot:spring-boot-starter-test:2.7.11"
+        String springbootstarterOld = "org.springframework.boot:spring-boot-starter:2.7.12"
+        String springbootannprocOld = "org.springframework.boot:spring-boot-configuration-processor:2.7.12"
+        String springboottestOld    = "org.springframework.boot:spring-boot-starter-test:2.7.12"
 
         api                 springbootstarterOld
         annotationProcessor springbootannprocOld
