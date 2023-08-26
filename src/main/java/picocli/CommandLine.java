@@ -17845,9 +17845,9 @@ public class CommandLine {
                     if (console == null) {
                         return false;
                     }
-                    try {
+                    try { // [#2083][#2084] Java 22 update
                         Method isTerminal = Class.forName("java.io.Console").getDeclaredMethod("isTerminal");
-                        return (boolean) isTerminal.invoke(console);
+                        return (Boolean) isTerminal.invoke(console);
                     } catch (NoSuchMethodException e) {
                         return true;
                     }
