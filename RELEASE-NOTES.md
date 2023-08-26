@@ -1,5 +1,48 @@
 # picocli Release Notes
 
+# <a name="4.7.6"></a> Picocli 4.7.6
+The picocli community is pleased to announce picocli 4.7.6.
+
+This release includes bugfixes and enhancements.
+
+Many thanks to the picocli community for raising these issues and providing the pull requests to address them!
+
+This is the eighty-fifth public release.
+Picocli follows [semantic versioning](https://semver.org/).
+Artifacts in this release are signed by Remko Popma (6601 E5C0 8DCC BB96).
+
+## <a name="4.7.6-toc"></a> Table of Contents
+* [New and noteworthy](#4.7.6-new)
+* [Fixed issues](#4.7.6-fixes)
+* [Deprecations](#4.7.6-deprecated)
+* [Potential breaking changes](#4.7.6-breaking-changes)
+
+## <a name="4.7.6-new"></a> New and Noteworthy
+
+
+
+## <a name="4.7.6-fixes"></a> Fixed issues
+
+* [#2047] DEP: Bump andymckay/append-gist-action from 1fbfbbce708a39bd45846f0955ed5521f2099c6d to 6e8d64427fe47cbacf4ab6b890411f1d67c07f3e
+* [#2091] DEP: Bump actions/checkout from 3.5.2 to 3.6.0
+* [#2085] DEP: Bump github/codeql-action from 2.3.5 to 2.21.4
+* [#2089] DEP: Bump org.jetbrains.kotlin:kotlin-gradle-plugin from 1.8.21 to 1.9.10
+* [#2090] DEP: Bump org.jetbrains.kotlin:kotlin-script-runtime from 1.8.21 to 1.9.10
+* [#2049] DEP: Bump org.hibernate.validator:hibernate-validator from 8.0.0.Final to 8.0.1.Final
+* [#2037] DEP: Bump org.scala-lang:scala-library from 2.13.10 to 2.13.11
+* [#2052] DEP: Bump ossf/scorecard-action from 2.1.3 to 2.2.0
+* DEP: Bump SpringBoot to 2.7.2
+* [#2082] DEP: Bump step-security/harden-runner from 2.4.0 to 2.5.1
+
+
+## <a name="4.7.6-deprecated"></a> Deprecations
+No features were deprecated in this release.
+
+## <a name="4.7.6-breaking-changes"></a> Potential breaking changes
+This release has no breaking changes.
+
+
+
 # <a name="4.7.5"></a> Picocli 4.7.5
 The picocli community is pleased to announce picocli 4.7.5.
 
