@@ -8,7 +8,11 @@ version "$projectVersion"
 ext.moduleName = 'info.picocli.spring.boot'
 
 // Spring 3 requires Java 17
-boolean useJava17 = JavaVersion.current().majorVersion.compareTo("17") >= 0;
+boolean useJava17 = JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_17)
+logger.quiet("dependencies.gradle: JavaVersion=${JavaVersion.current()}")
+logger.quiet("dependencies.gradle: JavaVersion.majorVersion=${JavaVersion.current().majorVersion}")
+logger.quiet("dependencies.gradle: useJava17=${useJava17}")
+
 if (useJava17) {
     logger.quiet("picocli-spring-boot-starter/build.gradle: JavaVersion=${JavaVersion.current()}")
     logger.quiet("picocli-spring-boot-starter/build.gradle: sourceCompatibility = 17")
