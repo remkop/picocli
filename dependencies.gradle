@@ -1,12 +1,6 @@
 // This file works around dependabot issue https://github.com/dependabot/dependabot-core/issues/1618
 // See https://www.sameerkulkarni.de/posts/dependabot-with-gradle/
 
-// Spring Boot 3.0 requires Java 17 as a minimum version
-boolean useSpring3 = JavaVersion.current().majorVersion.compareTo("17") >= 0;
-logger.quiet("dependencies.gradle: JavaVersion=${JavaVersion.current()}")
-logger.quiet("dependencies.gradle: JavaVersion.majorVersion=${JavaVersion.current().majorVersion}")
-logger.quiet("dependencies.gradle: useSpring3=${useSpring3}")
-
 ext {
     // PICOCLI VERSION
 
@@ -31,35 +25,38 @@ ext {
     junitDepVersion     = "4.11"
     junitVersion        = "4.13.2"
     log4j2Version       = "2.20.0"
-    springBootVersion   = useSpring3 ? "3.1.2" : "2.7.11" // Spring Boot 3.0 requires Java 17 as a minimum version
+    springBootVersion   = "3.1.2" // Spring Boot 3.0 requires Java 17 as a minimum version
     systemRulesVersion  = "1.19.0"
     systemLambdaVersion = '1.2.1'
     junit5Version       = '5.9.3'
 
     supportDependencies = [
-        junit             : "junit:junit:$junitVersion",
-        junit5Api         : "org.junit.jupiter:junit-jupiter-api:$junit5Version",
-        junit5Engine      : "org.junit.jupiter:junit-jupiter-engine:$junit5Version",
-        systemLambda      : "com.github.stefanbirkner:system-lambda:$systemLambdaVersion",
-        hamcrestCore      : "org.hamcrest:hamcrest-core:$hamcrestCoreVersion",
-        jansi             : "org.fusesource.jansi:jansi:$jansiVersion",
-        groovy            : "org.codehaus.groovy:groovy-all:$groovyVersion",
-        systemRules       : "com.github.stefanbirkner:system-rules:$systemRulesVersion",
-        junitParams       : "pl.pragmatists:JUnitParams:1.1.1",
-        springbootstarter : "org.springframework.boot:spring-boot-starter:$springBootVersion",
-        springbootannproc : "org.springframework.boot:spring-boot-configuration-processor:$springBootVersion",
-        springboottest    : "org.springframework.boot:spring-boot-starter-test:$springBootVersion",
-        jline3            : "org.jline:jline:$jline3Version",
-        jline2            : "jline:jline:$jline2Version",
-        ivy               : "org.apache.ivy:ivy:$ivyVersion",
-        compileTesting    : "com.google.testing.compile:compile-testing:$compileTestingVersion",
-        log4j2api         : "org.apache.logging.log4j:log4j-api:$log4j2Version",
-        log4j2core        : "org.apache.logging.log4j:log4j-core:$log4j2Version",
-        kotlin_stdlib     : "org.jetbrains.kotlin:kotlin-stdlib",
-        scala_lang        : "org.scala-lang:scala-library:2.13.10",
-        validation_api    : "jakarta.validation:jakarta.validation-api:3.0.2",
-        //el_api            : "jakarta.el:jakarta.el-api:3.0.3",
-        el_impl           : "org.glassfish:jakarta.el:4.0.2",
+        junit                : "junit:junit:$junitVersion",
+        junit5Api            : "org.junit.jupiter:junit-jupiter-api:$junit5Version",
+        junit5Engine         : "org.junit.jupiter:junit-jupiter-engine:$junit5Version",
+        systemLambda         : "com.github.stefanbirkner:system-lambda:$systemLambdaVersion",
+        hamcrestCore         : "org.hamcrest:hamcrest-core:$hamcrestCoreVersion",
+        jansi                : "org.fusesource.jansi:jansi:$jansiVersion",
+        groovy               : "org.codehaus.groovy:groovy-all:$groovyVersion",
+        systemRules          : "com.github.stefanbirkner:system-rules:$systemRulesVersion",
+        junitParams          : "pl.pragmatists:JUnitParams:1.1.1",
+        springbootstarter    : "org.springframework.boot:spring-boot-starter:$springBootVersion",
+        springbootannproc    : "org.springframework.boot:spring-boot-configuration-processor:$springBootVersion",
+        springboottest       : "org.springframework.boot:spring-boot-starter-test:$springBootVersion",
+        springbootstarterOld : "org.springframework.boot:spring-boot-starter:2.7.11",
+        springbootannprocOld : "org.springframework.boot:spring-boot-configuration-processor:2.7.11",
+        springboottestOld    : "org.springframework.boot:spring-boot-starter-test:2.7.11",
+        jline3               : "org.jline:jline:$jline3Version",
+        jline2               : "jline:jline:$jline2Version",
+        ivy                  : "org.apache.ivy:ivy:$ivyVersion",
+        compileTesting       : "com.google.testing.compile:compile-testing:$compileTestingVersion",
+        log4j2api            : "org.apache.logging.log4j:log4j-api:$log4j2Version",
+        log4j2core           : "org.apache.logging.log4j:log4j-core:$log4j2Version",
+        kotlin_stdlib        : "org.jetbrains.kotlin:kotlin-stdlib",
+        scala_lang           : "org.scala-lang:scala-library:2.13.10",
+        validation_api       : "jakarta.validation:jakarta.validation-api:3.0.2",
+        //el_api               : "jakarta.el:jakarta.el-api:3.0.3",
+        el_impl              : "org.glassfish:jakarta.el:4.0.2",
 
         hibernate_validator_annproc: "org.hibernate.validator:hibernate-validator-annotation-processor:8.0.0.Final",
         hibernate_validator        : "org.hibernate.validator:hibernate-validator:8.0.0.Final",

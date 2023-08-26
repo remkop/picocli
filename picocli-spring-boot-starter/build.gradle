@@ -22,9 +22,23 @@ if (useJava17) {
 
 dependencies {
     api                 rootProject
-    api                 supportDependencies.springbootstarter
-    annotationProcessor supportDependencies.springbootannproc
-    testImplementation  supportDependencies.springboottest
+    if (useJava17) {
+        api                 supportDependencies.springbootstarter
+        annotationProcessor supportDependencies.springbootannproc
+        testImplementation  supportDependencies.springboottest
+
+        logger.quiet("picocli-spring-boot-starter/build.gradle: api                 ${supportDependencies.springbootstarter}")
+        logger.quiet("picocli-spring-boot-starter/build.gradle: annotationProcessor ${supportDependencies.springbootannproc}")
+        logger.quiet("picocli-spring-boot-starter/build.gradle: testImplementation  ${supportDependencies.springboottest}")
+    } else {
+        api                 supportDependencies.springbootstarterOld
+        annotationProcessor supportDependencies.springbootannprocOld
+        testImplementation  supportDependencies.springboottestOld
+
+        logger.quiet("picocli-spring-boot-starter/build.gradle: api                 ${supportDependencies.springbootstarterOld}")
+        logger.quiet("picocli-spring-boot-starter/build.gradle: annotationProcessor ${supportDependencies.springbootannprocOld}")
+        logger.quiet("picocli-spring-boot-starter/build.gradle: testImplementation  ${supportDependencies.springboottestOld}")
+    }
 }
 
 jar {

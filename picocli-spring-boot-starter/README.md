@@ -13,7 +13,7 @@ command line applications with Spring and picocli.
 
 ## Dependency Management
 
-Picocli 4.7.4 has been tested with Spring Boot 2.5, 2.6 and 2.7 up to 2.7.5.
+Picocli 4.7.4 has been tested with Spring Boot 2.5, 2.6, 2.7, and 3.1 up to 3.1.2.
 
 Add the following dependency:
 
