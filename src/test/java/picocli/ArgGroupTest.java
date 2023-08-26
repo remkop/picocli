@@ -4377,4 +4377,66 @@ public class ArgGroupTest {
         public void run() {
         }
     }
+
+    @Command(name = "multiplicity")
+    static class Issue2059Multiplicity {
+
+        @ArgGroup(exclusive = false, multiplicity = "1")
+        RequiredGroup requiredGroup;
+
+        static class RequiredGroup {
+            @Option(names = "--option_one")
+            private String optionOne;
+
+            @Option(names = "--option_two")
+            private String optionTwo;
+        }
+    }
+
+    @Test
+    public void testIssue2059() {
+        Issue2059Multiplicity obj = new Issue2059Multiplicity();
+        try {
+            new CommandLine(obj).parseArgs();
+            fail("Expected exception");
+        } catch (ParameterException ok) {
+            assertEquals("Error: Missing required argument(s): ([--option_one=<optionOne>] [--option_two=<optionTwo>])", ok.getMessage());
+        }
+    }
+
+    static class Issue947RequireOneOrBothNotNoneGroup {
+        @Option(names = {"-f", "--feature"}) String feature;
+        @Option(names = {"-p", "--project"}) String project;
+    }
+
+    @Command
+    static class Issue947Cmd {
+        @ArgGroup(multiplicity = "1", exclusive = false)
+        Issue947RequireOneOrBothNotNoneGroup group;
+    }
+
+    @Test
+    public void testIssue947RequireOneOrBothNotNone() {
+        Issue947Cmd ok1 = CommandLine.populateCommand(new Issue947Cmd(), "--project", "Foo");
+        assertNotNull(ok1.group);
+        assertEquals("Foo", ok1.group.project);
+        assertNull(ok1.group.feature);
+
+        Issue947Cmd ok2 = CommandLine.populateCommand(new Issue947Cmd(), "--feature", "Bar");
+        assertNotNull(ok2.group);
+        assertNull(ok2.group.project);
+        assertEquals("Bar", ok2.group.feature);
+
+        Issue947Cmd ok3 = CommandLine.populateCommand(new Issue947Cmd(), "--project", "Foo", "--feature", "Bar");
+        assertNotNull(ok3.group);
+        assertEquals("Foo", ok3.group.project);
+        assertEquals("Bar", ok3.group.feature);
+
+        try {
+            CommandLine.populateCommand(new Issue947Cmd());
+            fail("Expected exception");
+        } catch (ParameterException ok) {
+            assertEquals("Error: Missing required argument(s): ([-f=<feature>] [-p=<project>])", ok.getMessage());
+        }
+    }
 }
