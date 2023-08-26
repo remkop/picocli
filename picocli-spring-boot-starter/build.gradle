@@ -9,9 +9,9 @@ ext.moduleName = 'info.picocli.spring.boot'
 
 // Spring 3 requires Java 17
 boolean useJava17 = JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_17)
-logger.quiet("dependencies.gradle: JavaVersion=${JavaVersion.current()}")
-logger.quiet("dependencies.gradle: JavaVersion.majorVersion=${JavaVersion.current().majorVersion}")
-logger.quiet("dependencies.gradle: useJava17=${useJava17}")
+logger.quiet("picocli-spring-boot-starter/build.gradle: JavaVersion=${JavaVersion.current()}")
+logger.quiet("picocli-spring-boot-starter/build.gradle: JavaVersion.majorVersion=${JavaVersion.current().majorVersion}")
+logger.quiet("picocli-spring-boot-starter/build.gradle: useJava17=${useJava17}")
 
 if (useJava17) {
     logger.quiet("picocli-spring-boot-starter/build.gradle: JavaVersion=${JavaVersion.current()}")
@@ -35,13 +35,18 @@ dependencies {
         logger.quiet("picocli-spring-boot-starter/build.gradle: annotationProcessor ${supportDependencies.springbootannproc}")
         logger.quiet("picocli-spring-boot-starter/build.gradle: testImplementation  ${supportDependencies.springboottest}")
     } else {
-        api                 supportDependencies.springbootstarterOld
-        annotationProcessor supportDependencies.springbootannprocOld
-        testImplementation  supportDependencies.springboottestOld
+        // These should not be updated by dependabot
+        String springbootstarterOld = "org.springframework.boot:spring-boot-starter:2.7.11"
+        String springbootannprocOld = "org.springframework.boot:spring-boot-configuration-processor:2.7.11"
+        String springboottestOld    = "org.springframework.boot:spring-boot-starter-test:2.7.11"
 
-        logger.quiet("picocli-spring-boot-starter/build.gradle: api                 ${supportDependencies.springbootstarterOld}")
-        logger.quiet("picocli-spring-boot-starter/build.gradle: annotationProcessor ${supportDependencies.springbootannprocOld}")
-        logger.quiet("picocli-spring-boot-starter/build.gradle: testImplementation  ${supportDependencies.springboottestOld}")
+        api                 springbootstarterOld
+        annotationProcessor springbootannprocOld
+        testImplementation  springboottestOld
+
+        logger.quiet("picocli-spring-boot-starter/build.gradle: api                 ${springbootstarterOld}")
+        logger.quiet("picocli-spring-boot-starter/build.gradle: annotationProcessor ${springbootannprocOld}")
+        logger.quiet("picocli-spring-boot-starter/build.gradle: testImplementation  ${springboottestOld}")
     }
 }
 
