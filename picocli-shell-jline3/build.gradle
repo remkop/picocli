@@ -7,8 +7,18 @@ description 'Picocli Shell JLine3 - easily build interactive shell applications 
 version "$projectVersion"
 ext.moduleName = 'info.picocli.shell.jline3'
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+// Spring 3 requires Java 17
+boolean useJava17 = JavaVersion.current().majorVersion.compareTo("17") >= 0;
+if (useJava17) {
+    logger.quiet("picocli-shell-jline3/build.gradle: JavaVersion=${JavaVersion.current()}")
+    logger.quiet("picocli-shell-jline3/build.gradle: sourceCompatibility = 17")
+    logger.quiet("picocli-shell-jline3/build.gradle: targetCompatibility = 17")
+    sourceCompatibility = 17
+    targetCompatibility = 17
+} else { // from Java 9 and up
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+}
 
 dependencies {
     api                rootProject
