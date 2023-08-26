@@ -1,8 +1,8 @@
 = Autocomplete for Java Command Line Applications
 //:author: Remko Popma
 //:email: rpopma@apache.org
-:revnumber: 4.7.5-SNAPSHOT
-:revdate: 2023-06-03
+:revnumber: 4.7.6-SNAPSHOT
+:revdate: 2023-08-27
 :toc: left
 :numbered:
 :toclevels: 3

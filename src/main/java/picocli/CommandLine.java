@@ -148,7 +148,7 @@ import static picocli.CommandLine.Help.Column.Overflow.WRAP;
 public class CommandLine {
 
     /** This is picocli version {@value}. */
-    public static final String VERSION = "4.7.5-SNAPSHOT";
+    public static final String VERSION = "4.7.6-SNAPSHOT";
     private static final Tracer TRACER = new Tracer();
 
     private CommandSpec commandSpec;
@@ -979,7 +979,7 @@ public class CommandLine {
      * or whether such values should be rejected with a missing parameter exception.
      * The default is {@code false}, so by default input like {@code -x=subcommand} is rejected if {@code -x} is an option that takes a String parameter, and {@code subcommand} is a subcommand of this command.
      * @return {@code true} when options can have parameter values that match subcommand names or aliases, {@code false} when such values should be rejected with a missing parameter exception
-     * @since 4.7.5-SNAPSHOT
+     * @since 4.7.6-SNAPSHOT
      * @see ParserSpec#allowSubcommandsAsOptionParameters()
      */
     public boolean isAllowSubcommandsAsOptionParameters() {
@@ -994,7 +994,7 @@ public class CommandLine {
      * subcommands, call the setter last, after adding subcommands.</p>
      * @param newValue the new setting. When {@code true}, options can have parameter values that match subcommand names or aliases, when {@code false}, such values are rejected with a missing parameter exception
      * @return this {@code CommandLine} object, to allow method chaining
-     * @since 4.7.5-SNAPSHOT
+     * @since 4.7.6-SNAPSHOT
      * @see ParserSpec#allowSubcommandsAsOptionParameters(boolean)
      */
     public CommandLine setAllowSubcommandsAsOptionParameters(boolean newValue) {
@@ -1009,7 +1009,7 @@ public class CommandLine {
      * The default is {@code false}, so by default input like {@code -x=--some-option} is rejected if {@code -x} is an option that takes a String parameter, and {@code --some-option} is an option of this command.
      * <p>This method only considers actual options of this command, as opposed to {@link #isUnmatchedOptionsAllowedAsOptionParameters()}, which considers values that <em>resemble</em> options.</p>
      * @return {@code true} when options can have parameter values that match the name of an option in this command, {@code false} when such values should be rejected with a missing parameter exception
-     * @since 4.7.5-SNAPSHOT
+     * @since 4.7.6-SNAPSHOT
      * @see #isUnmatchedOptionsAllowedAsOptionParameters()
      * @see ParserSpec#allowOptionsAsOptionParameters()
      */
@@ -1029,7 +1029,7 @@ public class CommandLine {
      * subcommands, call the setter last, after adding subcommands.</p>
      * @param newValue the new setting. When {@code true}, options can have parameter values that match the name of an option in this command, when {@code false}, such values are rejected with a missing parameter exception
      * @return this {@code CommandLine} object, to allow method chaining
-     * @since 4.7.5-SNAPSHOT
+     * @since 4.7.6-SNAPSHOT
      * @see #setUnmatchedOptionsAllowedAsOptionParameters(boolean)
      * @see ParserSpec#allowOptionsAsOptionParameters(boolean)
      */
@@ -4737,7 +4737,7 @@ public class CommandLine {
          * Note that picocli cannot reliably detect declaration order in commands that have both {@code @Option}-annotated methods and {@code @Option}-annotated fields.
          * The default ({@code true}) is to sort alphabetically.
          * @return whether options in the synopsis should be shown in alphabetic order.
-         * @since 4.7.5-SNAPSHOT */
+         * @since 4.7.6-SNAPSHOT */
         boolean sortSynopsis() default true;
 
         /** Prefix required options with this character in the options list. The default is no marker: the synopsis
@@ -5033,7 +5033,7 @@ public class CommandLine {
      * </pre>
      *
      * The {@link #convert(String)} method of this class always throws an UnsupportedOperationException.
-     * @since 4.7.5-SNAPSHOT
+     * @since 4.7.6-SNAPSHOT
      */
     public static final class UseDefaultConverter implements ITypeConverter<Object> {
         /** Always throws UnsupportedOperationException.
@@ -6887,6 +6887,9 @@ public class CommandLine {
                 arg.commandSpec = this;
                 if (arg.arity().isUnresolved()) {
                     arg.arity = Range.valueOf(interpolator.interpolate(arg.arity().originalValue));
+                    if (arg.isPositional()) { // #2060 fix bug with late-resolved arity variable
+                        arg.required = arg.arity.min > 0; // Builder may have set `required` flag before arity was resolved
+                    }
                 }
                 // do this last: arg.required() needs to resolve variables in arg.defaultValue()
                 if (arg.required() && arg.group() == null && !arg.inherited()) { requiredArgs.add(arg); }
@@ -8184,7 +8187,7 @@ public class CommandLine {
             public boolean sortOptions() { return (sortOptions == null) ? DEFAULT_SORT_OPTIONS : sortOptions; }
 
             /** Returns whether the options in the synopsis should be sorted alphabetically.
-             * @since 4.7.5-SNAPSHOT */
+             * @since 4.7.6-SNAPSHOT */
             public boolean sortSynopsis() { return (sortSynopsis == null) ? DEFAULT_SORT_SYNOPSIS : sortSynopsis; }
 
             /** Returns the character used to prefix required options in the options list. */
@@ -8333,7 +8336,7 @@ public class CommandLine {
 
             /** Sets whether the options in the synopsis should be sorted alphabetically.
              * @return this UsageMessageSpec for method chaining
-             * @since 4.7.5-SNAPSHOT */
+             * @since 4.7.6-SNAPSHOT */
             public UsageMessageSpec sortSynopsis(boolean newValue) {sortSynopsis = newValue; return this;}
 
             /** Sets the character used to prefix required options in the options list.
@@ -8599,11 +8602,11 @@ public class CommandLine {
             public boolean unmatchedOptionsAllowedAsOptionParameters() { return unmatchedOptionsAllowedAsOptionParameters; }
             /**
              * @see CommandLine#isAllowSubcommandsAsOptionParameters()
-             * @since 4.7.5-SNAPSHOT */
+             * @since 4.7.6-SNAPSHOT */
             public boolean allowSubcommandsAsOptionParameters() { return allowSubcommandsAsOptionParameters; }
             /**
              * @see CommandLine#isAllowOptionsAsOptionParameters()
-             * @since 4.7.5-SNAPSHOT */
+             * @since 4.7.6-SNAPSHOT */
             public boolean allowOptionsAsOptionParameters() { return allowOptionsAsOptionParameters; }
             private boolean splitFirst()                       { return limitSplit(); }
             /** Returns true if arguments should be split first before any further processing and the number of
@@ -8663,11 +8666,11 @@ public class CommandLine {
             public ParserSpec unmatchedOptionsArePositionalParams(boolean unmatchedOptionsArePositionalParams) { this.unmatchedOptionsArePositionalParams = unmatchedOptionsArePositionalParams; return this; }
             /**
              * @see CommandLine#setAllowSubcommandsAsOptionParameters(boolean)
-             * @since 4.7.5-SNAPSHOT */
+             * @since 4.7.6-SNAPSHOT */
             public ParserSpec allowSubcommandsAsOptionParameters(boolean allowSubcommandsAsOptionParameters) { this.allowSubcommandsAsOptionParameters = allowSubcommandsAsOptionParameters; return this; }
             /**
              * @see CommandLine#setAllowOptionsAsOptionParameters(boolean)
-             * @since 4.7.5-SNAPSHOT */
+             * @since 4.7.6-SNAPSHOT */
             public ParserSpec allowOptionsAsOptionParameters(boolean allowOptionsAsOptionParameters) { this.allowOptionsAsOptionParameters = allowOptionsAsOptionParameters; return this; }
             /** Sets whether exceptions during parsing should be collected instead of thrown.
              * Multiple errors may be encountered during parsing. These can be obtained from {@link ParseResult#errors()}.
@@ -8786,6 +8789,7 @@ public class CommandLine {
             private       Object initialValue;
             private final boolean hasInitialValue;
             private       InitialValueState initialValueState;
+            protected boolean valueIsDefaultValue;
             protected final IAnnotatedElement annotatedElement;
             private final IGetter getter;
             private final ISetter setter;
@@ -8884,7 +8888,7 @@ public class CommandLine {
             }
 
             /** Returns the original value of the option's required attribute, regardless of whether the option is used in an exclusive group or not.
-             * @since 4.7.5-SNAPSHOT
+             * @since 4.7.6-SNAPSHOT
              * @see Option#required() */
             public boolean originallyRequired(){
                 return originallyRequired;
@@ -9582,7 +9586,7 @@ public class CommandLine {
                 Builder(Parameters parameters, IAnnotatedElement annotatedElement, IFactory factory) {
                     this(annotatedElement);
                     arity = Range.parameterArity(annotatedElement);
-                    required = arity.min > 0;
+                    required = arity.min > 0; //but arity may still be unresolved...
 
                     // method parameters may be positional parameters without @Parameters annotation
                     if (parameters == null) {
@@ -11675,7 +11679,7 @@ public class CommandLine {
              * classpath and thereby cause failures. This method allows for disabling
              * loading of resource bundles during annotation processing, preventing such
              * errors.
-             * @since 4.7.5-SNAPSHOT
+             * @since 4.7.6-SNAPSHOT
              * @param loadBundles true if bundles should be loaded (default), false if bundles should not be loaded
              */
             public static final void setLoadBundles(boolean loadBundles) {
@@ -12995,7 +12999,8 @@ public class CommandLine {
 
                 validationResult = matches.isEmpty() ? GroupValidationResult.SUCCESS_ABSENT : GroupValidationResult.SUCCESS_PRESENT;
                 for (ArgGroupSpec missing : unmatchedSubgroups) {
-                    if (missing.validate() && missing.multiplicity().min > 0 && containsRequiredOptionsOrSubgroups(missing)) {
+                    // error is 1+ occurrence is required, unless all required options have a default
+                    if (missing.validate() && !isGroupEffectivelyOptional(missing)) {
                         int presentCount = 0;
                         boolean haveMissing = true;
                         boolean someButNotAllSpecified = false;
@@ -13025,31 +13030,51 @@ public class CommandLine {
                 }
             }
 
-            private boolean containsRequiredOptionsOrSubgroups(ArgGroupSpec argGroupSpec) {
-                return containsRequiredOptionsOrParameters(argGroupSpec) || containsRequiredSubgroups(argGroupSpec);
+            /**
+             * A group is optional if <ul>
+             * <li>its minimum <code>multiplicity</code> is zero</li>
+             * <li>otherwise, if the group has at least one required option and all required options have default values</li>
+             * </ul>
+             *
+             * Conversely, a group is required if <ul>
+             * <li>if its minimum <code>multiplicity</code> is <code>1</code> or more <em>AND</em></li>
+             * <li>
+             *   <ul>
+             *     <li>either the group has no required options</li>
+             *     <li>or the group has at least one required option without a default value</li>
+             *   </ul>
+             * </li>
+             * </ul>
+             * @see <a href="https://github.com/remkop/picocli/issues/1848">https://github.com/remkop/picocli/issues/1848</a>
+             *  and <a href="https://github.com/remkop/picocli/issues/2059">https://github.com/remkop/picocli/issues/2059</a>
+             */
+            private boolean isGroupEffectivelyOptional(ArgGroupSpec argGroupSpec) {
+                if (argGroupSpec.multiplicity().min == 0) {return true; }
+                return requiredOptionsExistAndAllHaveDefaultValues(argGroupSpec) && !containsRequiredSubgroups(argGroupSpec);
             }
 
-            private boolean containsRequiredOptionsOrParameters(ArgGroupSpec argGroupSpec) {
-                for ( OptionSpec option : argGroupSpec.options() ) {
-                    if ( option.required() ) { return true; }
+            private boolean requiredOptionsExistAndAllHaveDefaultValues(ArgGroupSpec argGroupSpec) {
+                if (argGroupSpec.requiredArgs().size() == 0) { return false; }
+                for (OptionSpec option : argGroupSpec.options()) {
+                    if (option.required() && !option.valueIsDefaultValue) { return false; }
                 }
-                for ( PositionalParamSpec param : argGroupSpec.positionalParameters() ){
-                    if( param.required() ){return true;}
+                for (PositionalParamSpec param : argGroupSpec.positionalParameters()) {
+                    if (param.required() && !param.valueIsDefaultValue) { return false; }
                 }
-                return false;
+                return true;
             }
 
             private boolean containsRequiredSubgroups(ArgGroupSpec argGroupSpec) {
-                for ( ArgGroupSpec subgroup : argGroupSpec.subgroups() ) {
-                    if ( subgroup.exclusive() ) {
+                for (ArgGroupSpec subgroup : argGroupSpec.subgroups()) {
+                    if (subgroup.exclusive()) {
                         // Only return true if all of the subgroups contain required options or subgroups
                         boolean result = true;
-                        for ( ArgGroupSpec subsubgroup : subgroup.subgroups() ) {
-                            result &= containsRequiredOptionsOrSubgroups(subsubgroup);
+                        for (ArgGroupSpec subsubgroup : subgroup.subgroups()) {
+                            result &= !isGroupEffectivelyOptional(subsubgroup);
                         }
-                        return result && containsRequiredOptionsOrParameters(subgroup);
+                        return result && !requiredOptionsExistAndAllHaveDefaultValues(subgroup);
                     } else {
-                        return containsRequiredOptionsOrSubgroups(subgroup);
+                        return !isGroupEffectivelyOptional(subgroup);
                     }
                 }
                 return false;
@@ -13321,6 +13346,8 @@ public class CommandLine {
      * Helper class responsible for processing command line arguments.
      */
     private class Interpreter {
+        /** Value displayed in trace logs for options with echo=false. */
+        private static final String MASKED_VALUE = "*****(masked)"; // see #2087
         private final Map<Class<?>, ITypeConverter<?>> converterRegistry = new HashMap<Class<?>, ITypeConverter<?>>();
         private boolean isHelpRequested;
         private int position;
@@ -13682,17 +13709,20 @@ public class CommandLine {
             String defaultValue = fromProvider == null ? arg.defaultValue() : arg.interpolate(fromProvider);
             String provider = defaultValueProvider == null ? "" : (" from " + defaultValueProvider.toString());
 
+            String displayDefaultVal = arg.echo() ? defaultValue : MASKED_VALUE;
             Tracer tracer = CommandLine.tracer();
             if (defaultValue != null && !ArgSpec.NULL_VALUE.equals(defaultValue)) {
                 if (tracer.isDebug()) {
-                    tracer.debug("Applying defaultValue (%s)%s to %s on %s", defaultValue, provider, arg, arg.scopeString());}
+                    tracer.debug("Applying defaultValue (%s)%s to %s on %s", displayDefaultVal, provider, arg, arg.scopeString());}
                 Range arity = arg.arity().min(Math.max(1, arg.arity().min));
                 applyOption(arg, false, LookBehind.SEPARATE, false, arity, stack(defaultValue), new HashSet<ArgSpec>(), arg.toString);
+                arg.valueIsDefaultValue = true;
             } else {
                 if (arg.typeInfo().isOptional()) {
                     if (tracer.isDebug()) {
                         tracer.debug("Applying Optional.empty() to %s on %s", arg, arg.scopeString());}
                     arg.setValue(getOptionalEmpty());
+                    arg.valueIsDefaultValue = true;
                 } else if (ArgSpec.UNSPECIFIED.equals(arg.originalDefaultValue)) {
                     tracer.debug("defaultValue not defined for %s", arg);
                     return false;
@@ -13700,8 +13730,9 @@ public class CommandLine {
                     if (ArgSpec.NULL_VALUE.equals(arg.originalDefaultValue)) {
                         defaultValue = null;
                         if (tracer.isDebug()) {
-                            tracer.debug("Applying defaultValue (%s)%s to %s on %s", defaultValue, provider, arg, arg.scopeString());}
+                            tracer.debug("Applying defaultValue (%s)%s to %s on %s", displayDefaultVal, provider, arg, arg.scopeString());}
                         arg.setValue(defaultValue);
+                        arg.valueIsDefaultValue = true;
                         return true;
                     }
                     tracer.debug("defaultValue not defined for %s", arg);
@@ -14247,13 +14278,8 @@ public class CommandLine {
             } else {
                 consumed = 1;
                 if (interactiveValue != null) {
-                    if (argSpec.echo()) {
-                        initValueMessage = "Setting %s to %3$s (interactive value) for %4$s on %5$s";
-                        overwriteValueMessage = "Overwriting %s value with %3$s (interactive value) for %s on %5$s";
-                    } else {
-                        initValueMessage = "Setting %s to *** (masked interactive value) for %4$s on %5$s";
-                        overwriteValueMessage = "Overwriting %s value with *** (masked interactive value) for %s on %5$s";
-                    }
+                    initValueMessage = "Setting %s to %3$s (interactive value) for %4$s on %5$s";
+                    overwriteValueMessage = "Overwriting %s value with %3$s (interactive value) for %s on %5$s";
                 }
                 // #1642 Negatable options should negate explicit values
                 if ((cls == Boolean.class || cls == Boolean.TYPE) && arity.min >= 1) {
@@ -14293,7 +14319,8 @@ public class CommandLine {
             if (argSpec.typeInfo().isOptional()) {
                 newValue = getOptionalOfNullable(newValue);
             }
-            if (tracer.isInfo()) { tracer.info(traceMessage, argSpec.toString(), String.valueOf(oldValue), String.valueOf(newValue), argDescription, argSpec.scopeString()); }
+            String displayVal = !argSpec.interactive() || argSpec.echo() ? String.valueOf(newValue) : MASKED_VALUE;
+            if (tracer.isInfo()) { tracer.info(traceMessage, argSpec.toString(), String.valueOf(oldValue), displayVal, argDescription, argSpec.scopeString()); }
             int pos = getPosition(argSpec);
             argSpec.setValue(newValue);
             parseResultBuilder.addOriginalStringValue(argSpec, actualValue);// #279 track empty string value if no command line argument was consumed
@@ -14401,7 +14428,8 @@ public class CommandLine {
                 String rawMapValue = keyValue.length == 1 ? argSpec.mapFallbackValue() : keyValue[1];
                 Object mapValue = tryConvert(argSpec, index, valueConverter, rawMapValue, 1);
                 result.put(mapKey, mapValue);
-                if (tracer.isInfo()) { tracer.info("Putting [%s : %s] in %s<%s, %s> %s for %s on %s", String.valueOf(mapKey), String.valueOf(mapValue),
+                String displayVal = !argSpec.interactive() || argSpec.echo() ? String.valueOf(mapValue) : MASKED_VALUE;
+                if (tracer.isInfo()) { tracer.info("Putting [%s : %s] in %s<%s, %s> %s for %s on %s", String.valueOf(mapKey), displayVal,
                         result.getClass().getSimpleName(), classes[0].getSimpleName(), classes[1].getSimpleName(), argSpec.toString(), argDescription, argSpec.scopeString()); }
                 parseResultBuilder.addStringValue(argSpec, keyValue[0]);
                 parseResultBuilder.addStringValue(argSpec, rawMapValue);
@@ -14672,7 +14700,8 @@ public class CommandLine {
                 Object stronglyTypedValue = tryConvert(argSpec, index, converter, value, 0);
                 result.add(stronglyTypedValue);
                 if (tracer().isInfo()) {
-                    tracer().info("Adding [%s] to %s for %s on %s", String.valueOf(result.get(result.size() - 1)), argSpec.toString(), argDescription, argSpec.scopeString());
+                    String displayVal = !argSpec.interactive() || argSpec.echo() ? String.valueOf(stronglyTypedValue) : MASKED_VALUE;
+                    tracer().info("Adding [%s] to %s for %s on %s", displayVal, argSpec.toString(), argDescription, argSpec.scopeString());
                 }
                 parseResultBuilder.addStringValue(argSpec, value);
             }
@@ -14692,7 +14721,7 @@ public class CommandLine {
                     tryConvert(argSpec, -1, converter, value, 0);
                 }
                 return true;
-            } catch (PicocliException ex) {
+            } catch (PicocliException ex) { // Note: we don't mask hidden (echo=false) options to facilitate debugging
                 tracer().debug("%s cannot be assigned to %s: type conversion fails: %s.", arg, argDescription, ex.getMessage());
                 return false;
             }
@@ -17837,7 +17866,18 @@ public class CommandLine {
                     && !"0".equals(System.getenv("CLICOLOR_FORCE"));}
             /** http://stackoverflow.com/questions/1403772/how-can-i-check-if-a-java-programs-input-output-streams-are-connected-to-a-term */
             static boolean calcTTY() {
-                try { return System.class.getDeclaredMethod("console").invoke(null) != null; }
+                try {
+                    Object console = System.class.getDeclaredMethod("console").invoke(null);
+                    if (console == null) {
+                        return false;
+                    }
+                    try { // [#2083][#2084] Java 22 update
+                        Method isTerminal = Class.forName("java.io.Console").getDeclaredMethod("isTerminal");
+                        return (Boolean) isTerminal.invoke(console);
+                    } catch (NoSuchMethodException e) {
+                        return true;
+                    }
+                }
                 catch (Throwable reflectionFailed) { return true; }
             }
             /** Cygwin and MSYS use pseudo-tty and console is always null... */
@@ -18371,7 +18411,7 @@ public class CommandLine {
     }
 
     /** Enumerates over the trace level values for filtering which internal debug statements should be printed.
-     * @since 4.7.5-SNAPSHOT */
+     * @since 4.7.6-SNAPSHOT */
     public enum TraceLevel { OFF, WARN, INFO, DEBUG;
         /** Returns whether messages at the specified {@code other} trace level would be printed for the current trace level. */
         public boolean isEnabled(TraceLevel other) { return ordinal() >= other.ordinal(); }
@@ -18384,7 +18424,7 @@ public class CommandLine {
 
     /** Utility class for printing internal debug statements.
      * @see CommandLine#tracer()
-     * @since 4.7.5-SNAPSHOT */
+     * @since 4.7.6-SNAPSHOT */
     public static final class Tracer {
         private PrintStream stream = System.err;
         private TraceLevel level = TraceLevel.lookup(System.getProperty("picocli.trace"));
@@ -18427,7 +18467,7 @@ public class CommandLine {
     }
     /** Returns the {@code Tracer} used internally for printing internal debug statements.
      * @return the {@code Tracer} used internally for printing internal debug statements
-     * @since 4.7.5-SNAPSHOT */
+     * @since 4.7.6-SNAPSHOT */
     public static Tracer tracer() {
         // TRACER is a static variable.
         // Refresh to pick up changes to the system property after the CommandLine class was loaded.
