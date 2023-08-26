@@ -15,7 +15,7 @@ jobs:
     continue-on-error: ${{ matrix.os == 'macos-latest' || matrix.java-version == '9' || matrix.java-version == '10' || matrix.java-version == '12' || matrix.java-version == '13' || matrix.java-version == '14' || matrix.java-version == '15' || matrix.java-version == '16' || matrix.java-version == '19' }}
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@128a63446a954579617e875aaab7d2978154e969 # v1
+        uses: step-security/harden-runner@8ca2b8b2ece13480cda6dacd3511b49857a23c09 # v1
         with:
           egress-policy: audit
 
@@ -114,7 +114,7 @@ jobs:
         if: >
           github.event_name == 'workflow_run' && github.event.workflow_run.head_branch == 'main' ||
           github.event_name != 'workflow_run' && github.ref == 'refs/heads/main'
-        uses: andymckay/append-gist-action@1fbfbbce708a39bd45846f0955ed5521f2099c6d
+        uses: andymckay/append-gist-action@6e8d64427fe47cbacf4ab6b890411f1d67c07f3e
         with:
           token: ${{ secrets.GIST_TOKEN }}
           gistURL: https://gist.githubusercontent.com/remkop/36bc8a3b4395f2fbdb9bc271e97ba2dd
@@ -130,7 +130,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@128a63446a954579617e875aaab7d2978154e969 # v1
+        uses: step-security/harden-runner@8ca2b8b2ece13480cda6dacd3511b49857a23c09 # v1
         with:
           egress-policy: audit
 
