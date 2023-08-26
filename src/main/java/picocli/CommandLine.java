@@ -13346,6 +13346,8 @@ public class CommandLine {
      * Helper class responsible for processing command line arguments.
      */
     private class Interpreter {
+        /** Value displayed in trace logs for options with echo=false. */
+        private static final String MASKED_VALUE = "*****(masked)"; // see #2087
         private final Map<Class<?>, ITypeConverter<?>> converterRegistry = new HashMap<Class<?>, ITypeConverter<?>>();
         private boolean isHelpRequested;
         private int position;
@@ -13707,10 +13709,11 @@ public class CommandLine {
             String defaultValue = fromProvider == null ? arg.defaultValue() : arg.interpolate(fromProvider);
             String provider = defaultValueProvider == null ? "" : (" from " + defaultValueProvider.toString());
 
+            String displayDefaultVal = arg.echo() ? defaultValue : MASKED_VALUE;
             Tracer tracer = CommandLine.tracer();
             if (defaultValue != null && !ArgSpec.NULL_VALUE.equals(defaultValue)) {
                 if (tracer.isDebug()) {
-                    tracer.debug("Applying defaultValue (%s)%s to %s on %s", defaultValue, provider, arg, arg.scopeString());}
+                    tracer.debug("Applying defaultValue (%s)%s to %s on %s", displayDefaultVal, provider, arg, arg.scopeString());}
                 Range arity = arg.arity().min(Math.max(1, arg.arity().min));
                 applyOption(arg, false, LookBehind.SEPARATE, false, arity, stack(defaultValue), new HashSet<ArgSpec>(), arg.toString);
                 arg.valueIsDefaultValue = true;
@@ -13727,7 +13730,7 @@ public class CommandLine {
                     if (ArgSpec.NULL_VALUE.equals(arg.originalDefaultValue)) {
                         defaultValue = null;
                         if (tracer.isDebug()) {
-                            tracer.debug("Applying defaultValue (%s)%s to %s on %s", defaultValue, provider, arg, arg.scopeString());}
+                            tracer.debug("Applying defaultValue (%s)%s to %s on %s", displayDefaultVal, provider, arg, arg.scopeString());}
                         arg.setValue(defaultValue);
                         arg.valueIsDefaultValue = true;
                         return true;
@@ -14275,13 +14278,8 @@ public class CommandLine {
             } else {
                 consumed = 1;
                 if (interactiveValue != null) {
-                    if (argSpec.echo()) {
-                        initValueMessage = "Setting %s to %3$s (interactive value) for %4$s on %5$s";
-                        overwriteValueMessage = "Overwriting %s value with %3$s (interactive value) for %s on %5$s";
-                    } else {
-                        initValueMessage = "Setting %s to *** (masked interactive value) for %4$s on %5$s";
-                        overwriteValueMessage = "Overwriting %s value with *** (masked interactive value) for %s on %5$s";
-                    }
+                    initValueMessage = "Setting %s to %3$s (interactive value) for %4$s on %5$s";
+                    overwriteValueMessage = "Overwriting %s value with %3$s (interactive value) for %s on %5$s";
                 }
                 // #1642 Negatable options should negate explicit values
                 if ((cls == Boolean.class || cls == Boolean.TYPE) && arity.min >= 1) {
@@ -14321,7 +14319,8 @@ public class CommandLine {
             if (argSpec.typeInfo().isOptional()) {
                 newValue = getOptionalOfNullable(newValue);
             }
-            if (tracer.isInfo()) { tracer.info(traceMessage, argSpec.toString(), String.valueOf(oldValue), String.valueOf(newValue), argDescription, argSpec.scopeString()); }
+            String displayVal = !argSpec.interactive() || argSpec.echo() ? String.valueOf(newValue) : MASKED_VALUE;
+            if (tracer.isInfo()) { tracer.info(traceMessage, argSpec.toString(), String.valueOf(oldValue), displayVal, argDescription, argSpec.scopeString()); }
             int pos = getPosition(argSpec);
             argSpec.setValue(newValue);
             parseResultBuilder.addOriginalStringValue(argSpec, actualValue);// #279 track empty string value if no command line argument was consumed
@@ -14429,7 +14428,8 @@ public class CommandLine {
                 String rawMapValue = keyValue.length == 1 ? argSpec.mapFallbackValue() : keyValue[1];
                 Object mapValue = tryConvert(argSpec, index, valueConverter, rawMapValue, 1);
                 result.put(mapKey, mapValue);
-                if (tracer.isInfo()) { tracer.info("Putting [%s : %s] in %s<%s, %s> %s for %s on %s", String.valueOf(mapKey), String.valueOf(mapValue),
+                String displayVal = !argSpec.interactive() || argSpec.echo() ? String.valueOf(mapValue) : MASKED_VALUE;
+                if (tracer.isInfo()) { tracer.info("Putting [%s : %s] in %s<%s, %s> %s for %s on %s", String.valueOf(mapKey), displayVal,
                         result.getClass().getSimpleName(), classes[0].getSimpleName(), classes[1].getSimpleName(), argSpec.toString(), argDescription, argSpec.scopeString()); }
                 parseResultBuilder.addStringValue(argSpec, keyValue[0]);
                 parseResultBuilder.addStringValue(argSpec, rawMapValue);
@@ -14700,7 +14700,8 @@ public class CommandLine {
                 Object stronglyTypedValue = tryConvert(argSpec, index, converter, value, 0);
                 result.add(stronglyTypedValue);
                 if (tracer().isInfo()) {
-                    tracer().info("Adding [%s] to %s for %s on %s", String.valueOf(result.get(result.size() - 1)), argSpec.toString(), argDescription, argSpec.scopeString());
+                    String displayVal = !argSpec.interactive() || argSpec.echo() ? String.valueOf(stronglyTypedValue) : MASKED_VALUE;
+                    tracer().info("Adding [%s] to %s for %s on %s", displayVal, argSpec.toString(), argDescription, argSpec.scopeString());
                 }
                 parseResultBuilder.addStringValue(argSpec, value);
             }
@@ -14720,7 +14721,7 @@ public class CommandLine {
                     tryConvert(argSpec, -1, converter, value, 0);
                 }
                 return true;
-            } catch (PicocliException ex) {
+            } catch (PicocliException ex) { // Note: we don't mask hidden (echo=false) options to facilitate debugging
                 tracer().debug("%s cannot be assigned to %s: type conversion fails: %s.", arg, argDescription, ex.getMessage());
                 return false;
             }

@@ -63,7 +63,7 @@ public class InteractiveArgTest {
             String trace = errBaos.toString();
             assertThat(trace, containsString("User entered 10 characters"));
             assertThat(trace, containsString(
-                "Setting " + specX.toString() + " to *** (masked interactive value)"));
+                "Setting " + specX.toString() + " to *****(masked) (interactive value)"));
             assertThat(trace, not(containsString("1234567890")));
 
             cmd.parseArgs("-z", "678");
@@ -607,7 +607,7 @@ public class InteractiveArgTest {
             String trace = errBaos.toString();
             assertThat(trace, containsString("User entered 10 characters"));
             assertThat(trace, containsString(
-                "Setting " + specX.toString() + " to *** (masked interactive value)"));
+                "Setting " + specX.toString() + " to *****(masked) (interactive value)"));
             assertThat(trace, not(containsString("1234567890")));
         } finally {
             System.setOut(out);
