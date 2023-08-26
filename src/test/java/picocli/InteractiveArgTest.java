@@ -32,6 +32,61 @@ public class InteractiveArgTest {
     @Rule
     public final ProvideSystemProperty ansiOFF = new ProvideSystemProperty("picocli.ansi", "false");
 
+    static class Streams {
+        PrintStream out = System.out;
+        PrintStream err = System.err;
+        InputStream in = System.in;
+
+        void reset() {
+            System.setOut(out);
+            System.setOut(err);
+            System.setIn(in);
+        }
+    }
+
+    static class Capture {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ByteArrayOutputStream errBaos = new ByteArrayOutputStream();
+
+        Capture() {
+            this(null);
+        }
+
+        Capture(String input) {
+            System.setOut(new PrintStream(baos));
+            System.setErr(new PrintStream(errBaos));
+            if (input != null) {
+                System.setIn(new ByteArrayInputStream(input.getBytes()));
+            }
+        }
+
+        static Capture multiInputValue(String input) {
+            Capture result = new Capture(null);
+            System.setIn(inputStream(input));
+            return result;
+        }
+
+        private static ByteArrayInputStream inputStream(final String value) {
+            return new ByteArrayInputStream(value.getBytes()) {
+                int count;
+
+                @Override
+                public synchronized int read(byte[] b, int off, int len) {
+                    System.arraycopy(value.getBytes(), 0, b, off, value.length());
+                    return (count++ % 3) == 0 ? value.length() : -1;
+                }
+            };
+        }
+
+        String out() {
+            return baos.toString();
+        }
+
+        String err() {
+            return errBaos.toString();
+        }
+    }
+
     @Test
     public void testInteractiveOptionReadsFromStdIn() {
         class App {
@@ -39,16 +94,10 @@ public class InteractiveArgTest {
             @Option(names = "-z") int z;
         }
 
-        PrintStream out = System.out;
-        PrintStream err = System.err;
-        InputStream in = System.in;
+        Streams streams = new Streams();
         System.setProperty("picocli.trace", "DEBUG");
         try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            System.setOut(new PrintStream(baos));
-            ByteArrayOutputStream errBaos = new ByteArrayOutputStream();
-            System.setErr(new PrintStream(errBaos));
-            System.setIn(new ByteArrayInputStream("1234567890".getBytes()));
+            Capture capture = new Capture("1234567890");
 
             App app = new App();
             CommandLine cmd = new CommandLine(app);
@@ -56,11 +105,11 @@ public class InteractiveArgTest {
             ArgSpec specX = result.matchedArgs().get(0);
             assertThat(specX.toString(), containsString("App.x"));
 
-            assertEquals("Enter value for -x (Pwd): ", baos.toString());
+            assertEquals("Enter value for -x (Pwd): ", capture.out());
             assertEquals(1234567890, app.x);
             assertEquals(0, app.z);
 
-            String trace = errBaos.toString();
+            String trace = capture.err();
             assertThat(trace, containsString("User entered 10 characters"));
             assertThat(trace, containsString(
                 "Setting " + specX.toString() + " to *****(masked) (interactive value)"));
@@ -71,9 +120,7 @@ public class InteractiveArgTest {
             assertEquals(0, app.x);
             assertEquals(678, app.z);
         } finally {
-            System.setOut(out);
-            System.setOut(err);
-            System.setIn(in);
+            streams.reset();
         }
     }
 
@@ -83,16 +130,10 @@ public class InteractiveArgTest {
             @Option(names = "-x", description = {"Pwd", "line2"}, interactive = true, echo = true) int x;
         }
 
-        PrintStream out = System.out;
-        PrintStream err = System.err;
-        InputStream in = System.in;
+        Streams streams = new Streams();
         System.setProperty("picocli.trace", "DEBUG");
         try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            System.setOut(new PrintStream(baos));
-            ByteArrayOutputStream errBaos = new ByteArrayOutputStream();
-            System.setErr(new PrintStream(errBaos));
-            System.setIn(new ByteArrayInputStream("1234567890".getBytes()));
+            Capture capture = new Capture("1234567890");
 
             App app = new App();
             CommandLine cmd = new CommandLine(app);
@@ -100,19 +141,17 @@ public class InteractiveArgTest {
             ArgSpec specX = result.matchedArgs().get(0);
             assertThat(specX.toString(), containsString("App.x"));
 
-            assertEquals("Enter value for -x (Pwd): ", baos.toString());
+            assertEquals("Enter value for -x (Pwd): ", capture.out());
             assertEquals(1234567890, app.x);
 
-            String trace = errBaos.toString();
+            String trace = capture.err();
             assertThat(trace, containsString("User entered 1234567890"));
             assertThat(trace, containsString(
                 "Setting " + specX.toString() + " to 1234567890"));
             assertThat(trace, not(containsString("10 characters")));
             assertThat(trace, not(containsString("***")));
         } finally {
-            System.setOut(out);
-            System.setErr(err);
-            System.setIn(in);
+            streams.reset();
         }
     }
 
@@ -122,22 +161,18 @@ public class InteractiveArgTest {
             @Option(names = "-x", interactive = true) int x;
         }
 
-        PrintStream out = System.out;
-        InputStream in = System.in;
+        Streams streams = new Streams();
         try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            System.setOut(new PrintStream(baos));
-            System.setIn(new ByteArrayInputStream("123".getBytes()));
+            Capture capture = new Capture("123");
 
             App app = new App();
             CommandLine cmd = new CommandLine(app);
             cmd.parseArgs("-x");
 
-            assertEquals("Enter value for -x: ", baos.toString());
+            assertEquals("Enter value for -x: ", capture.out());
             assertEquals(123, app.x);
         } finally {
-            System.setOut(out);
-            System.setIn(in);
+            streams.reset();
         }
     }
 
@@ -147,22 +182,18 @@ public class InteractiveArgTest {
             @Option(names = "-x", description = {"Pwd", "line2"}, interactive = true, prompt = "[Customized]Enter your X: ") int x;
         }
 
-        PrintStream out = System.out;
-        InputStream in = System.in;
+        Streams streams = new Streams();
         try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            System.setOut(new PrintStream(baos));
-            System.setIn(new ByteArrayInputStream("123".getBytes()));
+            Capture capture = new Capture("123");
 
             App app = new App();
             CommandLine cmd = new CommandLine(app);
             cmd.parseArgs("-x");
 
-            assertEquals("[Customized]Enter your X: ", baos.toString());
+            assertEquals("[Customized]Enter your X: ", capture.out());
             assertEquals(123, app.x);
         } finally {
-            System.setOut(out);
-            System.setIn(in);
+            streams.reset();
         }
     }
 
@@ -176,27 +207,21 @@ public class InteractiveArgTest {
             int z;
         }
 
-        PrintStream out = System.out;
-        PrintStream err = System.err;
-        InputStream in = System.in;
+        Streams streams = new Streams();
         System.setProperty("picocli.trace", "DEBUG");
         try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            System.setOut(new PrintStream(baos));
-            ByteArrayOutputStream errBaos = new ByteArrayOutputStream();
-            System.setErr(new PrintStream(errBaos));
-            System.setIn(inputStream("1234567890"));
+            Capture capture = Capture.multiInputValue("1234567890");
             App app = new App();
             CommandLine cmd = new CommandLine(app);
             ParseResult result = cmd.parseArgs("-x", "-x");
             ArgSpec specX = result.matchedArgs().get(0);
             assertThat(specX.toString(), containsString("App.x"));
 
-            assertEquals("Enter value for -x (Pwd): Enter value for -x (Pwd): ", baos.toString());
+            assertEquals("Enter value for -x (Pwd): Enter value for -x (Pwd): ", capture.out());
             assertEquals(Arrays.asList(1234567890, 1234567890), app.x);
             assertEquals(0, app.z);
 
-            String trace = errBaos.toString();
+            String trace = capture.err();
             assertThat(trace, containsString("User entered 10 characters"));
             assertThat(trace, containsString(
                 "Adding *** (masked interactive value) to " + specX.toString()
@@ -208,9 +233,7 @@ public class InteractiveArgTest {
             assertNull(app.x);
             assertEquals(678, app.z);
         } finally {
-            System.setOut(out);
-            System.setOut(err);
-            System.setIn(in);
+            streams.reset();
         }
     }
 
@@ -224,27 +247,21 @@ public class InteractiveArgTest {
             int z;
         }
 
-        PrintStream out = System.out;
-        PrintStream err = System.err;
-        InputStream in = System.in;
+        Streams streams = new Streams();
         System.setProperty("picocli.trace", "DEBUG");
         try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            System.setOut(new PrintStream(baos));
-            ByteArrayOutputStream errBaos = new ByteArrayOutputStream();
-            System.setErr(new PrintStream(errBaos));
-            System.setIn(inputStream("1234567890"));
+            Capture capture = Capture.multiInputValue("1234567890");
             App app = new App();
             CommandLine cmd = new CommandLine(app);
             ParseResult result = cmd.parseArgs("-x", "-x");
             ArgSpec specX = result.matchedArgs().get(0);
             assertThat(specX.toString(), containsString("App.x"));
 
-            assertEquals("Enter value for -x (Pwd): Enter value for -x (Pwd): ", baos.toString());
+            assertEquals("Enter value for -x (Pwd): Enter value for -x (Pwd): ", capture.out());
             assertEquals(Arrays.asList(1234567890, 1234567890), app.x);
             assertEquals(0, app.z);
 
-            String trace = errBaos.toString();
+            String trace = capture.err();
             assertThat(trace, containsString("User entered 1234567890"));
             assertThat(trace, containsString(
                 "Adding 1234567890 (interactive value) to "
@@ -252,9 +269,7 @@ public class InteractiveArgTest {
             assertThat(trace, not(containsString("10 characters")));
             assertThat(trace, not(containsString("***")));
         } finally {
-            System.setOut(out);
-            System.setOut(err);
-            System.setIn(in);
+            streams.reset();
         }
     }
 
@@ -268,35 +283,19 @@ public class InteractiveArgTest {
             int z;
         }
 
-        PrintStream out = System.out;
-        InputStream in = System.in;
+        Streams streams = new Streams();
         try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            System.setOut(new PrintStream(baos));
-            System.setIn(inputStream("123"));
+            Capture capture = Capture.multiInputValue("123");
             App app = new App();
             CommandLine cmd = new CommandLine(app);
             cmd.parseArgs("-x", "-x");
 
-            assertEquals("[Customized]Enter your x: [Customized]Enter your x: ", baos.toString());
+            assertEquals("[Customized]Enter your x: [Customized]Enter your x: ", capture.out());
             assertEquals(Arrays.asList(123, 123), app.x);
             assertEquals(0, app.z);
         } finally {
-            System.setOut(out);
-            System.setIn(in);
+            streams.reset();
         }
-    }
-
-    ByteArrayInputStream inputStream(final String value) {
-        return new ByteArrayInputStream(value.getBytes()) {
-            int count;
-
-            @Override
-            public synchronized int read(byte[] b, int off, int len) {
-                System.arraycopy(value.getBytes(), 0, b, off, value.length());
-                return (count++ % 3) == 0 ? value.length() : -1;
-            }
-        };
     }
 
     @Test
@@ -309,17 +308,14 @@ public class InteractiveArgTest {
             int z;
         }
 
-        PrintStream out = System.out;
-        InputStream in = System.in;
+        Streams streams = new Streams();
         try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            System.setOut(new PrintStream(baos));
-            System.setIn(inputStream("123"));
+            Capture capture = Capture.multiInputValue("123");
             App app = new App();
             CommandLine cmd = new CommandLine(app);
             cmd.parseArgs("-x", "-x");
 
-            assertEquals("Enter value for -x (Pwd): Enter value for -x (Pwd): ", baos.toString());
+            assertEquals("Enter value for -x (Pwd): Enter value for -x (Pwd): ", capture.out());
             assertEquals(2, app.x.size());
             assertArrayEquals("123".toCharArray(), app.x.get(0));
             assertArrayEquals("123".toCharArray(), app.x.get(1));
@@ -330,8 +326,7 @@ public class InteractiveArgTest {
             assertNull(app.x);
             assertEquals(678, app.z);
         } finally {
-            System.setOut(out);
-            System.setIn(in);
+            streams.reset();
         }
     }
 
@@ -345,22 +340,18 @@ public class InteractiveArgTest {
             int z;
         }
 
-        PrintStream out = System.out;
-        InputStream in = System.in;
+        Streams streams = new Streams();
         try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            System.setOut(new PrintStream(baos));
-            System.setIn(inputStream("123"));
+            Capture capture = new Capture("123");
             App app = new App();
             CommandLine cmd = new CommandLine(app);
             cmd.parseArgs("-x");
 
-            assertEquals("Enter value for -x (Pwd): ", baos.toString());
+            assertEquals("Enter value for -x (Pwd): ", capture.out());
             assertArrayEquals("123".toCharArray(), app.x);
             assertEquals(0, app.z);
         } finally {
-            System.setOut(out);
-            System.setIn(in);
+            streams.reset();
         }
     }
 
@@ -374,11 +365,9 @@ public class InteractiveArgTest {
             String[] remainder;
         }
 
-        PrintStream out = System.out;
-        InputStream in = System.in;
+        Streams streams = new Streams();
         try {
-            System.setOut(new PrintStream(new ByteArrayOutputStream()));
-            System.setIn(inputStream("123"));
+            Capture capture = new Capture("123");
             App app = new App();
             CommandLine cmd = new CommandLine(app);
             cmd.parseArgs("-x", "456", "abc");
@@ -386,8 +375,7 @@ public class InteractiveArgTest {
             assertArrayEquals("456".toCharArray(), app.x);
             assertArrayEquals(new String[]{"abc"}, app.remainder);
         } finally {
-            System.setOut(out);
-            System.setIn(in);
+            streams.reset();
         }
     }
 
@@ -401,11 +389,9 @@ public class InteractiveArgTest {
             String[] remainder;
         }
 
-        PrintStream out = System.out;
-        InputStream in = System.in;
+        Streams streams = new Streams();
         try {
-            System.setOut(new PrintStream(new ByteArrayOutputStream()));
-            System.setIn(inputStream("123"));
+            Capture capture = new Capture("123");
             App app = new App();
             CommandLine cmd = new CommandLine(app);
             cmd.parseArgs("-x", "456", "-x", "789", "abc");
@@ -415,8 +401,7 @@ public class InteractiveArgTest {
             assertArrayEquals("789".toCharArray(), app.x.get(1));
             assertArrayEquals(new String[]{"abc"}, app.remainder);
         } finally {
-            System.setOut(out);
-            System.setIn(in);
+            streams.reset();
         }
     }
 
@@ -433,11 +418,9 @@ public class InteractiveArgTest {
             String[] remainder;
         }
 
-        PrintStream out = System.out;
-        InputStream in = System.in;
+        Streams streams = new Streams();
         try {
-            System.setOut(new PrintStream(new ByteArrayOutputStream()));
-            System.setIn(inputStream("123"));
+            Capture capture = new Capture("123");
             App app = new App();
             CommandLine cmd = new CommandLine(app);
             cmd.parseArgs("-x", "-z", "456", "abc");
@@ -446,8 +429,7 @@ public class InteractiveArgTest {
             assertEquals(456, app.z);
             assertArrayEquals(new String[]{"abc"}, app.remainder);
         } finally {
-            System.setOut(out);
-            System.setIn(in);
+            streams.reset();
         }
     }
 
@@ -464,11 +446,9 @@ public class InteractiveArgTest {
             String[] remainder;
         }
 
-        PrintStream out = System.out;
-        InputStream in = System.in;
+        Streams streams = new Streams();
         try {
-            System.setOut(new PrintStream(new ByteArrayOutputStream()));
-            System.setIn(inputStream("123"));
+            Capture capture = new Capture("123");
             App app = new App();
             CommandLine cmd = new CommandLine(app);
             cmd.parseArgs("-x", "-z", "456", "abc");
@@ -478,8 +458,7 @@ public class InteractiveArgTest {
             assertEquals(456, app.z);
             assertArrayEquals(new String[]{"abc"}, app.remainder);
         } finally {
-            System.setOut(out);
-            System.setIn(in);
+            streams.reset();
         }
     }
 
@@ -496,11 +475,9 @@ public class InteractiveArgTest {
             String[] remainder;
         }
 
-        PrintStream out = System.out;
-        InputStream in = System.in;
+        Streams streams = new Streams();
         try {
-            System.setOut(new PrintStream(new ByteArrayOutputStream()));
-            System.setIn(inputStream("123"));
+            Capture capture = new Capture("123");
             App app = new App();
             CommandLine cmd = new CommandLine(app);
             cmd.parseArgs("-x", "-y", "456", "abc");
@@ -509,8 +486,7 @@ public class InteractiveArgTest {
             assertEquals(0, app.z);
             assertArrayEquals(new String[]{"456", "abc"}, app.remainder);
         } finally {
-            System.setOut(out);
-            System.setIn(in);
+            streams.reset();
         }
     }
 
@@ -527,11 +503,9 @@ public class InteractiveArgTest {
             String[] remainder;
         }
 
-        PrintStream out = System.out;
-        InputStream in = System.in;
+        Streams streams = new Streams();
         try {
-            System.setOut(new PrintStream(new ByteArrayOutputStream()));
-            System.setIn(inputStream("123"));
+            Capture capture = new Capture("123");
             App app = new App();
             CommandLine cmd = new CommandLine(app);
             cmd.parseArgs("-x", "-y", "-x", "-w", "456", "abc");
@@ -542,8 +516,7 @@ public class InteractiveArgTest {
             assertEquals(0, app.z);
             assertArrayEquals(new String[]{"456", "abc"}, app.remainder);
         } finally {
-            System.setOut(out);
-            System.setIn(in);
+            streams.reset();
         }
     }
 
@@ -554,24 +527,20 @@ public class InteractiveArgTest {
             @Option(names = "-z") int z;
         }
 
-        PrintStream out = System.out;
-        InputStream in = System.in;
+        Streams streams = new Streams();
         try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            System.setOut(new PrintStream(baos));
-            System.setIn(new ByteArrayInputStream("123".getBytes()));
+            Capture capture = new Capture("123");
 
             App app = new App();
             CommandLine cmd = new CommandLine(app);
             cmd.parseArgs("-x", "-z", "987");
 
             String expectedPrompt = format("Enter value for -x (Pwd%nline2): ");
-            assertEquals(expectedPrompt, baos.toString());
+            assertEquals(expectedPrompt, capture.out());
             assertEquals(123, app.x);
             assertEquals(987, app.z);
         } finally {
-            System.setOut(out);
-            System.setIn(in);
+            streams.reset();
         }
     }
 
@@ -582,16 +551,10 @@ public class InteractiveArgTest {
             @Parameters(index = "1") int z;
         }
 
-        PrintStream out = System.out;
-        PrintStream err = System.err;
-        InputStream in = System.in;
+        Streams streams = new Streams();
         System.setProperty("picocli.trace", "DEBUG");
         try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            System.setOut(new PrintStream(baos));
-            ByteArrayOutputStream errBaos = new ByteArrayOutputStream();
-            System.setErr(new PrintStream(errBaos));
-            System.setIn(new ByteArrayInputStream("1234567890".getBytes()));
+            Capture capture = new Capture("1234567890");
 
             App app = new App();
             CommandLine cmd = new CommandLine(app);
@@ -600,19 +563,17 @@ public class InteractiveArgTest {
             assertThat(specX.toString(), containsString("App.x"));
 
             String expectedPrompt = format("Enter value for position 0 (Pwd%nline2): ");
-            assertEquals(expectedPrompt, baos.toString());
+            assertEquals(expectedPrompt, capture.out());
             assertEquals(1234567890, app.x);
             assertEquals(987, app.z);
 
-            String trace = errBaos.toString();
+            String trace = capture.err();
             assertThat(trace, containsString("User entered 10 characters"));
             assertThat(trace, containsString(
                 "Setting " + specX.toString() + " to *****(masked) (interactive value)"));
             assertThat(trace, not(containsString("1234567890")));
         } finally {
-            System.setOut(out);
-            System.setOut(err);
-            System.setIn(in);
+            streams.reset();
         }
     }
 
@@ -623,16 +584,10 @@ public class InteractiveArgTest {
             @Parameters(index = "1") int z;
         }
 
-        PrintStream out = System.out;
-        PrintStream err = System.err;
-        InputStream in = System.in;
+        Streams streams = new Streams();
         System.setProperty("picocli.trace", "DEBUG");
         try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            System.setOut(new PrintStream(baos));
-            ByteArrayOutputStream errBaos = new ByteArrayOutputStream();
-            System.setErr(new PrintStream(errBaos));
-            System.setIn(new ByteArrayInputStream("1234567890".getBytes()));
+            Capture capture = new Capture("1234567890");
 
             App app = new App();
             CommandLine cmd = new CommandLine(app);
@@ -641,20 +596,18 @@ public class InteractiveArgTest {
             assertThat(specX.toString(), containsString("App.x"));
 
             String expectedPrompt = format("Enter value for position 0 (Pwd%nline2): ");
-            assertEquals(expectedPrompt, baos.toString());
+            assertEquals(expectedPrompt, capture.out());
             assertEquals(1234567890, app.x);
             assertEquals(987, app.z);
 
-            String trace = errBaos.toString();
+            String trace = capture.err();
             assertThat(trace, containsString("User entered 1234567890"));
             assertThat(trace, containsString(
                 "Setting " + specX.toString() + " to 123"));
             assertThat(trace, not(containsString("10 characters")));
             assertThat(trace, not(containsString("***")));
         } finally {
-            System.setOut(out);
-            System.setOut(err);
-            System.setIn(in);
+            streams.reset();
         }
     }
 
@@ -665,24 +618,20 @@ public class InteractiveArgTest {
             @Parameters(index = "1") int z;
         }
 
-        PrintStream out = System.out;
-        InputStream in = System.in;
+        Streams streams = new Streams();
         try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            System.setOut(new PrintStream(baos));
-            System.setIn(new ByteArrayInputStream("123".getBytes()));
+            Capture capture = new Capture("123");
 
             App app = new App();
             CommandLine cmd = new CommandLine(app);
             cmd.parseArgs("987");
 
             String expectedPrompt = format("[Customized]Enter your value: ");
-            assertEquals(expectedPrompt, baos.toString());
+            assertEquals(expectedPrompt, capture.out());
             assertEquals(123, app.x);
             assertEquals(987, app.z);
         } finally {
-            System.setOut(out);
-            System.setIn(in);
+            streams.reset();
         }
     }
 
@@ -695,12 +644,9 @@ public class InteractiveArgTest {
             @Option(names = "-s") String str;
         }
 
-        PrintStream out = System.out;
-        InputStream in = System.in;
+        Streams streams = new Streams();
         try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            System.setOut(new PrintStream(baos));
-            System.setIn(new ByteArrayInputStream("123".getBytes()));
+            Capture capture = new Capture("123");
 
             App app = new App();
             CommandLine cmd = new CommandLine(app);
@@ -711,10 +657,9 @@ public class InteractiveArgTest {
             assertEquals("No value was read from console", 0, app.x);
             //String expectedPrompt = format("Enter value for position 0 (Pwd): ");
             String expectedPrompt = ""; // interactive arg was not prompted
-            assertEquals(expectedPrompt, baos.toString());
+            assertEquals(expectedPrompt, capture.out());
         } finally {
-            System.setOut(out);
-            System.setIn(in);
+            streams.reset();
         }
     }
 
@@ -726,25 +671,21 @@ public class InteractiveArgTest {
             @Parameters(index = "2") int z;
         }
 
-        PrintStream out = System.out;
-        InputStream in = System.in;
+        Streams streams = new Streams();
         try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            System.setOut(new PrintStream(baos));
-            System.setIn(new ByteArrayInputStream("123".getBytes()));
+            Capture capture = new Capture("123");
 
             App app = new App();
             CommandLine cmd = new CommandLine(app);
             cmd.parseArgs("333", "987");
 
             String expectedPrompt = format("Enter value for position 1 (Pwd%nline2): ");
-            assertEquals(expectedPrompt, baos.toString());
+            assertEquals(expectedPrompt, capture.out());
             assertEquals(333, app.a);
             assertEquals(123, app.x);
             assertEquals(987, app.z);
         } finally {
-            System.setOut(out);
-            System.setIn(in);
+            streams.reset();
         }
     }
 
@@ -785,24 +726,20 @@ public class InteractiveArgTest {
             }
         }
 
-        PrintStream out = System.out;
-        InputStream in = System.in;
+        Streams streams = new Streams();
         try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            System.setOut(new PrintStream(baos));
-            System.setIn(inputStream("password123"));
+            Capture capture = new Capture("password123");
 
             Login login = new Login();
             new CommandLine(login).execute("-u", "user123", "-p");
 
             String expectedPrompt = format("Enter value for --password (Password or passphrase): " +
                     "Hi user123, your password is hashed to 75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=.%n");
-            assertEquals(expectedPrompt, baos.toString());
+            assertEquals(expectedPrompt, capture.out());
             assertEquals("user123", login.user);
             assertArrayEquals("           ".toCharArray(), login.password);
         } finally {
-            System.setOut(out);
-            System.setIn(in);
+            streams.reset();
         }
     }
 
@@ -814,24 +751,20 @@ public class InteractiveArgTest {
             @Parameters(index = "2") int z;
         }
 
-        PrintStream out = System.out;
-        InputStream in = System.in;
+        Streams streams = new Streams();
         try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            System.setOut(new PrintStream(baos));
-            System.setIn(inputStream("123"));
+            Capture capture = Capture.multiInputValue("123");
             App app = new App();
             CommandLine cmd = new CommandLine(app);
             cmd.parseArgs("999");
 
-            assertEquals("Enter value for position 0 (Pwd): Enter value for position 1 (Pwd): ", baos.toString());
+            assertEquals("Enter value for position 0 (Pwd): Enter value for position 1 (Pwd): ", capture.out());
             assertEquals(2, app.x.size());
             assertArrayEquals("123".toCharArray(), app.x.get(0));
             assertArrayEquals("123".toCharArray(), app.x.get(1));
             assertEquals(999, app.z);
         } finally {
-            System.setOut(out);
-            System.setIn(in);
+            streams.reset();
         }
     }
 
@@ -843,22 +776,18 @@ public class InteractiveArgTest {
             @Parameters(index = "1") int z;
         }
 
-        PrintStream out = System.out;
-        InputStream in = System.in;
+        Streams streams = new Streams();
         try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            System.setOut(new PrintStream(baos));
-            System.setIn(inputStream("123"));
+            Capture capture = new Capture("123");
             App app = new App();
             CommandLine cmd = new CommandLine(app);
             cmd.parseArgs("9");
 
-            assertEquals("Enter value for position 0 (Pwd): ", baos.toString());
+            assertEquals("Enter value for position 0 (Pwd): ", capture.out());
             assertArrayEquals("123".toCharArray(), app.x);
             assertEquals(9, app.z);
         } finally {
-            System.setOut(out);
-            System.setIn(in);
+            streams.reset();
         }
     }
 
@@ -872,11 +801,9 @@ public class InteractiveArgTest {
             String[] remainder;
         }
 
-        PrintStream out = System.out;
-        InputStream in = System.in;
+        Streams streams = new Streams();
         try {
-            System.setOut(new PrintStream(new ByteArrayOutputStream()));
-            System.setIn(inputStream("123"));
+            Capture capture = new Capture("123");
             App app = new App();
             CommandLine cmd = new CommandLine(app);
             cmd.parseArgs("456", "abc");
@@ -884,8 +811,7 @@ public class InteractiveArgTest {
             assertArrayEquals("456".toCharArray(), app.x);
             assertArrayEquals(new String[]{"abc"}, app.remainder);
         } finally {
-            System.setOut(out);
-            System.setIn(in);
+            streams.reset();
         }
     }
 
@@ -899,11 +825,9 @@ public class InteractiveArgTest {
             String[] remainder;
         }
 
-        PrintStream out = System.out;
-        InputStream in = System.in;
+        Streams streams = new Streams();
         try {
-            System.setOut(new PrintStream(new ByteArrayOutputStream()));
-            System.setIn(inputStream("123"));
+            Capture capture = new Capture("123");
             App app = new App();
             CommandLine cmd = new CommandLine(app);
             cmd.parseArgs("456", "789", "abc");
@@ -913,8 +837,7 @@ public class InteractiveArgTest {
             assertArrayEquals("789".toCharArray(), app.x.get(1));
             assertArrayEquals(new String[]{"abc"}, app.remainder);
         } finally {
-            System.setOut(out);
-            System.setIn(in);
+            streams.reset();
         }
     }
 
@@ -931,11 +854,9 @@ public class InteractiveArgTest {
             String[] remainder;
         }
 
-        PrintStream out = System.out;
-        InputStream in = System.in;
+        Streams streams = new Streams();
         try {
-            System.setOut(new PrintStream(new ByteArrayOutputStream()));
-            System.setIn(inputStream("123"));
+            Capture capture = new Capture("123");
             App app = new App();
             CommandLine cmd = new CommandLine(app);
             try {
@@ -945,8 +866,7 @@ public class InteractiveArgTest {
                 assertEquals("Unknown option: '-y'", ex.getMessage());
             }
         } finally {
-            System.setOut(out);
-            System.setIn(in);
+            streams.reset();
         }
     }
 
@@ -963,11 +883,9 @@ public class InteractiveArgTest {
             String[] remainder;
         }
 
-        PrintStream out = System.out;
-        InputStream in = System.in;
+        Streams streams = new Streams();
         try {
-            System.setOut(new PrintStream(new ByteArrayOutputStream()));
-            System.setIn(inputStream("123"));
+            Capture capture = new Capture("123");
             App app = new App();
             CommandLine cmd = new CommandLine(app);
             try {
@@ -977,8 +895,7 @@ public class InteractiveArgTest {
                 assertEquals("Unknown options: '-y', '-w'", ex.getMessage());
             }
         } finally {
-            System.setOut(out);
-            System.setIn(in);
+            streams.reset();
         }
     }
 
