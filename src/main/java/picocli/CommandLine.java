@@ -8789,6 +8789,7 @@ public class CommandLine {
             private       Object initialValue;
             private final boolean hasInitialValue;
             private       InitialValueState initialValueState;
+            protected boolean valueIsDefaultValue;
             protected final IAnnotatedElement annotatedElement;
             private final IGetter getter;
             private final ISetter setter;
@@ -12998,7 +12999,8 @@ public class CommandLine {
 
                 validationResult = matches.isEmpty() ? GroupValidationResult.SUCCESS_ABSENT : GroupValidationResult.SUCCESS_PRESENT;
                 for (ArgGroupSpec missing : unmatchedSubgroups) {
-                    if (missing.validate() && missing.multiplicity().min > 0 && containsRequiredOptionsOrSubgroups(missing)) {
+                    // error is 1+ occurrence is required, unless all required options have a default
+                    if (missing.validate() && !isGroupEffectivelyOptional(missing)) {
                         int presentCount = 0;
                         boolean haveMissing = true;
                         boolean someButNotAllSpecified = false;
@@ -13051,27 +13053,28 @@ public class CommandLine {
                 return requiredOptionsExistAndAllHaveDefaultValues(argGroupSpec) && !containsRequiredSubgroups(argGroupSpec);
             }
 
-            private boolean containsRequiredOptionsOrParameters(ArgGroupSpec argGroupSpec) {
-                for ( OptionSpec option : argGroupSpec.options() ) {
-                    if ( option.required() ) { return true; }
+            private boolean requiredOptionsExistAndAllHaveDefaultValues(ArgGroupSpec argGroupSpec) {
+                if (argGroupSpec.requiredArgs().size() == 0) { return false; }
+                for (OptionSpec option : argGroupSpec.options()) {
+                    if (option.required() && !option.valueIsDefaultValue) { return false; }
                 }
-                for ( PositionalParamSpec param : argGroupSpec.positionalParameters() ){
-                    if( param.required() ){return true;}
+                for (PositionalParamSpec param : argGroupSpec.positionalParameters()) {
+                    if (param.required() && !param.valueIsDefaultValue) { return false; }
                 }
-                return false;
+                return true;
             }
 
             private boolean containsRequiredSubgroups(ArgGroupSpec argGroupSpec) {
-                for ( ArgGroupSpec subgroup : argGroupSpec.subgroups() ) {
-                    if ( subgroup.exclusive() ) {
+                for (ArgGroupSpec subgroup : argGroupSpec.subgroups()) {
+                    if (subgroup.exclusive()) {
                         // Only return true if all of the subgroups contain required options or subgroups
                         boolean result = true;
-                        for ( ArgGroupSpec subsubgroup : subgroup.subgroups() ) {
-                            result &= containsRequiredOptionsOrSubgroups(subsubgroup);
+                        for (ArgGroupSpec subsubgroup : subgroup.subgroups()) {
+                            result &= !isGroupEffectivelyOptional(subsubgroup);
                         }
-                        return result && containsRequiredOptionsOrParameters(subgroup);
+                        return result && !requiredOptionsExistAndAllHaveDefaultValues(subgroup);
                     } else {
-                        return containsRequiredOptionsOrSubgroups(subgroup);
+                        return !isGroupEffectivelyOptional(subgroup);
                     }
                 }
                 return false;
@@ -13710,11 +13713,13 @@ public class CommandLine {
                     tracer.debug("Applying defaultValue (%s)%s to %s on %s", defaultValue, provider, arg, arg.scopeString());}
                 Range arity = arg.arity().min(Math.max(1, arg.arity().min));
                 applyOption(arg, false, LookBehind.SEPARATE, false, arity, stack(defaultValue), new HashSet<ArgSpec>(), arg.toString);
+                arg.valueIsDefaultValue = true;
             } else {
                 if (arg.typeInfo().isOptional()) {
                     if (tracer.isDebug()) {
                         tracer.debug("Applying Optional.empty() to %s on %s", arg, arg.scopeString());}
                     arg.setValue(getOptionalEmpty());
+                    arg.valueIsDefaultValue = true;
                 } else if (ArgSpec.UNSPECIFIED.equals(arg.originalDefaultValue)) {
                     tracer.debug("defaultValue not defined for %s", arg);
                     return false;
@@ -13724,6 +13729,7 @@ public class CommandLine {
                         if (tracer.isDebug()) {
                             tracer.debug("Applying defaultValue (%s)%s to %s on %s", defaultValue, provider, arg, arg.scopeString());}
                         arg.setValue(defaultValue);
+                        arg.valueIsDefaultValue = true;
                         return true;
                     }
                     tracer.debug("defaultValue not defined for %s", arg);
