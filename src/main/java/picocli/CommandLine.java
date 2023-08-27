@@ -14153,6 +14153,7 @@ public class CommandLine {
 
             if (argSpec.parameterConsumer() != null) {
                 argSpec.parameterConsumer().consumeParameters(args, argSpec, commandSpec);
+                addToInitialized(argSpec, initialized);
                 return args.size() - originalSize;
             }
             boolean consumeOnlyOne = commandSpec.parser().aritySatisfiedByAttachedOptionParam() && lookBehind.isAttached();
