@@ -6308,6 +6308,34 @@ public class CommandLine {
             private CommandSpec copy() {
                 Object obj = userObject.type == null ? userObject.instance : userObject.type;
                 CommandSpec result = obj == null ? CommandSpec.create() : CommandSpec.forAnnotatedObject(obj, userObject.factory);
+                copyReferencesTo(result);
+                return result;
+            }
+
+            /**
+             * Copies this {@link CommandSpec} with the given alias and name switched.
+             * @param alias the alias to use instead of the name.
+             * @return a copy of this {@link CommandSpec} with the given alias and name switched.
+             */
+            private CommandSpec copyWithAliasAsName(String alias) {
+                final CommandSpec result = new CommandSpec(userObject);
+                copyReferencesTo(result);
+                copyMapContentsTo(result);
+
+                result.name = alias;
+                result.aliases = new LinkedHashSet<>();
+                result.aliases.add(name);
+                result.aliases.addAll(aliases);
+                result.aliases.remove(alias);
+                return result;
+            }
+
+            /**
+             * Copies field references into the given {@link CommandSpec}.
+             *
+             * @param result the {@link CommandSpec} instance to copy values into.
+             */
+            private void copyReferencesTo(CommandSpec result) {
                 result.commandLine = commandLine;
                 result.parent = parent;
                 result.methodParams = methodParams;
@@ -6334,25 +6362,28 @@ public class CommandLine {
                 result.parser(parser);
                 result.inherited = inherited;
                 result.scopeType = scopeType;
+            }
 
-                // TODO if this CommandSpec was created/modified via the programmatic API,
-                //   we need to copy all attributes that are modifiable via the programmatic API
-                //   and point them to this CommandSpec instance.
-//                result.commands.clear();                result.commands.putAll(this.commands);
-//                result.optionsByNameMap.clear();        result.optionsByNameMap.putAll(this.optionsByNameMap);
-//                result.negatedOptionsByNameMap.clear(); result.negatedOptionsByNameMap.putAll(this.negatedOptionsByNameMap);
-//                result.posixOptionsByKeyMap.clear();    result.posixOptionsByKeyMap.putAll(this.posixOptionsByKeyMap);
-//                result.mixins.clear();                  result.mixins.putAll(this.mixins);
-//                result.mixinAnnotatedElements.clear();  result.mixinAnnotatedElements.putAll(this.mixinAnnotatedElements);
-//                result.requiredArgs.clear();            result.requiredArgs.addAll(requiredArgs);
-//                result.args.clear();                    result.args.addAll(args);
-//                result.options.clear();                 result.options.addAll(options);
-//                result.positionalParameters.clear();    result.positionalParameters.addAll(positionalParameters);
-//                result.unmatchedArgs.clear();           result.unmatchedArgs.addAll(unmatchedArgs);
-//                result.specElements.clear();            result.specElements.addAll(specElements);
-//                result.parentCommandElements.clear();   result.parentCommandElements.addAll(parentCommandElements);
-//                result.groups.clear();                  result.groups.addAll(groups);
-                return result;
+            /**
+             * Copies field map contents into the given {@link CommandSpec}.
+             *
+             * @param result the {@link CommandSpec} instance to copy map contents into.
+             */
+            private void copyMapContentsTo(CommandSpec result) {
+                result.commands.clear();                result.commands.putAll(this.commands);
+                result.optionsByNameMap.clear();        result.optionsByNameMap.putAll(this.optionsByNameMap);
+                result.negatedOptionsByNameMap.clear(); result.negatedOptionsByNameMap.putAll(this.negatedOptionsByNameMap);
+                result.posixOptionsByKeyMap.clear();    result.posixOptionsByKeyMap.putAll(this.posixOptionsByKeyMap);
+                result.mixins.clear();                  result.mixins.putAll(this.mixins);
+                result.mixinAnnotatedElements.clear();  result.mixinAnnotatedElements.putAll(this.mixinAnnotatedElements);
+                result.requiredArgs.clear();            result.requiredArgs.addAll(requiredArgs);
+                result.args.clear();                    result.args.addAll(args);
+                result.options.clear();                 result.options.addAll(options);
+                result.positionalParameters.clear();    result.positionalParameters.addAll(positionalParameters);
+                result.unmatchedArgs.clear();           result.unmatchedArgs.addAll(unmatchedArgs);
+                result.specElements.clear();            result.specElements.addAll(specElements);
+                result.parentCommandElements.clear();   result.parentCommandElements.addAll(parentCommandElements);
+                result.groups.clear();                  result.groups.addAll(groups);
             }
 
             /** Creates and returns a new {@code CommandSpec} without any associated user object. */
