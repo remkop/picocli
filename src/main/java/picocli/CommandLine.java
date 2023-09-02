@@ -13928,6 +13928,10 @@ public class CommandLine {
         }
 
         private void processSubcommand(CommandLine subcommand, ParseResult.Builder builder, List<CommandLine> parsedCommands, Stack<String> args, Collection<ArgSpec> required, Set<ArgSpec> initialized, String[] originalArgs, List<Object> nowProcessing, String separator, String arg) {
+            if (!subcommand.getCommandName().equals(arg) && subcommand.getCommandSpec().aliases.contains(arg)) {
+                subcommand = subcommand.copyWithAliasAsName(arg);
+            }
+
             Tracer tracer = CommandLine.tracer();
             if (tracer.isDebug()) {
                 tracer.debug("Found subcommand '%s' (%s)", arg, subcommand.commandSpec.toString());}
