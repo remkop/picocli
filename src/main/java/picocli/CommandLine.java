@@ -245,7 +245,25 @@ public class CommandLine {
     }
 
     private CommandLine copy() {
-        CommandLine result = new CommandLine(commandSpec.copy(), factory); // create a new sub-hierarchy
+        return copyWithSpec(commandSpec.copy());
+    }
+
+    /**
+     * Copies this {@link CommandLine} with the given alias and name switched.
+     * @param alias the alias to use instead of the name.
+     * @return a copy of this {@link CommandLine} with the given alias and name switched.
+     */
+    private CommandLine copyWithAliasAsName(String alias) {
+        return copyWithSpec(commandSpec.copyWithAliasAsName(alias));
+    }
+
+    /**
+     * Copies this {@link CommandLine} with the given {@link CommandSpec}.
+     * @param commandSpec the {@link CommandSpec} to use instead.
+     * @return a copy of this {@link CommandLine} with the given {@link CommandSpec}.
+     */
+    private CommandLine copyWithSpec(CommandSpec commandSpec) {
+        CommandLine result = new CommandLine(commandSpec, factory); // create a new sub-hierarchy
         result.err = err;
         result.out = out;
         result.colorScheme = colorScheme;
