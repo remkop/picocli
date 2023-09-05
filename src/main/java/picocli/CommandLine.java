@@ -18972,11 +18972,25 @@ public class CommandLine {
             if (commandSpec == null) { return null; }
             Properties p = System.getProperties();
             for (String name : commandSpec.names()) {
+                String propertiesFileName = "." + name + ".properties";
                 String path = p.getProperty("picocli.defaults." + name + ".path");
-                File defaultPath = new File(p.getProperty("user.home"), "." + name + ".properties");
+                File defaultPath = new File(p.getProperty("user.home"), propertiesFileName);
                 File file = path == null ? defaultPath : new File(path);
                 if (file.canRead()) {
                     return createProperties(file, commandSpec);
+                } else {
+                    URL resource = commandSpec.userObject().getClass().getClassLoader().getResource(propertiesFileName);
+                    Tracer tracer = CommandLine.tracer();
+                    if (resource != null) {
+                        file = new File(resource.getFile());
+                        if (file.canRead()) {
+                            return createProperties(file, commandSpec);
+                        } else {
+                            tracer.warn("could not read defaults from %s", file.getAbsolutePath());
+                        }
+                    } else {
+                        tracer.warn("defaults configuration file %s doesn not exists on classpath", propertiesFileName);
+                    }
                 }
             }
             return loadProperties(commandSpec.parent());
