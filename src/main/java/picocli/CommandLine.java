@@ -18979,7 +18979,11 @@ public class CommandLine {
                 if (file.canRead()) {
                     return createProperties(file, commandSpec);
                 } else {
-                    URL resource = commandSpec.userObject().getClass().getClassLoader().getResource(propertiesFileName);
+                    Object userObject = commandSpec.userObject();
+                    if (userObject == null) {
+                        userObject = commandSpec.commandLine;
+                    }
+                    URL resource = userObject.getClass().getClassLoader().getResource(propertiesFileName);
                     Tracer tracer = CommandLine.tracer();
                     if (resource != null) {
                         file = new File(resource.getFile());
