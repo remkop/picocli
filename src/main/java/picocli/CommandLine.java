@@ -18887,7 +18887,7 @@ public class CommandLine {
     public static class PropertiesDefaultProvider implements IDefaultValueProvider {
 
         private Properties properties;
-        private File location;
+        private String location;
 
         /**
          * Default constructor, used when this default value provider is specified in
@@ -18940,30 +18940,39 @@ public class CommandLine {
         public PropertiesDefaultProvider(File file) {
             this(createProperties(file, null));
             properties.remove("__picocli_internal_location");
-            location = file;
+            location = file.getAbsolutePath();
         }
 
         private static Properties createProperties(File file, CommandSpec commandSpec) {
             if (file == null) {
                 throw new NullPointerException("file is null");
             }
-            Tracer tracer = CommandLine.tracer();
-            Properties result = new Properties();
             if (file.exists() && file.canRead()) {
-                InputStream in = null;
                 try {
-                    String command = commandSpec == null ? "unknown command" : commandSpec.qualifiedName();
-                    tracer.debug("Reading defaults from %s for %s", file.getAbsolutePath(), command);
-                    in = new FileInputStream(file);
-                    result.load(in);
-                    result.put("__picocli_internal_location", file);
-                } catch (IOException ioe) {
-                    tracer.warn("could not read defaults from %s: %s", file.getAbsolutePath(), ioe);
-                } finally {
-                    close(in);
+                    return createProperties(new FileInputStream(file), file.getAbsolutePath(), commandSpec);
+                } catch (Exception ex) {
+                    tracer().warn("PropertiesDefaultProvider could not read defaults from %s: %s", file.getAbsolutePath(), ex);
                 }
             } else {
-                tracer.warn("defaults configuration file %s does not exist or is not readable", file.getAbsolutePath());
+                tracer().warn("PropertiesDefaultProvider: defaults configuration file %s does not exist or is not readable", file.getAbsolutePath());
+            }
+            return new Properties();
+        }
+
+        private static Properties createProperties(InputStream in, String locationDescription, CommandSpec commandSpec) {
+            if (in == null) {
+                throw new NullPointerException("InputStream is null");
+            }
+            Properties result = new Properties();
+            try {
+                String command = commandSpec == null ? "unknown command" : commandSpec.qualifiedName();
+                tracer().debug("PropertiesDefaultProvider reading defaults from %s for %s", locationDescription, command);
+                result.load(in);
+                result.put("__picocli_internal_location", locationDescription);
+            } catch (IOException ioe) {
+                tracer().warn("PropertiesDefaultProvider could not read defaults from %s: %s", locationDescription, ioe);
+            } finally {
+                close(in);
             }
             return result;
         }
@@ -18976,6 +18985,9 @@ public class CommandLine {
                 String path = p.getProperty("picocli.defaults." + name + ".path");
                 File defaultPath = new File(p.getProperty("user.home"), propertiesFileName);
                 File file = path == null ? defaultPath : new File(path);
+                if (path != null) {
+                    tracer().debug("PropertiesDefaultProvider using path from system property %s: %s", "picocli.defaults." + name + ".path", path);
+                }
                 if (file.canRead()) {
                     return createProperties(file, commandSpec);
                 } else {
@@ -18984,16 +18996,14 @@ public class CommandLine {
                         userObject = commandSpec.commandLine;
                     }
                     URL resource = userObject.getClass().getClassLoader().getResource(propertiesFileName);
-                    Tracer tracer = CommandLine.tracer();
                     if (resource != null) {
-                        file = new File(resource.getFile());
-                        if (file.canRead()) {
-                            return createProperties(file, commandSpec);
-                        } else {
-                            tracer.warn("could not read defaults from %s", file.getAbsolutePath());
+                        try {
+                            return createProperties(resource.openStream(), resource.toString(), commandSpec);
+                        } catch (Exception ex) {
+                            tracer().warn("PropertiesDefaultProvider could not read defaults from %s: %s", resource, ex);
                         }
                     } else {
-                        tracer.warn("defaults configuration file %s doesn not exists on classpath", propertiesFileName);
+                        tracer().debug("PropertiesDefaultProvider defaults configuration file %s does not exist on classpath or user home or specified location", propertiesFileName);
                     }
                 }
             }
@@ -19003,7 +19013,7 @@ public class CommandLine {
         public String defaultValue(ArgSpec argSpec) throws Exception {
             if (properties == null) {
                 properties = loadProperties(argSpec.command());
-                location = properties == null ? null : (File) properties.remove("__picocli_internal_location");
+                location = properties == null ? null : (String) properties.remove("__picocli_internal_location");
             }
             if (properties == null || properties.isEmpty()) {
                 return null;

@@ -2034,7 +2034,7 @@ If the default provider has no value for that option or positional parameter, th
 From picocli 4.1, applications can use the built-in `PropertiesDefaultProvider`
 implementation that loads default values from a properties file.
 
-By default, this implementation tries to find a properties file named `.${COMMAND-NAME}.properties` in the user home directory, where `${COMMAND-NAME}` is the name of the command. If a command has aliases in addition to its name, these aliases are also used to try to find the properties file. For example:
+By default, this implementation tries to find a properties file named `.${COMMAND-NAME}.properties` in the user home directory or in the classpath, where `${COMMAND-NAME}` is the name of the command. If a command has aliases in addition to its name, these aliases are also used to try to find the properties file. For example:
 
 .Java
 [source,java,role="primary"]
@@ -2056,6 +2056,7 @@ class Git { }
 
 The above will try to load default values from `new File(System.getProperty("user.home"), ".git.properties")`.
 The location of the properties file can also be controlled with system property `"picocli.defaults.${COMMAND-NAME}.path"` (`"picocli.defaults.git.path"` in this example), in which case the value of the property must be the path to the file containing the default values.
+Finally, picocli will try to load the `.git.properties` file from the classpath.
 
 The location of the properties file may also be specified programmatically. For example:
 
