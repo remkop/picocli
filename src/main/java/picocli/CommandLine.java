@@ -1104,6 +1104,31 @@ public class CommandLine {
         return this;
     }
 
+    /** Returns whether positional parameters on the command line are allowed to occur before the special End of Options delimiter.
+     * The default is {@code true}.
+     * @return {@code true} positional parameters may occur anywhere on the command line, {@code false} if they must follow End of Options.
+     */
+    public boolean isParameterAllowedBeforeEndOfOptions() {
+        return getCommandSpec().parser().parameterAllowedBeforeEndOfOptions();
+    }
+
+    /** Sets whether positional parameters on the command line are allowed to occur before the special End of Options delimiter.
+     * The default is {@code true}.
+     * <p>The specified setting will be registered with this {@code CommandLine} and the full hierarchy of its
+     * subcommands and nested sub-subcommands <em>at the moment this method is called</em>. Subcommands added
+     * later will have the default setting. To ensure a setting is applied to all
+     * subcommands, call the setter last, after adding subcommands.</p>
+     * @param newValue the new setting. When {@code false}, positional parameters must follow the special End of Options delimiter.
+     * @return this {@code CommandLine} object, to allow method chaining
+     */
+    public CommandLine setParameterAllowedBeforeEndOfOptions(boolean newValue) {
+        getCommandSpec().parser().parameterAllowedBeforeEndOfOptions(newValue);
+        for (CommandLine command : getCommandSpec().subcommands().values()) {
+            command.setParameterAllowedBeforeEndOfOptions(newValue);
+        }
+        return this;
+    }
+
     /** Returns whether the end user may specify arguments on the command line that are not matched to any option or parameter fields.
      * The default is {@code false} and a {@link UnmatchedArgumentException} is thrown if this happens.
      * When {@code true}, the last unmatched arguments are available via the {@link #getUnmatchedArguments()} method.
@@ -8546,6 +8571,7 @@ public class CommandLine {
             private boolean unmatchedArgumentsAllowed = false;
             private boolean unmatchedOptionsAllowedAsOptionParameters = true;
             private boolean unmatchedOptionsArePositionalParams = false;
+            private boolean parameterAllowedBeforeEndOfOptions = true;
             private boolean useSimplifiedAtFiles = false;
 
             /** Returns the String to use as the separator between options and option parameters. {@code "="} by default,
@@ -8596,6 +8622,7 @@ public class CommandLine {
             public boolean splitQuotedStrings()  { return splitQuotedStrings; }
             /** @see CommandLine#isUnmatchedOptionsArePositionalParams() */
             public boolean unmatchedOptionsArePositionalParams() { return unmatchedOptionsArePositionalParams; }
+            public boolean parameterAllowedBeforeEndOfOptions() { return parameterAllowedBeforeEndOfOptions; }
             /**
              * @see CommandLine#isUnmatchedOptionsAllowedAsOptionParameters()
              * @since 4.4 */
@@ -8664,6 +8691,8 @@ public class CommandLine {
             public ParserSpec unmatchedOptionsAllowedAsOptionParameters(boolean unmatchedOptionsAllowedAsOptionParameters) { this.unmatchedOptionsAllowedAsOptionParameters = unmatchedOptionsAllowedAsOptionParameters; return this; }
             /** @see CommandLine#setUnmatchedOptionsArePositionalParams(boolean) */
             public ParserSpec unmatchedOptionsArePositionalParams(boolean unmatchedOptionsArePositionalParams) { this.unmatchedOptionsArePositionalParams = unmatchedOptionsArePositionalParams; return this; }
+            /** @see CommandLine#setParameterAllowedBeforeEndOfOptions(boolean) */
+            public ParserSpec parameterAllowedBeforeEndOfOptions(boolean allowParametersBeforeEndOfOptions) { this.parameterAllowedBeforeEndOfOptions = allowParametersBeforeEndOfOptions; return this; }
             /**
              * @see CommandLine#setAllowSubcommandsAsOptionParameters(boolean)
              * @since 4.7.6-SNAPSHOT */
@@ -8699,14 +8728,16 @@ public class CommandLine {
                                 "limitSplit=%s, overwrittenOptionsAllowed=%s, posixClusteredShortOptionsAllowed=%s, " +
                                 "separator=%s, splitQuotedStrings=%s, stopAtPositional=%s, stopAtUnmatched=%s, " +
                                 "toggleBooleanFlags=%s, trimQuotes=%s, " +
-                                "unmatchedArgumentsAllowed=%s, unmatchedOptionsAllowedAsOptionParameters=%s, unmatchedOptionsArePositionalParams=%s, useSimplifiedAtFiles=%s",
+                                "unmatchedArgumentsAllowed=%s, unmatchedOptionsAllowedAsOptionParameters=%s, " +
+                                "unmatchedOptionsArePositionalParams=%s, allowParametersBeforeEndOfOptions=%s, useSimplifiedAtFiles=%s",
                         abbreviatedOptionsAllowed, abbreviatedSubcommandsAllowed, allowOptionsAsOptionParameters,
                         allowSubcommandsAsOptionParameters, aritySatisfiedByAttachedOptionParam, atFileCommentChar,
                         caseInsensitiveEnumValuesAllowed, collectErrors, endOfOptionsDelimiter, expandAtFiles,
                         limitSplit, overwrittenOptionsAllowed, posixClusteredShortOptionsAllowed,
                         separator, splitQuotedStrings, stopAtPositional, stopAtUnmatched,
                         toggleBooleanFlags, trimQuotes,
-                        unmatchedArgumentsAllowed, unmatchedOptionsAllowedAsOptionParameters, unmatchedOptionsArePositionalParams, useSimplifiedAtFiles);
+                        unmatchedArgumentsAllowed, unmatchedOptionsAllowedAsOptionParameters,
+                        unmatchedOptionsArePositionalParams, parameterAllowedBeforeEndOfOptions, useSimplifiedAtFiles);
             }
 
             void initFrom(ParserSpec settings) {
@@ -8732,6 +8763,7 @@ public class CommandLine {
                 unmatchedArgumentsAllowed = settings.unmatchedArgumentsAllowed;
                 unmatchedOptionsAllowedAsOptionParameters = settings.unmatchedOptionsAllowedAsOptionParameters;
                 unmatchedOptionsArePositionalParams = settings.unmatchedOptionsArePositionalParams;
+                parameterAllowedBeforeEndOfOptions = settings.parameterAllowedBeforeEndOfOptions;
                 useSimplifiedAtFiles = settings.useSimplifiedAtFiles;
             }
         }
@@ -13931,6 +13963,10 @@ public class CommandLine {
                 }
                 if (tracer.isDebug()) {
                     tracer.debug("Parser is configured to treat all unmatched options as positional parameter", arg);}
+            }
+            if (!endOfOptions && !commandSpec.parser().parameterAllowedBeforeEndOfOptions()) {
+                handleUnmatchedArgument(args);
+                return;
             }
             int argIndex = parseResultBuilder.originalArgList.size() - args.size();
             if (tracer.isDebug()) {
