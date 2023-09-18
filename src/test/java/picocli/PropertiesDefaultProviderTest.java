@@ -53,6 +53,27 @@ public class PropertiesDefaultProviderTest {
     }
 
     @Test
+    public void testLoadFromResourceClasspathIfPropertySpecified() throws IOException {
+        Properties expected = new Properties();
+        expected.setProperty("aaa", "111");
+        expected.setProperty("bbb", "222");
+        expected.setProperty("ppp", "333");
+        expected.setProperty("xxx", "444");
+
+        MyApp myApp = new MyApp();
+        assertEquals(myApp.aaa, 0);
+        assertEquals(myApp.bbb, 0);
+        assertEquals(myApp.ppp, 0);
+        assertEquals(myApp.xxx, 0);
+        new CommandLine(myApp).parseArgs();
+
+        assertEquals(myApp.aaa, 111);
+        assertEquals(myApp.bbb, 222);
+        assertEquals(myApp.ppp, 333);
+        assertEquals(myApp.xxx, 444);
+    }
+
+    @Test
     public void testLoadFromUserHomeCommandNameByDefault() throws IOException {
         File f = new File(System.getProperty("user.home"), ".providertest.properties");
         if (f.exists()) {
