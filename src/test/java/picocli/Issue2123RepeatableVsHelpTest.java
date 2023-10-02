@@ -1,6 +1,5 @@
 package picocli;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.HelpCommand;
@@ -13,7 +12,6 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.object.HasToString.hasToString;
 import static picocli.CommandLine.ExitCode.OK;
-import static picocli.CommandLine.ExitCode.USAGE;
 
 public class Issue2123RepeatableVsHelpTest {
 
@@ -30,7 +28,11 @@ public class Issue2123RepeatableVsHelpTest {
 
     private final StringWriter out = new StringWriter();
 
-    private final CommandLine commandLine = new CommandLine(new Tool()).addSubcommand(new Subcommand()).addSubcommand(new HelpCommand()).setOut(new PrintWriter(out)).setErr(new PrintWriter(out));
+    private final CommandLine commandLine = new CommandLine(new Tool())
+            .addSubcommand(new Subcommand())
+            .addSubcommand(new HelpCommand())
+            .setOut(new PrintWriter(out))
+            .setErr(new PrintWriter(out));
 
     @Test
     public void testToolHelpShowsToolUsage() {
@@ -41,7 +43,6 @@ public class Issue2123RepeatableVsHelpTest {
     }
 
     @Test
-    @Ignore("This fails when subcommandsRepeatable = true")
     public void testToolHelpSubShowsToolSubUsage() {
         final int result = commandLine.execute("help", "sub");
 
@@ -58,14 +59,14 @@ public class Issue2123RepeatableVsHelpTest {
     }
 
     @Test
-    @Ignore("This fails when subcommandsRepeatable = true")
     public void testToolSubHelpShowsToolSubUsage() {
         final int result = commandLine.execute("sub", "help");
 
-        // Previously "help" wasn't allowed and return USAGE showing usage for "sub"
-        // Arguably HelpCommand should see that "sub" is in use and return OK showing usage for "sub"
-        assertThat(out, hasToString(containsString("Usage: tool sub")));
-        assertThat(result, equalTo(USAGE));
+        // With subcommandsRepeatable = false, "help" wasn't allowed so returns USAGE showing usage for "sub"
+        // With subcommandsRepeatable = true, "help" is processed alone so returns OK showing usage for "tool"
+        // It would be helpful to note that "sub" is the latest command in use so return OK showing usage for "sub"
+        assertThat(out, hasToString(containsString("Usage: tool [-hV]")));
+        assertThat(result, equalTo(OK));
     }
 
     @Test
