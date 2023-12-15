@@ -1,6 +1,7 @@
 package picocli.shell.jline3.example;
 
 import org.fusesource.jansi.AnsiConsole;
+import org.jline.builtins.ConfigurationPath;
 import org.jline.console.SystemRegistry;
 import org.jline.console.impl.Builtins;
 import org.jline.console.impl.SystemRegistryImpl;
