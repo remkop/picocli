@@ -47,6 +47,7 @@ import java.util.regex.Pattern;
 import static org.junit.Assert.*;
 import static picocli.ArgGroupTest.CommandMethodsWithGroupsAndMixins.InvokedSub.withMixin;
 
+@SuppressWarnings("EqualsHashCode") // https://errorprone.info/bugpattern/EqualsHashCode
 public class ArgGroupTest {
     @Rule
     public final ProvideSystemProperty ansiOFF = new ProvideSystemProperty("picocli.ansi", "false");

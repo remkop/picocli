@@ -192,7 +192,7 @@ public class TypeConversionTest {
                 "-Pattern", "a*b", //
                 "-UUID", "c7d51423-bf9d-45dd-a30d-5b16fafe42e2", //
                 "-Currency", "EUR",
-                "-tz", "Japan/Tokyo",
+                "-tz", "Asia/Tokyo",
                 "-byteOrder", "LITTLE_ENDIAN",
                 "-Class", "java.lang.String",
                 "-NetworkInterface", "127.0.0.0",
@@ -233,7 +233,7 @@ public class TypeConversionTest {
         assertEquals("Pattern", Pattern.compile("a*b").pattern(), bean.aPatternField.pattern());
         assertEquals("UUID", UUID.fromString("c7d51423-bf9d-45dd-a30d-5b16fafe42e2"), bean.anUUIDField);
         assertEquals("Currency", Currency.getInstance("EUR"), bean.aCurrencyField);
-        assertEquals("TimeZone", TimeZone.getTimeZone("Japan/Tokyo"), bean.aTimeZone);
+        assertEquals("TimeZone", TimeZone.getTimeZone("Asia/Tokyo"), bean.aTimeZone);
         assertEquals("ByteOrder", ByteOrder.LITTLE_ENDIAN, bean.aByteOrder);
         assertEquals("Class", String.class, bean.aClass);
         assertEquals("NetworkInterface", NetworkInterface.getByInetAddress(InetAddress.getByName("127.0.0.0")), bean.aNetInterface);
