@@ -2172,7 +2172,7 @@ public class HelpTest {
                 "  -v, --verbose               show what you're doing while you are doing it%n" +
                 "  -p                          the quick brown fox jumped over the lazy dog. The%n" +
                 "                                quick brown fox jumped over the lazy dog.%n"
-                ,""), table.toString(new StringBuilder()).toString());
+                ), table.toString(new StringBuilder()).toString());
     }
 
     @SuppressWarnings("deprecation")
@@ -2198,7 +2198,7 @@ public class HelpTest {
                         "* -c, --create, --create2, --create3, --create4, --create5, --create6,%n" +
                         "        --create7, --create8%n" +
                         "                              description%n"
-                ,""), table.toString(new StringBuilder()).toString());
+                ), table.toString(new StringBuilder()).toString());
 
         table = TextTable.forDefaultColumns(Help.Ansi.OFF, UsageMessageSpec.DEFAULT_USAGE_WIDTH);
         table.addRowValues("", "-c", ",",
@@ -2208,7 +2208,7 @@ public class HelpTest {
                         "  -c, --create, --create2, --create3, --create4, --create5, --create6,%n" +
                         "        --createAA7, --create8%n" +
                         "                              description%n"
-                ,""), table.toString(new StringBuilder()).toString());
+                ), table.toString(new StringBuilder()).toString());
     }
 
     @Test
@@ -2249,7 +2249,7 @@ public class HelpTest {
                         "  -v, --show-nonprinting   use ^ and M- notation, except for LDF and TAB%n" +
                         "      --help               display this help and exit%n" +
                         "      --version            output version information and exit%n" +
-                        "Copyright(c) 2017%n", "");
+                        "Copyright(c) 2017%n");
         assertEquals(expected, baos.toString());
     }
 
@@ -2323,7 +2323,7 @@ public class HelpTest {
                         "                between each display.  Press CTRL+C to stop redisplaying%n" +
                         "                statistics.  If omitted, netstat will print the current%n" +
                         "                configuration information once.%n"
-                , "");
+                );
         assertEquals(expected, CustomLayoutDemo.createNetstatUsageFormat(Help.Ansi.OFF));
     }
 

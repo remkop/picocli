@@ -49,6 +49,10 @@ public class RepeatingCompositeOptions {
                     && Objects.equals(other.file, this.file)
                     && Objects.equals(other.rotate, this.rotate);
         }
+
+        public int hashCode() {
+            return Objects.hash(count, file, rotate);
+        }
     }
 
     public static void main(String[] args) {

@@ -408,8 +408,8 @@ public class ExecuteLegacyTest {
         new CommandLine(new App()).parseWithHandlers(new RunFirst().andExit(23),
                                                     defaultExceptionHandler().andExit(25));
         assertEquals(format("" +
-                "blah%n",
-                "<main command>"), systemErrRule.getLog());
+                "blah%n"
+                ), systemErrRule.getLog());
     }
 
     @SuppressWarnings("deprecation")
