@@ -19,6 +19,7 @@ buildscript {
         classpath "org.beryx:badass-jar:2.0.0"
         classpath 'biz.aQute.bnd:biz.aQute.bnd.gradle:7.0.0'
         classpath "io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.30.0"
+        classpath "net.ltgt.gradle:gradle-errorprone-plugin:3.1.0"
     }
 }
 
@@ -60,7 +61,20 @@ pluginManager.withPlugin('biz.aQute.bnd.builder') { // if plugin applied, execut
 allprojects {
     apply plugin: 'java'
     apply plugin: 'java-library' // to avoid https://github.com/gradle/gradle/issues/1118
-    apply plugin: "org.beryx.jar" // for compiling module-info on Java 8
+    apply plugin: 'org.beryx.jar' // for compiling module-info on Java 8
+
+    // https://errorprone.info/docs/installation requires Java 11+
+    if (JavaVersion.current().isJava11Compatible()) {
+        apply plugin: "net.ltgt.errorprone"
+
+        dependencies {
+            errorprone("com.google.errorprone:error_prone_core:2.23.0")
+        }
+
+        tasks.withType(JavaCompile).configureEach {
+           options.errorprone.disableAllWarnings = true
+        }
+    }
 
     if (!JavaVersion.current().isJava9Compatible()) {
         sourceCompatibility = 1.5
