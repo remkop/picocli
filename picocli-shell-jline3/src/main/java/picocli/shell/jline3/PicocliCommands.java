@@ -280,7 +280,7 @@ public class PicocliCommands implements CommandRegistry {
 
     // For JLine >= 3.16.0
     @Override
-    public Object invoke(CommandRegistry.CommandSession session, String command, Object[] args) throws Exception {
+    public Object invoke(CommandRegistry.CommandSession session, String command, Object... args) throws Exception {
         List<String> arguments = new ArrayList<>();
         arguments.add( command );
         arguments.addAll( Arrays.stream( args ).map( Object::toString ).collect( Collectors.toList() ) );
