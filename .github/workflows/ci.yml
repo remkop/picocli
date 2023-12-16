@@ -15,12 +15,12 @@ jobs:
     continue-on-error: ${{ matrix.os == 'macos-latest' || matrix.java-version == '9' || matrix.java-version == '10' || matrix.java-version == '12' || matrix.java-version == '13' || matrix.java-version == '14' || matrix.java-version == '15' || matrix.java-version == '16' || matrix.java-version == '19' }}
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@8ca2b8b2ece13480cda6dacd3511b49857a23c09 # v1
+        uses: step-security/harden-runner@eb238b55efaa70779f274895e782ed17c84f2895 # v1
         with:
           egress-policy: audit
 
       - name: Checkout
-        uses: actions/checkout@3df4ab11eba7bda6032a0b82a6bb43b11571feac # v2
+        uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v2
 
       - name: Validate Gradle Wrapper
         uses: gradle/wrapper-validation-action@56b90f209b02bf6d1deae490e9ef18b21a389cd4 # v1
@@ -130,12 +130,12 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@8ca2b8b2ece13480cda6dacd3511b49857a23c09 # v1
+        uses: step-security/harden-runner@eb238b55efaa70779f274895e782ed17c84f2895 # v1
         with:
           egress-policy: audit
 
       - name: Checkout
-        uses: actions/checkout@3df4ab11eba7bda6032a0b82a6bb43b11571feac # v2
+        uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v2
 
       - name: Validate Gradle Wrapper
         uses: gradle/wrapper-validation-action@56b90f209b02bf6d1deae490e9ef18b21a389cd4 # v1
