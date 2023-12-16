@@ -3682,7 +3682,7 @@ public class CommandLine {
     public enum ScopeType {
         /** The element only exists in the current command. */
         LOCAL,
-        /** The element exists in the command where the element is defined and all descendents (subcommands, sub-subcommands, etc.). */
+        /** The element exists in the command where the element is defined and all descendants (subcommands, sub-subcommands, etc.). */
         INHERIT,
     }
     /**
@@ -4962,7 +4962,7 @@ public class CommandLine {
         String multiplicity() default "0..1";
         /** Determines whether picocli should validate the rules of this group ({@code true} by default).
          * For a mutually exclusive group validation means verifying that no more than one elements of the group is specified on the command line;
-         * for a co-ocurring group validation means verifying that all elements of the group are specified on the command line.
+         * for a co-occurring group validation means verifying that all elements of the group are specified on the command line.
          * Set {@link #validate() validate = false} for groups whose purpose is only to customize the usage help message.
          * @see #multiplicity()
          * @see #heading() */
@@ -7379,7 +7379,7 @@ public class CommandLine {
              * @see Command#scope()
              * @since 4.6 */
             public boolean inherited() { return inherited; }
-            /** Returns the scope of this argument; it it local, or inherited (it applies to this command as well as all sub- and sub-subcommands).
+            /** Returns the scope of this argument; is it local, or inherited (it applies to this command as well as all sub- and sub-subcommands).
              * @return whether this argument applies to all descendent subcommands of the command where it is defined
              * @since 4.6 */
             public ScopeType scopeType() { return scopeType == null ? ScopeType.LOCAL : scopeType; }
@@ -9080,7 +9080,7 @@ public class CommandLine {
              * Returns a regular expression to split option parameter for usage information.
              * @see Option#splitSynopsisLabel()
              * @since 4.3
-             * */
+             */
             public String splitRegexSynopsisLabel() { return interpolate(splitRegexSynopsisLabel); }
 
             /** Returns whether this option should be excluded from the usage message.
@@ -9140,7 +9140,7 @@ public class CommandLine {
              * the option will be reset to before parsing (regardless of whether a default value exists),
              * to clear values that would otherwise remain from parsing previous input. */
             public Object initialValue()   {
-                // not not initialize if already CACHED, or UNAVAILABLE, or if annotatedElement==null
+                // Do not initialize if already CACHED, or UNAVAILABLE, or if annotatedElement==null
                 if (initialValueState == InitialValueState.POSTPONED && annotatedElement != null) {
                     try {
                         initialValue = annotatedElement.getter().get();
@@ -9228,7 +9228,7 @@ public class CommandLine {
             /** Returns the binding {@link IScope} that determines on which object to set the value (or from which object to get the value) of this argument. */
             public IScope scope()          { return scope; }
 
-            /** Returns the scope of this argument; it it local, or inherited (it applies to this command as well as all sub- and sub-subcommands).
+            /** Returns the scope of this argument; is it local, or inherited (it applies to this command as well as all sub- and sub-subcommands).
              * @return whether this argument applies to all descendent subcommands of the command where it is defined
              * @since 4.3 */
             public ScopeType scopeType() { return scopeType; }
@@ -10505,7 +10505,7 @@ public class CommandLine {
 
             /** Returns whether picocli should validate the rules of this group:
              * for a mutually exclusive group this means that no more than one arguments in the group is specified on the command line;
-             * for a co-ocurring group this means that all arguments in the group are specified on the command line.
+             * for a co-occurring group this means that all arguments in the group are specified on the command line.
              * {@code true} by default.
              * @see ArgGroup#validate() */
             public boolean validate() { return validate; }
@@ -10980,13 +10980,13 @@ public class CommandLine {
 
                 /** Returns whether picocli should validate the rules of this group:
                  * for a mutually exclusive group this means that no more than one arguments in the group is specified on the command line;
-                 * for a co-ocurring group this means that all arguments in the group are specified on the command line.
+                 * for a co-occurring group this means that all arguments in the group are specified on the command line.
                  * {@code true} by default.
                  * @see ArgGroup#validate() */
                 public boolean validate() { return validate; }
                 /** Sets whether picocli should validate the rules of this group:
                  * for a mutually exclusive group this means that no more than one arguments in the group is specified on the command line;
-                 * for a co-ocurring group this means that all arguments in the group are specified on the command line.
+                 * for a co-occurring group this means that all arguments in the group are specified on the command line.
                  * {@code true} by default.
                  * @see ArgGroup#validate() */
                 public Builder validate(boolean newValue) { validate = newValue; return this; }
@@ -18940,7 +18940,7 @@ public class CommandLine {
     public static class PropertiesDefaultProvider implements IDefaultValueProvider {
 
         private Properties properties;
-        private File location;
+        private String location;
 
         /**
          * Default constructor, used when this default value provider is specified in
@@ -18993,30 +18993,39 @@ public class CommandLine {
         public PropertiesDefaultProvider(File file) {
             this(createProperties(file, null));
             properties.remove("__picocli_internal_location");
-            location = file;
+            location = file.getAbsolutePath();
         }
 
         private static Properties createProperties(File file, CommandSpec commandSpec) {
             if (file == null) {
                 throw new NullPointerException("file is null");
             }
-            Tracer tracer = CommandLine.tracer();
-            Properties result = new Properties();
             if (file.exists() && file.canRead()) {
-                InputStream in = null;
                 try {
-                    String command = commandSpec == null ? "unknown command" : commandSpec.qualifiedName();
-                    tracer.debug("Reading defaults from %s for %s", file.getAbsolutePath(), command);
-                    in = new FileInputStream(file);
-                    result.load(in);
-                    result.put("__picocli_internal_location", file);
-                } catch (IOException ioe) {
-                    tracer.warn("could not read defaults from %s: %s", file.getAbsolutePath(), ioe);
-                } finally {
-                    close(in);
+                    return createProperties(new FileInputStream(file), file.getAbsolutePath(), commandSpec);
+                } catch (Exception ex) {
+                    tracer().warn("PropertiesDefaultProvider could not read defaults from %s: %s", file.getAbsolutePath(), ex);
                 }
             } else {
-                tracer.warn("defaults configuration file %s does not exist or is not readable", file.getAbsolutePath());
+                tracer().warn("PropertiesDefaultProvider: defaults configuration file %s does not exist or is not readable", file.getAbsolutePath());
+            }
+            return new Properties();
+        }
+
+        private static Properties createProperties(InputStream in, String locationDescription, CommandSpec commandSpec) {
+            if (in == null) {
+                throw new NullPointerException("InputStream is null");
+            }
+            Properties result = new Properties();
+            try {
+                String command = commandSpec == null ? "unknown command" : commandSpec.qualifiedName();
+                tracer().debug("PropertiesDefaultProvider reading defaults from %s for %s", locationDescription, command);
+                result.load(in);
+                result.put("__picocli_internal_location", locationDescription);
+            } catch (IOException ioe) {
+                tracer().warn("PropertiesDefaultProvider could not read defaults from %s: %s", locationDescription, ioe);
+            } finally {
+                close(in);
             }
             return result;
         }
@@ -19025,11 +19034,30 @@ public class CommandLine {
             if (commandSpec == null) { return null; }
             Properties p = System.getProperties();
             for (String name : commandSpec.names()) {
+                String propertiesFileName = "." + name + ".properties";
                 String path = p.getProperty("picocli.defaults." + name + ".path");
-                File defaultPath = new File(p.getProperty("user.home"), "." + name + ".properties");
+                File defaultPath = new File(p.getProperty("user.home"), propertiesFileName);
                 File file = path == null ? defaultPath : new File(path);
+                if (path != null) {
+                    tracer().debug("PropertiesDefaultProvider using path from system property %s: %s", "picocli.defaults." + name + ".path", path);
+                }
                 if (file.canRead()) {
                     return createProperties(file, commandSpec);
+                } else {
+                    Object userObject = commandSpec.userObject();
+                    if (userObject == null) {
+                        userObject = commandSpec.commandLine;
+                    }
+                    URL resource = userObject.getClass().getClassLoader().getResource(propertiesFileName);
+                    if (resource != null) {
+                        try {
+                            return createProperties(resource.openStream(), resource.toString(), commandSpec);
+                        } catch (Exception ex) {
+                            tracer().warn("PropertiesDefaultProvider could not read defaults from %s: %s", resource, ex);
+                        }
+                    } else {
+                        tracer().debug("PropertiesDefaultProvider defaults configuration file %s does not exist on classpath or user home or specified location", propertiesFileName);
+                    }
                 }
             }
             return loadProperties(commandSpec.parent());
@@ -19038,7 +19066,7 @@ public class CommandLine {
         public String defaultValue(ArgSpec argSpec) throws Exception {
             if (properties == null) {
                 properties = loadProperties(argSpec.command());
-                location = properties == null ? null : (File) properties.remove("__picocli_internal_location");
+                location = properties == null ? null : (String) properties.remove("__picocli_internal_location");
             }
             if (properties == null || properties.isEmpty()) {
                 return null;

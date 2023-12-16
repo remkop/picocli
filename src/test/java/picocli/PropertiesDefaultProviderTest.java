@@ -34,8 +34,33 @@ public class PropertiesDefaultProviderTest {
     @Rule
     public final SystemErrRule systemErrRule = new SystemErrRule().enableLog().muteForSuccessfulTests();
 
+    @Command(name = "classpathLoadedProvidertest",
+        defaultValueProvider = PropertiesDefaultProvider.class)
+    static class ClasspathLoadedDefaultsApp {
+        @Option(names = "--aaa") int aaa;
+        @Option(names = "-b", descriptionKey = "bbb") int bbb;
+        @Parameters(index = "1", paramLabel = "ppp") int ppp;
+        @Parameters(index = "0", paramLabel = "qqq", descriptionKey = "xxx") int xxx;
+    }
+
+    @Test
+    public void testLoadFromResourceClasspathIfPropertySpecified() throws IOException {
+
+        ClasspathLoadedDefaultsApp myApp = new ClasspathLoadedDefaultsApp();
+        assertEquals(myApp.aaa, 0);
+        assertEquals(myApp.bbb, 0);
+        assertEquals(myApp.ppp, 0);
+        assertEquals(myApp.xxx, 0);
+        new CommandLine(myApp).parseArgs();
+
+        assertEquals(myApp.aaa, 1001);
+        assertEquals(myApp.bbb, 2002);
+        assertEquals(myApp.ppp, 3003);
+        assertEquals(myApp.xxx, 4004);
+    }
+
     @Command(name = "providertest", subcommands = Subcommand.class,
-            defaultValueProvider = PropertiesDefaultProvider.class)
+        defaultValueProvider = PropertiesDefaultProvider.class)
     static class MyApp {
         @Option(names = "--aaa") int aaa;
         @Option(names = "-b", descriptionKey = "bbb") int bbb;
@@ -44,7 +69,7 @@ public class PropertiesDefaultProviderTest {
     }
 
     @Command(name = "providersub",
-            defaultValueProvider = PropertiesDefaultProvider.class)
+        defaultValueProvider = PropertiesDefaultProvider.class)
     static class Subcommand {
         @Option(names = "--aaa") int aaa;
         @Option(names = "-b", descriptionKey = "bbb") int bbb;
@@ -222,7 +247,7 @@ public class PropertiesDefaultProviderTest {
     public void testNonExistingFile() {
         TestUtil.setTraceLevel(CommandLine.TraceLevel.DEBUG);
         new PropertiesDefaultProvider(new File("nosuchfile"));
-        assertTrue(systemErrRule.getLog().startsWith("[picocli WARN] defaults configuration file "));
+        assertTrue(systemErrRule.getLog().startsWith("[picocli WARN] PropertiesDefaultProvider: defaults configuration file "));
         assertTrue(systemErrRule.getLog().endsWith(String.format("nosuchfile does not exist or is not readable%n")));
     }
 

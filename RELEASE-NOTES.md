@@ -19,17 +19,24 @@ Artifacts in this release are signed by Remko Popma (6601 E5C0 8DCC BB96).
 
 ## <a name="4.7.6-new"></a> New and Noteworthy
 
+`PropertiesDefaultProvider` now tries to load properties from the classpath if the file cannot be found  in the user.home directory.
+
 
 
 ## <a name="4.7.6-fixes"></a> Fixed issues
 
+* [#2102][#2107] Enhancement: `PropertiesDefaultProvider` should try to load properties from classpath (last). Thanks to [Lumír Návrat](https://github.com/rimuln) for the pull request.
 * [#2058] Bugfix: `defaultValue` should not be applied in addition to user-specified value for options with a custom `IParameterConsumer`. Thanks to [Staffan Arvidsson McShane](https://github.com/StaffanArvidsson) for raising this.
+* [#2148] Bugfix: Fix NPE in jline3 `Example.jar` as `ConfigurationPath` cannot be `null` anymore. Thanks to [llzen44](https://github.com/llzen44) for the pull request.
 * [#2047] DEP: Bump andymckay/append-gist-action from 1fbfbbce708a39bd45846f0955ed5521f2099c6d to 6e8d64427fe47cbacf4ab6b890411f1d67c07f3e
 * [#2091] DEP: Bump actions/checkout from 3.5.2 to 3.6.0
+* [#2108] DEP: Bump actions/checkout from 3.6.0 to 4.0.0
 * [#2098] DEP: Bump actions/setup-java from 3.11.0 to 3.12.0
+* [#2111] DEP: Bump actions/upload-artifact from 3.1.2 to 3.1.3
 * [#2099] DEP: Bump gradle/gradle-build-action from 2.4.2 to 2.8.0
 * [#2096] DEP: Bump gradle/wrapper-validation-action from 1.0.6 to 1.1.0
 * [#2085] DEP: Bump github/codeql-action from 2.3.5 to 2.21.4
+* [#2114] DEP: Bump github/codeql-action from 2.21.4 to 2.21.7
 * [#2093] DEP: Bump junit5Version from 5.9.3 to 5.10.0
 * [#2095] DEP: Bump org.apache.ivy:ivy from 2.5.1 to 2.5.2
 * [#2094] DEP: Bump org.asciidoctor:asciidoctorj-pdf from 2.3.7 to 2.3.9
@@ -37,6 +44,7 @@ Artifacts in this release are signed by Remko Popma (6601 E5C0 8DCC BB96).
 * [#2090] DEP: Bump org.jetbrains.kotlin:kotlin-script-runtime from 1.8.21 to 1.9.10
 * [#2049] DEP: Bump org.hibernate.validator:hibernate-validator from 8.0.0.Final to 8.0.1.Final
 * [#2037] DEP: Bump org.scala-lang:scala-library from 2.13.10 to 2.13.11
+* [#2112] DEP: Bump org.scala-lang:scala-library from 2.13.11 to 2.13.12
 * [#2052] DEP: Bump ossf/scorecard-action from 2.1.3 to 2.2.0
 * [#2082] DEP: Bump step-security/harden-runner from 2.4.0 to 2.5.1
 * DEP: Bump SpringBoot from 2.7.1 to 2.7.2 (for Java versions prior to 17)
