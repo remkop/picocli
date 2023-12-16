@@ -69,7 +69,7 @@ JLine [Wiki](https://github.com/jline/jline3/wiki) and some more [Demos](https:/
 
 ## Example
 
-### Maven 
+### Maven
 
 ```xml
 <dependency>
@@ -93,6 +93,7 @@ See examples for older versions on the [wiki](https://github.com/remkop/picocli/
 package picocli.shell.jline3.example;
 
 import org.fusesource.jansi.AnsiConsole;
+import org.jline.builtins.ConfigurationPath;
 import org.jline.console.SystemRegistry;
 import org.jline.console.impl.Builtins;
 import org.jline.console.impl.SystemRegistryImpl;
@@ -226,7 +227,7 @@ public class Example {
         try {
             Supplier<Path> workDir = () -> Paths.get(System.getProperty("user.dir"));
             // set up JLine built-in commands
-            Builtins builtins = new Builtins(workDir, null, null);
+            Builtins builtins = new Builtins(workDir, new ConfigurationPath(workDir.get(), workDir.get()), null);
             builtins.rename(Builtins.Command.TTOP, "top");
             builtins.alias("zle", "widget");
             builtins.alias("bindkey", "keymap");
