@@ -9,7 +9,7 @@
 [![Follow @picocli](https://img.shields.io/twitter/follow/picocli.svg?style=social)](https://twitter.com/intent/follow?screen_name=picocli)
 [![Follow picocli on StackShare](https://img.shields.io/badge/Follow%20on-StackShare-blue.svg?logo=stackshare&style=flat)](https://stackshare.io/picocli)
 
-# picocli - a mighty tiny command line interface
+# Picocli - a mighty tiny command line interface
 
 Picocli aims to be the easiest-to-use way to create rich command line applications that can run on and off the JVM.
 Considering picocli? Check [what happy users say](https://github.com/remkop/picocli/wiki/Feedback-from-Users) about picocli.
