@@ -21,7 +21,7 @@ ext {
     jacocoVersion       = "0.8.2"
     jansiVersion        = "2.4.1"
     jline2Version       = "2.14.6"
-    jline3Version       = "3.23.0"
+    jline3Version       = "3.24.1"
     junitDepVersion     = "4.11"
     junitVersion        = "4.13.2"
     log4j2Version       = "2.21.1"
