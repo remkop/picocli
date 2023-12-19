@@ -3689,7 +3689,7 @@ public class CommandLine {
     public enum ScopeType {
         /** The element only exists in the current command. */
         LOCAL,
-        /** The element exists in the command where the element is defined and all descendents (subcommands, sub-subcommands, etc.). */
+        /** The element exists in the command where the element is defined and all descendants (subcommands, sub-subcommands, etc.). */
         INHERIT,
     }
     /**
@@ -4969,7 +4969,7 @@ public class CommandLine {
         String multiplicity() default "0..1";
         /** Determines whether picocli should validate the rules of this group ({@code true} by default).
          * For a mutually exclusive group validation means verifying that no more than one elements of the group is specified on the command line;
-         * for a co-ocurring group validation means verifying that all elements of the group are specified on the command line.
+         * for a co-occurring group validation means verifying that all elements of the group are specified on the command line.
          * Set {@link #validate() validate = false} for groups whose purpose is only to customize the usage help message.
          * @see #multiplicity()
          * @see #heading() */
@@ -7355,7 +7355,7 @@ public class CommandLine {
              * @see Command#scope()
              * @since 4.6 */
             public boolean inherited() { return inherited; }
-            /** Returns the scope of this argument; it it local, or inherited (it applies to this command as well as all sub- and sub-subcommands).
+            /** Returns the scope of this argument; is it local, or inherited (it applies to this command as well as all sub- and sub-subcommands).
              * @return whether this argument applies to all descendent subcommands of the command where it is defined
              * @since 4.6 */
             public ScopeType scopeType() { return scopeType == null ? ScopeType.LOCAL : scopeType; }
@@ -9063,7 +9063,7 @@ public class CommandLine {
              * Returns a regular expression to split option parameter for usage information.
              * @see Option#splitSynopsisLabel()
              * @since 4.3
-             * */
+             */
             public String splitRegexSynopsisLabel() { return interpolate(splitRegexSynopsisLabel); }
 
             /** Returns whether this option should be excluded from the usage message.
@@ -9123,7 +9123,7 @@ public class CommandLine {
              * the option will be reset to before parsing (regardless of whether a default value exists),
              * to clear values that would otherwise remain from parsing previous input. */
             public Object initialValue()   {
-                // not not initialize if already CACHED, or UNAVAILABLE, or if annotatedElement==null
+                // Do not initialize if already CACHED, or UNAVAILABLE, or if annotatedElement==null
                 if (initialValueState == InitialValueState.POSTPONED && annotatedElement != null) {
                     try {
                         initialValue = annotatedElement.getter().get();
@@ -9211,7 +9211,7 @@ public class CommandLine {
             /** Returns the binding {@link IScope} that determines on which object to set the value (or from which object to get the value) of this argument. */
             public IScope scope()          { return scope; }
 
-            /** Returns the scope of this argument; it it local, or inherited (it applies to this command as well as all sub- and sub-subcommands).
+            /** Returns the scope of this argument; is it local, or inherited (it applies to this command as well as all sub- and sub-subcommands).
              * @return whether this argument applies to all descendent subcommands of the command where it is defined
              * @since 4.3 */
             public ScopeType scopeType() { return scopeType; }
@@ -10488,7 +10488,7 @@ public class CommandLine {
 
             /** Returns whether picocli should validate the rules of this group:
              * for a mutually exclusive group this means that no more than one arguments in the group is specified on the command line;
-             * for a co-ocurring group this means that all arguments in the group are specified on the command line.
+             * for a co-occurring group this means that all arguments in the group are specified on the command line.
              * {@code true} by default.
              * @see ArgGroup#validate() */
             public boolean validate() { return validate; }
@@ -10963,13 +10963,13 @@ public class CommandLine {
 
                 /** Returns whether picocli should validate the rules of this group:
                  * for a mutually exclusive group this means that no more than one arguments in the group is specified on the command line;
-                 * for a co-ocurring group this means that all arguments in the group are specified on the command line.
+                 * for a co-occurring group this means that all arguments in the group are specified on the command line.
                  * {@code true} by default.
                  * @see ArgGroup#validate() */
                 public boolean validate() { return validate; }
                 /** Sets whether picocli should validate the rules of this group:
                  * for a mutually exclusive group this means that no more than one arguments in the group is specified on the command line;
-                 * for a co-ocurring group this means that all arguments in the group are specified on the command line.
+                 * for a co-occurring group this means that all arguments in the group are specified on the command line.
                  * {@code true} by default.
                  * @see ArgGroup#validate() */
                 public Builder validate(boolean newValue) { validate = newValue; return this; }

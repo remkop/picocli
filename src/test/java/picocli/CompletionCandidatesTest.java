@@ -248,7 +248,7 @@ public class CompletionCandidatesTest {
         assertNull(candidates);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "ReturnValueIgnored"}) // iterable.iterator() https://errorprone.info/bugpattern/ReturnValueIgnored
     @Test(expected = UnsupportedOperationException.class)
     public void testNoCompletionCandidatesThrowsUnsupportedOperation() throws Exception {
         Class<Iterable<String>> c = (Class<Iterable<String>>) Class.forName("picocli.CommandLine$NoCompletionCandidates");
