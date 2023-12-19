@@ -1107,6 +1107,7 @@ public class CommandLine {
     /** Returns whether positional parameters on the command line are allowed to occur before the special End of Options delimiter.
      * The default is {@code true}.
      * @return {@code true} positional parameters may occur anywhere on the command line, {@code false} if they must follow End of Options.
+     * @since 4.8.0
      */
     public boolean isParameterAllowedBeforeEndOfOptions() {
         return getCommandSpec().parser().parameterAllowedBeforeEndOfOptions();
@@ -1120,6 +1121,7 @@ public class CommandLine {
      * subcommands, call the setter last, after adding subcommands.</p>
      * @param newValue the new setting. When {@code false}, positional parameters must follow the special End of Options delimiter.
      * @return this {@code CommandLine} object, to allow method chaining
+     * @since 4.8.0
      */
     public CommandLine setParameterAllowedBeforeEndOfOptions(boolean newValue) {
         getCommandSpec().parser().parameterAllowedBeforeEndOfOptions(newValue);
@@ -8691,7 +8693,9 @@ public class CommandLine {
             public ParserSpec unmatchedOptionsAllowedAsOptionParameters(boolean unmatchedOptionsAllowedAsOptionParameters) { this.unmatchedOptionsAllowedAsOptionParameters = unmatchedOptionsAllowedAsOptionParameters; return this; }
             /** @see CommandLine#setUnmatchedOptionsArePositionalParams(boolean) */
             public ParserSpec unmatchedOptionsArePositionalParams(boolean unmatchedOptionsArePositionalParams) { this.unmatchedOptionsArePositionalParams = unmatchedOptionsArePositionalParams; return this; }
-            /** @see CommandLine#setParameterAllowedBeforeEndOfOptions(boolean) */
+            /**
+             * @see CommandLine#setParameterAllowedBeforeEndOfOptions(boolean)
+             *  @since 4.8.0*/
             public ParserSpec parameterAllowedBeforeEndOfOptions(boolean allowParametersBeforeEndOfOptions) { this.parameterAllowedBeforeEndOfOptions = allowParametersBeforeEndOfOptions; return this; }
             /**
              * @see CommandLine#setAllowSubcommandsAsOptionParameters(boolean)
