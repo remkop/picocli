@@ -5610,7 +5610,7 @@ public class CommandLine {
      * @since 4.0 */
     public static IFactory defaultFactory() { return new DefaultFactory(); }
     private static class DefaultFactory implements IFactory {
-        static Class<?> GROOVY_CLOSURE_CLASS = loadClosureClass();
+        private static final Class<?> GROOVY_CLOSURE_CLASS = loadClosureClass();
         private static Class<?> loadClosureClass() {
             if (Boolean.getBoolean("picocli.disable.closures")) {
                 tracer().info("DefaultFactory: groovy Closures in annotations are disabled and will not be loaded");
