@@ -152,4 +152,4 @@ jobs:
         with:
           gradle-version: 1.12
           build-root-directory: picocli-tests-java567/
-          arguments: clean build --no-daemon
+          arguments: -Pgradle-enterprise.injection-enabled=false clean build --no-daemon
