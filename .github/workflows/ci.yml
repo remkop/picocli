@@ -148,8 +148,8 @@ jobs:
           cache: gradle
 
       - name: Build
-        uses: gradle/gradle-build-action@8cbcb9948b5892387aed077daf6f90e1f0ba5b27 # v2
+        uses: gradle/gradle-build-action@prerelease/v2.11.1 # v2
         with:
           gradle-version: 1.12
           build-root-directory: picocli-tests-java567/
-          arguments: -Pgradle-enterprise.injection-enabled=false clean build --no-daemon
+          arguments: clean build --no-daemon
