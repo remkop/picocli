@@ -15334,8 +15334,28 @@ public class CommandLine {
     @Command(name = "help", header = "Display help information about the specified command.",
             synopsisHeading = "%nUsage: ", helpCommand = true,
             description = {"%nWhen no COMMAND is given, the usage help for the main command is displayed.",
-                    "If a COMMAND is specified, the help for that command is shown.%n"})
+                    "If a COMMAND is specified, the help for that command is shown.%n"},
+            preprocessor = HelpCommand.HelpPreprocessor.class)
     public static final class HelpCommand implements IHelpCommandInitializable, IHelpCommandInitializable2, Runnable {
+
+        /** Custom {@link IParameterPreprocessor} to greedily consume the {@link #commands} parameter
+         * when it matches a command, before repeatable subcommand processing consumes it instead.
+         */
+        private static class HelpPreprocessor implements IParameterPreprocessor {
+            @Override
+            public boolean preprocess(Stack<String> args, CommandSpec commandSpec, ArgSpec argSpec, Map<String, Object> info) {
+                if (!args.isEmpty()) {
+                    final String arg = args.peek();
+                    if (commandSpec.parent().subcommands().get(arg) != null) {
+                        final HelpCommand help = (HelpCommand) commandSpec.userObject();
+                        help.commands = arg;
+                        args.pop();
+                        return true;
+                    }
+                }
+                return false;
+            }
+        }
 
         @Option(names = {"-h", "--help"}, usageHelp = true, descriptionKey = "helpCommand.help",
                 description = "Show usage help for the help command and exit.")
