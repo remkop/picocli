@@ -13695,7 +13695,11 @@ public class CommandLine {
                 for (UnmatchedArgsBinding unmatchedArgsBinding : getCommandSpec().unmatchedArgsBindings()) {
                     unmatchedArgsBinding.addAll(unmatched.clone());
                 }
-                if (!isUnmatchedArgumentsAllowed()) { maybeThrow(new UnmatchedArgumentException(CommandLine.this, Collections.unmodifiableList(parseResultBuilder.unmatched))); }
+                if (!isUnmatchedArgumentsAllowed()) {
+                    String extraMsg = "";
+                    if (!isParameterAllowedBeforeEndOfOptions()) { extraMsg = ".  Positional parameters must follow the EndOfOptions delimiter '" + getEndOfOptionsDelimiter() + "'."; }
+                    maybeThrow(new UnmatchedArgumentException(CommandLine.this, Collections.unmodifiableList(parseResultBuilder.unmatched), extraMsg));
+                }
                 Tracer tracer = CommandLine.tracer();
                 if (tracer.isInfo()) { tracer.info("Unmatched arguments: %s", parseResultBuilder.unmatched); }
             }

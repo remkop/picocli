@@ -9,6 +9,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Enhancement from issue 2103 enables or disables positional parameters before the EndOfOptions delimiter (such as "--").
@@ -132,4 +133,39 @@ public class Issue2103 {
         assertEquals(Arrays.asList("a", "--optC", "c", "d"), sub.list);
     }
 
+    /**
+     * Validate that the setParameterAllowedBeforeEndOfOptions triggers a new message for unmatched positional arguments.
+     */
+    @Test
+    public void testUnmatchedArgumentMessageAsFalse() {
+        App app = new App();
+        CommandLine cl = new CommandLine(app)
+            .setParameterAllowedBeforeEndOfOptions(false);
+        try {
+            CommandLine.populateCommand(cl, "--optA joe a1 -- --optB c d".split(" "));
+            fail("Unmatched positional argument should have thrown exception");
+        } catch (CommandLine.UnmatchedArgumentException ex) {
+            assertEquals("Unmatched argument at index 2: 'a1'.  Positional parameters must follow the EndOfOptions delimiter '--'.", ex.getMessage());
+        }
+    }
+
+    /**
+     * Verify that the setParameterAllowedBeforeEndOfOptions triggers the original message when not set.
+     */
+    @Test
+    public void testUnmatchedArgumentMessageAsDefault() {
+        class UnmatchedApp implements Runnable {
+            @CommandLine.Option(names = "--optA") String optA;
+            public void run() { }
+        }
+
+        UnmatchedApp app = new UnmatchedApp();
+        CommandLine cl = new CommandLine(app);
+        try {
+            CommandLine.populateCommand(cl, "--optA joe a1".split(" "));
+            fail("Unmatched positional argument should have thrown exception");
+        } catch (CommandLine.UnmatchedArgumentException ex) {
+            assertEquals("Unmatched argument at index 2: 'a1'", ex.getMessage());
+        }
+    }
 }
