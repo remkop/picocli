@@ -42,9 +42,7 @@ public class PrintFirstLine implements Callable<Integer> {
 
     private void printFirstLine(File file) throws IOException {
         try (BufferedReader reader = createReader(file)) {
-            System.err.println("Created reader for " + file.getAbsolutePath());
             String line = reader.readLine();
-            System.err.println("Read line: " + line);
             System.out.println(line);
         }
     }
