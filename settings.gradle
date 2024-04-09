@@ -3,6 +3,7 @@ include 'picocli-groovy'
 include 'picocli-examples'
 include 'picocli-shell-jline2'
 include 'picocli-codegen'
+include 'picocli-tests-java8'
 
 if (org.gradle.api.JavaVersion.current().isJava8Compatible()) {
     include 'picocli-spring-boot-starter'

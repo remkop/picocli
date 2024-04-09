@@ -5610,7 +5610,7 @@ public class CommandLine {
      * @since 4.0 */
     public static IFactory defaultFactory() { return new DefaultFactory(); }
     private static class DefaultFactory implements IFactory {
-        static Class<?> GROOVY_CLOSURE_CLASS = loadClosureClass();
+        private static final Class<?> GROOVY_CLOSURE_CLASS = loadClosureClass();
         private static Class<?> loadClosureClass() {
             if (Boolean.getBoolean("picocli.disable.closures")) {
                 tracer().info("DefaultFactory: groovy Closures in annotations are disabled and will not be loaded");
@@ -13719,9 +13719,14 @@ public class CommandLine {
                 arg.valueIsDefaultValue = true;
             } else {
                 if (arg.typeInfo().isOptional()) {
-                    if (tracer.isDebug()) {
-                        tracer.debug("Applying Optional.empty() to %s on %s", arg, arg.scopeString());}
-                    arg.setValue(getOptionalEmpty());
+                    if (arg.hasInitialValue() && arg.initialValue() != null) {
+                        if (tracer.isDebug()) {
+                            tracer.debug("Leaving initial value %s for %s on %s", arg.initialValue(), arg, arg.scopeString());}
+                    } else {
+                        if (tracer.isDebug()) {
+                            tracer.debug("Applying Optional.empty() to %s on %s", arg, arg.scopeString());}
+                        arg.setValue(getOptionalEmpty());
+                    }
                     arg.valueIsDefaultValue = true;
                 } else if (ArgSpec.UNSPECIFIED.equals(arg.originalDefaultValue)) {
                     tracer.debug("defaultValue not defined for %s", arg);
