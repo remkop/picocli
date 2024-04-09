@@ -1040,6 +1040,8 @@ assert(mixed.options == Arrays.asList("AAA", "BBB"))
 ----
 
 === Double dash (`--`)
+Picocli offers built-in support for the End-of-Options delimiter (`--`), as defined in Guideline 10 of the link:https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html#tag_12_02[POSIX Utility Syntax Guidelines].
+
 When one of the command line arguments is just two dashes without any characters attached (`--`),
 picocli interprets all following arguments as positional parameters, even arguments that match an option name.
 
