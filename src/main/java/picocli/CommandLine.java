@@ -13719,9 +13719,14 @@ public class CommandLine {
                 arg.valueIsDefaultValue = true;
             } else {
                 if (arg.typeInfo().isOptional()) {
-                    if (tracer.isDebug()) {
-                        tracer.debug("Applying Optional.empty() to %s on %s", arg, arg.scopeString());}
-                    arg.setValue(getOptionalEmpty());
+                    if (arg.hasInitialValue() && arg.initialValue() != null) {
+                        if (tracer.isDebug()) {
+                            tracer.debug("Leaving initial value %s for %s on %s", arg.initialValue(), arg, arg.scopeString());}
+                    } else {
+                        if (tracer.isDebug()) {
+                            tracer.debug("Applying Optional.empty() to %s on %s", arg, arg.scopeString());}
+                        arg.setValue(getOptionalEmpty());
+                    }
                     arg.valueIsDefaultValue = true;
                 } else if (ArgSpec.UNSPECIFIED.equals(arg.originalDefaultValue)) {
                     tracer.debug("defaultValue not defined for %s", arg);

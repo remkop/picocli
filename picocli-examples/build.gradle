@@ -80,6 +80,12 @@ normalization {
 }
 
 tasks.withType(Javadoc).all { enabled = false }
+//tasks.named('compileKotlin', org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask.class) {
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
+    compilerOptions {
+        freeCompilerArgs.add('-Xskip-metadata-version-check')
+    }
+}
 //tasks.withType(Javadoc) {
 //    options.addBooleanOption('Xdoclint:none', true)
 //}
