@@ -28,6 +28,7 @@ Artifacts in this release are signed by Remko Popma (6601 E5C0 8DCC BB96).
 * [#2102][#2107] Enhancement: `PropertiesDefaultProvider` should try to load properties from classpath (last). Thanks to [Lumír Návrat](https://github.com/rimuln) for the pull request.
 * [#2058] Bugfix: `defaultValue` should not be applied in addition to user-specified value for options with a custom `IParameterConsumer`. Thanks to [Staffan Arvidsson McShane](https://github.com/StaffanArvidsson) for raising this.
 * [#2148] Bugfix: Fix NPE in jline3 `Example.jar` as `ConfigurationPath` cannot be `null` anymore. Thanks to [llzen44](https://github.com/llzen44) for the pull request.
+* [#2232] Bugfix: fix bug for `Optional<T>` arguments with initial value. Thanks to [hq6](https://github.com/hq6) for raising this.
 * [#2171] Fix a few typos in CommandLine's JavaDoc. Thanks to [Michael Vorburger](https://github.com/vorburger) for the pull request.
 * [#2172] Fix broken build. Thanks to [Michael Vorburger](https://github.com/vorburger) for the pull request.
 * [#2174] Fix .gitattributes related CR/LF problems. Thanks to [Michael Vorburger](https://github.com/vorburger) for the pull request.
