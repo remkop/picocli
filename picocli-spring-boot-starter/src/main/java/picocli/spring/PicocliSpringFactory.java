@@ -51,8 +51,8 @@ public class PicocliSpringFactory implements CommandLine.IFactory {
         try {
             return getBeanOrCreate(clazz);
         } catch (Exception e) {
-            logger.warning(String.format(
-                "Unable to get bean of class %s, using fallback factory %s (%s)",
+            logger.info(String.format(
+                "Unable to get bean of class %s from ApplicationContext, using fallback factory %s (%s)",
                 clazz, fallbackFactory.getClass().getName(), e.toString()));
             return fallbackFactory.create(clazz);
         }
