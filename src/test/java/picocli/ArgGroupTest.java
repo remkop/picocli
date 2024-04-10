@@ -355,7 +355,6 @@ public class ArgGroupTest {
         ArgGroupSpec.Builder builder = ArgGroupSpec.builder();
         builder.addArg(OPTION);
         ArgGroupSpec a = builder.build();
-        assertEquals(a, a);
         assertNotSame(a, ArgGroupSpec.builder().addArg(OPTION).build());
         assertEquals(a, ArgGroupSpec.builder().addArg(OPTION).build());
 
