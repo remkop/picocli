@@ -366,7 +366,6 @@ public class ModelOptionSpecTest {
                 .order(123);
 
         OptionSpec p1 = option.build();
-        assertEquals(p1, p1);
         assertEquals(p1, option.build());
         assertNotEquals(p1, option.arity("2").build());
         assertNotEquals(p1, option.arity("1").hideParamSyntax(false).build());
@@ -443,7 +442,6 @@ public class ModelOptionSpecTest {
             .order(123);
 
         OptionSpec p1 = option.build();
-        assertEquals(p1, p1);
         assertEquals(p1, option.build());
         assertNotEquals(p1, option.splitRegexSynopsisLabel("\\\\?").build());
     }
