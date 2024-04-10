@@ -301,7 +301,6 @@ public class ModelPositionalParamSpecTest {
                 .index("1..3");
 
         PositionalParamSpec p1 = positional.build();
-        assertEquals(p1, p1);
         assertEquals(p1, positional.build());
         assertNotEquals(p1, positional.arity("2").build());
         assertNotEquals(p1, positional.arity("1").hideParamSyntax(false).build());
