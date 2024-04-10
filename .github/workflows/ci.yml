@@ -23,7 +23,7 @@ jobs:
         uses: actions/checkout@9bb56186c3b09b4f86b1c65136769dd318469633
 
       - name: Validate Gradle Wrapper
-        uses: gradle/wrapper-validation-action@56b90f209b02bf6d1deae490e9ef18b21a389cd4
+        uses: gradle/wrapper-validation-action@b5418f5a58f5fd2eb486dd7efb368fe7be7eae45
 
       - name: Configure JDK ${{ matrix.java-version }}
         uses: actions/setup-java@387ac29b308b003ca37ba93a6cab5eb57c8f5f93
@@ -138,7 +138,7 @@ jobs:
         uses: actions/checkout@9bb56186c3b09b4f86b1c65136769dd318469633
 
       - name: Validate Gradle Wrapper
-        uses: gradle/wrapper-validation-action@56b90f209b02bf6d1deae490e9ef18b21a389cd4
+        uses: gradle/wrapper-validation-action@b5418f5a58f5fd2eb486dd7efb368fe7be7eae45
 
       - name: Configure JDK ${{ matrix.java-version }}
         uses: actions/setup-java@387ac29b308b003ca37ba93a6cab5eb57c8f5f93
