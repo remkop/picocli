@@ -32,6 +32,14 @@ public class Issue2228 {
                 return 0;
             }
         });
-        assertSame(commandLine.getParseResult(), caughtParseResult[0]);
+        commandLine.execute("-x");
+        assertNotNull(caughtParseResult[0]);
+
+        ParseResult after = commandLine.getParseResult();
+        assertFalse(after.matchedArgs().isEmpty());
+        assertFalse(after.matchedOptions().isEmpty());
+
+        assertFalse(caughtParseResult[0].matchedArgs().isEmpty());
+        assertFalse(caughtParseResult[0].matchedOptions().isEmpty());
     }
 }
