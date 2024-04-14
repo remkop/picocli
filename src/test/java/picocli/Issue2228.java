@@ -23,23 +23,31 @@ public class Issue2228 {
     @Test
     public void testParseResult() {
         final CommandLine commandLine = new CommandLine(new Issue2228.TestCommand());
-        final ParseResult[] caughtParseResult = new ParseResult[1];
+        final boolean[] handled = new boolean[] {false};
         commandLine.setExecutionExceptionHandler(new CommandLine.IExecutionExceptionHandler() {
             public int handleExecutionException(Exception ex, CommandLine exCmdLine, ParseResult parseResult) throws Exception {
+                handled[0] = true;
                 assertSame(commandLine, exCmdLine);
+
+                ParseResult after = commandLine.getParseResult();
+                printParseResult(after, "commandLine.getParseResult()");
+                assertFalse(after.matchedArgs().isEmpty());
+                assertFalse(after.matchedOptions().isEmpty());
+
+                printParseResult(parseResult, "ExecutionExceptionHandler method arg");
                 assertNotNull(parseResult);
-                caughtParseResult[0] = parseResult;
+                assertFalse(parseResult.matchedArgs().isEmpty());
+                assertFalse(parseResult.matchedOptions().isEmpty());
                 return 0;
             }
         });
         commandLine.execute("-x");
-        assertNotNull(caughtParseResult[0]);
+        assertTrue("ExecutionExceptionHandler tests were executed", handled[0]);
+    }
 
-        ParseResult after = commandLine.getParseResult();
-        assertFalse(after.matchedArgs().isEmpty());
-        assertFalse(after.matchedOptions().isEmpty());
-
-        assertFalse(caughtParseResult[0].matchedArgs().isEmpty());
-        assertFalse(caughtParseResult[0].matchedOptions().isEmpty());
+    private static void printParseResult(ParseResult parseResult, String origin) {
+        System.out.println("\tParseResult from " + origin + ": " + parseResult);
+        System.out.println("\t\tmatchedArgs(): " + parseResult.matchedArgs());
+        System.out.println("\t\tmatchedOptions(): " + parseResult.matchedOptions());
     }
 }
