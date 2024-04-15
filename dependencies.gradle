@@ -13,7 +13,7 @@ ext {
     releaseDatePreviousRegex        = "2023\\-08\\-27" // for task bumpVersion
 
     // DEPENDENCIES
-    asciidoctorGradlePluginVersion = "3.3.2"
+    asciidoctorGradlePluginVersion = "4.0.2"
     compileTestingVersion          = "0.21.0"
     groovyVersion       = "2.4.21"
     hamcrestCoreVersion = "2.2"

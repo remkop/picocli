@@ -838,7 +838,7 @@ For *nix-style long options, aliases have the prefix `no-` to the given names, f
 For Java JVM-style options like `-XX:+PrintGCDetails`, the `:+` is turned into `:-` and vice versa.
 Short option names are not given a negative alias by default. (This is <<Customizing Negatable Options,customizable>>.)
 
-If the negated form of the option is found, for example `--no-verbose`, the value is set to the provided default. Otherwise, with a regular call, for example `--verbose`, it is set to the opposite of the default.
+If the negated form of the option is found, for example `--no-verbose`, the value is set to `false`. Otherwise, with a regular call, for example `--verbose`, the value is set to `true`.
 
 [TIP]
 .Negatable options that are `true` by default

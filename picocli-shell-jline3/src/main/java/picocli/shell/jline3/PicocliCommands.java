@@ -255,6 +255,9 @@ public class PicocliCommands implements CommandRegistry {
         // using JLine help highlight because the statement below does not work well...
         //        main.add(new AttributedString(spec.usageMessage().sectionMap().get("synopsis").render(cmdhelp).toString()));
         for (OptionSpec o : spec.options()) {
+            if (o.hidden()) {
+                continue;
+            }
             String key = Arrays.stream(o.names()).collect(Collectors.joining(" "));
             List<AttributedString> val = new ArrayList<>();
             for (String d:  o.description()) {

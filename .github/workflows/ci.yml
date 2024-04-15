@@ -23,7 +23,7 @@ jobs:
         uses: actions/checkout@9bb56186c3b09b4f86b1c65136769dd318469633
 
       - name: Validate Gradle Wrapper
-        uses: gradle/wrapper-validation-action@56b90f209b02bf6d1deae490e9ef18b21a389cd4
+        uses: gradle/wrapper-validation-action@460a3ca55fc5d559238a0efc7fa9f7465df8585d
 
       - name: Configure JDK ${{ matrix.java-version }}
         uses: actions/setup-java@387ac29b308b003ca37ba93a6cab5eb57c8f5f93
@@ -138,7 +138,7 @@ jobs:
         uses: actions/checkout@9bb56186c3b09b4f86b1c65136769dd318469633
 
       - name: Validate Gradle Wrapper
-        uses: gradle/wrapper-validation-action@56b90f209b02bf6d1deae490e9ef18b21a389cd4
+        uses: gradle/wrapper-validation-action@460a3ca55fc5d559238a0efc7fa9f7465df8585d
 
       - name: Configure JDK ${{ matrix.java-version }}
         uses: actions/setup-java@387ac29b308b003ca37ba93a6cab5eb57c8f5f93
@@ -148,7 +148,7 @@ jobs:
           cache: gradle
 
       - name: Build
-        uses: gradle/gradle-build-action@v3.1.0 # v2.11.1
+        uses: gradle/gradle-build-action@v3.3.0 # v2.11.1
         with:
           gradle-version: 1.12
           build-root-directory: picocli-tests-java567/
