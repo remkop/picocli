@@ -36,6 +36,7 @@ Artifacts in this release are signed by Remko Popma (6601 E5C0 8DCC BB96).
 * [#2053] [#2175] Remove unused extra format arguments. Thanks to [Michael Vorburger](https://github.com/vorburger) for the pull request.
 * [#2054][#2176] Add Error Prone. Thanks to [Michael Vorburger](https://github.com/vorburger) for the pull request.
 * [#2170] Use `...` vararg instead of array parameter to match overridden method signature. Thanks to [Michael Vorburger](https://github.com/vorburger) for the pull request.
+* [#2217] DOC: Clarify documentation for negatable options. Thanks to [dbear496](https://github.com/dbear496) for raising this.
 * [#2047] DEP: Bump andymckay/append-gist-action from 1fbfbbce708a39bd45846f0955ed5521f2099c6d to 6e8d64427fe47cbacf4ab6b890411f1d67c07f3e
 * [#2091] DEP: Bump actions/checkout from 3.5.2 to 3.6.0
 * [#2108] DEP: Bump actions/checkout from 3.6.0 to 4.0.0
