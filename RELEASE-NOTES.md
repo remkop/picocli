@@ -51,6 +51,7 @@ Artifacts in this release are signed by Remko Popma (6601 E5C0 8DCC BB96).
 * [#2111] DEP: Bump actions/upload-artifact from 3.1.2 to 3.1.3
 * [#2204] DEP: Bump actions/upload-artifact from 3.1.3 to 4.3.1
 * [#2227] DEP: Bump com.google.errorprone:error_prone_core from 2.23.0 to 2.26.1
+* [#2271] DEP: Bump com.google.errorprone:error_prone_core from 2.26.1 to 2.27.1
 * [#2237] DEP: Bump emibcn/badge-action from 2.0.2 to 2.0.3.
 * [#2099] DEP: Bump gradle/gradle-build-action from 2.4.2 to 2.8.0
 * [#2165] DEP: Bump gradle/gradle-build-action from 2.8.0 to 2.11.0
@@ -58,16 +59,19 @@ Artifacts in this release are signed by Remko Popma (6601 E5C0 8DCC BB96).
 * [#2246] DEP: Bump gradle/gradle-build-action from 3.1.0 to 3.3.0.
 * [#2096] DEP: Bump gradle/wrapper-validation-action from 1.0.6 to 1.1.0
 * [#2247] DEP: Bump gradle/wrapper-validation-action from 1.1.0 to 3.3.0.
+* [#2263] DEP: Bump gradle/wrapper-validation-action from 3.3.0 to 3.3.2
 * [#2085] DEP: Bump github/codeql-action from 2.3.5 to 2.21.4
 * [#2114] DEP: Bump github/codeql-action from 2.21.4 to 2.21.7
 * [#2167] DEP: Bump github/codeql-action from 2.21.7 to 3.22.11
 * [#2230] DEP: Bump github/codeql-action from 3.22.11 to 3.24.8
 * [#2235] DEP: Bump github/codeql-action from 3.24.8 to 3.24.10.
+* [#2262] DEP: Bump github/codeql-action from 3.24.10 to 3.25.3
 * [#2093] DEP: Bump junit5Version from 5.9.3 to 5.10.0
 * [#2180] DEP: Bump junit5Version from 5.10.0 to 5.10.1
 * [#2240] DEP: Bump junit5Version from 5.10.1 to 5.10.2.
 * [#2140] DEP: Bump log4j2Version from 2.20.0 to 2.21.1
 * [#2178] DEP: Bump log4j2Version from 2.21.1 to 2.22.0
+* [#2252] DEP: Bump log4j2Version from 2.22.0 to 2.23.1
 * [#2095] DEP: Bump org.apache.ivy:ivy from 2.5.1 to 2.5.2
 * [#2094] DEP: Bump org.asciidoctor:asciidoctorj-pdf from 2.3.7 to 2.3.9
 * [#2229] DEP: Bump org.asciidoctor:asciidoctorj-pdf from 2.3.9 to 2.3.15
@@ -80,15 +84,19 @@ Artifacts in this release are signed by Remko Popma (6601 E5C0 8DCC BB96).
 * [#2243] DEP: Bump org.jetbrains.kotlin:kotlin-gradle-plugin from 1.9.21 to 1.9.23.
 * [#2146] DEP: Bump org.jline:jline from 3.23.0 to 3.24.1
 * [#2241] DEP: Bump org.jline:jline from 3.24.1 to 3.25.1.
+* [#2261] DEP: Bump org.jline:jline from 3.25.1 to 3.26.1
 * [#2049] DEP: Bump org.hibernate.validator:hibernate-validator from 8.0.0.Final to 8.0.1.Final
 * [#2037] DEP: Bump org.scala-lang:scala-library from 2.13.10 to 2.13.11
 * [#2112] DEP: Bump org.scala-lang:scala-library from 2.13.11 to 2.13.12
 * [#2242] DEP: Bump org.scala-lang:scala-library from 2.13.12 to 2.13.13.
+* [#2267] DEP: Bump org.scala-lang:scala-library from 2.13.13 to 2.13.14
 * [#2052] DEP: Bump ossf/scorecard-action from 2.1.3 to 2.2.0
 * [#2183] DEP: Bump ossf/scorecard-action from 2.2.0 to 2.3.1
 * [#2082] DEP: Bump step-security/harden-runner from 2.4.0 to 2.5.1
 * [#2152] DEP: Bump step-security/harden-runner from 2.5.1 to 2.6.1
+* [#2268] DEP: Bump step-security/harden-runner from 2.6.1 to 2.7.1
 * DEP: Bump SpringBoot from 2.7.1 to 2.7.2 (for Java versions prior to 17)
+* [#2255] DEP: Bump andymckay/append-gist-action from 0.2 to 0.3
 
 
 
