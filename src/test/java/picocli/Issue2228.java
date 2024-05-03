@@ -9,14 +9,18 @@ import static org.junit.Assert.*;
 
 public class Issue2228 {
 
-    @Command
-    static class TestCommand implements Runnable {
+    @Command(subcommands = Issue2228.SubCommand.class)
+    static class TestCommand {
+    }
 
-        @Option(names = "-x")
-        public boolean x;
+    @Command(name = "subsub")
+    static class SubCommand implements Runnable {
+
+        @Option(names = "-y")
+        public boolean y;
 
         public void run() {
-            throw new IllegalStateException("failing, just for fun");
+            throw new IllegalStateException("Y failing, just for fun");
         }
     }
 
@@ -25,23 +29,25 @@ public class Issue2228 {
         final CommandLine commandLine = new CommandLine(new Issue2228.TestCommand());
         final boolean[] handled = new boolean[] {false};
         commandLine.setExecutionExceptionHandler(new CommandLine.IExecutionExceptionHandler() {
-            public int handleExecutionException(Exception ex, CommandLine exCmdLine, ParseResult parseResult) throws Exception {
+            public int handleExecutionException(Exception ex, CommandLine exCmdLine, ParseResult fullParseResult) throws Exception {
                 handled[0] = true;
-                assertSame(commandLine, exCmdLine);
 
-                ParseResult after = commandLine.getParseResult();
-                printParseResult(after, "commandLine.getParseResult()");
-                assertFalse(after.matchedArgs().isEmpty());
-                assertFalse(after.matchedOptions().isEmpty());
+                ParseResult subResult = commandLine.getSubcommands().get("subsub").getParseResult();
+                //printParseResult(subResult, "subsub subcommand");
+                assertFalse(subResult.matchedArgs().isEmpty());
+                assertFalse(subResult.matchedOptions().isEmpty());
 
-                printParseResult(parseResult, "ExecutionExceptionHandler method arg");
-                assertNotNull(parseResult);
-                assertFalse(parseResult.matchedArgs().isEmpty());
-                assertFalse(parseResult.matchedOptions().isEmpty());
+                //printParseResult(fullParseResult, "ExecutionExceptionHandler method arg");
+                assertNotNull(fullParseResult);
+                assertFalse(fullParseResult.subcommand().matchedArgs().isEmpty());
+                assertFalse(fullParseResult.subcommand().matchedOptions().isEmpty());
+
+                assertTrue(fullParseResult.matchedArgs().isEmpty());
+                assertTrue(fullParseResult.matchedOptions().isEmpty());
                 return 0;
             }
         });
-        commandLine.execute("-x");
+        commandLine.execute("subsub", "-y");
         assertTrue("ExecutionExceptionHandler tests were executed", handled[0]);
     }
 

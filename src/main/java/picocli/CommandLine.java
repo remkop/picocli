@@ -1775,10 +1775,14 @@ public class CommandLine {
          * {@code Callable} command and returns an exit code suitable for returning from {@link #execute(String...)}.
          * @param ex the Exception thrown by the {@code Runnable}, {@code Callable} or {@code Method} user object of the command
          * @param commandLine the CommandLine representing the command or subcommand where the exception occurred
-         * @param parseResult the result of parsing the command line arguments
+         * @param fullParseResult the result of parsing the command line arguments.
+         *                        This is the ParseResult of the <b>top-level command</b>.
+         *               Note that if the exception occurred in a subcommand, you may want to inspect the ParseResult of
+         *               the subcommand that threw the exception, which can be obtained by calling {@code commandLine.getParseResult()}
+         *               on the CommandLine object passed to this method.
          * @return an exit code
          */
-        int handleExecutionException(Exception ex, CommandLine commandLine, ParseResult parseResult) throws Exception;
+        int handleExecutionException(Exception ex, CommandLine commandLine, ParseResult fullParseResult) throws Exception;
     }
 
     /** Abstract superclass for {@link IParseResultHandler2} and {@link IExceptionHandler2} implementations.
