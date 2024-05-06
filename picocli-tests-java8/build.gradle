@@ -16,8 +16,9 @@ test {
 
 dependencies {
     api rootProject
-    testImplementation supportDependencies.junit
-    testImplementation supportDependencies.hamcrestCore
+    testImplementation supportDependencies.junit5Api
+    testRuntimeOnly    supportDependencies.junit5Engine
+    testImplementation supportDependencies.systemLambda
 }
 
 jar {
