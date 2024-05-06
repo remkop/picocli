@@ -6782,7 +6782,7 @@ public class CommandLine {
                 for (String name : interpolator.interpolate(option.names())) { // cannot be null or empty
                     String existingName = optionsByNameMap.getCaseSensitiveKey(name);
                     OptionSpec existing = optionsByNameMap.put(name, option);
-                    if (existing != null) { /* was: && !existing.equals(option)) {*/ // since 4.0 ArgGroups: an option cannot be in multiple groups
+                    if (existing != null && !existing.equals(option)/* equals check needed after fix for #2149 */) { // since 4.0 ArgGroups: an option cannot be in multiple groups
                         throw DuplicateOptionAnnotationsException.create(existingName, option, existing);
                     }
                     // #1022 checks if negated options exist with the same name
@@ -9383,7 +9383,8 @@ public class CommandLine {
             }
 
             protected boolean equalsImpl(ArgSpec other) {
-                return Assert.equals(this.defaultValue, other.defaultValue)
+                return this.commandSpec == other.commandSpec
+                        && Assert.equals(this.defaultValue, other.defaultValue)
                         && Assert.equals(this.mapFallbackValue, other.mapFallbackValue)
                         && Assert.equals(this.arity, other.arity)
                         && Assert.equals(this.hidden, other.hidden)
@@ -9402,6 +9403,7 @@ public class CommandLine {
             }
             protected int hashCodeImpl() {
                 return 17
+                        + 37 * Assert.hashCode(commandSpec)
                         + 37 * Assert.hashCode(defaultValue)
                         + 37 * Assert.hashCode(mapFallbackValue)
                         + 37 * Assert.hashCode(arity)

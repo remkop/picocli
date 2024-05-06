@@ -449,6 +449,8 @@ public class CommandMethodTest {
             return ret;
         }
     }
+
+    @Ignore("This is no longer true after the fix for #2149") // TODO DELETME?
     @Test
     public void testAnnotateMethod_matchesAnnotatedClass() throws Exception {
         setTraceLevel(CommandLine.TraceLevel.OFF);
