@@ -18,7 +18,7 @@ public class Issue2145 {
 
     @Test
     public void testManPageGenAsSubcommand() {
-        int result = new CommandLine(new Documentation()).execute("gen-manpage", "-dout", "-v");
+        int result = new CommandLine(new Documentation()).execute("gen-manpage", "-dbuild", "-v");
         assertEquals(0, result);
     }
 }
