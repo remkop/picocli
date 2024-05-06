@@ -14910,7 +14910,7 @@ public class CommandLine {
             }
             String stringValue = String.valueOf(value);
             if (empty(stringValue) || "null".equals(stringValue) || "Optional.empty".equals(value)) { return false; }
-            ITypeConverter<?> converter = getTypeConverter(new Class<?>[]{Boolean.class}, argSpec, 0);
+            ITypeConverter<?> converter = getTypeConverter(argSpec.auxiliaryTypes(), argSpec, 0);
             return (Boolean) tryConvert(argSpec, -1, converter, stringValue, 0);
         }
 

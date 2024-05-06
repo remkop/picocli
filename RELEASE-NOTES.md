@@ -22,17 +22,17 @@ Artifacts in this release are signed by Remko Popma (6601 E5C0 8DCC BB96).
 `PropertiesDefaultProvider` now tries to load properties from the classpath if the file cannot be found  in the user.home directory.
 
 
-
 ## <a name="4.7.6-fixes"></a> Fixed issues
 
 * [#2102][#2107] Enhancement: `PropertiesDefaultProvider` should try to load properties from classpath (last). Thanks to [Lumír Návrat](https://github.com/rimuln) for the pull request.
 * [#2202] Enhancement: Change log level from WARN to INFO when bean not found in ApplicationContext. Thanks to [Desmond Kirrane](https://github.com/dkirrane) for raising this.
 * [#2248] Enhancement: Don't show hidden commands in JLine3 command description. Thanks to [Reinhard Handler](https://github.com/rehand) for the pull request.
+* [#2170] Enhancement: Use `...` vararg instead of array parameter to match overridden method signature. Thanks to [Michael Vorburger](https://github.com/vorburger) for the pull request.
 * [#2058] Bugfix: `defaultValue` should not be applied in addition to user-specified value for options with a custom `IParameterConsumer`. Thanks to [Staffan Arvidsson McShane](https://github.com/StaffanArvidsson) for raising this.
 * [#2148] Bugfix: Fix NPE in jline3 `Example.jar` as `ConfigurationPath` cannot be `null` anymore. Thanks to [llzen44](https://github.com/llzen44) for the pull request.
 * [#2232] Bugfix: fix bug for `Optional<T>` arguments with initial value. Thanks to [hq6](https://github.com/hq6) for raising this.
 * [#2149] Bugfix: `@Option`-annotated setter method not invoked with default value when used in mixin for both command and subcommand. Thanks to [Zhonghao Wang](https://github.com/JBWKZsf) for raising this.
-* [#2170] Enhancement: Use `...` vararg instead of array parameter to match overridden method signature. Thanks to [Michael Vorburger](https://github.com/vorburger) for the pull request.
+* [#2270] Bugfix: Custom type converter for primitive `boolean` options should not be ignored. Thanks to [Sven Kammerer](https://codeberg.org/sven.k) for raising this.
 * [#2234] BUILD: fix errorprone `TruthSelfEquals` warnings
 * [#2172] BUILD: Fix broken build. Thanks to [Michael Vorburger](https://github.com/vorburger) for the pull request.
 * [#2174] BUILD: Fix .gitattributes related CR/LF problems. Thanks to [Michael Vorburger](https://github.com/vorburger) for the pull request.
