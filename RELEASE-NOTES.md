@@ -1,6 +1,6 @@
 # picocli Release Notes
 
-# <a name="4.7.6"></a> Picocli 4.7.6 (UNRELEASED)
+# <a name="4.7.6"></a> Picocli 4.7.6
 The picocli community is pleased to announce picocli 4.7.6.
 
 This release includes bugfixes and enhancements.
@@ -46,11 +46,13 @@ Artifacts in this release are signed by Remko Popma (6601 E5C0 8DCC BB96).
 * [#2108] DEP: Bump actions/checkout from 3.6.0 to 4.0.0
 * [#2120] DEP: Bump actions/checkout from 4.0.0 to 4.1.0
 * [#2225] DEP: Bump actions/checkout from 4.1.0 to 4.1.2
+* [#2272] DEP: Bump actions/checkout from 4.1.2 to 4.1.4
 * [#2098] DEP: Bump actions/setup-java from 3.11.0 to 3.12.0
 * [#2158] DEP: Bump actions/setup-java from 3.12.0 to 4.0.0
 * [#2236] DEP: Bump actions/setup-java from 4.0.0 to 4.2.1.
 * [#2111] DEP: Bump actions/upload-artifact from 3.1.2 to 3.1.3
 * [#2204] DEP: Bump actions/upload-artifact from 3.1.3 to 4.3.1
+* [#2273] DEP: Bump actions/upload-artifact from 4.3.1 to 4.3.3
 * [#2227] DEP: Bump com.google.errorprone:error_prone_core from 2.23.0 to 2.26.1
 * [#2271] DEP: Bump com.google.errorprone:error_prone_core from 2.26.1 to 2.27.1
 * [#2237] DEP: Bump emibcn/badge-action from 2.0.2 to 2.0.3.

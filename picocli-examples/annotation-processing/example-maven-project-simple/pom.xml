@@ -56,12 +56,12 @@
     <dependency>
       <groupId>info.picocli</groupId>
       <artifactId>picocli</artifactId>
-      <version>4.7.5</version>
+      <version>4.7.6</version>
     </dependency>
     <dependency>
       <groupId>info.picocli</groupId>
       <artifactId>picocli-codegen</artifactId>
-      <version>4.7.5</version>
+      <version>4.7.6</version>
       <scope>provided</scope>
     </dependency>
   </dependencies>

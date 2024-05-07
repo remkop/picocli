@@ -76,8 +76,8 @@ configurations {
     generateConfig
 }
 dependencies {
-    implementation 'info.picocli:picocli:4.7.5'
-    generateConfig 'info.picocli:picocli-codegen:4.7.5'
+    implementation 'info.picocli:picocli:4.7.6'
+    generateConfig 'info.picocli:picocli-codegen:4.7.6'
 }
 
 task(generateGraalReflectionConfig, dependsOn: 'classes', type: JavaExec) {
