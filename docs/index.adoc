@@ -12409,7 +12409,7 @@ public class CDIFactory implements IFactory {
         if (instance.isResolvable()) {
             return instance.get();
         }
-        return defaultFactory.create(cls);
+        return fallbackFactory.create(cls);
     }
 }
 ----
@@ -12421,8 +12421,12 @@ How to use the above factory depends on the specific container, but in general i
 @Command(name = "cdi-app", mixinStandardHelpOptions = true)
 class MyCDIApp implements Runnable {
 
-    @Option(names = {"-x", "--option"}, description = "example option")
     boolean flag;
+
+    @Option(names = {"-x", "--option"}, description = "example option")
+    public void setFlag(boolean flag) {
+        this.flag = flag;
+    }
 
     @Override
     public void run() {
@@ -12435,6 +12439,14 @@ class MyCDIApp implements Runnable {
     }
 }
 ----
+
+[IMPORTANT]
+====
+Depending on your configuration, CDI may use dynamic proxies for managed instances.
+
+The safest thing to do in CDI applications is to use public <<option-parameters-methods,annotated **setter methods**>> for picocli's `@Option` and `@Parameters`, `@Spec`, and other annotations. 
+Using picocli annotations on fields or on non-public methods may result in picocli-injected values not being available in the proxied instance.
+====
 
 == Java 9 JPMS Modules
 
