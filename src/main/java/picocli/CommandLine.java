@@ -10670,7 +10670,7 @@ public class CommandLine {
                     }
                 } else {
 
-                    List<OptionSpec> sortableComponents = new ArrayList<>();
+                    List<OptionSpec> sortableComponents = new ArrayList<OptionSpec>();
                     List<PositionalParamSpec> remainder = new ArrayList<PositionalParamSpec>();
                     for (ArgSpec arg : args()) {
                         if (arg instanceof OptionSpec) {
