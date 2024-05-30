@@ -1339,6 +1339,101 @@ public class HelpTest {
         assertEquals(expectedUsage, new CommandLine(new App()).getUsageMessage());
     }
 
+
+    @Test
+    public void testSortWithOptionsAsSetters() throws Exception {
+        @Command(name = "OS")
+        class App {
+            @Option(names = {"--ob"}) boolean c;
+            @Option(names = {"--ow"}) public void setW(boolean b){};
+            @Option(names = {"--ox"}) public void setX(boolean b){};
+            @Option(names = {"--oy"}) public void setY(boolean b){};
+            @Option(names = {"--oz"}) public void setZ(boolean b){};
+            @Option(names = {"--oa"}) boolean a;
+            @Option(names = {"--oc"}) boolean b;
+        }
+
+        String expectedSynopsis = "OS [--oa] [--ob] [--oc] [--ow] [--ox] [--oy] [--oz]";
+        assertEquals(expectedSynopsis, new CommandLine(new App()).getHelp().synopsis(0));
+    }
+
+    @Test
+    public void testSortWithArgGroupAsSetters() throws Exception {
+
+        class MySetterArgGroup {
+            @Option(names = {"-w"}, order = 5) public void setW(boolean b){};
+            @Option(names = {"-x"}, order = 6) public void setX(boolean b){};
+            @Option(names = {"-y"}, order = 7) public void setY(boolean b){};
+            @Option(names = {"-z"}, order = 8) public void setZ(boolean b){};
+            @Option(names = {"-s"}, order = 1) public void setS(boolean b){};
+            @Option(names = {"-t"}, order = 2) public void setT(boolean b){};
+            @Option(names = {"-u"}, order = 3) public void setU(boolean b){};
+            @Option(names = {"-v"}, order = 4) public void setV(boolean b){};
+        }
+        @Command(name = "SS")
+        class App {
+            @Option(names = {"-b"}) boolean c;
+            @Option(names = {"-a"}) boolean a;
+            @Option(names = {"-c"}) boolean b;
+            @ArgGroup(exclusive=false, multiplicity = "1", heading = "setter arg%n")
+            MySetterArgGroup mySAG = new MySetterArgGroup();
+        }
+
+        String expectedSynopsis = "SS [-abc] ([-s] [-t] [-u] [-v] [-w] [-x] [-y] [-z])";
+        assertEquals(expectedSynopsis, new CommandLine(new App()).getHelp().synopsis(0));
+
+    }
+
+    @Test
+    public void testSortWithArgGroupAsSettersWithOrder() throws Exception {
+
+        class MySetterArgGroup {
+            @Option(names = {"-w"}, order = 5) public void setW(boolean b){};
+            @Option(names = {"-x"}, order = 6) public void setX(boolean b){};
+            @Option(names = {"-y"}, order = 7) public void setY(boolean b){};
+            @Option(names = {"-z"}, order = 8) public void setZ(boolean b){};
+            @Option(names = {"-s"}, order = 1) public void setS(boolean b){};
+            @Option(names = {"-t"}, order = 2) public void setT(boolean b){};
+            @Option(names = {"-u"}, order = 3) public void setU(boolean b){};
+            @Option(names = {"-v"}, order = 4) public void setV(boolean b){};
+        }
+        @Command(name = "AGO")
+        class App {
+            @Option(names = {"-b"}) boolean c;
+            @Option(names = {"-a"}) boolean a;
+            @Option(names = {"-c"}) boolean b;
+            @ArgGroup(exclusive=false, multiplicity = "1", heading = "setter arg%n")
+            MySetterArgGroup mySAG = new MySetterArgGroup();
+        }
+
+        String expectedSynopsis = "AGO [-abc] ([-s] [-t] [-u] [-v] [-w] [-x] [-y] [-z])";
+        assertEquals(expectedSynopsis, new CommandLine(new App()).getHelp().synopsis(0));
+    }
+
+    @Test
+    public void testSortWithArgGroupAsFields() throws Exception {
+
+        class MyValueArgGroup {
+            @Option(names = {"-p"}) boolean p;
+            @Option(names = {"-m"}) boolean m;
+            @Option(names = {"-o"}) boolean o;
+            @Option(names = {"-n"}) boolean n;
+        }
+        @Command(name = "FF")
+        class App {
+
+            @Option(names = {"--ab"}) boolean c;
+            @Option(names = {"--aa"}) boolean a;
+            @Option(names = {"--ac"}) boolean b;
+            @ArgGroup(exclusive=false, multiplicity = "1", heading = "value arg%n")
+            MyValueArgGroup myAG = new MyValueArgGroup();
+        }
+
+        String expectedSynopsis = "FF [-abc] ([-m] [-n] [-o] [-p])";
+        assertEquals(expectedSynopsis, new CommandLine(new App()).getHelp().synopsis(0));
+
+    }
+
     @Test
     public void testSortSynopsisByOptionOrderAllowsGaps() throws Exception {
         @Command(sortOptions = false, sortSynopsis = false)
