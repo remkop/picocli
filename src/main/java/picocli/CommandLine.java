@@ -10683,16 +10683,13 @@ public class CommandLine {
 
                     for (ArgSpec arg : sortableComponents) {
                         String prefix = synopsis.length > 0 ? infix : "";
-                        if (arg instanceof OptionSpec) {
-                            synopsis = concatOptionText(prefix, synopsis, colorScheme, (OptionSpec) arg);
-                        } else {
-                            synopsis = concatPositionalText(prefix, synopsis, colorScheme, (PositionalParamSpec) arg);
-                        }
+                        synopsis = concatOptionText(prefix, synopsis, colorScheme, (OptionSpec) arg);
                         outparam_groupArgs.add(arg);
                     }
-                    for (PositionalParamSpec pps : remainder) {
+                    for (PositionalParamSpec positional : remainder) {
                         String prefix = synopsis.length > 0 ? infix : "";
-                        synopsis = concatPositionalText(prefix, synopsis, colorScheme, pps);
+                        synopsis = concatPositionalText(prefix, synopsis, colorScheme, positional);                        outparam_groupArgs.add(positional);
+                        outparam_groupArgs.add(positional);
                     }
                     for (ArgGroupSpec subgroup : subgroups()) {
                         if (synopsis.length > 0) { synopsis = synopsis.concat(infix); }
