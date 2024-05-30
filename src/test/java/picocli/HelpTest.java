@@ -1354,7 +1354,7 @@ public class HelpTest {
         }
 
         String expectedSynopsis = "OS [--oa] [--ob] [--oc] [--ow] [--ox] [--oy] [--oz]";
-        assertEquals(expectedSynopsis, new CommandLine(new App()).getHelp().synopsis(0));
+        assertEquals(expectedSynopsis, new CommandLine(new App()).getHelp().synopsis(0).trim());
     }
 
     @Test
@@ -1380,7 +1380,7 @@ public class HelpTest {
         }
 
         String expectedSynopsis = "SS [-abc] ([-s] [-t] [-u] [-v] [-w] [-x] [-y] [-z])";
-        assertEquals(expectedSynopsis, new CommandLine(new App()).getHelp().synopsis(0));
+        assertEquals(expectedSynopsis, new CommandLine(new App()).getHelp().synopsis(0).trim());
 
     }
 
@@ -1407,7 +1407,7 @@ public class HelpTest {
         }
 
         String expectedSynopsis = "AGO [-abc] ([-s] [-t] [-u] [-v] [-w] [-x] [-y] [-z])";
-        assertEquals(expectedSynopsis, new CommandLine(new App()).getHelp().synopsis(0));
+        assertEquals(expectedSynopsis, new CommandLine(new App()).getHelp().synopsis(0).trim());
     }
 
     @Test
@@ -1422,15 +1422,15 @@ public class HelpTest {
         @Command(name = "FF")
         class App {
 
-            @Option(names = {"--ab"}) boolean c;
-            @Option(names = {"--aa"}) boolean a;
-            @Option(names = {"--ac"}) boolean b;
+            @Option(names = {"-b"}) boolean c;
+            @Option(names = {"-a"}) boolean a;
+            @Option(names = {"-c"}) boolean b;
             @ArgGroup(exclusive=false, multiplicity = "1", heading = "value arg%n")
             MyValueArgGroup myAG = new MyValueArgGroup();
         }
 
         String expectedSynopsis = "FF [-abc] ([-m] [-n] [-o] [-p])";
-        assertEquals(expectedSynopsis, new CommandLine(new App()).getHelp().synopsis(0));
+        assertEquals(expectedSynopsis, new CommandLine(new App()).getHelp().synopsis(0).trim());
 
     }
 
