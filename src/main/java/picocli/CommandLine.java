@@ -38,8 +38,10 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import picocli.CommandLine.Help.Ansi.IStyle;
 import picocli.CommandLine.Help.Ansi.Style;
@@ -4467,6 +4469,12 @@ public class CommandLine {
          * If not specified the name of the annotated field is used.
          * @return a String to register the mixin object with, or an empty String if the name of the annotated field should be used */
         String name() default "";
+        /** Optionally specify regex based transformations for all options in a mixin.
+         * The array contains sequences of regex expression followed by a replacement expression.
+         * @return an array of transformations {@code {regex, replacement, regex, replacement, ...}}.
+         * @see java.util.regex.Pattern
+         * @see java.util.regex.Matcher#replaceFirst(String)  */
+        String[] optionNameTransformations() default {};
     }
     /**
      * Fields annotated with {@code @Spec} will be initialized with the {@code CommandSpec} for the command the field is part of. Example usage:
@@ -7426,6 +7434,36 @@ public class CommandLine {
              * @param newValue the string representation
              * @return this CommandSpec for method chaining */
             public CommandSpec withToString(String newValue) { this.toString = newValue; return this; }
+
+            public CommandSpec withOptionNameTransformations(String[] transformations) {
+                if (!options.isEmpty() && transformations.length > 0) {
+                    List<OptionSpec> optionsClone = new ArrayList<>(options);
+                    Pattern[] patterns = new Pattern[transformations.length / 2];
+                    String[] replacements = new String[transformations.length / 2];
+                    for (int i = 0; i < transformations.length; i += 2) {
+                        patterns[i] = Pattern.compile(transformations[i]);
+                        replacements[i] = transformations[i + 1];
+                    }
+                    optionsClone.forEach(
+                        option -> {
+                            remove(option);
+                            String[] transformedNames = new String[option.names.length];
+                            for (int i = 0; i < option.names.length; i++) {
+                                transformedNames[i] = option.names[i];
+                                for (int j = 0; j < patterns.length; j++) {
+                                    Matcher matcher = patterns[j].matcher(option.names[i]);
+                                    if (matcher.matches()) {
+                                        transformedNames[i] = matcher.replaceFirst(replacements[j]);
+                                        break;
+                                    }
+                                }
+                            }
+                            addOption(option.toBuilder().names(transformedNames).build());
+                        }
+                    );
+                }
+                return this;
+            }
 
             /**
              * Updates the following attributes from the specified {@code @Command} annotation:
@@ -11347,6 +11385,7 @@ public class CommandLine {
             <T extends Annotation> T getAnnotation(Class<T> annotationClass);
             String getName();
             String getMixinName();
+            String[] getOptionNameTransformations();
             boolean isArgSpec();
             boolean isOption();
             boolean isParameter();
@@ -11538,6 +11577,9 @@ public class CommandLine {
             public String getMixinName()    {
                 String annotationName = getAnnotation(Mixin.class).name();
                 return empty(annotationName) ? getName() : annotationName;
+            }
+            public String[] getOptionNameTransformations()    {
+                return getAnnotation(Mixin.class).optionNameTransformations();
             }
             static String propertyName(String methodName) {
                 if (methodName.length() > 3 && (methodName.startsWith("get") || methodName.startsWith("set"))) { return decapitalize(methodName.substring(3)); }
@@ -12058,7 +12100,7 @@ public class CommandLine {
                         member.setter().set(userObject);
                     }
                     CommandSpec result = CommandSpec.forAnnotatedObject(userObject, factory);
-                    return result.withToString(member.getToString());
+                    return result.withOptionNameTransformations(member.getOptionNameTransformations()).withToString(member.getToString());
                 } catch (InitializationException ex) {
                     throw ex;
                 } catch (Exception ex) {
