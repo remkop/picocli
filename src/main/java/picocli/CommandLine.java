@@ -6011,9 +6011,9 @@ public class CommandLine {
         }
         
         /**
-         * Provides access to the underlying annotated element for inspection
+         * Provides access to the underlying {@link AnnotatedElement}.
          */
-        public interface IReflector {
+        public interface IAnnotatedElementProvider {
         	
         	/**
         	 * @return {@link AnnotatedElement} used for reflection - field, method, ...
@@ -12105,7 +12105,7 @@ public class CommandLine {
             }
         }
 
-        static class FieldBinding implements IGetter, ISetter, IScoped, IReflector {
+        static class FieldBinding implements IGetter, ISetter, IScoped, IAnnotatedElementProvider {
             private final IScope scope;
             private final Field field;
             FieldBinding(Object scope, Field field) { this(ObjectScope.asScope(scope), field); }
@@ -12145,7 +12145,7 @@ public class CommandLine {
 				return field;
 			}
         }
-        static class MethodBinding implements IGetter, ISetter, IScoped, IReflector {
+        static class MethodBinding implements IGetter, ISetter, IScoped, IAnnotatedElementProvider {
             private final IScope scope;
             private final Method method;
             private final CommandSpec spec;

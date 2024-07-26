@@ -26,39 +26,39 @@ import org.junit.Test;
 
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Model.CommandSpec;
-import picocli.CommandLine.Model.IReflector;
+import picocli.CommandLine.Model.IAnnotatedElementProvider;
 import picocli.CommandLine.Model.OptionSpec;
 import picocli.CommandLine.Option;
 
 /**
- * Tests for {@link IReflector}.
+ * Tests for {@link IAnnotatedElementProvider}.
  */
-public class IReflectorTest {
+public class IAnnotatedElementProviderTest {
 
     @Before public void setUp() { System.clearProperty("picocli.trace"); }
     @After public void tearDown() { System.clearProperty("picocli.trace"); }
-
+    
     @Command(name = "reflector-test")
-    static class ReflectorTest {
+    static class IAnnotatedElementProviderTestCommand {
         @Option(names = "-a") int a;
         @Option(names = "-b") long b;
-
     }
 
     @Test
-    public void testFieldReflector() throws Exception {
-        ReflectorTest command = new ReflectorTest();
+    public void testFieldAccess() throws Exception {
+    	IAnnotatedElementProviderTestCommand command = new IAnnotatedElementProviderTestCommand();
         CommandLine commandLine = new CommandLine(command);
         CommandSpec spec = commandLine.getCommandSpec();
         for (OptionSpec option: spec.options()) {
-        	assertTrue(option.setter() instanceof IReflector);
-        	assertTrue(option.getter() instanceof IReflector);
+        	assertTrue(option.setter() instanceof IAnnotatedElementProvider);
+        	assertTrue(option.getter() instanceof IAnnotatedElementProvider);
         	
-        	assertTrue(((IReflector) option.setter()).getAnnotatedElement() instanceof Field);
-        	assertTrue(((IReflector) option.getter()).getAnnotatedElement() instanceof Field);
+        	assertTrue(((IAnnotatedElementProvider) option.setter()).getAnnotatedElement() instanceof Field);
+        	assertTrue(((IAnnotatedElementProvider) option.getter()).getAnnotatedElement() instanceof Field);
         	        	
-        	assertEquals(ReflectorTest.class, ((Field) ((IReflector) option.setter()).getAnnotatedElement()).getDeclaringClass());
-        	assertEquals(ReflectorTest.class, ((Field) ((IReflector) option.getter()).getAnnotatedElement()).getDeclaringClass());        	
+        	assertEquals(IAnnotatedElementProviderTestCommand.class, ((Field) ((IAnnotatedElementProvider) option.setter()).getAnnotatedElement()).getDeclaringClass());
+        	assertEquals(IAnnotatedElementProviderTestCommand.class, ((Field) ((IAnnotatedElementProvider) option.getter()).getAnnotatedElement()).getDeclaringClass());        	
         }
     }
+    
 }
