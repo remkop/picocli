@@ -15,9 +15,6 @@
  */
 package picocli;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import java.lang.reflect.Field;
 
 import org.junit.After;
@@ -50,14 +47,14 @@ public class IAnnotatedElementProviderTest {
         CommandLine commandLine = new CommandLine(command);
         CommandSpec spec = commandLine.getCommandSpec();
         for (OptionSpec option: spec.options()) {
-        	assertTrue(option.setter() instanceof IAnnotatedElementProvider);
-        	assertTrue(option.getter() instanceof IAnnotatedElementProvider);
+        	org.junit.Assert.assertTrue(option.setter() instanceof IAnnotatedElementProvider);
+        	org.junit.Assert.assertTrue(option.getter() instanceof IAnnotatedElementProvider);
         	
-        	assertTrue(((IAnnotatedElementProvider) option.setter()).getAnnotatedElement() instanceof Field);
-        	assertTrue(((IAnnotatedElementProvider) option.getter()).getAnnotatedElement() instanceof Field);
+        	org.junit.Assert.assertTrue(((IAnnotatedElementProvider) option.setter()).getAnnotatedElement() instanceof Field);
+        	org.junit.Assert.assertTrue(((IAnnotatedElementProvider) option.getter()).getAnnotatedElement() instanceof Field);
         	        	
-        	assertEquals(IAnnotatedElementProviderTestCommand.class, ((Field) ((IAnnotatedElementProvider) option.setter()).getAnnotatedElement()).getDeclaringClass());
-        	assertEquals(IAnnotatedElementProviderTestCommand.class, ((Field) ((IAnnotatedElementProvider) option.getter()).getAnnotatedElement()).getDeclaringClass());        	
+        	org.junit.Assert.assertEquals(IAnnotatedElementProviderTestCommand.class, ((Field) ((IAnnotatedElementProvider) option.setter()).getAnnotatedElement()).getDeclaringClass());
+        	org.junit.Assert.assertEquals(IAnnotatedElementProviderTestCommand.class, ((Field) ((IAnnotatedElementProvider) option.getter()).getAnnotatedElement()).getDeclaringClass());        	
         }
     }
     
