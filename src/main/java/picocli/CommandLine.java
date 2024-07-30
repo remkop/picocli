@@ -6012,6 +6012,7 @@ public class CommandLine {
         
         /**
          * Provides access to the underlying {@link AnnotatedElement}.
+         * @since 4.8.0
          */
         public interface IAnnotatedElementProvider {
         	

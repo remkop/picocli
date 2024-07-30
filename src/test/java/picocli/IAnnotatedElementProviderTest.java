@@ -15,7 +15,9 @@
  */
 package picocli;
 
+import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 
 import org.junit.After;
 import org.junit.Before;
@@ -29,32 +31,64 @@ import picocli.CommandLine.Option;
 
 /**
  * Tests for {@link IAnnotatedElementProvider}.
+ * @since 4.8.0
  */
 public class IAnnotatedElementProviderTest {
 
     @Before public void setUp() { System.clearProperty("picocli.trace"); }
     @After public void tearDown() { System.clearProperty("picocli.trace"); }
     
-    @Command(name = "reflector-test")
+    @Command(name = "annotated-element-provider-test")
     static class IAnnotatedElementProviderTestCommand {
         @Option(names = "-a") int a;
         @Option(names = "-b") long b;
+        @Option(names = "-c")
+        void setC(long c) {
+        	
+        }
     }
 
     @Test
-    public void testFieldAccess() throws Exception {
+    public void testAnnotatedElementAccess() throws Exception {
     	IAnnotatedElementProviderTestCommand command = new IAnnotatedElementProviderTestCommand();
         CommandLine commandLine = new CommandLine(command);
         CommandSpec spec = commandLine.getCommandSpec();
         for (OptionSpec option: spec.options()) {
         	org.junit.Assert.assertTrue(option.setter() instanceof IAnnotatedElementProvider);
         	org.junit.Assert.assertTrue(option.getter() instanceof IAnnotatedElementProvider);
-        	
-        	org.junit.Assert.assertTrue(((IAnnotatedElementProvider) option.setter()).getAnnotatedElement() instanceof Field);
-        	org.junit.Assert.assertTrue(((IAnnotatedElementProvider) option.getter()).getAnnotatedElement() instanceof Field);
-        	        	
-        	org.junit.Assert.assertEquals(IAnnotatedElementProviderTestCommand.class, ((Field) ((IAnnotatedElementProvider) option.setter()).getAnnotatedElement()).getDeclaringClass());
-        	org.junit.Assert.assertEquals(IAnnotatedElementProviderTestCommand.class, ((Field) ((IAnnotatedElementProvider) option.getter()).getAnnotatedElement()).getDeclaringClass());        	
+        	        
+        	String optionName = option.names()[0];
+			AnnotatedElement setterAnnotatedElement = ((IAnnotatedElementProvider) option.setter()).getAnnotatedElement();
+			AnnotatedElement getterAnnotatedElement = ((IAnnotatedElementProvider) option.getter()).getAnnotatedElement();
+			switch (optionName) {
+			case "-a":
+			case "-b":
+	        	org.junit.Assert.assertTrue(setterAnnotatedElement instanceof Field);
+	        	org.junit.Assert.assertTrue(getterAnnotatedElement instanceof Field);
+	        	
+	        	Field setterField = (Field) setterAnnotatedElement;
+				org.junit.Assert.assertEquals(IAnnotatedElementProviderTestCommand.class, setterField.getDeclaringClass());
+				org.junit.Assert.assertEquals(optionName.substring(1), setterField.getName());
+				
+	        	Field getterField = (Field) getterAnnotatedElement;
+				org.junit.Assert.assertEquals(IAnnotatedElementProviderTestCommand.class, getterField.getDeclaringClass());
+				org.junit.Assert.assertEquals(optionName.substring(1), getterField.getName());								
+				break;
+			case "-c":
+	        	org.junit.Assert.assertTrue(setterAnnotatedElement instanceof Method);
+	        	org.junit.Assert.assertTrue(getterAnnotatedElement instanceof Method);
+	        	
+	        	Method setterMethod = (Method) setterAnnotatedElement;
+				org.junit.Assert.assertEquals(IAnnotatedElementProviderTestCommand.class, setterMethod.getDeclaringClass());
+				org.junit.Assert.assertEquals("setC", setterMethod.getName());
+				
+	        	Method getterMethod = (Method) getterAnnotatedElement;
+				org.junit.Assert.assertEquals(IAnnotatedElementProviderTestCommand.class, getterMethod.getDeclaringClass());
+				org.junit.Assert.assertEquals("setC", getterMethod.getName());								
+				break;
+			default:
+				org.junit.Assert.fail("Unexpected option: " + optionName);
+        	}        	        	        	
         }
     }
     
