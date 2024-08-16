@@ -4467,6 +4467,10 @@ public class CommandLine {
          * If not specified the name of the annotated field is used.
          * @return a String to register the mixin object with, or an empty String if the name of the annotated field should be used */
         String name() default "";
+
+        /** Returns the model transformer for this mixin.
+         **/
+        Class<? extends IModelTransformer> modelTransformer() default NoOpModelTransformer.class;
     }
     /**
      * Fields annotated with {@code @Spec} will be initialized with the {@code CommandSpec} for the command the field is part of. Example usage:
@@ -7464,6 +7468,7 @@ public class CommandLine {
 
             void initAliases(String[] aliases)          { if (aliases != null) { this.aliases.addAll(Arrays.asList(aliases));}}
             void initName(String value)                 { if (initializable(name, value, DEFAULT_COMMAND_NAME))                           {name = value;} }
+            void resetName()                 {name = null;}
             void initHelpCommand(boolean value)         { if (initializable(isHelpCommand, value, DEFAULT_IS_HELP_COMMAND))               {isHelpCommand = value;} }
             void initVersion(String[] value)            { if (initializable(version, value, UsageMessageSpec.DEFAULT_MULTI_LINE))         {version = value.clone();} }
             void initVersionProvider(IVersionProvider value) { if (versionProvider == null) { versionProvider = value; } }
@@ -11347,6 +11352,7 @@ public class CommandLine {
             <T extends Annotation> T getAnnotation(Class<T> annotationClass);
             String getName();
             String getMixinName();
+            Class<? extends IModelTransformer> getModelTransformer();
             boolean isArgSpec();
             boolean isOption();
             boolean isParameter();
@@ -11538,6 +11544,13 @@ public class CommandLine {
             public String getMixinName()    {
                 String annotationName = getAnnotation(Mixin.class).name();
                 return empty(annotationName) ? getName() : annotationName;
+            }
+            public Class<? extends IModelTransformer> getModelTransformer() {
+                if (isMixin()) {
+                    return getAnnotation(Mixin.class).modelTransformer();
+                } else {
+                  return NoOpModelTransformer.class;
+                }
             }
             static String propertyName(String methodName) {
                 if (methodName.length() > 3 && (methodName.startsWith("get") || methodName.startsWith("set"))) { return decapitalize(methodName.substring(3)); }
@@ -12058,6 +12071,15 @@ public class CommandLine {
                         member.setter().set(userObject);
                     }
                     CommandSpec result = CommandSpec.forAnnotatedObject(userObject, factory);
+                    IModelTransformer modelTransformer = DefaultFactory.create(factory, member.getModelTransformer());
+                    String oldName = result.name;
+                    result.initName(member.getMixinName());
+                    result = modelTransformer.transform(result);
+                    if (oldName != null && !oldName.equals(CommandSpec.DEFAULT_COMMAND_NAME)) {
+                        result.initName(oldName);
+                    } else {
+                        result.resetName();
+                    }
                     return result.withToString(member.getToString());
                 } catch (InitializationException ex) {
                     throw ex;

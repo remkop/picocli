@@ -114,6 +114,15 @@ class TypedMember implements CommandLine.Model.IAnnotatedElement, CommandLine.Mo
         return empty(annotationName) ? getName() : annotationName;
     }
 
+    @Override
+    public Class<? extends CommandLine.IModelTransformer> getModelTransformer() {
+        if (isMixin()) {
+            return getAnnotation(CommandLine.Mixin.class).modelTransformer();
+        } else {
+            return null;
+        }
+    }
+
     static String propertyName(String methodName) {
         if (methodName.length() > 3 && (methodName.startsWith("get") || methodName.startsWith("set"))) { return decapitalize(methodName.substring(3)); }
         return decapitalize(methodName);
