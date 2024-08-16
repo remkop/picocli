@@ -1103,7 +1103,7 @@ public class MixinTest {
         assertEquals("list, ls", help.commandList().trim());
     }
 
-    public static class MixinReuseModeTransformer implements IModelTransformer {
+    public static class MixinReuseModelTransformer implements IModelTransformer {
         @Override
         public CommandSpec transform(CommandSpec commandSpec) {
             String prefix = commandSpec.name();
@@ -1136,9 +1136,9 @@ public class MixinTest {
             String  url;
         }
         class Application {
-            @Mixin(modelTransformer = MixinReuseModeTransformer.class)
+            @Mixin(modelTransformer = MixinReuseModelTransformer.class)
             ReusableMixin first;
-            @Mixin(modelTransformer = MixinReuseModeTransformer.class)
+            @Mixin(modelTransformer = MixinReuseModelTransformer.class)
             ReusableMixin second;
         }
         Application application = new Application();
