@@ -26,6 +26,7 @@ Artifacts in this release are signed by Remko Popma (6601 E5C0 8DCC BB96).
 
 * [#2335] Bugfix: Module info missing in all jars except the main picocli jar file. Thanks to [Oliver B. Fischer](https://github.com/obfischer) for raising this.
 * [#2331] Bugfix: AutoComplete with jline3 was showing hidden commands. Thanks to [clebertsuconic](https://github.com/clebertsuconic) for raising this.
+* [#2291] Bugfix: NullPointerException when using PropertiesDefaultProvider. Thanks to [JessHolle](https://github.com/JessHolle) for raising this.
 * [#2290] DOC: User guide, CDI 2.0 (JSR 365) section: fix example and add warning about dynamic proxies. Thanks to [Mert Zeybekler](https://github.com/Mert-Z) for the pull request.
 
 
