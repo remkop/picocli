@@ -25,7 +25,7 @@ Artifacts in this release are signed by Remko Popma (6601 E5C0 8DCC BB96).
 ## <a name="4.7.7-fixes"></a> Fixed issues
 
 * [#2335] Module info missing in all jars except the main picocli jar file. Thanks to [Oliver B. Fischer](https://github.com/obfischer) for raising this.
-
+* [#2290] DOC: User guide, CDI 2.0 (JSR 365) section: fix example and add warning about dynamic proxies. Thanks to [Mert Zeybekler](https://github.com/Mert-Z) for the pull request.
 
 
 ## <a name="4.7.7-deprecated"></a> Deprecations
