@@ -1,5 +1,41 @@
 # picocli Release Notes
 
+# <a name="4.7.7"></a> Picocli 4.7.7
+The picocli community is pleased to announce picocli 4.7.7.
+
+This release includes bugfixes and enhancements.
+
+Many thanks to the picocli community for raising these issues and providing the pull requests to address them!
+
+This is the eighty-sixth public release.
+Picocli follows [semantic versioning](https://semver.org/).
+Artifacts in this release are signed by Remko Popma (6601 E5C0 8DCC BB96).
+
+## <a name="4.7.7-toc"></a> Table of Contents
+* [New and noteworthy](#4.7.7-new)
+* [Fixed issues](#4.7.7-fixes)
+* [Deprecations](#4.7.7-deprecated)
+* [Potential breaking changes](#4.7.7-breaking-changes)
+
+## <a name="4.7.7-new"></a> New and Noteworthy
+
+
+
+
+## <a name="4.7.7-fixes"></a> Fixed issues
+
+* [#2335] Module info missing in all jars except the main picocli jar file. Thanks to [Oliver B. Fischer](https://github.com/obfischer) for raising this.
+
+
+
+## <a name="4.7.7-deprecated"></a> Deprecations
+No features were deprecated in this release.
+
+## <a name="4.7.7-breaking-changes"></a> Potential breaking changes
+This release has no breaking changes.
+
+
+
 # <a name="4.7.6"></a> Picocli 4.7.6
 The picocli community is pleased to announce picocli 4.7.6.
 
