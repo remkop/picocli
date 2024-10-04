@@ -529,4 +529,22 @@ public class HelpSubCommandTest {
             "                                              txt).%n");
         assertEquals(expected, actual);
     }
+
+    @Test
+    public void testUsageHelpForAliasedSubcommands() {
+        @Command(name = "sub", aliases = "alias", mixinStandardHelpOptions = true) class Sub {}
+        @Command(name = "app", subcommands = {Sub.class}) class App {}
+
+        StringWriter out = new StringWriter();
+        CommandLine app = new CommandLine(new App(), new InnerClassFactory(this));
+        app.setOut(new PrintWriter(out));
+        ParseResult result = app.parseArgs("alias", "--help");
+        CommandLine.printHelpIfRequested(result);
+
+        final String expected = format("" +
+            "Usage: app alias [-hV]%n" +
+            "  -h, --help      Show this help message and exit.%n" +
+            "  -V, --version   Print version information and exit.%n");
+        assertEquals(expected, out.toString());
+    }
 }
