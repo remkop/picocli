@@ -26,12 +26,31 @@ public class Issue2342 {
             "\"--release 21\"",
             "--nowarn"
         };
-        new CommandLine(co)
-            .setAllowOptionsAsOptionParameters(true)
-            .parseArgs(args);
+        new CommandLine(co).parseArgs(args);
         List<String> expected = new ArrayList<String>(Arrays.asList(args));
         expected.remove(0);
+
+        // spaces are preserved, quotes are preserved
+        System.out.println(co.compilerArguments);
         assertEquals(expected, co.compilerArguments);
+    }
+
+    @Test
+    public void testSingleQuotesAreNotSupported() {
+        CompileOptions co = new CompileOptions();
+        String[] args = new String[] {
+            "--compiler-arguments",
+            "'--a-param with space'",
+            "--parameters",
+            "'--release 21'",
+            "--nowarn"
+        };
+        new CommandLine(co).parseArgs(args);
+
+        String[] expected = new String[] {
+            "'--a-param", "with", "space'", "--parameters", "'--release", "21'", "--nowarn"
+        };
+        assertArrayEquals(expected, co.compilerArguments.toArray());
     }
 
     @Test
@@ -45,9 +64,11 @@ public class Issue2342 {
             "--nowarn"
         };
         new CommandLine(co)
-            .setAllowOptionsAsOptionParameters(true)
             .setTrimQuotes(true)
             .parseArgs(args);
+
+        // note: .setTrimQuotes(true)
+        // results in "--a-param with space" being treated as 3 separate values
         List<String> expected = Arrays.asList(
             "--a-param", "with", "space", "--parameters", "--release", "21", "--nowarn");
         assertEquals(expected, co.compilerArguments);
@@ -62,6 +83,25 @@ public class Issue2342 {
             "--parameters",
             "--release",
             "21",
+            "--nowarn"
+        };
+        new CommandLine(co).parseArgs(args);
+        List<String> expected = new ArrayList<String>(Arrays.asList(args));
+        expected.remove(0);
+        assertEquals(expected, co.compilerArguments);
+    }
+
+    @Test
+    public void testArgsWithOptionLikeValues() {
+        CompileOptions co = new CompileOptions();
+        String[] args = new String[] {
+            "--compiler-arguments",
+            // need to set .setAllowOptionsAsOptionParameters(true)
+            // if we want an option to consume other options as parameters
+            "--compiler-arguments", // <-- value that looks like an option
+            "\"--a-param with space\"",
+            "--parameters=--parameters",
+            "\"--release 21\"",
             "--nowarn"
         };
         new CommandLine(co)
