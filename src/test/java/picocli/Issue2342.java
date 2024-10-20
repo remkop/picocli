@@ -63,7 +63,7 @@ public class Issue2342 {
 
     @Ignore("I don't understand how this could be specified on the command line: " +
         "quoted values, but still somehow the shell would pass 3 separate String values " +
-        "( \"--parameters,  --target and 21\" ) to the Java application?")
+        "( '--parameters,  --target and 21' ) to the Java application?")
     @Test
     public void testArgsWithCompilerArgumentsSingleQuoteOnValue() {
         CompileOptions co = new CompileOptions();
@@ -110,7 +110,8 @@ public class Issue2342 {
         assertEquals("my-file.jar", co.target);
     }
 
-    @Ignore("You really need --compiler-arguments to be included in the quoted value, and still be recognized as an option?")
+    @Ignore("You really need --compiler-arguments to be included in the quoted value, " +
+        "and still be recognized as an option?")
     @Test
     public void testArgsWithCompilerArgumentsSingleQuote() {
         CompileOptions co = new CompileOptions();
@@ -132,7 +133,8 @@ public class Issue2342 {
         assertEquals("my-file.jar", co.target);
     }
 
-    @Ignore("You really need --compiler-arguments to be included in the quoted value, and still be recognized as an option?")
+    @Ignore("You really need --compiler-arguments to be included in the quoted value, " +
+        "and still be recognized as an option?")
     @Test
     public void testArgsWithCompilerArgumentsDoubleQuote() {
         CompileOptions co = new CompileOptions();
