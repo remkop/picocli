@@ -148,7 +148,7 @@ import static picocli.CommandLine.Help.Column.Overflow.WRAP;
 public class CommandLine {
 
     /** This is picocli version {@value}. */
-    public static final String VERSION = "4.7.6";
+    public static final String VERSION = "4.7.7-SNAPSHOT";
     private static final Tracer TRACER = new Tracer();
 
     private CommandSpec commandSpec;
@@ -979,7 +979,7 @@ public class CommandLine {
      * or whether such values should be rejected with a missing parameter exception.
      * The default is {@code false}, so by default input like {@code -x=subcommand} is rejected if {@code -x} is an option that takes a String parameter, and {@code subcommand} is a subcommand of this command.
      * @return {@code true} when options can have parameter values that match subcommand names or aliases, {@code false} when such values should be rejected with a missing parameter exception
-     * @since 4.7.6
+     * @since 4.7.7-SNAPSHOT
      * @see ParserSpec#allowSubcommandsAsOptionParameters()
      */
     public boolean isAllowSubcommandsAsOptionParameters() {
@@ -994,7 +994,7 @@ public class CommandLine {
      * subcommands, call the setter last, after adding subcommands.</p>
      * @param newValue the new setting. When {@code true}, options can have parameter values that match subcommand names or aliases, when {@code false}, such values are rejected with a missing parameter exception
      * @return this {@code CommandLine} object, to allow method chaining
-     * @since 4.7.6
+     * @since 4.7.7-SNAPSHOT
      * @see ParserSpec#allowSubcommandsAsOptionParameters(boolean)
      */
     public CommandLine setAllowSubcommandsAsOptionParameters(boolean newValue) {
@@ -1009,7 +1009,7 @@ public class CommandLine {
      * The default is {@code false}, so by default input like {@code -x=--some-option} is rejected if {@code -x} is an option that takes a String parameter, and {@code --some-option} is an option of this command.
      * <p>This method only considers actual options of this command, as opposed to {@link #isUnmatchedOptionsAllowedAsOptionParameters()}, which considers values that <em>resemble</em> options.</p>
      * @return {@code true} when options can have parameter values that match the name of an option in this command, {@code false} when such values should be rejected with a missing parameter exception
-     * @since 4.7.6
+     * @since 4.7.7-SNAPSHOT
      * @see #isUnmatchedOptionsAllowedAsOptionParameters()
      * @see ParserSpec#allowOptionsAsOptionParameters()
      */
@@ -1029,7 +1029,7 @@ public class CommandLine {
      * subcommands, call the setter last, after adding subcommands.</p>
      * @param newValue the new setting. When {@code true}, options can have parameter values that match the name of an option in this command, when {@code false}, such values are rejected with a missing parameter exception
      * @return this {@code CommandLine} object, to allow method chaining
-     * @since 4.7.6
+     * @since 4.7.7-SNAPSHOT
      * @see #setUnmatchedOptionsAllowedAsOptionParameters(boolean)
      * @see ParserSpec#allowOptionsAsOptionParameters(boolean)
      */
@@ -4741,7 +4741,7 @@ public class CommandLine {
          * Note that picocli cannot reliably detect declaration order in commands that have both {@code @Option}-annotated methods and {@code @Option}-annotated fields.
          * The default ({@code true}) is to sort alphabetically.
          * @return whether options in the synopsis should be shown in alphabetic order.
-         * @since 4.7.6 */
+         * @since 4.7.7-SNAPSHOT */
         boolean sortSynopsis() default true;
 
         /** Prefix required options with this character in the options list. The default is no marker: the synopsis
@@ -5037,7 +5037,7 @@ public class CommandLine {
      * </pre>
      *
      * The {@link #convert(String)} method of this class always throws an UnsupportedOperationException.
-     * @since 4.7.6
+     * @since 4.7.7-SNAPSHOT
      */
     public static final class UseDefaultConverter implements ITypeConverter<Object> {
         /** Always throws UnsupportedOperationException.
@@ -8191,7 +8191,7 @@ public class CommandLine {
             public boolean sortOptions() { return (sortOptions == null) ? DEFAULT_SORT_OPTIONS : sortOptions; }
 
             /** Returns whether the options in the synopsis should be sorted alphabetically.
-             * @since 4.7.6 */
+             * @since 4.7.7-SNAPSHOT */
             public boolean sortSynopsis() { return (sortSynopsis == null) ? DEFAULT_SORT_SYNOPSIS : sortSynopsis; }
 
             /** Returns the character used to prefix required options in the options list. */
@@ -8340,7 +8340,7 @@ public class CommandLine {
 
             /** Sets whether the options in the synopsis should be sorted alphabetically.
              * @return this UsageMessageSpec for method chaining
-             * @since 4.7.6 */
+             * @since 4.7.7-SNAPSHOT */
             public UsageMessageSpec sortSynopsis(boolean newValue) {sortSynopsis = newValue; return this;}
 
             /** Sets the character used to prefix required options in the options list.
@@ -8606,11 +8606,11 @@ public class CommandLine {
             public boolean unmatchedOptionsAllowedAsOptionParameters() { return unmatchedOptionsAllowedAsOptionParameters; }
             /**
              * @see CommandLine#isAllowSubcommandsAsOptionParameters()
-             * @since 4.7.6 */
+             * @since 4.7.7-SNAPSHOT */
             public boolean allowSubcommandsAsOptionParameters() { return allowSubcommandsAsOptionParameters; }
             /**
              * @see CommandLine#isAllowOptionsAsOptionParameters()
-             * @since 4.7.6 */
+             * @since 4.7.7-SNAPSHOT */
             public boolean allowOptionsAsOptionParameters() { return allowOptionsAsOptionParameters; }
             private boolean splitFirst()                       { return limitSplit(); }
             /** Returns true if arguments should be split first before any further processing and the number of
@@ -8670,11 +8670,11 @@ public class CommandLine {
             public ParserSpec unmatchedOptionsArePositionalParams(boolean unmatchedOptionsArePositionalParams) { this.unmatchedOptionsArePositionalParams = unmatchedOptionsArePositionalParams; return this; }
             /**
              * @see CommandLine#setAllowSubcommandsAsOptionParameters(boolean)
-             * @since 4.7.6 */
+             * @since 4.7.7-SNAPSHOT */
             public ParserSpec allowSubcommandsAsOptionParameters(boolean allowSubcommandsAsOptionParameters) { this.allowSubcommandsAsOptionParameters = allowSubcommandsAsOptionParameters; return this; }
             /**
              * @see CommandLine#setAllowOptionsAsOptionParameters(boolean)
-             * @since 4.7.6 */
+             * @since 4.7.7-SNAPSHOT */
             public ParserSpec allowOptionsAsOptionParameters(boolean allowOptionsAsOptionParameters) { this.allowOptionsAsOptionParameters = allowOptionsAsOptionParameters; return this; }
             /** Sets whether exceptions during parsing should be collected instead of thrown.
              * Multiple errors may be encountered during parsing. These can be obtained from {@link ParseResult#errors()}.
@@ -8892,7 +8892,7 @@ public class CommandLine {
             }
 
             /** Returns the original value of the option's required attribute, regardless of whether the option is used in an exclusive group or not.
-             * @since 4.7.6
+             * @since 4.7.7-SNAPSHOT
              * @see Option#required() */
             public boolean originallyRequired(){
                 return originallyRequired;
@@ -11685,7 +11685,7 @@ public class CommandLine {
              * classpath and thereby cause failures. This method allows for disabling
              * loading of resource bundles during annotation processing, preventing such
              * errors.
-             * @since 4.7.6
+             * @since 4.7.7-SNAPSHOT
              * @param loadBundles true if bundles should be loaded (default), false if bundles should not be loaded
              */
             public static final void setLoadBundles(boolean loadBundles) {
@@ -18423,7 +18423,7 @@ public class CommandLine {
     }
 
     /** Enumerates over the trace level values for filtering which internal debug statements should be printed.
-     * @since 4.7.6 */
+     * @since 4.7.7-SNAPSHOT */
     public enum TraceLevel { OFF, WARN, INFO, DEBUG;
         /** Returns whether messages at the specified {@code other} trace level would be printed for the current trace level. */
         public boolean isEnabled(TraceLevel other) { return ordinal() >= other.ordinal(); }
@@ -18436,7 +18436,7 @@ public class CommandLine {
 
     /** Utility class for printing internal debug statements.
      * @see CommandLine#tracer()
-     * @since 4.7.6 */
+     * @since 4.7.7-SNAPSHOT */
     public static final class Tracer {
         private PrintStream stream = System.err;
         private TraceLevel level = TraceLevel.lookup(System.getProperty("picocli.trace"));
@@ -18479,7 +18479,7 @@ public class CommandLine {
     }
     /** Returns the {@code Tracer} used internally for printing internal debug statements.
      * @return the {@code Tracer} used internally for printing internal debug statements
-     * @since 4.7.6 */
+     * @since 4.7.7-SNAPSHOT */
     public static Tracer tracer() {
         // TRACER is a static variable.
         // Refresh to pick up changes to the system property after the CommandLine class was loaded.
@@ -19006,15 +19006,20 @@ public class CommandLine {
                     if (userObject == null) {
                         userObject = commandSpec.commandLine;
                     }
-                    URL resource = userObject.getClass().getClassLoader().getResource(propertiesFileName);
-                    if (resource != null) {
-                        try {
-                            return createProperties(resource.openStream(), resource.toString(), commandSpec);
-                        } catch (Exception ex) {
-                            tracer().warn("PropertiesDefaultProvider could not read defaults from %s: %s", resource, ex);
-                        }
+                    ClassLoader cl = userObject.getClass().getClassLoader();
+                    if (cl == null) {
+                        tracer().debug("No class loader for %s; PropertiesDefaultProvider defaults configuration file %s cannot be found on classpath or user home or specified location", userObject.getClass().getName(), propertiesFileName);
                     } else {
-                        tracer().debug("PropertiesDefaultProvider defaults configuration file %s does not exist on classpath or user home or specified location", propertiesFileName);
+                        URL resource = cl.getResource(propertiesFileName);
+                        if (resource != null) {
+                            try {
+                                return createProperties(resource.openStream(), resource.toString(), commandSpec);
+                            } catch (Exception ex) {
+                                tracer().warn("PropertiesDefaultProvider could not read defaults from %s: %s", resource, ex);
+                            }
+                        } else {
+                            tracer().debug("PropertiesDefaultProvider defaults configuration file %s does not exist on classpath or user home or specified location", propertiesFileName);
+                        }
                     }
                 }
             }

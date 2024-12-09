@@ -1,5 +1,43 @@
 # picocli Release Notes
 
+# <a name="4.7.7"></a> Picocli 4.7.7
+The picocli community is pleased to announce picocli 4.7.7.
+
+This release includes bugfixes and enhancements.
+
+Many thanks to the picocli community for raising these issues and providing the pull requests to address them!
+
+This is the eighty-sixth public release.
+Picocli follows [semantic versioning](https://semver.org/).
+Artifacts in this release are signed by Remko Popma (6601 E5C0 8DCC BB96).
+
+## <a name="4.7.7-toc"></a> Table of Contents
+* [New and noteworthy](#4.7.7-new)
+* [Fixed issues](#4.7.7-fixes)
+* [Deprecations](#4.7.7-deprecated)
+* [Potential breaking changes](#4.7.7-breaking-changes)
+
+## <a name="4.7.7-new"></a> New and Noteworthy
+
+
+
+
+## <a name="4.7.7-fixes"></a> Fixed issues
+
+* [#2335] Bugfix: Module info missing in all jars except the main picocli jar file. Thanks to [Oliver B. Fischer](https://github.com/obfischer) for raising this.
+* [#2331] Bugfix: AutoComplete with jline3 was showing hidden commands. Thanks to [clebertsuconic](https://github.com/clebertsuconic) for raising this.
+* [#2291] Bugfix: NullPointerException when using PropertiesDefaultProvider. Thanks to [JessHolle](https://github.com/JessHolle) for raising this.
+* [#2290] DOC: User guide, CDI 2.0 (JSR 365) section: fix example and add warning about dynamic proxies. Thanks to [Mert Zeybekler](https://github.com/Mert-Z) for the pull request.
+
+
+## <a name="4.7.7-deprecated"></a> Deprecations
+No features were deprecated in this release.
+
+## <a name="4.7.7-breaking-changes"></a> Potential breaking changes
+This release has no breaking changes.
+
+
+
 # <a name="4.7.6"></a> Picocli 4.7.6
 The picocli community is pleased to announce picocli 4.7.6.
 
