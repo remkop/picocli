@@ -3,6 +3,7 @@ package picocli.shell.jline3;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -170,7 +171,7 @@ public class PicocliCommands implements CommandRegistry {
             String word = commandLine.word();
             List<String> words = commandLine.words();
             CommandLine sub = findSubcommandLine(words, commandLine.wordIndex());
-            if (sub == null) {
+            if (sub == null || sub.getCommandSpec().usageMessage().hidden()) {
                 return;
             }
             if (word.startsWith("-")) {
@@ -192,9 +193,9 @@ public class PicocliCommands implements CommandRegistry {
                     }
                 }
             } else {
-                addCandidates(candidates, sub.getSubcommands().keySet());
                 for (CommandLine s : sub.getSubcommands().values()) {
                     if (!s.getCommandSpec().usageMessage().hidden()) {
+                        addCandidates(candidates, Collections.singletonList(s.getCommandSpec().name()));
                         addCandidates(candidates, Arrays.asList(s.getCommandSpec().aliases()));
                     }
                 }

@@ -24,6 +24,18 @@ if (useJava17) {
     targetCompatibility = 1.8
 }
 
+apply plugin: 'org.beryx.jar' // for compiling module-info on Java 8
+compileJava {
+    inputs.property("moduleName", moduleName)
+}
+moduleConfig {
+    // copy module-info.class to META-INF/versions/9
+    multiReleaseVersion = 9
+    moduleInfoPath = 'src/main/java9/module-info.java'
+    version = project.version
+    neverCompileModuleInfo = true
+}
+
 dependencies {
     api                 rootProject
     if (useJava17) {

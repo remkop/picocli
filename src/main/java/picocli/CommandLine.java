@@ -19028,15 +19028,20 @@ public class CommandLine {
                     if (userObject == null) {
                         userObject = commandSpec.commandLine;
                     }
-                    URL resource = userObject.getClass().getClassLoader().getResource(propertiesFileName);
-                    if (resource != null) {
-                        try {
-                            return createProperties(resource.openStream(), resource.toString(), commandSpec);
-                        } catch (Exception ex) {
-                            tracer().warn("PropertiesDefaultProvider could not read defaults from %s: %s", resource, ex);
-                        }
+                    ClassLoader cl = userObject.getClass().getClassLoader();
+                    if (cl == null) {
+                        tracer().debug("No class loader for %s; PropertiesDefaultProvider defaults configuration file %s cannot be found on classpath or user home or specified location", userObject.getClass().getName(), propertiesFileName);
                     } else {
-                        tracer().debug("PropertiesDefaultProvider defaults configuration file %s does not exist on classpath or user home or specified location", propertiesFileName);
+                        URL resource = cl.getResource(propertiesFileName);
+                        if (resource != null) {
+                            try {
+                                return createProperties(resource.openStream(), resource.toString(), commandSpec);
+                            } catch (Exception ex) {
+                                tracer().warn("PropertiesDefaultProvider could not read defaults from %s: %s", resource, ex);
+                            }
+                        } else {
+                            tracer().debug("PropertiesDefaultProvider defaults configuration file %s does not exist on classpath or user home or specified location", propertiesFileName);
+                        }
                     }
                 }
             }
