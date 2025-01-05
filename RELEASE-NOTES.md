@@ -19,11 +19,15 @@ Artifacts in this release are signed by Remko Popma (6601 E5C0 8DCC BB96).
 
 ## <a name="4.7.7-new"></a> New and Noteworthy
 
+The built-in `picocli.CommandLine.HelpCommand` subcommand now implements `Callable<Integer>` and returns the exit code of the subcommand's `exitCodeOnUsageHelp` value for the subcommand whose help was requested.
+
+From this release, if a command implements both `Callable` and `Runnable`, then the default execution strategy will invoke the `call` method instead of the `run` method.
 
 
 
 ## <a name="4.7.7-fixes"></a> Fixed issues
 
+* [#2355] Bugfix: The built-in `help` subcommand should return the exit code of the subcommand's `exitCodeOnUsageHelp` value for the subcommand whose help was requested. Thanks to [marco-brandizi](https://github.com/marco-brandizi) for raising this.
 * [#2335] Bugfix: Module info missing in all jars except the main picocli jar file. Thanks to [Oliver B. Fischer](https://github.com/obfischer) for raising this.
 * [#2331] Bugfix: AutoComplete with jline3 was showing hidden commands. Thanks to [clebertsuconic](https://github.com/clebertsuconic) for raising this.
 * [#2291] Bugfix: NullPointerException when using PropertiesDefaultProvider. Thanks to [JessHolle](https://github.com/JessHolle) for raising this.

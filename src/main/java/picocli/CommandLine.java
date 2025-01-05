@@ -2013,8 +2013,8 @@ public class CommandLine {
                     t.debug("helpCommand '%s' does not implement IHelpCommandInitializable2 or IHelpCommandInitializable...", fullName);
                 }
                 t.debug("Executing helpCommand '%s'...", fullName);
-                executeUserObject(parsed, new ArrayList<Object>());
-                return parsed.getCommandSpec().exitCodeOnUsageHelp();
+                List<Object> execResult = executeUserObject(parsed, new ArrayList<Object>());
+                return AbstractParseResultHandler.resolveExecutionResultAsExitCode(ExitCode.OK, execResult);
             }
         }
         t.debug("Help was not requested. Continuing to process ParseResult...");
@@ -2024,21 +2024,7 @@ public class CommandLine {
         Tracer tracer = CommandLine.tracer();
 
         Object command = parsed.getCommand();
-        if (command instanceof Runnable) {
-            try {
-                tracer.debug("Invoking Runnable::run on user object %s@%s...", command.getClass().getName(), Integer.toHexString(command.hashCode()));
-                ((Runnable) command).run();
-                parsed.setExecutionResult(null); // 4.0
-                executionResultList.add(null); // for compatibility with picocli 2.x
-                return executionResultList;
-            } catch (ParameterException ex) {
-                throw ex;
-            } catch (ExecutionException ex) {
-                throw ex;
-            } catch (Exception ex) {
-                throw new ExecutionException(parsed, "Error while running command (" + command + "): " + ex, ex);
-            }
-        } else if (command instanceof Callable) {
+        if (command instanceof Callable) {
             try {
                 tracer.debug("Invoking Callable::call on user object %s@%s...", command.getClass().getName(), Integer.toHexString(command.hashCode()));
                 @SuppressWarnings("unchecked") Callable<Object> callable = (Callable<Object>) command;
@@ -2052,6 +2038,20 @@ public class CommandLine {
                 throw ex;
             } catch (Exception ex) {
                 throw new ExecutionException(parsed, "Error while calling command (" + command + "): " + ex, ex);
+            }
+        } else if (command instanceof Runnable) {
+            try {
+                tracer.debug("Invoking Runnable::run on user object %s@%s...", command.getClass().getName(), Integer.toHexString(command.hashCode()));
+                ((Runnable) command).run();
+                parsed.setExecutionResult(null); // 4.0
+                executionResultList.add(null); // for compatibility with picocli 2.x
+                return executionResultList;
+            } catch (ParameterException ex) {
+                throw ex;
+            } catch (ExecutionException ex) {
+                throw ex;
+            } catch (Exception ex) {
+                throw new ExecutionException(parsed, "Error while running command (" + command + "): " + ex, ex);
             }
         } else if (command instanceof Method) {
             try {
@@ -2298,18 +2298,22 @@ public class CommandLine {
             t.debug("resolveExitCode: exit code generators resulted in exit code=%d", result);
             if (executionResult instanceof List) {
                 List<?> resultList = (List<?>) executionResult;
-                for (Object obj : resultList) {
-                    if (obj instanceof Integer) {
-                        int exitCode = (Integer) obj;
-                        if ((exitCode > 0 && exitCode > result) || (exitCode < result && result <= 0)) {
-                            result = exitCode;
-                        }
-                    }
-                }
+                result = resolveExecutionResultAsExitCode(result, (List<?>) executionResult);
             }
             t.debug("resolveExitCode: execution results resulted in exit code=%d", result);
             t.debug("resolveExitCode: returning exit code=%d", result == 0 ? exitCodeOnSuccess : result);
             return result == 0 ? exitCodeOnSuccess : result;
+        }
+        static Integer resolveExecutionResultAsExitCode(int result, List<?> executionResultList) {
+            for (Object obj : executionResultList) {
+                if (obj instanceof Integer) {
+                    int exitCode = (Integer) obj;
+                    if ((exitCode > 0 && exitCode > result) || (exitCode < result && result <= 0)) {
+                        result = exitCode;
+                    }
+                }
+            }
+            return result;
         }
 
         /** Processes the specified {@code ParseResult} and returns the result as a list of objects.
@@ -15346,7 +15350,7 @@ public class CommandLine {
             synopsisHeading = "%nUsage: ", helpCommand = true,
             description = {"%nWhen no COMMAND is given, the usage help for the main command is displayed.",
                     "If a COMMAND is specified, the help for that command is shown.%n"})
-    public static final class HelpCommand implements IHelpCommandInitializable, IHelpCommandInitializable2, Runnable {
+    public static final class HelpCommand implements IHelpCommandInitializable, IHelpCommandInitializable2, Runnable, Callable<Integer> {
 
         @Option(names = {"-h", "--help"}, usageHelp = true, descriptionKey = "helpCommand.help",
                 description = "Show usage help for the help command and exit.")
@@ -15365,9 +15369,10 @@ public class CommandLine {
         private Help.ColorScheme colorScheme;
 
         /** Invokes {@link #usage(PrintStream, Help.ColorScheme) usage} for the specified command, or for the parent command. */
-        public void run() {
+        public void run() { call(); }
+        public Integer call() {
             CommandLine parent = self == null ? null : self.getParent();
-            if (parent == null) { return; }
+            if (parent == null) { return ExitCode.OK; }
             Help.ColorScheme colors = colorScheme != null ? colorScheme : Help.defaultColorScheme(ansi);
             if (commands != null) {
                 Map<String, CommandLine> parentSubcommands = parent.getCommandSpec().subcommands();
@@ -15382,6 +15387,7 @@ public class CommandLine {
                     } else {
                         subcommand.usage(out, colors); // for compatibility with pre-4.0 clients
                     }
+                    return subcommand.getCommandSpec().exitCodeOnUsageHelp();
                 } else {
                     throw new ParameterException(parent, "Unknown subcommand '" + commands + "'.", null, commands);
                 }
@@ -15391,6 +15397,7 @@ public class CommandLine {
                 } else {
                     parent.usage(out, colors); // for compatibility with pre-4.0 clients
                 }
+                return parent.getCommandSpec().exitCodeOnUsageHelp();
             }
         }
         /** {@inheritDoc} */

@@ -529,4 +529,15 @@ public class HelpSubCommandTest {
             "                                              txt).%n");
         assertEquals(expected, actual);
     }
-}
+
+    @Command(name = "issue2355", exitCodeOnUsageHelp = 123)
+    static class Issue2355 implements Runnable {
+        public void run() {}
+    }
+
+    @Test
+    public void testIssue2355ExitCode() {
+        @Command(name = "top", subcommands = {Issue2355.class, HelpCommand.class}) class Top { }
+        int actual = new CommandLine(new Top()).execute("help", "issue2355");
+        assertEquals(123, actual);
+    }}
