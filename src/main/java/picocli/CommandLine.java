@@ -151,6 +151,8 @@ public class CommandLine {
     public static final String VERSION = "4.7.7-SNAPSHOT";
     private static final Tracer TRACER = new Tracer();
 
+    private static final List<CommandListener> commandListeners = createCommandListeners();
+
     private CommandSpec commandSpec;
     private final Interpreter interpreter;
     private final IFactory factory;
@@ -242,6 +244,35 @@ public class CommandLine {
         for (CommandLine cmd : getSubcommands().values()) {
             cmd.applyModelTransformations();
         }
+    }
+
+    private static List<CommandListener> createCommandListeners() {
+        List<CommandListener> commandListeners = new ArrayList<>();
+        String classNames = System.getProperty("picocli.commandListeners");
+        if (classNames != null) {
+            for (String className : classNames.split(",")) {
+                try {
+                    Class<?> commandListenerClass = Class.forName(className);
+                    if (CommandListener.class.isAssignableFrom(commandListenerClass)) {
+                        commandListeners.add(
+                            (CommandListener) (commandListenerClass.getDeclaredConstructor()
+                                .newInstance()));
+                    } else {
+                        throw new IllegalArgumentException(
+                            "Class " + commandListenerClass + " does not implement "
+                                + CommandListener.class.getName());
+                    }
+                } catch (ClassNotFoundException | NoSuchMethodException |
+                         InvocationTargetException | InstantiationException |
+                         IllegalAccessException e) {
+                    throw new IllegalArgumentException(
+                        "Could not instantiate the class " + className + ". "
+                            + CommandListener.class.getName()
+                            + " is expected to have a no-arg constructor.", e);
+                }
+            }
+        }
+        return Collections.unmodifiableList(commandListeners);
     }
 
     private CommandLine copy() {
@@ -13753,6 +13784,12 @@ public class CommandLine {
                     tracer.debug("defaultValue not defined for %s", arg);
                 }
             }
+            if (arg.valueIsDefaultValue && arg instanceof OptionSpec) {
+                Object userObject = ((OptionSpec) arg).command().userObject.getInstance();
+                for (String optionName : ((OptionSpec) arg).names()) {
+                    commandListeners.forEach(listener -> listener.defaultOptionSet(userObject, optionName));
+                }
+            }
             return defaultValue != null;
         }
 
@@ -14053,6 +14090,12 @@ public class CommandLine {
                 tracer.debug("Found option named '%s': %s, arity=%s", arg, argSpec, arity);}
             parseResultBuilder.nowProcessing.add(argSpec);
             applyOption(argSpec, negated, lookBehind, alreadyUnquoted, arity, args, initialized, "option " + arg);
+            if (argSpec instanceof OptionSpec) {
+                Object userObject = ((OptionSpec) argSpec).command().userObject.getInstance();
+                for (String optionName : ((OptionSpec) argSpec).names()) {
+                    commandListeners.forEach(listener -> listener.argumentOptionSet(userObject, optionName));
+                }
+            }
         }
 
         private void processClusteredShortOptions(Collection<ArgSpec> required,
