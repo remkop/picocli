@@ -84,21 +84,21 @@ public class CommandListenerTest {
 
         private final Object command;
 
-        private final Object argumentName;
+        private final Object optionName;
 
-        public InvokeOnceDefaultOptionListener(Object command, Object argumentName) {
+        public InvokeOnceDefaultOptionListener(Object command, Object optionName) {
             this.command = command;
-            this.argumentName = argumentName;
+            this.optionName = optionName;
         }
 
         @Override
-        public void defaultOptionSet(Object command, String argumentName) {
+        public void defaultOptionSet(Object command, String optionName) {
             if (notified) {
                 throw new IllegalArgumentException("Listener has been already invoked");
             } else if (!this.command.equals(command)) {
                 throw new IllegalArgumentException("Invalid command " + command);
-            } else if (this.argumentName.equals(argumentName)) {
-                throw new IllegalArgumentException("Invalid argument " + argumentName);
+            } else if (this.optionName.equals(optionName)) {
+                throw new IllegalArgumentException("Invalid argument " + optionName);
             } else {
                 notified = true;
             }
@@ -115,21 +115,21 @@ public class CommandListenerTest {
 
         private final Object command;
 
-        private final Object argumentName;
+        private final Object optionName;
 
-        public InvokeOnceArgumentOptionListener(Object command, Object argumentName) {
+        public InvokeOnceArgumentOptionListener(Object command, Object optionName) {
             this.command = command;
-            this.argumentName = argumentName;
+            this.optionName = optionName;
         }
 
         @Override
-        public void argumentOptionSet(Object command, String argumentName) {
+        public void argumentOptionSet(Object command, String optionName) {
             if (notified) {
                 throw new IllegalArgumentException("Listener has been already invoked");
             } if (!this.command.equals(command)) {
                 throw new IllegalArgumentException("Invalid command " + command);
-            } else if (this.argumentName.equals(argumentName)) {
-                throw new IllegalArgumentException("Invalid argument " + argumentName);
+            } else if (this.optionName.equals(optionName)) {
+                throw new IllegalArgumentException("Invalid argument " + optionName);
             } else {
                 notified = true;
             }
@@ -142,18 +142,18 @@ public class CommandListenerTest {
 
     public static class DefaultOptionListener implements CommandListener {
         @Override
-        public void defaultOptionSet(Object command, String argumentName) {
+        public void defaultOptionSet(Object command, String optionName) {
             if (defaultOptionListener != null) {
-                defaultOptionListener.defaultOptionSet(command, argumentName);
+                defaultOptionListener.defaultOptionSet(command, optionName);
             }
         }
     }
 
     public static class ArgumentOptionListener implements CommandListener {
         @Override
-        public void argumentOptionSet(Object command, String argumentName) {
+        public void argumentOptionSet(Object command, String optionName) {
             if (argumentOptionListener != null) {
-                argumentOptionListener.argumentOptionSet(command, argumentName);
+                argumentOptionListener.argumentOptionSet(command, optionName);
             }
         }
     }
