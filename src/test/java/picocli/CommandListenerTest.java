@@ -18,6 +18,8 @@ public class CommandListenerTest {
 
     private static InvokeOnceArgumentOptionListener argumentOptionListener;
 
+    private static InvokeOnceExecuteCommandListener executeCommandListener;
+
     @Rule
     public final ProvideSystemProperty commandListeners = new ProvideSystemProperty(
         "picocli.commandListeners",
@@ -31,6 +33,7 @@ public class CommandListenerTest {
     public void resetListeners() {
         defaultOptionListener = null;
         argumentOptionListener = null;
+        executeCommandListener = null;
     }
 
     @Test
@@ -57,6 +60,19 @@ public class CommandListenerTest {
 
         assertEquals(ExitCode.OK, exitCode);
         assertEquals(true, argumentOptionListener.isNotified());
+    }
+
+    @Test
+    public void testOnExecuteInvoked() {
+        CommandLine commandLine = new CommandLine(new App());
+        RunCommand runCommand = new RunCommand();
+        commandLine.addSubcommand("run", runCommand);
+        executeCommandListener = new InvokeOnceExecuteCommandListener(runCommand);
+
+        int exitCode = commandLine.execute("run");
+
+        assertEquals(ExitCode.OK, exitCode);
+        assertEquals(true, executeCommandListener.isNotified());
     }
 
     @Command
@@ -140,6 +156,32 @@ public class CommandListenerTest {
         }
     }
 
+    public static class InvokeOnceExecuteCommandListener implements CommandListener {
+
+        private boolean notified = false;
+
+        private final Object command;
+
+        public InvokeOnceExecuteCommandListener(Object command) {
+            this.command = command;
+        }
+
+        @Override
+        public void onExecute(Object command) {
+            if (notified) {
+                throw new IllegalArgumentException("Listener has been already invoked");
+            } if (!this.command.equals(command)) {
+                throw new IllegalArgumentException("Invalid command " + command);
+            } else {
+                notified = true;
+            }
+        }
+
+        public boolean isNotified() {
+            return notified;
+        }
+    }
+
     public static class DefaultOptionListener implements CommandListener {
         @Override
         public void defaultOptionSet(Object command, String optionName) {
@@ -154,6 +196,15 @@ public class CommandListenerTest {
         public void argumentOptionSet(Object command, String optionName) {
             if (argumentOptionListener != null) {
                 argumentOptionListener.argumentOptionSet(command, optionName);
+            }
+        }
+    }
+
+    public static class ExecuteCommandListener implements CommandListener {
+        @Override
+        public void onExecute(Object command) {
+            if (executeCommandListener != null) {
+                executeCommandListener.onExecute(command);
             }
         }
     }

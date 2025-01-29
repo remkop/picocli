@@ -36,11 +36,13 @@ import java.text.BreakIterator;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.ServiceLoader.Provider;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import java.util.stream.Collectors;
 import picocli.CommandLine.Help.Ansi.IStyle;
 import picocli.CommandLine.Help.Ansi.Style;
 import picocli.CommandLine.Help.Ansi.Text;
@@ -248,6 +250,7 @@ public class CommandLine {
 
     private static List<CommandListener> createCommandListeners() {
         List<CommandListener> commandListeners = new ArrayList<>();
+        ServiceLoader.load(CommandListener.class).forEach(commandListeners::add);
         String classNames = System.getProperty("picocli.commandListeners");
         if (classNames != null) {
             for (String className : classNames.split(",")) {
@@ -2055,6 +2058,7 @@ public class CommandLine {
         Tracer tracer = CommandLine.tracer();
 
         Object command = parsed.getCommand();
+        commandListeners.forEach(listener -> listener.onExecute(command));
         if (command instanceof Callable) {
             try {
                 tracer.debug("Invoking Callable::call on user object %s@%s...", command.getClass().getName(), Integer.toHexString(command.hashCode()));
@@ -14091,7 +14095,7 @@ public class CommandLine {
             parseResultBuilder.nowProcessing.add(argSpec);
             applyOption(argSpec, negated, lookBehind, alreadyUnquoted, arity, args, initialized, "option " + arg);
             if (argSpec instanceof OptionSpec) {
-                Object userObject = ((OptionSpec) argSpec).command().userObject.getInstance();
+                Object userObject = argSpec.command().userObject.getInstance();
                 for (String optionName : ((OptionSpec) argSpec).names()) {
                     commandListeners.forEach(listener -> listener.argumentOptionSet(userObject, optionName));
                 }

@@ -1,12 +1,12 @@
 package picocli;
 
-import picocli.CommandLine.Option;
+import java.util.ServiceLoader;
 
 /**
  * A listener to observe all executed commands and customize the user object if needed.
  * <p/>
  * Comma separate list of {@link CommandListener CommandListeners} can be provided
- * with the {@code -Dpicocli.commandListeners} system property.
+ * with the {@code -Dpicocli.commandListeners} system property or via SPI ({@link ServiceLoader}).
  */
 public interface CommandListener {
 
@@ -22,5 +22,11 @@ public interface CommandListener {
      * as a command line argument and the default value was used instead.
      */
     default void defaultOptionSet(Object command, String optionName) {
+    }
+
+    /**
+     * This method is before executing the command.
+     */
+    default void onExecute(Object command) {
     }
 }
