@@ -25,7 +25,7 @@ ifdef::env-github[]
 endif::[]
 
 [link=https://github.com/remkop/picocli]
-image::https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png[Fork me on GitHub,float="right"]
+image::https://github.blog/wp-content/uploads/2008/12/forkme_right_red_aa0000.png[Fork me on GitHub,float="right"]
 ++++
 <iframe src="https://ghbtns.com/github-btn.html?user=remkop&repo=picocli&type=star&count=true" frameborder="0" scrolling="0" width="170px" height="20px" style="float:right"></iframe>
 ++++
@@ -49,7 +49,7 @@ Picocli is a one-file framework for creating Java command line applications with
 It supports a variety of command line syntax styles including POSIX, GNU, MS-DOS and more. It generates highly customizable usage help messages that use <<ANSI Colors and Styles,ANSI colors and styles>> to contrast important elements and reduce the cognitive load on the user.
 
 Picocli-based applications can have link:autocomplete.html[command line TAB completion] showing available options, option parameters and subcommands, for any level of nested subcommands.
-Picocli-based applications can be ahead-of-time compiled to a image:https://www.graalvm.org/resources/img/logo-colored.svg[GraalVM]
+Picocli-based applications can be ahead-of-time compiled to a image:https://www.graalvm.org/resources/img/brand-guidelines/downloads/GraalVM-logo.svg[GraalVM]
 <<GraalVM Native Image,native image>>, with extremely fast startup time and lower memory requirements, which can be distributed as a single executable file.
 
 Picocli <<Generate Man Page Documentation,generates beautiful documentation>> for your application (HTML, PDF and Unix man pages).
