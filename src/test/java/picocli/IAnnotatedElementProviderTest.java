@@ -58,36 +58,32 @@ public class IAnnotatedElementProviderTest {
         	org.junit.Assert.assertTrue(option.getter() instanceof IAnnotatedElementProvider);
         	        
         	String optionName = option.names()[0];
-			AnnotatedElement setterAnnotatedElement = ((IAnnotatedElementProvider) option.setter()).getAnnotatedElement();
-			AnnotatedElement getterAnnotatedElement = ((IAnnotatedElementProvider) option.getter()).getAnnotatedElement();
-			switch (optionName) {
-			case "-a":
-			case "-b":
+		AnnotatedElement setterAnnotatedElement = ((IAnnotatedElementProvider) option.setter()).getAnnotatedElement();
+		AnnotatedElement getterAnnotatedElement = ((IAnnotatedElementProvider) option.getter()).getAnnotatedElement();
+		if ("-a".equals(optionName) || "-b".equals(optionName)) {
 	        	org.junit.Assert.assertTrue(setterAnnotatedElement instanceof Field);
 	        	org.junit.Assert.assertTrue(getterAnnotatedElement instanceof Field);
 	        	
 	        	Field setterField = (Field) setterAnnotatedElement;
-				org.junit.Assert.assertEquals(IAnnotatedElementProviderTestCommand.class, setterField.getDeclaringClass());
-				org.junit.Assert.assertEquals(optionName.substring(1), setterField.getName());
+			org.junit.Assert.assertEquals(IAnnotatedElementProviderTestCommand.class, setterField.getDeclaringClass());
+			org.junit.Assert.assertEquals(optionName.substring(1), setterField.getName());
 				
 	        	Field getterField = (Field) getterAnnotatedElement;
-				org.junit.Assert.assertEquals(IAnnotatedElementProviderTestCommand.class, getterField.getDeclaringClass());
-				org.junit.Assert.assertEquals(optionName.substring(1), getterField.getName());								
-				break;
-			case "-c":
+			org.junit.Assert.assertEquals(IAnnotatedElementProviderTestCommand.class, getterField.getDeclaringClass());
+			org.junit.Assert.assertEquals(optionName.substring(1), getterField.getName());								
+		} else if ("-c".equals(optionName)) {
 	        	org.junit.Assert.assertTrue(setterAnnotatedElement instanceof Method);
 	        	org.junit.Assert.assertTrue(getterAnnotatedElement instanceof Method);
 	        	
 	        	Method setterMethod = (Method) setterAnnotatedElement;
-				org.junit.Assert.assertEquals(IAnnotatedElementProviderTestCommand.class, setterMethod.getDeclaringClass());
-				org.junit.Assert.assertEquals("setC", setterMethod.getName());
+			org.junit.Assert.assertEquals(IAnnotatedElementProviderTestCommand.class, setterMethod.getDeclaringClass());
+			org.junit.Assert.assertEquals("setC", setterMethod.getName());
 				
 	        	Method getterMethod = (Method) getterAnnotatedElement;
-				org.junit.Assert.assertEquals(IAnnotatedElementProviderTestCommand.class, getterMethod.getDeclaringClass());
-				org.junit.Assert.assertEquals("setC", getterMethod.getName());								
-				break;
-			default:
-				org.junit.Assert.fail("Unexpected option: " + optionName);
+			org.junit.Assert.assertEquals(IAnnotatedElementProviderTestCommand.class, getterMethod.getDeclaringClass());
+			org.junit.Assert.assertEquals("setC", getterMethod.getName());								
+		} else {
+			org.junit.Assert.fail("Unexpected option: " + optionName);
         	}        	        	        	
         }
     }
