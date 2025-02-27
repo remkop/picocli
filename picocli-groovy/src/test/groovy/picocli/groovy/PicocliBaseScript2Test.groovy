@@ -429,7 +429,7 @@ println "done"
                 "  -m, --message=<arg0>%n" +
                 "      --squash=<commit>"
         assertEquals(String.format(expected), baos.toString().trim())
-        assertEquals(null, result)
+        assertEquals(0, result)
     }
 
     @Test
