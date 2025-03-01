@@ -8899,6 +8899,7 @@ public class CommandLine {
              * @param annotationClass Annotation class
              * @return Annotation instance or <code>null</code>
              * @param <T> Annotation type
+             * @since 4.8.0
              */
             public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
                 return annotatedElement == null ? null : annotatedElement.getAnnotation(annotationClass);
