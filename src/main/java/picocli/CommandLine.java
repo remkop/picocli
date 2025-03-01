@@ -8894,6 +8894,16 @@ public class CommandLine {
                 }
             }
 
+            /**
+             * Provides access to annotations of the underlying {@link AnnotatedElement}
+             * @param annotationClass Annotation class
+             * @return Annotation instance or <code>null</code>
+             * @param <T> Annotation type
+             */
+            public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
+                return annotatedElement == null ? null : annotatedElement.getAnnotation(annotationClass);
+            }
+
             void applyInitialValue() {
                 Tracer tracer = CommandLine.tracer();
                 if (hasInitialValue()) {
