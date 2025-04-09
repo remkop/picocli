@@ -6783,6 +6783,10 @@ public class CommandLine {
              * @throws DuplicateOptionAnnotationsException if any of the names of the specified option is the same as the name of another option */
             public CommandSpec addOption(OptionSpec option) {
                 Tracer tracer = CommandLine.tracer();
+                if (options.contains(option)) {
+                    tracer.debug("Option '%s' is already added to command spec - skippin.", option);
+                    return this;
+                }
                 for (String name : interpolator.interpolate(option.names())) { // cannot be null or empty
                     String existingName = optionsByNameMap.getCaseSensitiveKey(name);
                     OptionSpec existing = optionsByNameMap.put(name, option);

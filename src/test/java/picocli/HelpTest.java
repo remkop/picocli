@@ -36,6 +36,7 @@ import picocli.CommandLine.HelpCommand;
 import picocli.CommandLine.IHelpFactory;
 import picocli.CommandLine.IHelpSectionRenderer;
 import picocli.CommandLine.InitializationException;
+import picocli.CommandLine.Mixin;
 import picocli.CommandLine.Model;
 import picocli.CommandLine.Model.ArgSpec;
 import picocli.CommandLine.Model.CommandSpec;
@@ -5189,5 +5190,46 @@ public class HelpTest {
         }
         Help help = new Help(new App());
         assertEquals("<main class> -p[=<password>]" + LINESEP, help.synopsis(0));
+    }
+
+    @Test
+    public void testIssue2309OptionsForArgGroupInMixinsAreNotDuplicatedInHelp() throws UnsupportedEncodingException {
+        ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
+        PrintWriter out = new PrintWriter(byteOut, true);
+        int result = new CommandLine(new Issue2309MutuallyExclusiveOptionsDemo()).setOut(out).execute("--help");
+
+        String output = byteOut.toString("UTF-8");
+        assertEquals(0, result);
+
+        Pattern pattern = Pattern.compile(".*Use A\\..*Use A\\..*", Pattern.MULTILINE | Pattern.DOTALL);
+        boolean aMultipleTimes = pattern.matcher(output).matches();
+        assertFalse("Expected option -a to be contained only once, but found\n" + output, aMultipleTimes);
+
+        pattern = Pattern.compile(".*Use B\\..*Use B\\..*", Pattern.MULTILINE | Pattern.DOTALL);
+        boolean bMultipleTimes = pattern.matcher(output).matches();
+        assertFalse("Expected option -b to be contained only once, but found\n" + output, bMultipleTimes);
+
+        pattern = Pattern.compile(".*Use C\\..*Use C\\..*", Pattern.MULTILINE | Pattern.DOTALL);
+        boolean cMultipleTimes = pattern.matcher(output).matches();
+        assertFalse("Expected option -c to be contained only once, but found\n" + output, cMultipleTimes);
+    }
+
+    @Command
+    static class Issue2309MyMixin
+    {
+        @ArgGroup(exclusive = true, multiplicity = "1")
+        Exclusive exclusive;
+
+        class Exclusive {
+            @Option(names = "-a", required = true, description = "Use A.") int a;
+            @Option(names = "-b", required = true, description = "Use B.") int b;
+            @Option(names = "-c", required = true, description = "Use C.") int c;
+        }
+    }
+
+    @Command(mixinStandardHelpOptions = true, name = "exclusivedemo")
+    class Issue2309MutuallyExclusiveOptionsDemo {
+        @Mixin
+        Issue2309MyMixin mixin;
     }
 }
