@@ -33,6 +33,9 @@ From this release, if a command implements both `Callable` and `Runnable`, then 
 * [#2291] Bugfix: NullPointerException when using PropertiesDefaultProvider. Thanks to [JessHolle](https://github.com/JessHolle) for raising this.
 * [#2290] DOC: User guide, CDI 2.0 (JSR 365) section: fix example and add warning about dynamic proxies. Thanks to [Mert Zeybekler](https://github.com/Mert-Z) for the pull request.
 * [#2347] DOC: Fix line-endings in generated asciidoc HTML. Thanks to [Fridrich Štrba](https://github.com/fridrich) for the pull request.
+* [#2367] DOC: Fix broken link. Thanks to [yeoleobun](https://github.com/yeoleobun) for the pull request.
+* [#2370] DOC: Add at least a link to how to use the CodeGen APT under Bazel. Thanks to [Michael Vorburger](https://github.com/vorburger) for the pull request.
+
 
 ## <a name="4.7.7-deprecated"></a> Deprecations
 No features were deprecated in this release.
