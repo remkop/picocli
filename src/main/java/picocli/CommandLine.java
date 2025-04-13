@@ -6942,15 +6942,19 @@ public class CommandLine {
                 return result;
             }
 
-            /** Adds the specified {@linkplain ArgGroupSpec argument group} to the groups in this command.
+            /**
+             * Adds the specified {@linkplain ArgGroupSpec argument group} to the groups in this command.
+             *
              * @param group the group spec to add
              * @return this CommandSpec for method chaining
              * @throws InitializationException if the specified group or one of its {@linkplain ArgGroupSpec#parentGroup() ancestors} has already been added
-             * @since 4.0 */
+             * @since 4.0
+             */
             public CommandSpec addArgGroup(ArgGroupSpec group) {
-                return addArgGroup(group, new HashSet<OptionSpec>(), new HashSet<PositionalParamSpec>());
+                return addArgGroup(group, new ArrayList<OptionSpec>(), new ArrayList<PositionalParamSpec>());
             }
-            private CommandSpec addArgGroup(ArgGroupSpec group, Set<OptionSpec> groupOptions, Set<PositionalParamSpec> groupPositionals) {
+
+            private CommandSpec addArgGroup(ArgGroupSpec group, List<OptionSpec> groupOptions, List<PositionalParamSpec> groupPositionals) {
                 Assert.notNull(group, "group");
                 if (group.parentGroup() != null) {
                     throw new InitializationException("Groups that are part of another group should not be added to a command. Add only the top-level group.");
@@ -6961,14 +6965,16 @@ public class CommandLine {
                 return this;
             }
 
-            private void addGroupArgsToCommand(ArgGroupSpec group, Map<String, ArgGroupSpec> added, Set<OptionSpec> groupOptions, Set<PositionalParamSpec> groupPositionals) {
+            private void addGroupArgsToCommand(ArgGroupSpec group, Map<String, ArgGroupSpec> added, List<OptionSpec> groupOptions, List<PositionalParamSpec> groupPositionals) {
                 Map<String, OptionSpec> options = new HashMap<String, OptionSpec>();
                 for (ArgSpec arg : group.args()) {
                     if (arg.isOption()) {
                         String[] names = interpolator.interpolate(((OptionSpec) arg).names());
                         for (String name : names) {
                             ArgGroupSpec other = added.get(name);
-                            if (other == null) { continue; }
+                            if (other == null) {
+                                continue;
+                            }
                             if (other == group) {
                                 throw DuplicateOptionAnnotationsException.create(name, arg, options.get(name));
                             } else {
@@ -7028,17 +7034,20 @@ public class CommandLine {
                 for (Map.Entry<String, CommandLine> entry : mixin.subcommands().entrySet()) {
                     addSubcommand(entry.getKey(), entry.getValue());
                 }
-                Set<OptionSpec> options = new LinkedHashSet<OptionSpec>(mixin.options());
-                Set<PositionalParamSpec> positionals = new LinkedHashSet<PositionalParamSpec>(mixin.positionalParameters());
+                List<OptionSpec> options = new ArrayList<OptionSpec>(mixin.options());
+                List<PositionalParamSpec> positionals = new ArrayList<PositionalParamSpec>(mixin.positionalParameters());
                 for (ArgGroupSpec argGroupSpec : mixin.argGroups()) {
-                    Set<OptionSpec> groupOptions = new HashSet<OptionSpec>();
-                    Set<PositionalParamSpec> groupPositionals = new HashSet<PositionalParamSpec>();
-                    addArgGroup(argGroupSpec, groupOptions, groupPositionals);
+                    List<OptionSpec> groupOptions = new ArrayList<OptionSpec>();
+                    List<PositionalParamSpec> groupPositionals = new ArrayList<PositionalParamSpec>();
+                    addArgGroup(argGroupSpec, groupOptions, groupPositionals); // CAUTION: adding to spec may cause OptionSpec hashCode to change
                     options.removeAll(groupOptions);
                     positionals.removeAll(groupPositionals);
                 }
-                for (OptionSpec optionSpec         : options)     { addOption(optionSpec); }
-                for (PositionalParamSpec paramSpec : positionals) { addPositional(paramSpec); }
+                for (OptionSpec optionSpec : options) {
+                    addOption(optionSpec);
+                }
+                for (PositionalParamSpec paramSpec : positionals) {
+                    addPositional(paramSpec); }
                 return this;
             }
             private void initFrom(CommandSpec spec) {

@@ -27,14 +27,28 @@ From this release, if a command implements both `Callable` and `Runnable`, then 
 
 ## <a name="4.7.7-fixes"></a> Fixed issues
 
-* [#2355] Bugfix: The built-in `help` subcommand should return the exit code of the subcommand's `exitCodeOnUsageHelp` value for the subcommand whose help was requested. Thanks to [marco-brandizi](https://github.com/marco-brandizi) for raising this.
-* [#2335] Bugfix: Module info missing in all jars except the main picocli jar file. Thanks to [Oliver B. Fischer](https://github.com/obfischer) for raising this.
-* [#2331] Bugfix: AutoComplete with jline3 was showing hidden commands. Thanks to [clebertsuconic](https://github.com/clebertsuconic) for raising this.
-* [#2291] Bugfix: NullPointerException when using PropertiesDefaultProvider. Thanks to [JessHolle](https://github.com/JessHolle) for raising this.
-* [#2290] DOC: User guide, CDI 2.0 (JSR 365) section: fix example and add warning about dynamic proxies. Thanks to [Mert Zeybekler](https://github.com/Mert-Z) for the pull request.
-* [#2347] DOC: Fix line-endings in generated asciidoc HTML. Thanks to [Fridrich Štrba](https://github.com/fridrich) for the pull request.
+* [#2355] Bugfix: The built-in `help` subcommand should return the exit code of the subcommand's `exitCodeOnUsageHelp`
+  value for the subcommand whose help was requested. Thanks to [marco-brandizi](https://github.com/marco-brandizi) for
+  raising this.
+* [#2335] Bugfix: Module info missing in all jars except the main picocli jar file. Thanks
+  to [Oliver B. Fischer](https://github.com/obfischer) for raising this.
+* [#2331] Bugfix: AutoComplete with jline3 was showing hidden commands. Thanks
+  to [clebertsuconic](https://github.com/clebertsuconic) for raising this.
+* [#2291] Bugfix: NullPointerException when using PropertiesDefaultProvider. Thanks
+  to [JessHolle](https://github.com/JessHolle) for raising this.
+* [#2344] Bugfix: `negatable=true` option in an `ArgGroup` should not add negated option twice. Thanks
+  to [Robin Fritz](https://github.com/DevSnobo) for raising this.
+* [#2309] Bugfix: Duplicate help output for `ArgGroup` from a `Mixin`. Thanks to [s-falke](https://github.com/s-falke)
+  for raising this. Thanks to [Simon Gamma](https://github.com/simschla) for providing a pull request for this.
+* [#2341] Bugfix: Options get doubled in non validating `ArgGroup` when used in `Mixin`. Thanks
+  to [Selene Feigl](https://github.com/sfeigl) for raising this.
+* [#2290] DOC: User guide, CDI 2.0 (JSR 365) section: fix example and add warning about dynamic proxies. Thanks
+  to [Mert Zeybekler](https://github.com/Mert-Z) for the pull request.
+* [#2347] DOC: Fix line-endings in generated asciidoc HTML. Thanks to [Fridrich Štrba](https://github.com/fridrich) for
+  the pull request.
 * [#2367] DOC: Fix broken link. Thanks to [yeoleobun](https://github.com/yeoleobun) for the pull request.
-* [#2370] DOC: Add at least a link to how to use the CodeGen APT under Bazel. Thanks to [Michael Vorburger](https://github.com/vorburger) for the pull request.
+* [#2370] DOC: Add at least a link to how to use the CodeGen APT under Bazel. Thanks
+  to [Michael Vorburger](https://github.com/vorburger) for the pull request.
 
 
 ## <a name="4.7.7-deprecated"></a> Deprecations

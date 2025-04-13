@@ -26,13 +26,19 @@ public class Issue777Test {
         //     but for now we get:
         //     - synopsis: '(([-f] (-t | -v | -w))... | ((-x | -y | -z) [-a=<a> -b=<b> -c=<c>])...)'
         Compilation compilation = compareCommandYamlDump(
-                slurpAll("/picocli/issue777/CompositeGroupDemo.yaml",
-                        "/picocli/issue777/Dependent.yaml",
-                        "/picocli/issue777/Exclusive.yaml",
-                        "/picocli/issue777/Exclusive2.yaml",
-                        "/picocli/issue777/Composite2.yaml",
-                        "/picocli/issue777/All.yaml",
-                        "/picocli/issue777/Composite.yaml"
+                //slurpAll("/picocli/issue777/CompositeGroupDemo.yaml",
+                //        "/picocli/issue777/Dependent.yaml",
+                //        "/picocli/issue777/Exclusive.yaml",
+                //        "/picocli/issue777/Exclusive2.yaml",
+                //        "/picocli/issue777/Composite2.yaml",
+                //        "/picocli/issue777/All.yaml",
+                //        "/picocli/issue777/Composite.yaml"
+                //),
+                slurpAll(
+                        "/picocli/issue777composite/Command-repeating-composite-demo.yaml",
+                        "/picocli/issue777composite/Group-All.yaml",
+                        "/picocli/issue777composite/Group-Composite2.yaml",
+                        "/picocli/issue777composite/Group-Composite.yaml"
                 ),
                 JavaFileObjects.forResource("picocli/issue777/CompositeGroupDemo.java"));
 
