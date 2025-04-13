@@ -14348,6 +14348,9 @@ public class CommandLine {
             if (tracer.isInfo()) { tracer.info(traceMessage, argSpec.toString(), String.valueOf(oldValue), displayVal, argDescription, argSpec.scopeString()); }
             int pos = getPosition(argSpec);
             argSpec.setValue(newValue);
+            if (argSpec.group() != null && !parseResultBuilder.isInitializingDefaultValues && argSpec.valueIsDefaultValue) { // #2349 bugfix for ArgGroup / Set / default value
+                argSpec.valueIsDefaultValue = false;
+            }
             parseResultBuilder.addOriginalStringValue(argSpec, actualValue);// #279 track empty string value if no command line argument was consumed
             parseResultBuilder.addStringValue(argSpec, actualValue);
             parseResultBuilder.addTypedValues(argSpec, pos, newValue);
@@ -14364,10 +14367,12 @@ public class CommandLine {
             if (argSpec.auxiliaryTypes().length < 2) { throw new ParameterException(CommandLine.this, argSpec.toString() + " needs two types (one for the map key, one for the value) but only has " + argSpec.auxiliaryTypes().length + " types configured.",argSpec, null); }
             Map<Object, Object> map = argSpec.getValue();
             Tracer tracer = CommandLine.tracer();
-            if (map == null || !initialized.contains(argSpec)) {
+            boolean shouldReset = argSpec.group() != null && !parseResultBuilder.isInitializingDefaultValues && argSpec.valueIsDefaultValue; // #2349 bugfix for ArgGroup / Set / default value
+            if (map == null || !initialized.contains(argSpec) || shouldReset) {
                 tracer.debug("Initializing binding for %s on %s with empty %s", optionDescription("", argSpec, 0), argSpec.scopeString(), argSpec.type().getSimpleName());
                 map = createMap(argSpec.type()); // map class
                 argSpec.setValue(map);
+                argSpec.valueIsDefaultValue = false;
             }
             addToInitialized(argSpec, initialized);
             int originalSize = map.size();
@@ -14550,7 +14555,8 @@ public class CommandLine {
             int pos = getPosition(argSpec);
             List<Object> converted = consumeArguments(argSpec, negated, lookBehind, alreadyUnquoted, alreadyUnquoted, arity, args, argDescription);
             List<Object> newValues = new ArrayList<Object>();
-            if (initialized.contains(argSpec)) { // existing values are default values if initialized does NOT contain argsSpec
+            boolean shouldReset = argSpec.group() != null && !parseResultBuilder.isInitializingDefaultValues && argSpec.valueIsDefaultValue; // #2349 bugfix for ArgGroup / Set / default value
+            if (initialized.contains(argSpec) || shouldReset) { // existing values are default values if initialized does NOT contain argsSpec
                 for (int i = 0; i < length; i++) {
                     newValues.add(Array.get(existing, i)); // keep non-default values
                 }
@@ -14568,6 +14574,9 @@ public class CommandLine {
                 Array.set(array, i, newValues.get(i));
             }
             argSpec.setValue(array);
+            if (shouldReset) {
+                argSpec.valueIsDefaultValue = false;
+            }
             parseResultBuilder.add(argSpec, pos);
             return converted.size(); // return how many args were consumed
         }
@@ -14583,10 +14592,12 @@ public class CommandLine {
             Collection<Object> collection = argSpec.getValue();
             int pos = getPosition(argSpec);
             List<Object> converted = consumeArguments(argSpec, negated, lookBehind, alreadyUnquoted, alreadyUnquoted, arity, args, argDescription);
-            if (collection == null ||  !initialized.contains(argSpec))  {
+            boolean shouldReset = argSpec.group() != null && !parseResultBuilder.isInitializingDefaultValues && argSpec.valueIsDefaultValue; // #2349 bugfix for ArgGroup / Set / default value
+            if (collection == null ||  !initialized.contains(argSpec) || shouldReset)  {
                 tracer().debug("Initializing binding for %s on %s with empty %s", optionDescription("", argSpec, 0), argSpec.scopeString(), argSpec.type().getSimpleName());
                 collection = createCollection(argSpec.type(), argSpec.auxiliaryTypes()); // collection type, element type
                 argSpec.setValue(collection);
+                argSpec.valueIsDefaultValue = false;
             }
             addToInitialized(argSpec, initialized);
             for (Object element : converted) {

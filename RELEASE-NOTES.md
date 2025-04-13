@@ -42,6 +42,7 @@ From this release, if a command implements both `Callable` and `Runnable`, then 
   for raising this. Thanks to [Simon Gamma](https://github.com/simschla) for providing a pull request for this.
 * [#2341] Bugfix: Options get doubled in non validating `ArgGroup` when used in `Mixin`. Thanks
   to [Selene Feigl](https://github.com/sfeigl) for raising this.
+  [#2349] Bugfix: Incorrect results when using `ArgGroup` + defaultValue + split + List/Set. Thanks to [Mithun Josalyn Gonsalvez](https://github.com/mithungonsalvez) for raising this.
 * [#2290] DOC: User guide, CDI 2.0 (JSR 365) section: fix example and add warning about dynamic proxies. Thanks
   to [Mert Zeybekler](https://github.com/Mert-Z) for the pull request.
 * [#2347] DOC: Fix line-endings in generated asciidoc HTML. Thanks to [Fridrich Štrba](https://github.com/fridrich) for
