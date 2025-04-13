@@ -14257,14 +14257,18 @@ public class CommandLine {
                         if (argSpec.isOption() && !empty(((OptionSpec) argSpec).fallbackValue())) {
                             defaultValue = !booleanValue(argSpec, ((OptionSpec) argSpec).fallbackValue()); // #754 Allow boolean options to get value from fallback instead of defaultProvider
                         }
-                        // don't process cmdline arg: it's okay to ignore value if not attached to option
-                        Boolean oppositeValue = commandSpec.parser().toggleBooleanFlags()
+                        if (!parseResultBuilder.isInitializingDefaultValues) {
+                            // don't process cmdline arg: it's okay to ignore value if not attached to option
+                            Boolean oppositeValue = commandSpec.parser().toggleBooleanFlags()
                                 ? (Boolean) argSpec.getValue() // #147 toggle existing boolean value
                                 : defaultValue; // #712 flip the default value
-                        if (oppositeValue == null) { oppositeValue = false; }
-                        actualValue = String.valueOf(!oppositeValue);
-                        if (argSpec.isOption() && ((OptionSpec) argSpec).negatable() && negated) {
-                            actualValue = String.valueOf(oppositeValue);
+                            if (oppositeValue == null) {
+                                oppositeValue = false;
+                            }
+                            actualValue = String.valueOf(!oppositeValue);
+                            if (argSpec.isOption() && ((OptionSpec) argSpec).negatable() && negated) {
+                                actualValue = String.valueOf(oppositeValue);
+                            }
                         }
                         optionalValueExists = false;
                         consumed = 0;

@@ -27,9 +27,7 @@ From this release, if a command implements both `Callable` and `Runnable`, then 
 
 ## <a name="4.7.7-fixes"></a> Fixed issues
 
-* [#2355] Bugfix: The built-in `help` subcommand should return the exit code of the subcommand's `exitCodeOnUsageHelp`
-  value for the subcommand whose help was requested. Thanks to [marco-brandizi](https://github.com/marco-brandizi) for
-  raising this.
+* [#2355] Bugfix: The built-in `help` subcommand should return the exit code of the subcommand's `exitCodeOnUsageHelp` value for the subcommand whose help was requested. Thanks to [marco-brandizi](https://github.com/marco-brandizi) for raising this.
 * [#2335] Bugfix: Module info missing in all jars except the main picocli jar file. Thanks
   to [Oliver B. Fischer](https://github.com/obfischer) for raising this.
 * [#2331] Bugfix: AutoComplete with jline3 was showing hidden commands. Thanks
@@ -44,6 +42,7 @@ From this release, if a command implements both `Callable` and `Runnable`, then 
   to [Selene Feigl](https://github.com/sfeigl) for raising this.
 * [#2349] Bugfix: Incorrect results when using `ArgGroup` + defaultValue + split + List/Set. Thanks to [Mithun Josalyn Gonsalvez](https://github.com/mithungonsalvez) for raising this.
 * [#2292] Bugfix: `DuplicateOptionAnnotationsException` on using negatable option in `ArgGroup`. Thanks to [Bhavik Patel](https://github.com/bhavikp19) for raising this.
+* [#2380] Bugfix: boolean with `arity=0` and `defaultValue=false` behaved unexpectedly. Thanks to [Leonard Brünings](https://github.com/leonard84) for raising this.
 * [#2290] DOC: User guide, CDI 2.0 (JSR 365) section: fix example and add warning about dynamic proxies. Thanks
   to [Mert Zeybekler](https://github.com/Mert-Z) for the pull request.
 * [#2347] DOC: Fix line-endings in generated asciidoc HTML. Thanks to [Fridrich Štrba](https://github.com/fridrich) for
