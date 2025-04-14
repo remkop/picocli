@@ -124,6 +124,8 @@ public class AutoCompleteTest {
     public static class Sub2 {
         @Option(names = "--num2", description = "another number") int number2;
         @Option(names = {"--directory", "-d"}, description = "a directory") File[] directory;
+        @Option(names = "--thread-state", paramLabel = "[0123]") Thread.State threadState;
+        @Option(names = "--<invalid-name>", paramLabel = "<value>") String invalidName;
         @Parameters(arity = "0..1") Possibilities possibilities;
     }
     @Command(description = "Second level sub-subcommand 1", aliases = {"sub2child1-alias"})
@@ -336,21 +338,21 @@ public class AutoCompleteTest {
         test(spec, a("sub1", "--candidates", "a", "--"),      3, 2, cur, l("candidates", "num", "str"));
         test(spec, a("sub1", "--num"),                        2, 0, cur, l());
         test(spec, a("sub1", "--str"),                        2, 0, cur, l());
-        test(spec, a("sub2"),                                 1, 0, cur, l("--directory", "--num2", "-d", "Aaa", "Bbb", "Ccc", "sub2child1-alias", "sub2child2-alias", "subsub1", "subsub2"));
-        test(spec, a("sub2", "-"),                            1, 1, cur, l("-directory", "-num2", "d"));
+        test(spec, a("sub2"),                                 1, 0, cur, l("--<invalid-name>", "--directory", "--num2", "--thread-state", "-d", "Aaa", "Bbb", "Ccc", "sub2child1-alias", "sub2child2-alias", "subsub1", "subsub2"));
+        test(spec, a("sub2", "-"),                            1, 1, cur, l("-<invalid-name>", "-directory", "-num2", "-thread-state", "d"));
         test(spec, a("sub2", "-d"),                           2, 0, cur, l());
-        test(spec, a("sub2", "-d", "/"),                      3, 0, cur, l("--directory", "--num2", "-d", "Aaa", "Bbb", "Ccc", "sub2child1-alias", "sub2child2-alias", "subsub1", "subsub2"));
-        test(spec, a("sub2", "-d", "/", "-"),                 3, 1, cur, l("-directory", "-num2", "d"));
-        test(spec, a("sub2", "-d", "/", "--"),                3, 2, cur, l("directory", "num2"));
+        test(spec, a("sub2", "-d", "/"),                      3, 0, cur, l("--<invalid-name>", "--directory", "--num2", "--thread-state", "-d", "Aaa", "Bbb", "Ccc", "sub2child1-alias", "sub2child2-alias", "subsub1", "subsub2"));
+        test(spec, a("sub2", "-d", "/", "-"),                 3, 1, cur, l("-<invalid-name>", "-directory", "-num2", "-thread-state", "d"));
+        test(spec, a("sub2", "-d", "/", "--"),                3, 2, cur, l("<invalid-name>", "directory", "thread-state", "num2"));
         test(spec, a("sub2", "-d", "/", "--n"),               3, 3, cur, l("um2"));
         test(spec, a("sub2", "-d", "/", "--num2"),            3, 6, cur, l(""));
         test(spec, a("sub2", "-d", "/", "--num2"),            4, 0, cur, l());
         test(spec, a("sub2", "-d", "/", "--num2", "0"),       4, 1, cur, l());
-        test(spec, a("sub2", "-d", "/", "--num2", "0"),       5, 0, cur, l("--directory", "--num2", "-d", "Aaa", "Bbb", "Ccc", "sub2child1-alias", "sub2child2-alias", "subsub1", "subsub2"));
+        test(spec, a("sub2", "-d", "/", "--num2", "0"),       5, 0, cur, l("--<invalid-name>", "--directory", "--num2", "--thread-state", "-d", "Aaa", "Bbb", "Ccc", "sub2child1-alias", "sub2child2-alias", "subsub1", "subsub2"));
         test(spec, a("sub2", "-d", "/", "--num2", "0", "s"),  5, 1, cur, l("ub2child1-alias", "ub2child2-alias", "ubsub1", "ubsub2"));
         test(spec, a("sub2", "A"),                            1, 1, cur, l("aa"));
         test(spec, a("sub2", "Aaa"),                          1, 3, cur, l(""));
-        test(spec, a("sub2", "Aaa"),                          2, 0, cur, l("--directory", "--num2", "-d", "Aaa", "Bbb", "Ccc", "sub2child1-alias", "sub2child2-alias", "subsub1", "subsub2"));
+        test(spec, a("sub2", "Aaa"),                          2, 0, cur, l("--<invalid-name>", "--directory", "--num2", "--thread-state", "-d", "Aaa", "Bbb", "Ccc", "sub2child1-alias", "sub2child2-alias", "subsub1", "subsub2"));
         test(spec, a("sub2", "Aaa", "s"),                     2, 1, cur, l("ub2child1-alias", "ub2child2-alias", "ubsub1", "ubsub2"));
         test(spec, a("sub2", "Aaa", "subsub1"),               3, 0, cur, l("--host", "-h"));
         test(spec, a("sub2", "subsub1"),                      2, 0, cur, l("--host", "-h"));
@@ -483,14 +485,15 @@ public class AutoCompleteTest {
     }
 
     @Test
-    public void testBashifyWithExtras() {
+    public void testBashifyWithParamLabelThatIsInvalidVarName() {
         CommandSpec cmd = CommandSpec.create().addOption(
                 OptionSpec.builder("-x")
                         .type(String.class)
-                        .paramLabel("_A\tB C")
+                        .paramLabel("[0123]")
                         .completionCandidates(Arrays.asList("1")).build());
         String actual = AutoComplete.bash("./bashify.sh", new CommandLine(cmd));
         String expected = format(loadTextFromClasspath("/bashify_completion.bash"), CommandLine.VERSION);
+        expected = expected.replaceAll("_AB_C_option_args", "_0123_option_args");
         assertEquals(expected, actual);
     }
 
@@ -502,7 +505,7 @@ public class AutoCompleteTest {
             @Option(names = "-B") Boolean object;
         }
         String actual = AutoComplete.bash("booltest", new CommandLine(new App()));
-        MatcherAssert.assertThat(actual, containsString("local flag_opts=\"-b -B\""));
+        MatcherAssert.assertThat(actual, containsString("local flag_opts=\"'-b' '-B'\""));
     }
 
     @Test
@@ -805,7 +808,7 @@ public class AutoCompleteTest {
                     "  local curr_word=${COMP_WORDS[COMP_CWORD]}\n" +
                     "\n" +
                     "  local commands=\"generate-completion\"\n" +
-                    "  local flag_opts=\"-h --help -V --version\"\n" +
+                    "  local flag_opts=\"'-h' '--help' '-V' '--version'\"\n" +
                     "  local arg_opts=\"\"\n" +
                     "\n" +
                     "  if [[ \"${curr_word}\" == -* ]]; then\n" +
@@ -823,7 +826,7 @@ public class AutoCompleteTest {
                     "  local curr_word=${COMP_WORDS[COMP_CWORD]}\n" +
                     "\n" +
                     "  local commands=\"\"\n" +
-                    "  local flag_opts=\"-h --help -V --version\"\n" +
+                    "  local flag_opts=\"'-h' '--help' '-V' '--version'\"\n" +
                     "  local arg_opts=\"\"\n" +
                     "\n" +
                     "  if [[ \"${curr_word}\" == -* ]]; then\n" +
@@ -1054,15 +1057,15 @@ public class AutoCompleteTest {
                 "\n" +
                 "  local commands=\"help\"\n" + // NOTE: no generate-completion: this command is hidden
                 "  local flag_opts=\"\"\n" +
-                "  local arg_opts=\"--apples --bbb\"\n" + // NOTE: no --aaa: this option is hidden
+                "  local arg_opts=\"'--apples' '--bbb'\"\n" + // NOTE: no --aaa: this option is hidden
                 "\n" +
                 "  type compopt &>/dev/null && compopt +o default\n" +
                 "\n" +
                 "  case ${prev_word} in\n" +
-                "    --apples)\n" +
+                "    '--apples')\n" +
                 "      return\n" +
                 "      ;;\n" +
-                "    --bbb)\n" +
+                "    '--bbb')\n" +
                 "      return\n" +
                 "      ;;\n" +
                 "  esac\n" +
@@ -1082,7 +1085,7 @@ public class AutoCompleteTest {
                 "  local curr_word=${COMP_WORDS[COMP_CWORD]}\n" +
                 "\n" +
                 "  local commands=\"\"\n" +
-                "  local flag_opts=\"-h --help\"\n" +
+                "  local flag_opts=\"'-h' '--help'\"\n" +
                 "  local arg_opts=\"\"\n" +
                 "\n" +
                 "  if [[ \"${curr_word}\" == -* ]]; then\n" +
