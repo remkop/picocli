@@ -1,12 +1,12 @@
 ---
 CommandSpec:
   name: '<main class>'
-  aliases: [ ]
+  aliases: []
   userObject: picocli.issue777.CompositeGroupDemo.Composite
   helpCommand: false
   defaultValueProvider: null
   versionProvider: null
-  version: [ ]
+  version: []
   ArgGroups:
   - synopsis: '(-x | -y | -z)'
     multiplicity: 1
@@ -23,10 +23,10 @@ CommandSpec:
     subgroupCount: 0
     argCount: 3
   Options:
-  - names: [ -a ]
+  - names: [-a ]
     usageHelp: false
     versionHelp: false
-    description: [ ]
+    description: []
     descriptionKey: ''
     typeInfo: CompileTimeTypeInfo(int, aux=[int], collection=false, map=false)
     arity: 1
@@ -40,14 +40,14 @@ CommandSpec:
     hasInitialValue: false
     initialValue: 'null'
     paramLabel: '<a>'
-    converters: [ ]
+    converters: []
     completionCandidates: null
     getter: AnnotatedElementHolder(FIELD a in picocli.issue777.CompositeGroupDemo.Dependent)
     setter: AnnotatedElementHolder(FIELD a in picocli.issue777.CompositeGroupDemo.Dependent)
-  - names: [ -b ]
+  - names: [-b ]
     usageHelp: false
     versionHelp: false
-    description: [ ]
+    description: []
     descriptionKey: ''
     typeInfo: CompileTimeTypeInfo(int, aux=[int], collection=false, map=false)
     arity: 1
@@ -61,14 +61,14 @@ CommandSpec:
     hasInitialValue: false
     initialValue: 'null'
     paramLabel: '<b>'
-    converters: [ ]
+    converters: []
     completionCandidates: null
     getter: AnnotatedElementHolder(FIELD b in picocli.issue777.CompositeGroupDemo.Dependent)
     setter: AnnotatedElementHolder(FIELD b in picocli.issue777.CompositeGroupDemo.Dependent)
-  - names: [ -c ]
+  - names: [-c ]
     usageHelp: false
     versionHelp: false
-    description: [ ]
+    description: []
     descriptionKey: ''
     typeInfo: CompileTimeTypeInfo(int, aux=[int], collection=false, map=false)
     arity: 1
@@ -82,14 +82,14 @@ CommandSpec:
     hasInitialValue: false
     initialValue: 'null'
     paramLabel: '<c>'
-    converters: [ ]
+    converters: []
     completionCandidates: null
     getter: AnnotatedElementHolder(FIELD c in picocli.issue777.CompositeGroupDemo.Dependent)
     setter: AnnotatedElementHolder(FIELD c in picocli.issue777.CompositeGroupDemo.Dependent)
-  - names: [ -x ]
+  - names: [-x ]
     usageHelp: false
     versionHelp: false
-    description: [ ]
+    description: []
     descriptionKey: ''
     typeInfo: CompileTimeTypeInfo(boolean, aux=[boolean], collection=false, map=false)
     arity: 0
@@ -103,14 +103,14 @@ CommandSpec:
     hasInitialValue: false
     initialValue: 'null'
     paramLabel: '<x>'
-    converters: [ ]
+    converters: []
     completionCandidates: null
     getter: AnnotatedElementHolder(FIELD x in picocli.issue777.CompositeGroupDemo.Exclusive)
     setter: AnnotatedElementHolder(FIELD x in picocli.issue777.CompositeGroupDemo.Exclusive)
-  - names: [ -y ]
+  - names: [-y ]
     usageHelp: false
     versionHelp: false
-    description: [ ]
+    description: []
     descriptionKey: ''
     typeInfo: CompileTimeTypeInfo(boolean, aux=[boolean], collection=false, map=false)
     arity: 0
@@ -124,14 +124,14 @@ CommandSpec:
     hasInitialValue: false
     initialValue: 'null'
     paramLabel: '<y>'
-    converters: [ ]
+    converters: []
     completionCandidates: null
     getter: AnnotatedElementHolder(FIELD y in picocli.issue777.CompositeGroupDemo.Exclusive)
     setter: AnnotatedElementHolder(FIELD y in picocli.issue777.CompositeGroupDemo.Exclusive)
-  - names: [ -z ]
+  - names: [-z ]
     usageHelp: false
     versionHelp: false
-    description: [ ]
+    description: []
     descriptionKey: ''
     typeInfo: CompileTimeTypeInfo(boolean, aux=[boolean], collection=false, map=false)
     arity: 0
@@ -145,13 +145,13 @@ CommandSpec:
     hasInitialValue: false
     initialValue: 'null'
     paramLabel: '<z>'
-    converters: [ ]
+    converters: []
     completionCandidates: null
     getter: AnnotatedElementHolder(FIELD z in picocli.issue777.CompositeGroupDemo.Exclusive)
     setter: AnnotatedElementHolder(FIELD z in picocli.issue777.CompositeGroupDemo.Exclusive)
-  PositionalParams: [ ]
-  UnmatchedArgsBindings: [ ]
-  Mixins: [ ]
+  PositionalParams: []
+  UnmatchedArgsBindings: []
+  Mixins: []
   UsageMessageSpec:
     width: 80
     abbreviateSynopsis: false
@@ -160,16 +160,16 @@ CommandSpec:
     sortOptions: true
     requiredOptionMarker: ' '
     headerHeading: ''
-    header: [ ]
+    header: []
     synopsisHeading: 'Usage: '
-    customSynopsis: [ ]
+    customSynopsis: []
     descriptionHeading: ''
-    description: [ ]
+    description: []
     parameterListHeading: ''
     optionListHeading: ''
     commandListHeading: 'Commands:%n'
     footerHeading: ''
-    footer: [ ]
+    footer: []
   ParserSpec:
     separator: '='
     endOfOptionsDelimiter: '--'
@@ -186,4 +186,4 @@ CommandSpec:
     collectErrors: false
     limitSplit: false
     toggleBooleanFlags: false
-  Subcommands: [ ]
+  Subcommands: []

@@ -1,12 +1,12 @@
 ---
 CommandSpec:
   name: '<main class>'
-  aliases: [ ]
+  aliases: []
   userObject: picocli.issue777.CompositeGroupDemo.Composite2
   helpCommand: false
   defaultValueProvider: null
   versionProvider: null
-  version: [ ]
+  version: []
   ArgGroups:
   - synopsis: '(-t | -v | -w)'
     multiplicity: 1
@@ -16,10 +16,10 @@ CommandSpec:
     subgroupCount: 0
     argCount: 3
   Options:
-  - names: [ -t ]
+  - names: [-t]
     usageHelp: false
     versionHelp: false
-    description: [ ]
+    description: []
     descriptionKey: ''
     typeInfo: CompileTimeTypeInfo(boolean, aux=[boolean], collection=false, map=false)
     arity: 0
@@ -33,14 +33,14 @@ CommandSpec:
     hasInitialValue: false
     initialValue: 'null'
     paramLabel: '<t>'
-    converters: [ ]
+    converters: []
     completionCandidates: null
     getter: AnnotatedElementHolder(FIELD t in picocli.issue777.CompositeGroupDemo.Exclusive2)
     setter: AnnotatedElementHolder(FIELD t in picocli.issue777.CompositeGroupDemo.Exclusive2)
-  - names: [ -v ]
+  - names: [-v]
     usageHelp: false
     versionHelp: false
-    description: [ ]
+    description: []
     descriptionKey: ''
     typeInfo: CompileTimeTypeInfo(boolean, aux=[boolean], collection=false, map=false)
     arity: 0
@@ -54,14 +54,14 @@ CommandSpec:
     hasInitialValue: false
     initialValue: 'null'
     paramLabel: '<v>'
-    converters: [ ]
+    converters: []
     completionCandidates: null
     getter: AnnotatedElementHolder(FIELD v in picocli.issue777.CompositeGroupDemo.Exclusive2)
     setter: AnnotatedElementHolder(FIELD v in picocli.issue777.CompositeGroupDemo.Exclusive2)
-  - names: [ -w ]
+  - names: [-w]
     usageHelp: false
     versionHelp: false
-    description: [ ]
+    description: []
     descriptionKey: ''
     typeInfo: CompileTimeTypeInfo(boolean, aux=[boolean], collection=false, map=false)
     arity: 0
@@ -75,13 +75,13 @@ CommandSpec:
     hasInitialValue: false
     initialValue: 'null'
     paramLabel: '<w>'
-    converters: [ ]
+    converters: []
     completionCandidates: null
     getter: AnnotatedElementHolder(FIELD w in picocli.issue777.CompositeGroupDemo.Exclusive2)
     setter: AnnotatedElementHolder(FIELD w in picocli.issue777.CompositeGroupDemo.Exclusive2)
-  PositionalParams: [ ]
-  UnmatchedArgsBindings: [ ]
-  Mixins: [ ]
+  PositionalParams: []
+  UnmatchedArgsBindings: []
+  Mixins: []
   UsageMessageSpec:
     width: 80
     abbreviateSynopsis: false
@@ -90,16 +90,16 @@ CommandSpec:
     sortOptions: true
     requiredOptionMarker: ' '
     headerHeading: ''
-    header: [ ]
+    header: []
     synopsisHeading: 'Usage: '
-    customSynopsis: [ ]
+    customSynopsis: []
     descriptionHeading: ''
-    description: [ ]
+    description: []
     parameterListHeading: ''
     optionListHeading: ''
     commandListHeading: 'Commands:%n'
     footerHeading: ''
-    footer: [ ]
+    footer: []
   ParserSpec:
     separator: '='
     endOfOptionsDelimiter: '--'
@@ -116,4 +116,4 @@ CommandSpec:
     collectErrors: false
     limitSplit: false
     toggleBooleanFlags: false
-  Subcommands: [ ]
+  Subcommands: []

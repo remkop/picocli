@@ -36,8 +36,8 @@ public class Issue777Test {
                 //),
                 slurpAll(
                         "/picocli/issue777composite/Command-repeating-composite-demo.yaml",
-                        "/picocli/issue777composite/Group-All.yaml",
                         "/picocli/issue777composite/Group-Composite2.yaml",
+                        "/picocli/issue777composite/Group-All.yaml",
                         "/picocli/issue777composite/Group-Composite.yaml"
                 ),
                 JavaFileObjects.forResource("picocli/issue777/CompositeGroupDemo.java"));
