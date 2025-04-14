@@ -174,7 +174,7 @@ function _picocli_rcmd() {
   local curr_word=${COMP_WORDS[COMP_CWORD]}
 
   local commands="sub-1 sub-2"
-  local flag_opts="-h --help -V --version"
+  local flag_opts="'-h' '--help' '-V' '--version'"
   local arg_opts=""
 
   if [[ "${curr_word}" == -* ]]; then
@@ -193,13 +193,13 @@ function _picocli_rcmd_sub1() {
   local prev_word=${COMP_WORDS[COMP_CWORD-1]}
 
   local commands=""
-  local flag_opts="flag1 -h --help -V --version"
-  local arg_opts="option1"
+  local flag_opts="'flag1' '-h' '--help' '-V' '--version'"
+  local arg_opts="'option1'"
 
   type compopt &>/dev/null && compopt +o default
 
   case ${prev_word} in
-    option1)
+    'option1')
       return
       ;;
   esac
@@ -220,13 +220,13 @@ function _picocli_rcmd_sub2() {
   local prev_word=${COMP_WORDS[COMP_CWORD-1]}
 
   local commands=""
-  local flag_opts="flag-2 -h --help -V --version"
-  local arg_opts="option-2"
+  local flag_opts="'flag-2' '-h' '--help' '-V' '--version'"
+  local arg_opts="'option-2'"
 
   type compopt &>/dev/null && compopt +o default
 
   case ${prev_word} in
-    option-2)
+    'option-2')
       return
       ;;
   esac
