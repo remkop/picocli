@@ -1,8 +1,8 @@
 import aQute.bnd.gradle.Bundle
 
-group 'info.picocli'
-description 'Java command line parser with both an annotations API and a programmatic API. Usage help with ANSI styles and colors. Autocomplete. Nested subcommands. Easily included as source to avoid adding a dependency.'
-version "$projectVersion"
+group          = 'info.picocli'
+description    = 'Java command line parser with both an annotations API and a programmatic API. Usage help with ANSI styles and colors. Autocomplete. Nested subcommands. Easily included as source to avoid adding a dependency.'
+version        = "$projectVersion"
 ext.moduleName = 'info.picocli'
 
 buildscript {
@@ -93,7 +93,7 @@ allprojects {
     compileTestJava.options.encoding = "UTF-8"
 
     repositories {
-        maven { url 'https://repo.spring.io/libs-snapshot' }
+        maven { url = 'https://repo.spring.io/libs-snapshot' }
         mavenCentral()
     }
 
