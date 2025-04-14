@@ -6990,6 +6990,7 @@ public class CommandLine {
                     add(arg);
                 }
                 for (ArgGroupSpec sub : group.subgroups()) { addGroupArgsToCommand(sub, added, groupOptions, groupPositionals); }
+                group.interpolator(interpolateVariables() ? interpolator : null);
             }
             private Set<ArgGroupSpec> flatten(Collection<ArgGroupSpec> groups, Set<ArgGroupSpec> result) {
                 for (ArgGroupSpec group : groups) { flatten(group, result); } return result;
@@ -10404,6 +10405,7 @@ public class CommandLine {
             private final List<ArgGroupSpec> subgroups;
             private final Set<ArgSpec> args;
             private Messages messages;
+            private Interpolator interpolator;
             private ArgGroupSpec parentGroup;
             private String id = "1";
             private final List<IAnnotatedElement> specElements;
@@ -10488,10 +10490,12 @@ public class CommandLine {
             /** Returns the heading of this group (may be {@code null}), used when generating the usage documentation.
              * @see ArgGroup#heading() */
             public String heading()  {
-                if (messages() == null) { return heading; }
-                String newValue = messages().getString(headingKey(), null);
-                if (newValue != null) { return newValue; }
-                return heading;
+                String result = heading;
+                if (messages() != null) {
+                    String newValue = messages().getString(headingKey(), null);
+                    if (newValue != null) { result = newValue; }
+                }
+                return interpolator != null ? interpolator.interpolate(result) : result;
             }
 
             /** Returns the heading key of this group (may be {@code null}), used to get the heading from a resource bundle.
@@ -10720,6 +10724,12 @@ public class CommandLine {
             public ArgGroupSpec messages(Messages msgs) {
                 messages = msgs;
                 for (ArgGroupSpec sub : subgroups()) { sub.messages(msgs); }
+                return this;
+            }
+
+            private ArgGroupSpec interpolator(Interpolator interpoltr) {
+                this.interpolator = interpoltr;
+                for (ArgGroupSpec sub : subgroups()) { sub.interpolator(interpoltr); }
                 return this;
             }
 

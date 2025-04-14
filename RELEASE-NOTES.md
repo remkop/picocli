@@ -31,6 +31,7 @@ From this release, if a command implements both `Callable` and `Runnable`, then 
 
 * [#2353] Enhancement: `picocli.shell.jline3.PicocliCommands::invoke` now returns `ParseResult` instead of null. Thanks to [Paul](https://github.com/pford19) for raising this.
 * [#2336] Enhancement: Avoid syntax error in auto-completion script for invalid option names and `paramLabel` values starting with a digit. Thanks to [Ruud Senden](https://github.com/rsenden) and [Tobias Knerr](https://github.com/tordanik) for raising this.
+* [#2281] Enhancement: Variable interpolation should work for `ArgGroup.heading` attribute. Thanks to [Marc Philipp](https://github.com/marcphilipp) for raising this.
 * [#2355] Bugfix: The built-in `help` subcommand should return the exit code of the subcommand's `exitCodeOnUsageHelp` value for the subcommand whose help was requested. Thanks to [marco-brandizi](https://github.com/marco-brandizi) for raising this.
 * [#2335] Bugfix: Module info missing in all jars except the main picocli jar file. Thanks to [Oliver B. Fischer](https://github.com/obfischer) for raising this.
 * [#2331] Bugfix: AutoComplete with jline3 was showing hidden commands. Thanks to [clebertsuconic](https://github.com/clebertsuconic) for raising this.
