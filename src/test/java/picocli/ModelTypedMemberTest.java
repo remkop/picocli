@@ -50,6 +50,7 @@ public class ModelTypedMemberTest {
         assertEquals(-1, typedMember.getMethodParamPosition());
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testTypedMemberGetMethodParamPosition() throws Exception {
         class App {

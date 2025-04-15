@@ -11117,7 +11117,7 @@ public class CommandLine {
             final int paramIndex;
             final String name;
             int position;
-
+            @Deprecated // AccessibleObject() in AccessibleObject has been deprecated
             public MethodParam(Method method, int paramIndex) {
                 this.method = method;
                 this.paramIndex = paramIndex;
