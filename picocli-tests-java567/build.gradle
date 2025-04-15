@@ -21,10 +21,8 @@ dependencies {
         // "pl.pragmatists:JUnitParams:1.1.1" // excluded, requires Java 6
 }
 
-java {
-    sourceCompatibility = JavaVersion.VERSION_1_5
-    targetCompatibility = JavaVersion.VERSION_1_5
-}
+sourceCompatibility = 1.5
+targetCompatibility = 1.5
 
 compileJava.options.encoding = "UTF-8"
 compileTestJava.options.encoding = "UTF-8"
