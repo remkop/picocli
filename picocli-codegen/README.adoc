@@ -181,6 +181,10 @@ kapt {
 }
 ```
 
+==== Bazel
+
+https://github.com/enola-dev/enola/commit/f398164a15ac2e6fbd6c4d391495ae77f56ad487[See here how to do this].
+
 === Picocli Processor Options
 
 The picocli annotation processor supports the options below.
