@@ -153,5 +153,5 @@ jobs:
           gradle-version: 1.12
         
       - name: Run build in subdirectory
-          working-directory: picocli-tests-java567
-          run: ./gradlew clean build --no-daemon
+        working-directory: picocli-tests-java567
+        run: ./gradlew clean build --no-daemon
