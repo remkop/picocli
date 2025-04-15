@@ -47,6 +47,9 @@ tasks.withType(GroovyCompile) {
     // see https://stackoverflow.com/questions/18173908/error-compiling-a-groovy-project-using-grab-annotation
     groovyClasspath += configurations.ivy
 }
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile.class).configureEach {
+    jvmTargetValidationMode = org.jetbrains.kotlin.gradle.dsl.jvm.JvmTargetValidationMode.WARNING
+}
 
 def generatedResources = "$buildDir/generated-resources/main"
 sourceSets {
