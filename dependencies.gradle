@@ -28,7 +28,7 @@ ext {
     springBootVersion   = "3.1.2" // Spring Boot 3.0 requires Java 17 as a minimum version
     systemRulesVersion  = "1.19.0"
     systemLambdaVersion = '1.2.1'
-    junit5Version       = '5.10.2'
+    junit5Version       = '5.12.2'
 
     supportDependencies = [
         junit             : "junit:junit:$junitVersion",
