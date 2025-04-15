@@ -2,17 +2,18 @@ plugins {
     id 'java'
 }
 
-group 'info.picocli'
-description 'Picocli Tests Requiring Java 8'
-version "$projectVersion"
+group = 'info.picocli'
+description = 'Picocli Tests Requiring Java 8'
+version = "$projectVersion"
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
 
 test {
     useJUnitPlatform()
 }
-
 
 dependencies {
     api rootProject

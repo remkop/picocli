@@ -35,7 +35,7 @@ tasks.withType(GenerateModuleMetadata) {
 }
 distributions {
     main {
-        distributionBaseName = "$archivesBaseName-all"
+        distributionBaseName = "${project.name}-all"
         contents {
             from jar
             from javadocJar
@@ -83,10 +83,10 @@ publishing {
             artifact sourcesJar
             artifact testJar
             artifact testSourcesJar
-            groupId group
-            artifactId project.name
-            version PUBLISH_VERSION
-            //version "$projectVersion"
+            groupId = group
+            artifactId = project.name
+            version = PUBLISH_VERSION
+            //version = "$projectVersion"
             // pom configuration for MavenPublication, as per https://docs.gradle.org/current/userguide/publishing_maven.html#sec:modifying_the_generated_pom
             pom {
                 packaging = 'jar'
@@ -122,8 +122,8 @@ publishing {
             url = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
 
             credentials {
-                username ossrhUsername
-                password ossrhPassword
+                username = ossrhUsername
+                password = ossrhPassword
             }
         }
     }
@@ -132,7 +132,7 @@ publishing {
 ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
 
 signing {
-    required { isReleaseVersion && gradle.taskGraph.hasTask("publish") }
+    required = { isReleaseVersion && gradle.taskGraph.hasTask("publish") }
     sign publishing.publications
 }
 

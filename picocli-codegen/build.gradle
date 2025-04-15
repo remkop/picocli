@@ -2,17 +2,19 @@ plugins {
     id 'java'
 }
 
-group 'info.picocli'
-description 'Picocli Code Generation - Tools to generate documentation, configuration, source code and other files from a picocli model.'
-version "$projectVersion"
+group = 'info.picocli'
+description = 'Picocli Code Generation - Tools to generate documentation, configuration, source code and other files from a picocli model.'
+version = "$projectVersion"
 ext.moduleName = 'info.picocli.codegen'
 
-if (!JavaVersion.current().isJava9Compatible()) {
-    sourceCompatibility = 1.6
-    targetCompatibility = 1.6
-} else { // from Java 9 and up
-    sourceCompatibility = 1.8
-    targetCompatibility = 1.8
+java {
+    if (!JavaVersion.current().isJava9Compatible()) {
+        sourceCompatibility = JavaVersion.VERSION_1_6
+        targetCompatibility = JavaVersion.VERSION_1_6
+    } else { // from Java 9 and up
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
 }
 
 dependencies {

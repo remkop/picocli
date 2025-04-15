@@ -1,4 +1,4 @@
-description 'Java, Groovy and Kotlin examples for the picocli project.'
+description = 'Java, Groovy and Kotlin examples for the picocli project.'
 
 buildscript {
     repositories {
@@ -15,8 +15,10 @@ apply plugin: 'kotlin'
 apply plugin: 'scala'
 apply plugin: 'java-library'
 
-sourceCompatibility = 1.8 // for the JSR-380 BeanValidation example
-targetCompatibility = 1.8
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8 // for the JSR-380 BeanValidation example
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
 
 configurations {
     ivy
@@ -62,7 +64,7 @@ sourceSets {
 
 //a task that generates the resources for the example VersionProviderDemo1:
 task generateVersionTxt {
-    description 'Creates a version.txt file with build info that is added to the root of the picocli-examples jar'
+    description = 'Creates a version.txt file with build info that is added to the root of the picocli-examples jar'
     def generated = new File(generatedResources, "version.txt")
     outputs.file(generated)
     doLast {
