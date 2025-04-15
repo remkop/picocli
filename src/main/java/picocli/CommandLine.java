@@ -2013,8 +2013,8 @@ public class CommandLine {
                     t.debug("helpCommand '%s' does not implement IHelpCommandInitializable2 or IHelpCommandInitializable...", fullName);
                 }
                 t.debug("Executing helpCommand '%s'...", fullName);
-                executeUserObject(parsed, new ArrayList<Object>());
-                return parsed.getCommandSpec().exitCodeOnUsageHelp();
+                List<Object> execResult = executeUserObject(parsed, new ArrayList<Object>());
+                return AbstractParseResultHandler.resolveExecutionResultAsExitCode(ExitCode.OK, execResult);
             }
         }
         t.debug("Help was not requested. Continuing to process ParseResult...");
@@ -2024,21 +2024,7 @@ public class CommandLine {
         Tracer tracer = CommandLine.tracer();
 
         Object command = parsed.getCommand();
-        if (command instanceof Runnable) {
-            try {
-                tracer.debug("Invoking Runnable::run on user object %s@%s...", command.getClass().getName(), Integer.toHexString(command.hashCode()));
-                ((Runnable) command).run();
-                parsed.setExecutionResult(null); // 4.0
-                executionResultList.add(null); // for compatibility with picocli 2.x
-                return executionResultList;
-            } catch (ParameterException ex) {
-                throw ex;
-            } catch (ExecutionException ex) {
-                throw ex;
-            } catch (Exception ex) {
-                throw new ExecutionException(parsed, "Error while running command (" + command + "): " + ex, ex);
-            }
-        } else if (command instanceof Callable) {
+        if (command instanceof Callable) {
             try {
                 tracer.debug("Invoking Callable::call on user object %s@%s...", command.getClass().getName(), Integer.toHexString(command.hashCode()));
                 @SuppressWarnings("unchecked") Callable<Object> callable = (Callable<Object>) command;
@@ -2052,6 +2038,20 @@ public class CommandLine {
                 throw ex;
             } catch (Exception ex) {
                 throw new ExecutionException(parsed, "Error while calling command (" + command + "): " + ex, ex);
+            }
+        } else if (command instanceof Runnable) {
+            try {
+                tracer.debug("Invoking Runnable::run on user object %s@%s...", command.getClass().getName(), Integer.toHexString(command.hashCode()));
+                ((Runnable) command).run();
+                parsed.setExecutionResult(null); // 4.0
+                executionResultList.add(null); // for compatibility with picocli 2.x
+                return executionResultList;
+            } catch (ParameterException ex) {
+                throw ex;
+            } catch (ExecutionException ex) {
+                throw ex;
+            } catch (Exception ex) {
+                throw new ExecutionException(parsed, "Error while running command (" + command + "): " + ex, ex);
             }
         } else if (command instanceof Method) {
             try {
@@ -2298,18 +2298,22 @@ public class CommandLine {
             t.debug("resolveExitCode: exit code generators resulted in exit code=%d", result);
             if (executionResult instanceof List) {
                 List<?> resultList = (List<?>) executionResult;
-                for (Object obj : resultList) {
-                    if (obj instanceof Integer) {
-                        int exitCode = (Integer) obj;
-                        if ((exitCode > 0 && exitCode > result) || (exitCode < result && result <= 0)) {
-                            result = exitCode;
-                        }
-                    }
-                }
+                result = resolveExecutionResultAsExitCode(result, (List<?>) executionResult);
             }
             t.debug("resolveExitCode: execution results resulted in exit code=%d", result);
             t.debug("resolveExitCode: returning exit code=%d", result == 0 ? exitCodeOnSuccess : result);
             return result == 0 ? exitCodeOnSuccess : result;
+        }
+        static Integer resolveExecutionResultAsExitCode(int result, List<?> executionResultList) {
+            for (Object obj : executionResultList) {
+                if (obj instanceof Integer) {
+                    int exitCode = (Integer) obj;
+                    if ((exitCode > 0 && exitCode > result) || (exitCode < result && result <= 0)) {
+                        result = exitCode;
+                    }
+                }
+            }
+            return result;
         }
 
         /** Processes the specified {@code ParseResult} and returns the result as a list of objects.
@@ -6938,15 +6942,19 @@ public class CommandLine {
                 return result;
             }
 
-            /** Adds the specified {@linkplain ArgGroupSpec argument group} to the groups in this command.
+            /**
+             * Adds the specified {@linkplain ArgGroupSpec argument group} to the groups in this command.
+             *
              * @param group the group spec to add
              * @return this CommandSpec for method chaining
              * @throws InitializationException if the specified group or one of its {@linkplain ArgGroupSpec#parentGroup() ancestors} has already been added
-             * @since 4.0 */
+             * @since 4.0
+             */
             public CommandSpec addArgGroup(ArgGroupSpec group) {
-                return addArgGroup(group, new HashSet<OptionSpec>(), new HashSet<PositionalParamSpec>());
+                return addArgGroup(group, new ArrayList<OptionSpec>(), new ArrayList<PositionalParamSpec>());
             }
-            private CommandSpec addArgGroup(ArgGroupSpec group, Set<OptionSpec> groupOptions, Set<PositionalParamSpec> groupPositionals) {
+
+            private CommandSpec addArgGroup(ArgGroupSpec group, List<OptionSpec> groupOptions, List<PositionalParamSpec> groupPositionals) {
                 Assert.notNull(group, "group");
                 if (group.parentGroup() != null) {
                     throw new InitializationException("Groups that are part of another group should not be added to a command. Add only the top-level group.");
@@ -6957,14 +6965,16 @@ public class CommandLine {
                 return this;
             }
 
-            private void addGroupArgsToCommand(ArgGroupSpec group, Map<String, ArgGroupSpec> added, Set<OptionSpec> groupOptions, Set<PositionalParamSpec> groupPositionals) {
+            private void addGroupArgsToCommand(ArgGroupSpec group, Map<String, ArgGroupSpec> added, List<OptionSpec> groupOptions, List<PositionalParamSpec> groupPositionals) {
                 Map<String, OptionSpec> options = new HashMap<String, OptionSpec>();
                 for (ArgSpec arg : group.args()) {
                     if (arg.isOption()) {
                         String[] names = interpolator.interpolate(((OptionSpec) arg).names());
                         for (String name : names) {
                             ArgGroupSpec other = added.get(name);
-                            if (other == null) { continue; }
+                            if (other == null) {
+                                continue;
+                            }
                             if (other == group) {
                                 throw DuplicateOptionAnnotationsException.create(name, arg, options.get(name));
                             } else {
@@ -6980,6 +6990,7 @@ public class CommandLine {
                     add(arg);
                 }
                 for (ArgGroupSpec sub : group.subgroups()) { addGroupArgsToCommand(sub, added, groupOptions, groupPositionals); }
+                group.interpolator(interpolateVariables() ? interpolator : null);
             }
             private Set<ArgGroupSpec> flatten(Collection<ArgGroupSpec> groups, Set<ArgGroupSpec> result) {
                 for (ArgGroupSpec group : groups) { flatten(group, result); } return result;
@@ -7024,17 +7035,20 @@ public class CommandLine {
                 for (Map.Entry<String, CommandLine> entry : mixin.subcommands().entrySet()) {
                     addSubcommand(entry.getKey(), entry.getValue());
                 }
-                Set<OptionSpec> options = new LinkedHashSet<OptionSpec>(mixin.options());
-                Set<PositionalParamSpec> positionals = new LinkedHashSet<PositionalParamSpec>(mixin.positionalParameters());
+                List<OptionSpec> options = new ArrayList<OptionSpec>(mixin.options());
+                List<PositionalParamSpec> positionals = new ArrayList<PositionalParamSpec>(mixin.positionalParameters());
                 for (ArgGroupSpec argGroupSpec : mixin.argGroups()) {
-                    Set<OptionSpec> groupOptions = new HashSet<OptionSpec>();
-                    Set<PositionalParamSpec> groupPositionals = new HashSet<PositionalParamSpec>();
-                    addArgGroup(argGroupSpec, groupOptions, groupPositionals);
+                    List<OptionSpec> groupOptions = new ArrayList<OptionSpec>();
+                    List<PositionalParamSpec> groupPositionals = new ArrayList<PositionalParamSpec>();
+                    addArgGroup(argGroupSpec, groupOptions, groupPositionals); // CAUTION: adding to spec may cause OptionSpec hashCode to change
                     options.removeAll(groupOptions);
                     positionals.removeAll(groupPositionals);
                 }
-                for (OptionSpec optionSpec         : options)     { addOption(optionSpec); }
-                for (PositionalParamSpec paramSpec : positionals) { addPositional(paramSpec); }
+                for (OptionSpec optionSpec : options) {
+                    addOption(optionSpec);
+                }
+                for (PositionalParamSpec paramSpec : positionals) {
+                    addPositional(paramSpec); }
                 return this;
             }
             private void initFrom(CommandSpec spec) {
@@ -10391,6 +10405,7 @@ public class CommandLine {
             private final List<ArgGroupSpec> subgroups;
             private final Set<ArgSpec> args;
             private Messages messages;
+            private Interpolator interpolator;
             private ArgGroupSpec parentGroup;
             private String id = "1";
             private final List<IAnnotatedElement> specElements;
@@ -10475,10 +10490,12 @@ public class CommandLine {
             /** Returns the heading of this group (may be {@code null}), used when generating the usage documentation.
              * @see ArgGroup#heading() */
             public String heading()  {
-                if (messages() == null) { return heading; }
-                String newValue = messages().getString(headingKey(), null);
-                if (newValue != null) { return newValue; }
-                return heading;
+                String result = heading;
+                if (messages() != null) {
+                    String newValue = messages().getString(headingKey(), null);
+                    if (newValue != null) { result = newValue; }
+                }
+                return interpolator != null ? interpolator.interpolate(result) : result;
             }
 
             /** Returns the heading key of this group (may be {@code null}), used to get the heading from a resource bundle.
@@ -10707,6 +10724,12 @@ public class CommandLine {
             public ArgGroupSpec messages(Messages msgs) {
                 messages = msgs;
                 for (ArgGroupSpec sub : subgroups()) { sub.messages(msgs); }
+                return this;
+            }
+
+            private ArgGroupSpec interpolator(Interpolator interpoltr) {
+                this.interpolator = interpoltr;
+                for (ArgGroupSpec sub : subgroups()) { sub.interpolator(interpoltr); }
                 return this;
             }
 
@@ -14244,14 +14267,18 @@ public class CommandLine {
                         if (argSpec.isOption() && !empty(((OptionSpec) argSpec).fallbackValue())) {
                             defaultValue = !booleanValue(argSpec, ((OptionSpec) argSpec).fallbackValue()); // #754 Allow boolean options to get value from fallback instead of defaultProvider
                         }
-                        // don't process cmdline arg: it's okay to ignore value if not attached to option
-                        Boolean oppositeValue = commandSpec.parser().toggleBooleanFlags()
+                        if (!parseResultBuilder.isInitializingDefaultValues) {
+                            // don't process cmdline arg: it's okay to ignore value if not attached to option
+                            Boolean oppositeValue = commandSpec.parser().toggleBooleanFlags()
                                 ? (Boolean) argSpec.getValue() // #147 toggle existing boolean value
                                 : defaultValue; // #712 flip the default value
-                        if (oppositeValue == null) { oppositeValue = false; }
-                        actualValue = String.valueOf(!oppositeValue);
-                        if (argSpec.isOption() && ((OptionSpec) argSpec).negatable() && negated) {
-                            actualValue = String.valueOf(oppositeValue);
+                            if (oppositeValue == null) {
+                                oppositeValue = false;
+                            }
+                            actualValue = String.valueOf(!oppositeValue);
+                            if (argSpec.isOption() && ((OptionSpec) argSpec).negatable() && negated) {
+                                actualValue = String.valueOf(oppositeValue);
+                            }
                         }
                         optionalValueExists = false;
                         consumed = 0;
@@ -14335,6 +14362,9 @@ public class CommandLine {
             if (tracer.isInfo()) { tracer.info(traceMessage, argSpec.toString(), String.valueOf(oldValue), displayVal, argDescription, argSpec.scopeString()); }
             int pos = getPosition(argSpec);
             argSpec.setValue(newValue);
+            if (argSpec.group() != null && !parseResultBuilder.isInitializingDefaultValues && argSpec.valueIsDefaultValue) { // #2349 bugfix for ArgGroup / Set / default value
+                argSpec.valueIsDefaultValue = false;
+            }
             parseResultBuilder.addOriginalStringValue(argSpec, actualValue);// #279 track empty string value if no command line argument was consumed
             parseResultBuilder.addStringValue(argSpec, actualValue);
             parseResultBuilder.addTypedValues(argSpec, pos, newValue);
@@ -14351,10 +14381,12 @@ public class CommandLine {
             if (argSpec.auxiliaryTypes().length < 2) { throw new ParameterException(CommandLine.this, argSpec.toString() + " needs two types (one for the map key, one for the value) but only has " + argSpec.auxiliaryTypes().length + " types configured.",argSpec, null); }
             Map<Object, Object> map = argSpec.getValue();
             Tracer tracer = CommandLine.tracer();
-            if (map == null || !initialized.contains(argSpec)) {
+            boolean shouldReset = argSpec.group() != null && !parseResultBuilder.isInitializingDefaultValues && argSpec.valueIsDefaultValue; // #2349 bugfix for ArgGroup / Set / default value
+            if (map == null || !initialized.contains(argSpec) || shouldReset) {
                 tracer.debug("Initializing binding for %s on %s with empty %s", optionDescription("", argSpec, 0), argSpec.scopeString(), argSpec.type().getSimpleName());
                 map = createMap(argSpec.type()); // map class
                 argSpec.setValue(map);
+                argSpec.valueIsDefaultValue = false;
             }
             addToInitialized(argSpec, initialized);
             int originalSize = map.size();
@@ -14537,7 +14569,8 @@ public class CommandLine {
             int pos = getPosition(argSpec);
             List<Object> converted = consumeArguments(argSpec, negated, lookBehind, alreadyUnquoted, alreadyUnquoted, arity, args, argDescription);
             List<Object> newValues = new ArrayList<Object>();
-            if (initialized.contains(argSpec)) { // existing values are default values if initialized does NOT contain argsSpec
+            boolean shouldReset = argSpec.group() != null && !parseResultBuilder.isInitializingDefaultValues && argSpec.valueIsDefaultValue; // #2349 bugfix for ArgGroup / Set / default value
+            if (initialized.contains(argSpec) || shouldReset) { // existing values are default values if initialized does NOT contain argsSpec
                 for (int i = 0; i < length; i++) {
                     newValues.add(Array.get(existing, i)); // keep non-default values
                 }
@@ -14555,6 +14588,9 @@ public class CommandLine {
                 Array.set(array, i, newValues.get(i));
             }
             argSpec.setValue(array);
+            if (shouldReset) {
+                argSpec.valueIsDefaultValue = false;
+            }
             parseResultBuilder.add(argSpec, pos);
             return converted.size(); // return how many args were consumed
         }
@@ -14570,10 +14606,12 @@ public class CommandLine {
             Collection<Object> collection = argSpec.getValue();
             int pos = getPosition(argSpec);
             List<Object> converted = consumeArguments(argSpec, negated, lookBehind, alreadyUnquoted, alreadyUnquoted, arity, args, argDescription);
-            if (collection == null ||  !initialized.contains(argSpec))  {
+            boolean shouldReset = argSpec.group() != null && !parseResultBuilder.isInitializingDefaultValues && argSpec.valueIsDefaultValue; // #2349 bugfix for ArgGroup / Set / default value
+            if (collection == null ||  !initialized.contains(argSpec) || shouldReset)  {
                 tracer().debug("Initializing binding for %s on %s with empty %s", optionDescription("", argSpec, 0), argSpec.scopeString(), argSpec.type().getSimpleName());
                 collection = createCollection(argSpec.type(), argSpec.auxiliaryTypes()); // collection type, element type
                 argSpec.setValue(collection);
+                argSpec.valueIsDefaultValue = false;
             }
             addToInitialized(argSpec, initialized);
             for (Object element : converted) {
@@ -15346,7 +15384,7 @@ public class CommandLine {
             synopsisHeading = "%nUsage: ", helpCommand = true,
             description = {"%nWhen no COMMAND is given, the usage help for the main command is displayed.",
                     "If a COMMAND is specified, the help for that command is shown.%n"})
-    public static final class HelpCommand implements IHelpCommandInitializable, IHelpCommandInitializable2, Runnable {
+    public static final class HelpCommand implements IHelpCommandInitializable, IHelpCommandInitializable2, Runnable, Callable<Integer> {
 
         @Option(names = {"-h", "--help"}, usageHelp = true, descriptionKey = "helpCommand.help",
                 description = "Show usage help for the help command and exit.")
@@ -15365,9 +15403,10 @@ public class CommandLine {
         private Help.ColorScheme colorScheme;
 
         /** Invokes {@link #usage(PrintStream, Help.ColorScheme) usage} for the specified command, or for the parent command. */
-        public void run() {
+        public void run() { call(); }
+        public Integer call() {
             CommandLine parent = self == null ? null : self.getParent();
-            if (parent == null) { return; }
+            if (parent == null) { return ExitCode.OK; }
             Help.ColorScheme colors = colorScheme != null ? colorScheme : Help.defaultColorScheme(ansi);
             if (commands != null) {
                 Map<String, CommandLine> parentSubcommands = parent.getCommandSpec().subcommands();
@@ -15382,6 +15421,7 @@ public class CommandLine {
                     } else {
                         subcommand.usage(out, colors); // for compatibility with pre-4.0 clients
                     }
+                    return subcommand.getCommandSpec().exitCodeOnUsageHelp();
                 } else {
                     throw new ParameterException(parent, "Unknown subcommand '" + commands + "'.", null, commands);
                 }
@@ -15391,6 +15431,7 @@ public class CommandLine {
                 } else {
                     parent.usage(out, colors); // for compatibility with pre-4.0 clients
                 }
+                return parent.getCommandSpec().exitCodeOnUsageHelp();
             }
         }
         /** {@inheritDoc} */
@@ -19006,15 +19047,20 @@ public class CommandLine {
                     if (userObject == null) {
                         userObject = commandSpec.commandLine;
                     }
-                    URL resource = userObject.getClass().getClassLoader().getResource(propertiesFileName);
-                    if (resource != null) {
-                        try {
-                            return createProperties(resource.openStream(), resource.toString(), commandSpec);
-                        } catch (Exception ex) {
-                            tracer().warn("PropertiesDefaultProvider could not read defaults from %s: %s", resource, ex);
-                        }
+                    ClassLoader cl = userObject.getClass().getClassLoader();
+                    if (cl == null) {
+                        tracer().debug("No class loader for %s; PropertiesDefaultProvider defaults configuration file %s cannot be found on classpath or user home or specified location", userObject.getClass().getName(), propertiesFileName);
                     } else {
-                        tracer().debug("PropertiesDefaultProvider defaults configuration file %s does not exist on classpath or user home or specified location", propertiesFileName);
+                        URL resource = cl.getResource(propertiesFileName);
+                        if (resource != null) {
+                            try {
+                                return createProperties(resource.openStream(), resource.toString(), commandSpec);
+                            } catch (Exception ex) {
+                                tracer().warn("PropertiesDefaultProvider could not read defaults from %s: %s", resource, ex);
+                            }
+                        } else {
+                            tracer().debug("PropertiesDefaultProvider defaults configuration file %s does not exist on classpath or user home or specified location", propertiesFileName);
+                        }
                     }
                 }
             }

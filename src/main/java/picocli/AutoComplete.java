@@ -264,11 +264,17 @@ public class AutoComplete {
                 builder.append('_');
             }
         }
+        if (Character.isDigit(builder.charAt(0))) { // #2336 bash variables cannot start with a digit
+            builder.insert(0, "_");
+        }
         return builder.toString();
     }
 
     private static class NullFunction implements Function<CharSequence, String> {
         public String apply(CharSequence value) { return value.toString(); }
+    }
+    private static class SingleQuoteFunction implements Function<CharSequence, String> {
+        public String apply(CharSequence value) { return "'" + value.toString() + "'"; }
     }
 
     private interface Predicate<T> {
@@ -643,6 +649,9 @@ public class AutoComplete {
     private static String concat(String infix, String... values) {
         return concat(infix, Arrays.asList(values));
     }
+    private static String concat(String infix, String[] values, String lastValue, Function<CharSequence, String> normalize) {
+        return concat(infix, Arrays.asList(values), lastValue, normalize);
+    }
     private static String concat(String infix, List<String> values) {
         return concat(infix, values, null, new NullFunction());
     }
@@ -827,26 +836,26 @@ public class AutoComplete {
                 type = option.typeInfo().getAuxiliaryTypes()[0];
             }
             if (option.completionCandidates() != null) {
-                buff.append(format("%s    %s)\n", indent, concat("|", option.names()))); // "    -u|--timeUnit)\n"
+                buff.append(format("%s    %s)\n", indent, concat("|", option.names(), null, new SingleQuoteFunction()))); // "    -u|--timeUnit)\n"
                 buff.append(format("%s      local IFS=$'\\n'\n", indent));
                 buff.append(format("%s      COMPREPLY=( $( compReplyArray \"${%s_option_args[@]}\" ) )\n", indent, bashify(option.paramLabel())));
                 buff.append(format("%s      return $?\n", indent));
                 buff.append(format("%s      ;;\n", indent));
             } else if (type.equals(File.class) || "java.nio.file.Path".equals(type.getName())) {
-                buff.append(format("%s    %s)\n", indent, concat("|", option.names()))); // "    -f|--file)\n"
+                buff.append(format("%s    %s)\n", indent, concat("|", option.names(), null, new SingleQuoteFunction()))); // "    -f|--file)\n"
                 buff.append(format("%s      local IFS=$'\\n'\n", indent));
                 buff.append(format("%s      type compopt &>/dev/null && compopt -o filenames\n", indent)); // #1464 workaround for old bash
                 buff.append(format("%s      COMPREPLY=( $( compgen -f -- \"%s\" ) ) # files\n", indent, currWord));
                 buff.append(format("%s      return $?\n", indent));
                 buff.append(format("%s      ;;\n", indent));
             } else if (type.equals(InetAddress.class)) {
-                buff.append(format("%s    %s)\n", indent, concat("|", option.names()))); // "    -h|--host)\n"
+                buff.append(format("%s    %s)\n", indent, concat("|", option.names(), null, new SingleQuoteFunction()))); // "    -h|--host)\n"
                 buff.append(format("%s      type compopt &>/dev/null && compopt -o filenames\n", indent)); // #1464 workaround for old bash
                 buff.append(format("%s      COMPREPLY=( $( compgen -A hostname -- \"%s\" ) )\n", indent, currWord));
                 buff.append(format("%s      return $?\n", indent));
                 buff.append(format("%s      ;;\n", indent));
             } else {
-                buff.append(format("%s    %s)\n", indent, concat("|", option.names()))); // no completions available
+                buff.append(format("%s    %s)\n", indent, concat("|", option.names(), null, new SingleQuoteFunction()))); // no completions available
                 buff.append(format("%s      return\n", indent));
                 buff.append(format("%s      ;;\n", indent));
             }
@@ -860,7 +869,7 @@ public class AutoComplete {
             if (option.hidden()) { continue; } // #887 skip hidden options
             result.addAll(Arrays.asList(option.names()));
         }
-        return concat(" ", result, "", new NullFunction()).trim();
+        return concat(" ", result, null, new SingleQuoteFunction()).trim();
     }
 
     public static int complete(CommandSpec spec, String[] args, int argIndex, int positionInArg, int cursor, List<CharSequence> candidates) {
