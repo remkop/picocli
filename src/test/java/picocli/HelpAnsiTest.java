@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Locale;
 
@@ -141,7 +142,18 @@ public class HelpAnsiTest {
     }
 
     private boolean hasConsole() {
-        try { return System.class.getDeclaredMethod("console").invoke(null) != null; }
+        try {
+            Object console = System.class.getDeclaredMethod("console").invoke(null);
+            if (console == null) {
+                return false;
+            }
+            try { // [#2083][#2084] Java 22 update
+                Method isTerminal = Class.forName("java.io.Console").getDeclaredMethod("isTerminal");
+                return (Boolean) isTerminal.invoke(console);
+            } catch (NoSuchMethodException e) {
+                return true;
+            }
+        }
         catch (Throwable reflectionFailed) { return true; }
     }
     private static boolean isJansiConsoleInstalled() {
