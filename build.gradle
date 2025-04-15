@@ -66,8 +66,8 @@ allprojects {
     apply plugin: 'java'
     apply plugin: 'java-library' // to avoid https://github.com/gradle/gradle/issues/1118
 
-    // https://errorprone.info/docs/installation requires Java 11+
-    if (JavaVersion.current().isJava11Compatible()) {
+    // https://errorprone.info/docs/installation requires Java 17+
+    if (JavaVersion.current().isJava17Compatible()) {
         apply plugin: "net.ltgt.errorprone"
 
         dependencies {
