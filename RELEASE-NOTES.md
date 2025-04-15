@@ -1,5 +1,61 @@
 # picocli Release Notes
 
+# <a name="4.7.7"></a> Picocli 4.7.7
+The picocli community is pleased to announce picocli 4.7.7.
+
+This release includes bugfixes and enhancements.
+
+Many thanks to the picocli community for raising these issues and providing the pull requests to address them!
+
+This is the eighty-sixth public release.
+Picocli follows [semantic versioning](https://semver.org/).
+Artifacts in this release are signed by Remko Popma (6601 E5C0 8DCC BB96).
+
+## <a name="4.7.7-toc"></a> Table of Contents
+* [New and noteworthy](#4.7.7-new)
+* [Fixed issues](#4.7.7-fixes)
+* [Deprecations](#4.7.7-deprecated)
+* [Potential breaking changes](#4.7.7-breaking-changes)
+
+## <a name="4.7.7-new"></a> New and Noteworthy
+
+This release fixes a problem that was introduced in the previous release (4.7.6), where using an `ArgGroup` in a `Mixin` would result in options being added twice, or `DuplicateOptionAnnotationsException`.
+
+The built-in `picocli.CommandLine.HelpCommand` subcommand now implements `Callable<Integer>` and returns the exit code of the subcommand's `exitCodeOnUsageHelp` value for the subcommand whose help was requested.
+
+From this release, if a command implements both `Callable` and `Runnable`, then the default execution strategy will invoke the `call` method instead of the `run` method.
+
+
+
+## <a name="4.7.7-fixes"></a> Fixed issues
+
+* [#2353] Enhancement: `picocli.shell.jline3.PicocliCommands::invoke` now returns `ParseResult` instead of null. Thanks to [Paul](https://github.com/pford19) for raising this.
+* [#2336] Enhancement: Avoid syntax error in auto-completion script for invalid option names and `paramLabel` values starting with a digit. Thanks to [Ruud Senden](https://github.com/rsenden) and [Tobias Knerr](https://github.com/tordanik) for raising this.
+* [#2281] Enhancement: Variable interpolation should work for `ArgGroup.heading` attribute. Thanks to [Marc Philipp](https://github.com/marcphilipp) for raising this.
+* [#2355] Bugfix: The built-in `help` subcommand should return the exit code of the subcommand's `exitCodeOnUsageHelp` value for the subcommand whose help was requested. Thanks to [marco-brandizi](https://github.com/marco-brandizi) for raising this.
+* [#2335] Bugfix: Module info missing in all jars except the main picocli jar file. Thanks to [Oliver B. Fischer](https://github.com/obfischer) for raising this.
+* [#2331] Bugfix: AutoComplete with jline3 was showing hidden commands. Thanks to [clebertsuconic](https://github.com/clebertsuconic) for raising this.
+* [#2291] Bugfix: NullPointerException when using PropertiesDefaultProvider. Thanks to [JessHolle](https://github.com/JessHolle) for raising this.
+* [#2344] Bugfix: `negatable=true` option in an `ArgGroup` should not add negated option twice. Thanks to [Robin Fritz](https://github.com/DevSnobo) for raising this.
+* [#2309] Bugfix: Duplicate help output for `ArgGroup` from a `Mixin`. Thanks to [s-falke](https://github.com/s-falke) for raising this. Thanks to [Simon Gamma](https://github.com/simschla) for providing a pull request for this.
+* [#2341] Bugfix: Options get doubled in non validating `ArgGroup` when used in `Mixin`. Thanks to [Selene Feigl](https://github.com/sfeigl) for raising this.
+* [#2349] Bugfix: Incorrect results when using `ArgGroup` + defaultValue + split + List/Set. Thanks to [Mithun Josalyn Gonsalvez](https://github.com/mithungonsalvez) for raising this.
+* [#2292] Bugfix: `DuplicateOptionAnnotationsException` on using negatable option in `ArgGroup`. Thanks to [Bhavik Patel](https://github.com/bhavikp19) for raising this.
+* [#2380] Bugfix: boolean with `arity=0` and `defaultValue=false` behaved unexpectedly. Thanks to [Leonard Brünings](https://github.com/leonard84) for raising this.
+* [#2290] DOC: User guide, CDI 2.0 (JSR 365) section: fix example and add warning about dynamic proxies. Thanks to [Mert Zeybekler](https://github.com/Mert-Z) for the pull request.
+* [#2347] DOC: Fix line-endings in generated asciidoc HTML. Thanks to [Fridrich Štrba](https://github.com/fridrich) for the pull request.
+* [#2367] DOC: Fix broken link. Thanks to [yeoleobun](https://github.com/yeoleobun) for the pull request.
+* [#2370] DOC: Add at least a link to how to use the CodeGen APT under Bazel. Thanks to [Michael Vorburger](https://github.com/vorburger) for the pull request.
+
+
+## <a name="4.7.7-deprecated"></a> Deprecations
+No features were deprecated in this release.
+
+## <a name="4.7.7-breaking-changes"></a> Potential breaking changes
+This release has no breaking changes.
+
+
+
 # <a name="4.7.6"></a> Picocli 4.7.6
 The picocli community is pleased to announce picocli 4.7.6.
 
