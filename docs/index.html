@@ -17486,7 +17486,7 @@ X-Mailer-Version: 1.0      <i class="conum" data-value="2"></i><b>(2)</b>
         <span class="k">if</span> <span class="o">(</span><span class="n">instance</span><span class="o">.</span><span class="na">isResolvable</span><span class="o">())</span> <span class="o">{</span>
             <span class="k">return</span> <span class="n">instance</span><span class="o">.</span><span class="na">get</span><span class="o">();</span>
         <span class="o">}</span>
-        <span class="k">return</span> <span class="n">defaultFactory</span><span class="o">.</span><span class="na">create</span><span class="o">(</span><span class="n">cls</span><span class="o">);</span>
+        <span class="k">return</span> <span class="n">fallbackFactory</span><span class="o">.</span><span class="na">create</span><span class="o">(</span><span class="n">cls</span><span class="o">);</span>
     <span class="o">}</span>
 <span class="o">}</span></code></pre>
 </div>
@@ -17499,8 +17499,12 @@ X-Mailer-Version: 1.0      <i class="conum" data-value="2"></i><b>(2)</b>
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">"cdi-app"</span><span class="o">,</span> <span class="n">mixinStandardHelpOptions</span> <span class="o">=</span> <span class="kc">true</span><span class="o">)</span>
 <span class="kd">class</span> <span class="nc">MyCDIApp</span> <span class="kd">implements</span> <span class="nc">Runnable</span> <span class="o">{</span>
 
-    <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="o">{</span><span class="s">"-x"</span><span class="o">,</span> <span class="s">"--option"</span><span class="o">},</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"example option"</span><span class="o">)</span>
     <span class="kt">boolean</span> <span class="n">flag</span><span class="o">;</span>
+
+    <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="o">{</span><span class="s">"-x"</span><span class="o">,</span> <span class="s">"--option"</span><span class="o">},</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"example option"</span><span class="o">)</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">setFlag</span><span class="o">(</span><span class="kt">boolean</span> <span class="n">flag</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">flag</span> <span class="o">=</span> <span class="n">flag</span><span class="o">;</span>
+    <span class="o">}</span>
 
     <span class="nd">@Override</span>
     <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">()</span> <span class="o">{</span>
@@ -17513,6 +17517,24 @@ X-Mailer-Version: 1.0      <i class="conum" data-value="2"></i><b>(2)</b>
     <span class="o">}</span>
 <span class="o">}</span></code></pre>
 </div>
+</div>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-important" title="Important"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Depending on your configuration, CDI may use dynamic proxies for managed instances.</p>
+</div>
+<div class="paragraph">
+<p>The safest thing to do in CDI applications is to use public <a href="#option-parameters-methods">annotated <strong>setter methods</strong></a> for picocli&#8217;s <code>@Option</code> and <code>@Parameters</code>, <code>@Spec</code>, and other annotations.
+Using picocli annotations on fields or on non-public methods may result in picocli-injected values not being available in the proxied instance.</p>
+</div>
+</td>
+</tr>
+</table>
 </div>
 </div>
 </div>

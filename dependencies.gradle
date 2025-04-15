@@ -51,13 +51,13 @@ ext {
         log4j2core        : "org.apache.logging.log4j:log4j-core:$log4j2Version",
         kotlin_stdlib     : "org.jetbrains.kotlin:kotlin-stdlib",
         scala_lang        : "org.scala-lang:scala-library:2.13.14",
-        validation_api    : "jakarta.validation:jakarta.validation-api:3.0.2",
+        validation_api    : "jakarta.validation:jakarta.validation-api:3.1.0",
         //el_api            : "jakarta.el:jakarta.el-api:3.0.3",
         el_impl           : "org.glassfish:jakarta.el:4.0.2",
 
         hibernate_validator_annproc: "org.hibernate.validator:hibernate-validator-annotation-processor:8.0.1.Final",
         hibernate_validator        : "org.hibernate.validator:hibernate-validator:8.0.1.Final",
 
-        kotlin_script_runtime      : "org.jetbrains.kotlin:kotlin-script-runtime:1.9.23",
+        kotlin_script_runtime      : "org.jetbrains.kotlin:kotlin-script-runtime:2.0.0",
     ]
 }
