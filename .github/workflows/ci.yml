@@ -147,6 +147,11 @@ jobs:
           java-version: ${{ matrix.java-version }}
           cache: gradle
         
+      - name: Change wrapper permission
+        working-directory: picocli-tests-java567
+        run: chmod +x ./gradlew
+
       - name: Run build in subdirectory
         working-directory: picocli-tests-java567
         run: ./gradlew clean build --no-daemon
+
