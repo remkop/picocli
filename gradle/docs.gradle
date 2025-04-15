@@ -13,14 +13,19 @@ Map<org.gradle.api.JavaVersion, String> linkMap = org.gradle.api.JavaVersion.val
     [(version) : 'https://docs.oracle.com/javase/8/docs/api/']
 }
 linkMap.remove(org.gradle.api.JavaVersion.VERSION_HIGHER)
-for (int i = 12; i < 20; i++) { try { linkMap.remove(org.gradle.api.JavaVersion.valueOf("VERSION_$i")); } catch (Exception ignored) {} }
+for (int i = 12; i < 27; i++) { try { linkMap.remove(org.gradle.api.JavaVersion.valueOf("VERSION_$i")); } catch (Exception ignored) {} }
 linkMap << [(org.gradle.api.JavaVersion.VERSION_1_9)  : 'https://docs.oracle.com/javase/9/docs/api/']
-linkMap << [(org.gradle.api.JavaVersion.VERSION_1_10) : 'https://docs.oracle.com/javase/10/docs/api/']
 linkMap << [(org.gradle.api.JavaVersion.VERSION_11)   : 'https://docs.oracle.com/en/java/javase/11/docs/api/']
+linkMap << [(org.gradle.api.JavaVersion.VERSION_17)   : 'https://docs.oracle.com/en/java/javase/17/docs/api/']
+linkMap << [(org.gradle.api.JavaVersion.VERSION_21)   : 'https://docs.oracle.com/en/java/javase/21/docs/api/']
+linkMap << [(org.gradle.api.JavaVersion.VERSION_22)   : 'https://docs.oracle.com/en/java/javase/22/docs/api/']
+linkMap << [(org.gradle.api.JavaVersion.VERSION_23)   : 'https://docs.oracle.com/en/java/javase/23/docs/api/']
+linkMap << [(org.gradle.api.JavaVersion.VERSION_24)   : 'https://docs.oracle.com/en/java/javase/24/docs/api/']
+//linkMap << [(org.gradle.api.JavaVersion.VERSION_25)   : 'https://docs.oracle.com/en/java/javase/25/docs/api/']
 
 javadoc.options.overview = "src/main/java/overview.html"
 javadoc.options.links += [
-        linkMap.get(org.gradle.api.JavaVersion.current(), 'https://docs.oracle.com/en/java/javase/12/docs/api/'),
+        linkMap.get(org.gradle.api.JavaVersion.current(), "https://docs.oracle.com/en/java/javase/11/docs/api/"),
 ]
 //javadoc.options.linksOffline linkMap.get(org.gradle.api.JavaVersion.current(), 'https://docs.oracle.com/en/java/javase/12/docs/api/'), 'gradle/javadocs/jdk/9/'
 
