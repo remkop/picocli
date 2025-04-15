@@ -33,20 +33,21 @@ public final class YamlAssert {
 
         assertTrue("Expected at least " + expected.size() + " commands but found " + processor.strings.size(),
                 expected.size() <= processor.strings.size());
+        //java.util.Collections.sort(processor.strings);
         for (int i = 0; i < expected.size(); i++) {
-            YamlAssert.assertEqualCommand(expected.get(i), processor.strings.get(i));
+            YamlAssert.assertEqualCommand(i, expected.get(i), processor.strings.get(i));
         }
         return compilation;
     }
 
-    public static void assertEqualCommand(String expected, String actual) {
+    public static void assertEqualCommand(int i, String expected, String actual) {
         List<String> exceptions = Arrays.asList("userObject: ", "hasInitialValue: ", "initialValue: ", "# ");
         Scanner expectedScanner = new Scanner(expected);
         Scanner actualScanner = new Scanner(actual);
         int count = 0;
         NEXT_LINE: while (actualScanner.hasNextLine()) {
             String actualLine = actualScanner.nextLine();
-            assertTrue("Unexpected actual line: " + actualLine + " in \n" + actual, expectedScanner.hasNextLine());
+            assertTrue("File " + i + ": Unexpected actual line: " + actualLine + " in \n" + actual, expectedScanner.hasNextLine());
             String expectedLine = expectedScanner.nextLine();
             count++;
 
@@ -66,17 +67,17 @@ public final class YamlAssert {
             }
 
             if (expLine.startsWith("typeInfo: ") && actLine.startsWith("typeInfo: ")) {
-                assertSimilarTypeInfo(expectedLine, actualLine);
+                assertSimilarTypeInfo(i, expectedLine, actualLine);
 //            } else if (expLine.startsWith("defaultValueProvider: ") && actLine.startsWith("defaultValueProvider: ")) {
 //                assertSimilarDefaultValueProvider(expectedLine, actualLine);
 //            } else if (expLine.startsWith("versionProvider: ") && actLine.startsWith("versionProvider: ")) {
 //                assertSimilarVersionProvider(expectedLine, actualLine);
             } else if ((expLine.startsWith("getter: ") && actLine.startsWith("getter: ")) ||
                     (expLine.startsWith("setter: ") && actLine.startsWith("setter: "))) {
-                assertSimilarGetterSetter(expectedLine, actualLine);
+                assertSimilarGetterSetter(i, expectedLine, actualLine);
             } else {
                 if (!expectedLine.equals(actualLine)) {
-                    assertEquals("Difference at line " + count + ": expected ["
+                    assertEquals("File " + i + ": Difference at line " + count + ": expected ["
                                     + expLine + "] but was [" + actLine + "]",
                             expected, actual);
                 }
@@ -88,7 +89,7 @@ public final class YamlAssert {
         }
     }
 
-    private static void assertSimilarTypeInfo(String expectedLine, String actualLine) {
+    private static void assertSimilarTypeInfo(int i, String expectedLine, String actualLine) {
         final String EXPECTED_PREFIX = "typeInfo: RuntimeTypeInfo(";
         final String ACTUAL_PREFIX = "typeInfo: CompileTimeTypeInfo(";
         assertThat(expectedLine.trim(), anyOf(startsWith(EXPECTED_PREFIX), startsWith(ACTUAL_PREFIX)));
@@ -109,7 +110,7 @@ public final class YamlAssert {
             int pos = expected2.indexOf(',');
             expected2 = expected2.substring(0, pos) + "<" + group + ">" + expected2.substring(pos);
         }
-        assertEquals(expected2, actual);
+        assertEquals("File " + i, expected2, actual);
     }
 
     private static void assertSimilarDefaultValueProvider(String expectedLine, String actualLine) {
@@ -128,7 +129,7 @@ public final class YamlAssert {
         }
     }
 
-    private static void assertSimilarGetterSetter(String expectedLine, String actualLine) {
+    private static void assertSimilarGetterSetter(int i, String expectedLine, String actualLine) {
         String expect = expectedLine.trim().substring(1);
         String actual = actualLine.trim().substring(1);
         if (expect.startsWith("etter: picocli.CommandLine.Model.FieldBinding")) {
@@ -144,7 +145,7 @@ public final class YamlAssert {
             assertThat(actual, startsWith(
                     "etter: AnnotatedElementHolder(PARAMETER"));
         } else {
-            assertEquals("Not implemented yet", expect, actual);
+            assertEquals("File " + i + ": Not implemented yet", expect, actual);
         }
     }
 }

@@ -1,8 +1,8 @@
 import aQute.bnd.gradle.Bundle
 
-group 'info.picocli'
-description 'Java command line parser with both an annotations API and a programmatic API. Usage help with ANSI styles and colors. Autocomplete. Nested subcommands. Easily included as source to avoid adding a dependency.'
-version "$projectVersion"
+group          = 'info.picocli'
+description    = 'Java command line parser with both an annotations API and a programmatic API. Usage help with ANSI styles and colors. Autocomplete. Nested subcommands. Easily included as source to avoid adding a dependency.'
+version        = "$projectVersion"
 ext.moduleName = 'info.picocli'
 
 buildscript {
@@ -19,10 +19,11 @@ buildscript {
         classpath "org.beryx:badass-jar:2.0.0"
         classpath 'biz.aQute.bnd:biz.aQute.bnd.gradle:6.4.0'
         classpath "io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.30.0"
-        classpath "net.ltgt.gradle:gradle-errorprone-plugin:3.1.0"
+        classpath "net.ltgt.gradle:gradle-errorprone-plugin:4.0.1"
     }
 }
 
+apply plugin: 'org.beryx.jar' // for compiling module-info on Java 8
 apply plugin: 'io.codearte.nexus-staging'
 
 if (System.getenv('MAVEN_OSS_USER')) { // on home system
@@ -61,14 +62,13 @@ pluginManager.withPlugin('biz.aQute.bnd.builder') { // if plugin applied, execut
 allprojects {
     apply plugin: 'java'
     apply plugin: 'java-library' // to avoid https://github.com/gradle/gradle/issues/1118
-    apply plugin: 'org.beryx.jar' // for compiling module-info on Java 8
 
     // https://errorprone.info/docs/installation requires Java 11+
     if (JavaVersion.current().isJava11Compatible()) {
         apply plugin: "net.ltgt.errorprone"
 
         dependencies {
-            errorprone("com.google.errorprone:error_prone_core:2.27.1")
+            errorprone("com.google.errorprone:error_prone_core:2.29.2")
         }
 
         tasks.withType(JavaCompile).configureEach {
@@ -93,7 +93,7 @@ allprojects {
     compileTestJava.options.encoding = "UTF-8"
 
     repositories {
-        maven { url 'https://repo.spring.io/libs-snapshot' }
+        maven { url = 'https://repo.spring.io/libs-snapshot' }
         mavenCentral()
     }
 
@@ -120,32 +120,6 @@ allprojects {
     javadoc.options.addStringOption('Xdoclint:none', '-quiet')
     // Workaround frpm https://bugs.openjdk.org/browse/JDK-4973681
     javadoc.options.addStringOption('sourcepath', 'src/main/java')
-
-    if (!project.name in ['picocli-examples', 'picocli-annotation-processing-tests']) {
-        //sourceSets.main.java.srcDirs = ['src/main/java', 'src/main/java9']
-        compileJava {
-            inputs.property("moduleName", moduleName)
-            //    doFirst {
-            //        logger.info("Java version is " + JavaVersion.current())
-            //        if (JavaVersion.current().isJava9Compatible()) {
-            //            options.compilerArgs = [
-            //                '--module-path', classpath.asPath,
-            //            ]
-            //        }
-            //        // classpath = files()
-            //        classpath = sourceSets.main.runtimeClasspath
-            //        logger.info("options.compilerArgs is " + options.compilerArgs)
-            //        logger.info("classpath is " + classpath.files)
-            //    }
-        }
-        moduleConfig {
-            // copy module-info.class to META-INF/versions/9
-            multiReleaseVersion = 9
-            moduleInfoPath = 'src/main/java9/module-info.java'
-            version = project.version
-            neverCompileModuleInfo = true
-        }
-    }
 
     normalization {
         runtimeClasspath {
