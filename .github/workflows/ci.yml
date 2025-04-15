@@ -8,7 +8,7 @@ jobs:
   build-java-8-plus:
     strategy:
       matrix:
-        java-version: [ 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 ]
+        java-version: [ 8, 9, 11, 17, 18, 19, 20, 21 ]
         os: [ubuntu-latest, macos-latest, windows-latest]
 
     runs-on: ${{ matrix.os }}
@@ -146,10 +146,12 @@ jobs:
           distribution: 'zulu'
           java-version: ${{ matrix.java-version }}
           cache: gradle
+        
+      - name: Change wrapper permission
+        working-directory: picocli-tests-java567
+        run: chmod +x ./gradlew
 
-      - name: Build
-        uses: gradle/gradle-build-action@v3.3.2 # v2.11.1
-        with:
-          gradle-version: 1.12
-          build-root-directory: picocli-tests-java567/
-          arguments: clean build --no-daemon
+      - name: Run build in subdirectory
+        working-directory: picocli-tests-java567
+        run: ./gradlew clean build --no-daemon
+
