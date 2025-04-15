@@ -38,6 +38,8 @@ moduleConfig {
     neverCompileModuleInfo = true
 }
 
+ext['junit-jupiter.version'] = "${junit5Version}"
+
 dependencies {
     api                 rootProject
     if (useJava17) {

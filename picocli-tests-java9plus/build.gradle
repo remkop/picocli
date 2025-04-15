@@ -13,7 +13,6 @@ java {
 }
 
 test {
-    useJUnitPlatform()
 
 //    if (org.gradle.api.JavaVersion.current().isCompatibleWith(
 //        org.gradle.api.JavaVersion.VERSION_18)) {
@@ -26,8 +25,9 @@ test {
 
 dependencies {
     api rootProject
-    testImplementation supportDependencies.junit5Api
-    testRuntimeOnly    supportDependencies.junit5Engine
+    testImplementation(platform("org.junit:junit-bom:${junit5Version}"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testImplementation supportDependencies.systemLambda
 }
 
