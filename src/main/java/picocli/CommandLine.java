@@ -15212,7 +15212,7 @@ public class CommandLine {
             public File convert(String value) { return new File(value); }
         }
         static class URLConverter implements ITypeConverter<URL> {
-            public URL convert(String value) throws MalformedURLException { return new URL(value); }
+            public URL convert(String value) throws MalformedURLException, URISyntaxException { return new URI(value).toURL(); }
         }
         static class URIConverter implements ITypeConverter<URI> {
             public URI convert(String value) throws URISyntaxException { return new URI(value); }
