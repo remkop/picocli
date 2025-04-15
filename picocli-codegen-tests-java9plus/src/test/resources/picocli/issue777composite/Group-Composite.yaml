@@ -23,7 +23,7 @@ CommandSpec:
     subgroupCount: 0
     argCount: 3
   Options:
-  - names: [-a ]
+  - names: [-a]
     usageHelp: false
     versionHelp: false
     description: []
@@ -44,7 +44,7 @@ CommandSpec:
     completionCandidates: null
     getter: AnnotatedElementHolder(FIELD a in picocli.issue777.CompositeGroupDemo.Dependent)
     setter: AnnotatedElementHolder(FIELD a in picocli.issue777.CompositeGroupDemo.Dependent)
-  - names: [-b ]
+  - names: [-b]
     usageHelp: false
     versionHelp: false
     description: []
@@ -65,7 +65,7 @@ CommandSpec:
     completionCandidates: null
     getter: AnnotatedElementHolder(FIELD b in picocli.issue777.CompositeGroupDemo.Dependent)
     setter: AnnotatedElementHolder(FIELD b in picocli.issue777.CompositeGroupDemo.Dependent)
-  - names: [-c ]
+  - names: [-c]
     usageHelp: false
     versionHelp: false
     description: []
@@ -86,7 +86,7 @@ CommandSpec:
     completionCandidates: null
     getter: AnnotatedElementHolder(FIELD c in picocli.issue777.CompositeGroupDemo.Dependent)
     setter: AnnotatedElementHolder(FIELD c in picocli.issue777.CompositeGroupDemo.Dependent)
-  - names: [-x ]
+  - names: [-x]
     usageHelp: false
     versionHelp: false
     description: []
@@ -107,7 +107,7 @@ CommandSpec:
     completionCandidates: null
     getter: AnnotatedElementHolder(FIELD x in picocli.issue777.CompositeGroupDemo.Exclusive)
     setter: AnnotatedElementHolder(FIELD x in picocli.issue777.CompositeGroupDemo.Exclusive)
-  - names: [-y ]
+  - names: [-y]
     usageHelp: false
     versionHelp: false
     description: []
@@ -128,7 +128,7 @@ CommandSpec:
     completionCandidates: null
     getter: AnnotatedElementHolder(FIELD y in picocli.issue777.CompositeGroupDemo.Exclusive)
     setter: AnnotatedElementHolder(FIELD y in picocli.issue777.CompositeGroupDemo.Exclusive)
-  - names: [-z ]
+  - names: [-z]
     usageHelp: false
     versionHelp: false
     description: []
