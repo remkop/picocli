@@ -46,6 +46,29 @@ From this release, if a command implements both `Callable` and `Runnable`, then 
 * [#2347] DOC: Fix line-endings in generated asciidoc HTML. Thanks to [Fridrich Štrba](https://github.com/fridrich) for the pull request.
 * [#2367] DOC: Fix broken link. Thanks to [yeoleobun](https://github.com/yeoleobun) for the pull request.
 * [#2370] DOC: Add at least a link to how to use the CodeGen APT under Bazel. Thanks to [Michael Vorburger](https://github.com/vorburger) for the pull request.
+* [#2302] DEP: Bump actions/checkout from 4.1.4 to 4.1.7
+* [#2391] DEP: Bump actions/checkout from 4.1.7 to 4.2.2
+* [#2388] DEP: Bump actions/setup-java from 4.2.1 to 4.7.1
+* [#2390] DEP: Bump actions/upload-artifact from 4.3.3 to 4.6.2
+* [#2317] DEP: Bump gradle/wrapper-validation-action from 3.3.2 to 3.5.0
+* [#2321] DEP: Bump com.google.errorprone:error_prone_core from 2.27.1 to 2.29.2
+* [#2382] DEP: Bump com.google.errorprone:error_prone_core from 2.29.2 to 2.37.0
+* [#2329] DEP: Bump github/codeql-action from 3.25.3 to 3.25.15
+* [#2387] DEP: Bump github/codeql-action from 3.25.15 to 3.28.15
+* [#2384] DEP: Bump junit5Version from 5.10.2 to 5.12.2
+* [#2392] DEP: Bump log4j2Version from 2.23.1 to 2.24.3
+* [#2308] DEP: Bump net.ltgt.gradle:gradle-errorprone-plugin from 3.1.0 to 4.0.1
+* [#2393] DEP: Bump org.apache.ivy:ivy from 2.5.2 to 2.5.3
+* [#2385] DEP: Bump org.asciidoctor:asciidoctor-gradle-jvm from 4.0.2 to 4.0.4
+* [#2386] DEP: Bump org.asciidoctor:asciidoctorj-pdf from 2.3.15 to 2.3.19
+* [#2394] DEP: Bump org.hamcrest:hamcrest-core from 2.2 to 3.0  (REVERTED)
+* [#2396] DEP: Bump org.hibernate.validator:hibernate-validator from 8.0.1.Final to 8.0.2.Final
+* [#2395] DEP: Bump org.hibernate.validator:hibernate-validator-annotation-processor from 8.0.1.Final to 8.0.2.Final
+* [#2383] DEP: Bump org.scala-lang:scala-library from 2.13.14 to 2.13.16
+* [#2330] DEP: Bump ossf/scorecard-action from 2.3.1 to 2.4.0
+* [#2389] DEP: Bump ossf/scorecard-action from 2.4.0 to 2.4.1
+* [#2320] DEP: Bump step-security/harden-runner from 2.7.1 to 2.9.0
+* [#2397] DEP: Bump step-security/harden-runner from 2.9.0 to 2.11.1
 
 
 ## <a name="4.7.7-deprecated"></a> Deprecations
