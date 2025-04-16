@@ -7,9 +7,9 @@ ext {
     // projectPreviousPublishedVersion is non-SNAPSHOT, only published releases
     projectPreviousPublishedVersion = "4\\.7\\.6"      // for task bumpReadmeVersion
     // projectPreviousVersionRegex may be a SNAPSHOT
-    projectPreviousVersionRegex     = "4\\.7\\.6"      // for task bumpVersion
-    projectVersion                  = "4.7.7-SNAPSHOT" // for all build tasks
-    releaseDate                     = "2024-05-07"     // for task bumpVersion
+    projectPreviousVersionRegex     = "4\\.7\\.7-SNAPSHOT"      // for task bumpVersion
+    projectVersion                  = "4.7.7" // for all build tasks
+    releaseDate                     = "2025-04-16"     // for task bumpVersion
     releaseDatePreviousRegex        = "2024\\-05\\-07" // for task bumpVersion
 
     // DEPENDENCIES

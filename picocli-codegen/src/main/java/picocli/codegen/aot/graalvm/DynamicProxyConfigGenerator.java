@@ -58,7 +58,7 @@ public class DynamicProxyConfigGenerator {
             },
             footerHeading = "%nExample%n",
             footer = {
-                "  java -cp \"myapp.jar;picocli-4.7.7-SNAPSHOT.jar;picocli-codegen-4.7.7-SNAPSHOT.jar\" " +
+                "  java -cp \"myapp.jar;picocli-4.7.7.jar;picocli-codegen-4.7.7.jar\" " +
                         "picocli.codegen.aot.graalvm.DynamicProxyConfigGenerator my.pkg.MyClass"
             },
             mixinStandardHelpOptions = true, version = "picocli-codegen gen-proxy-config " + CommandLine.VERSION)

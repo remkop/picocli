@@ -55,15 +55,20 @@ From this release, if a command implements both `Callable` and `Runnable`, then 
 * [#2382] DEP: Bump com.google.errorprone:error_prone_core from 2.29.2 to 2.37.0
 * [#2329] DEP: Bump github/codeql-action from 3.25.3 to 3.25.15
 * [#2387] DEP: Bump github/codeql-action from 3.25.15 to 3.28.15
+  [#2399] DEP: Bump jakarta.validation:jakarta.validation-api from 3.1.0 to 3.1.1
 * [#2384] DEP: Bump junit5Version from 5.10.2 to 5.12.2
 * [#2392] DEP: Bump log4j2Version from 2.23.1 to 2.24.3
 * [#2308] DEP: Bump net.ltgt.gradle:gradle-errorprone-plugin from 3.1.0 to 4.0.1
+  [#2403] DEP: Bump net.ltgt.gradle:gradle-errorprone-plugin from 4.1.0 to 4.2.0
 * [#2393] DEP: Bump org.apache.ivy:ivy from 2.5.2 to 2.5.3
 * [#2385] DEP: Bump org.asciidoctor:asciidoctor-gradle-jvm from 4.0.2 to 4.0.4
 * [#2386] DEP: Bump org.asciidoctor:asciidoctorj-pdf from 2.3.15 to 2.3.19
 * [#2394] DEP: Bump org.hamcrest:hamcrest-core from 2.2 to 3.0  (REVERTED)
 * [#2396] DEP: Bump org.hibernate.validator:hibernate-validator from 8.0.1.Final to 8.0.2.Final
 * [#2395] DEP: Bump org.hibernate.validator:hibernate-validator-annotation-processor from 8.0.1.Final to 8.0.2.Final
+  [#2400] DEP: Bump org.jetbrains.kotlin:kotlin-gradle-plugin from 2.0.0 to 2.1.20
+  [#2401] DEP: Bump org.jetbrains.kotlin:kotlin-script-runtime from 2.0.0 to 2.1.20
+  [#2402] DEP: Bump org.jline:jline from 3.26.1 to 3.29.0
 * [#2383] DEP: Bump org.scala-lang:scala-library from 2.13.14 to 2.13.16
 * [#2330] DEP: Bump ossf/scorecard-action from 2.3.1 to 2.4.0
 * [#2389] DEP: Bump ossf/scorecard-action from 2.4.0 to 2.4.1

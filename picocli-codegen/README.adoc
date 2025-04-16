@@ -1,6 +1,6 @@
 = Picocli Code Generation
-:revnumber: 4.7.6
-:revdate: 2024-05-07
+:revnumber: 4.7.7
+:revdate: 2025-04-16
 :toc: left
 :numbered:
 :toclevels: 4
@@ -76,7 +76,7 @@ This requires `maven-compiler-plugin` plugin version 3.5 or higher.
       <path>
         <groupId>info.picocli</groupId>
         <artifactId>picocli-codegen</artifactId>
-        <version>4.7.6</version>
+        <version>4.7.7</version>
       </path>
     </annotationProcessorPaths>
   </configuration>
@@ -89,13 +89,13 @@ An alternative that works with older versions of the `maven-compiler-plugin` is 
 <dependency>
   <groupId>info.picocli</groupId>
   <artifactId>picocli</artifactId>
-  <version>4.7.6</version>
+  <version>4.7.7</version>
 </dependency>
 
 <dependency>
   <groupId>info.picocli</groupId>
   <artifactId>picocli-codegen</artifactId>
-  <version>4.7.6</version>
+  <version>4.7.7</version>
   <scope>provided</scope>
 </dependency>
 ```
@@ -108,16 +108,16 @@ See <<Picocli Processor Options,processor options>> below.
 Use the `annotationProcessor` path in Gradle https://docs.gradle.org/4.6/release-notes.html#convenient-declaration-of-annotation-processor-dependencies[4.6 and higher]:
 ```groovy
 dependencies {
-    implementation 'info.picocli:picocli:4.7.6'
-    annotationProcessor 'info.picocli:picocli-codegen:4.7.6'
+    implementation 'info.picocli:picocli:4.7.7'
+    annotationProcessor 'info.picocli:picocli-codegen:4.7.7'
 }
 ```
 
 For Gradle versions prior to 4.6, use `compileOnly`, to prevent the `picocli-codegen` jar from being a transitive dependency included in the artifact the module produces.
 ```groovy
 dependencies {
-    implementation 'info.picocli:picocli:4.7.6'
-    compileOnly 'info.picocli:picocli-codegen:4.7.6'
+    implementation 'info.picocli:picocli:4.7.7'
+    compileOnly 'info.picocli:picocli-codegen:4.7.7'
 }
 ```
 
@@ -145,7 +145,7 @@ Add an execution of the `kapt` goal from `kotlin-maven-plugin` before `compile`:
                     <annotationProcessorPath>
                         <groupId>info.picocli</groupId>
                         <artifactId>picocli-codegen</artifactId>
-                        <version>4.7.6</version>
+                        <version>4.7.7</version>
                     </annotationProcessorPath>
                 </annotationProcessorPaths>
             </configuration>
@@ -168,7 +168,7 @@ then replace `annotationProcessor` with `kapt`:
 apply plugin: 'kotlin-kapt' // required
 dependencies {
     // ...
-    kapt 'info.picocli:picocli-codegen:4.7.6'
+    kapt 'info.picocli:picocli-codegen:4.7.7'
 }
 ```
 
@@ -356,7 +356,7 @@ Note that the `picocli-codegen` module is only added as a dependency for the `ex
         <dependency>
           <groupId>info.picocli</groupId>
           <artifactId>picocli-codegen</artifactId>
-          <version>4.7.6</version>
+          <version>4.7.7</version>
           <type>jar</type>
         </dependency>
       </dependencies>
@@ -377,8 +377,8 @@ configurations {
     generateConfig
 }
 dependencies {
-    implementation 'info.picocli:picocli:4.7.6'
-    generateConfig 'info.picocli:picocli-codegen:4.7.6'
+    implementation 'info.picocli:picocli:4.7.7'
+    generateConfig 'info.picocli:picocli-codegen:4.7.7'
 }
 ----
 
@@ -467,7 +467,7 @@ Note that the `picocli-codegen` module is only added as a dependency for the `ex
         <dependency>
           <groupId>info.picocli</groupId>
           <artifactId>picocli-codegen</artifactId>
-          <version>4.7.6</version>
+          <version>4.7.7</version>
           <type>jar</type>
         </dependency>
       </dependencies>
@@ -487,8 +487,8 @@ configurations {
     generateConfig
 }
 dependencies {
-    implementation 'info.picocli:picocli:4.7.6'
-    generateConfig 'info.picocli:picocli-codegen:4.7.6'
+    implementation 'info.picocli:picocli:4.7.7'
+    generateConfig 'info.picocli:picocli-codegen:4.7.7'
 }
 ----
 
@@ -574,7 +574,7 @@ Note that the `picocli-codegen` module is only added as a dependency for the `ex
         <dependency>
           <groupId>info.picocli</groupId>
           <artifactId>picocli-codegen</artifactId>
-          <version>4.7.6</version>
+          <version>4.7.7</version>
           <type>jar</type>
         </dependency>
       </dependencies>
@@ -594,8 +594,8 @@ configurations {
     generateConfig
 }
 dependencies {
-    implementation 'info.picocli:picocli:4.7.6'
-    generateConfig 'info.picocli:picocli-codegen:4.7.6'
+    implementation 'info.picocli:picocli:4.7.7'
+    generateConfig 'info.picocli:picocli-codegen:4.7.7'
 }
 ----
 
@@ -629,8 +629,8 @@ You will also need the https://asciidoctor.org/docs/asciidoctor-gradle-plugin/[A
 [source,groovy]
 ----
 dependencies {
-    implementation "info.picocli:picocli:4.7.6"
-    annotationProcessor "info.picocli:picocli-codegen:4.7.6"
+    implementation "info.picocli:picocli:4.7.7"
+    annotationProcessor "info.picocli:picocli-codegen:4.7.7"
 }
 
 mainClassName = "my.pkg.MyCommand"
@@ -704,7 +704,7 @@ Note that the `picocli-codegen` module is only added as a dependency for the `ex
         <dependency>
           <groupId>info.picocli</groupId>
           <artifactId>picocli-codegen</artifactId>
-          <version>4.7.6</version>
+          <version>4.7.7</version>
           <type>jar</type>
         </dependency>
       </dependencies>
