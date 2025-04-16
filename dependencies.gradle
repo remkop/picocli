@@ -16,15 +16,15 @@ ext {
     asciidoctorGradlePluginVersion = "4.0.4"
     compileTestingVersion          = "0.21.0"
     groovyVersion       = "2.4.21"
-    hamcrestCoreVersion = "2.2"
-    ivyVersion          = "2.5.2"
+    hamcrestCoreVersion = "3.0"
+    ivyVersion          = "2.5.3"
     jacocoVersion       = "0.8.2"
     jansiVersion        = "2.4.1"
     jline2Version       = "2.14.6"
     jline3Version       = "3.26.1"
     junitDepVersion     = "4.11"
     junitVersion        = "4.13.2"
-    log4j2Version       = "2.23.1"
+    log4j2Version       = "2.24.3"
     springBootVersion   = "3.1.2" // Spring Boot 3.0 requires Java 17 as a minimum version
     systemRulesVersion  = "1.19.0"
     systemLambdaVersion = '1.2.1'
@@ -55,7 +55,7 @@ ext {
         //el_api            : "jakarta.el:jakarta.el-api:3.0.3",
         el_impl           : "org.glassfish:jakarta.el:4.0.2",
 
-        hibernate_validator_annproc: "org.hibernate.validator:hibernate-validator-annotation-processor:8.0.1.Final",
+        hibernate_validator_annproc: "org.hibernate.validator:hibernate-validator-annotation-processor:8.0.2.Final",
         hibernate_validator        : "org.hibernate.validator:hibernate-validator:8.0.1.Final",
 
         kotlin_script_runtime      : "org.jetbrains.kotlin:kotlin-script-runtime:2.0.0",
