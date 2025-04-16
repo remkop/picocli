@@ -16,7 +16,7 @@ ext {
     asciidoctorGradlePluginVersion = "4.0.4"
     compileTestingVersion          = "0.21.0"
     groovyVersion       = "2.4.21"
-    hamcrestCoreVersion = "3.0"
+    hamcrestCoreVersion = "2.2"
     ivyVersion          = "2.5.3"
     jacocoVersion       = "0.8.2"
     jansiVersion        = "2.4.1"
