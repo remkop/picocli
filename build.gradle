@@ -1,10 +1,5 @@
 import aQute.bnd.gradle.Bundle
 
-group          = 'info.picocli'
-description    = 'Java command line parser with both an annotations API and a programmatic API. Usage help with ANSI styles and colors. Autocomplete. Nested subcommands. Easily included as source to avoid adding a dependency.'
-version        = "$projectVersion"
-ext.moduleName = 'info.picocli'
-
 buildscript {
     apply from: 'dependencies.gradle'
 
@@ -22,6 +17,15 @@ buildscript {
         classpath "net.ltgt.gradle:gradle-errorprone-plugin:4.2.0"
     }
 }
+
+plugins {
+    id 'org.jreleaser' version '1.17.0'
+}
+
+group          = 'info.picocli'
+description    = 'Java command line parser with both an annotations API and a programmatic API. Usage help with ANSI styles and colors. Autocomplete. Nested subcommands. Easily included as source to avoid adding a dependency.'
+version        = "$projectVersion"
+ext.moduleName = 'info.picocli'
 
 apply plugin: 'org.beryx.jar' // for compiling module-info on Java 8
 apply plugin: 'io.codearte.nexus-staging'

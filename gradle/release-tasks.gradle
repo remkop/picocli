@@ -1,3 +1,32 @@
+/**
+ * JReleaser expects all artifacts
+ * (created by the publishing config in gradle/publish-mavencentral.gradle)
+ * to exist in "${rootProject.projectDir}/build/staging-deploy" directory.
+ * JReleaser is only configured once, on the top-level project (not for each sub-project).
+ *
+ * See: https://jreleaser.org/guide/latest/examples/maven/maven-central.html
+ */
+jreleaser {
+    signing {
+        active = 'RELEASE'
+        armored = true
+    }
+    deploy {
+        maven {
+            nexus2 {
+                'maven-central' {
+                    active = 'RELEASE'
+                    url = 'https://oss.sonatype.org/service/local'
+                    snapshotUrl = 'https://oss.sonatype.org/content/repositories/snapshots/'
+                    closeRepository = true
+                    releaseRepository = false
+                    stagingRepository('build/staging-deploy')
+                }
+            }
+        }
+    }
+}
+
 task bumpReadmeVersion {
     doLast {
         // README.md
@@ -193,7 +222,9 @@ Release procedure:
     cd picocli-tests-java567 & set JAVA_HOME=C:\apps\jdk1.5.0_22\&& echo ++%JAVA_HOME%++ && gradlew clean build --no-daemon
 11. commit -m "Release picocli version ..."
 12. tag v$version
-13 ./gradlew publishReleasePublicationToSonatypeRepository - creates a Sonatype staging repository, and uploads artifacts
+13a. gradlew jreleaserConfig
+13b. gradlew clean pub jreleaserFullRelease --dryrun
+13c. gradlew clean pub jreleaserFullRelease
 14. Close the Sonatype info/picocli staging repo:
   a. Manually: Log in to https://oss.sonatype.org/ and in the menu on the left, select Staging repositories.
      Click the close button in the GUI and watch progress in the Activity tab.

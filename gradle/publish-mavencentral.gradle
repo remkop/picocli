@@ -1,10 +1,7 @@
 // This build file is based on/inspired by https://autsoft.net/publishing-an-android-library-to-mavencentral-in-2019/
 
 apply plugin: 'java'
-apply plugin: 'distribution'
 apply plugin: 'maven-publish'
-apply plugin: 'signing'
-
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
     from javadoc.destinationDir
@@ -33,47 +30,10 @@ artifacts {
 tasks.withType(GenerateModuleMetadata) {
     enabled = false // fix for https://github.com/remkop/picocli/issues/1152
 }
-distributions {
-    main {
-        distributionBaseName = "${project.name}-all"
-        contents {
-            from jar
-            from javadocJar
-            from sourcesJar
-            from testJar
-            from testSourcesJar
-            from ('LICENSE')
-            from ("$rootDir/RELEASE-NOTES.md")
-        }
-    }
-}
 
 // different for each module
 group = PUBLISH_GROUP_ID
 version = PUBLISH_VERSION
-
-ext["signing.keyId"] = ''
-ext["signing.password"] = ''
-ext["signing.secretKeyRingFile"] = ''
-ext["ossrhUsername"] = ''
-ext["ossrhPassword"] = ''
-ext["sonatypeStagingProfileId"] = ''
-
-File secretPropsFile = project.rootProject.file('local.properties')
-if (secretPropsFile.exists()) {
-    Properties p = new Properties()
-    p.load(new FileInputStream(secretPropsFile))
-    p.each { name, value ->
-        ext[name] = value
-    }
-} else {
-    ext["signing.keyId"] = System.getenv('SIGNING_KEY_ID')
-    ext["signing.password"] = System.getenv('SIGNING_PASSWORD')
-    ext["signing.secretKeyRingFile"] = System.getenv('SIGNING_SECRET_KEY_RING_FILE')
-    ext["ossrhUsername"] = System.getenv('MAVEN_OSS_USER')
-    ext["ossrhPassword"] = System.getenv('MAVEN_OSS_PASSWORD')
-    ext["sonatypeStagingProfileId"] = System.getenv('SONATYPE_STAGING_PROFILE_ID')
-}
 
 publishing {
     publications {
@@ -118,27 +78,8 @@ publishing {
     }
     repositories {
         maven {
-            name = "sonatype"
-            url = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
-
-            credentials {
-                username = ossrhUsername
-                password = ossrhPassword
-            }
+            url = rootProject.layout.buildDirectory.dir('staging-deploy')
         }
     }
 }
 
-ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
-
-signing {
-    required = { isReleaseVersion && gradle.taskGraph.hasTask("publish") }
-    sign publishing.publications
-}
-
-nexusStaging {
-    packageGroup = PUBLISH_GROUP_ID
-    stagingProfileId = '5db36034f05d47' // Log in to https://oss.sonatype.org/, go to Staging profiles, select your profile, and look at the ID in the URL
-    username = ossrhUsername
-    password = ossrhPassword
-}
