@@ -58,6 +58,6 @@ ext {
         hibernate_validator_annproc: "org.hibernate.validator:hibernate-validator-annotation-processor:8.0.2.Final",
         hibernate_validator        : "org.hibernate.validator:hibernate-validator:8.0.2.Final",
 
-        kotlin_script_runtime      : "org.jetbrains.kotlin:kotlin-script-runtime:2.0.0",
+        kotlin_script_runtime      : "org.jetbrains.kotlin:kotlin-script-runtime:2.1.20",
     ]
 }
