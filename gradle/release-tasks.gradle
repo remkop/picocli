@@ -169,30 +169,20 @@ task extractReleaseNotesNext {
     }
 }
 task gatherArtifacts(type: Copy) {
-    from('build/libs/') {
-        include '*.jar', '*.asc'
-        exclude '*test*', '*sources*'
+    from('build/staging-deploy/') {
+        include '**/*.jar', '**/*.asc'
+        exclude '**/*test*', '**/*sources*'
     }
-    from('picocli-codegen/build/libs/') {
-        include '*.jar', '*.asc'
-        exclude '*test*', '*sources*', '*javadoc*'
+    // Flatten the hierarchy by setting the path
+    // of all files to their respective basename
+    eachFile {
+        path = name
     }
-    from('picocli-groovy/build/libs/') {
-        include '*.jar', '*.asc'
-        exclude '*test*', '*sources*', '*javadoc*'
-    }
-    from('picocli-shell-jline2/build/libs/') {
-        include '*.jar', '*.asc'
-        exclude '*test*', '*sources*', '*javadoc*'
-    }
-    from('picocli-shell-jline3/build/libs/') {
-        include '*.jar', '*.asc'
-        exclude '*test*', '*sources*', '*javadoc*'
-    }
-    from('picocli-spring-boot-starter/build/libs/') {
-        include '*.jar', '*.asc'
-        exclude '*test*', '*sources*', '*javadoc*'
-    }
+
+    // Flattening the hierarchy leaves empty directories,
+    // do not copy those
+    includeEmptyDirs = false
+
     from('build/distributions/') {
         include '*.zip'
     }
