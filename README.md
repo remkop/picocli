@@ -258,6 +258,10 @@ Join the [picocli Google group](https://groups.google.com/d/forum/picocli) if yo
 * Picocli is [mentioned](https://clig.dev/#the-basics) in [Command Line Interface Guidelines](https://clig.dev/).
 
 <img src="https://picocli.info/images/downloads-202011.png">
+<p>
+<img src="https://picocli.info/images/downloads-202311.png">
+<p>
+<img src="https://picocli.info/images/downloads-202504.png">
 
 Glad to see more people are using picocli. We must be doing something right. :-)
 
