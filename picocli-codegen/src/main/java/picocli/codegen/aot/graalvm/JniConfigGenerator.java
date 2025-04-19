@@ -31,7 +31,7 @@ public class JniConfigGenerator {
             },
             footerHeading = "%nExample%n",
             footer = {
-                    "  java -cp \"myapp.jar;picocli-4.7.7.jar;picocli-codegen-4.7.7.jar\" " +
+                    "  java -cp \"myapp.jar;picocli-4.7.8-SNAPSHOT.jar;picocli-codegen-4.7.8-SNAPSHOT.jar\" " +
                             "picocli.codegen.aot.graalvm.JniConfigGenerator my.pkg.MyClass"
             },
             mixinStandardHelpOptions = true, sortOptions = false,

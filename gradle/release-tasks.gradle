@@ -229,8 +229,8 @@ Release procedure:
   a. Manually: Log in to https://oss.sonatype.org/ and in the menu on the left, select Staging repositories.
      Click the close button in the GUI and watch progress in the Activity tab.
      When the repository is successfully closed, click Release to deploy, or Drop to abort.
-  b. Automatically with the codearte.nexus-staging plugin:
-     ./gradlew closeAndReleaseRepository
+  b. Automatically with the jreleaser plugin:
+     set releaseRepository to true
 
 15. edit version numbers: increase minor version and add -SNAPSHOT classifier, update releaseDatePreviousRegex
 16. ./gradlew bumpVersion
