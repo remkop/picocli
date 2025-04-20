@@ -8,25 +8,25 @@ jobs:
   build-java-8-plus:
     strategy:
       matrix:
-        java-version: [ 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 ]
+        java-version: [ 8, 9, 11, 17, 18, 19, 20, 21, 22, 23 ]
         os: [ubuntu-latest, macos-latest, windows-latest]
 
     runs-on: ${{ matrix.os }}
-    continue-on-error: ${{ matrix.os == 'macos-latest' || matrix.java-version == '9' || matrix.java-version == '10' || matrix.java-version == '12' || matrix.java-version == '13' || matrix.java-version == '14' || matrix.java-version == '15' || matrix.java-version == '16' || matrix.java-version == '19' }}
+    continue-on-error: ${{ matrix.os == 'macos-latest' || matrix.java-version == '9' || matrix.java-version == '18' || matrix.java-version == '19' || matrix.java-version == '20' || matrix.java-version == '22' || matrix.java-version == '23' || matrix.java-version == '24' }}
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@a4aa98b93cab29d9b1101a6143fb8bce00e2eac4
+        uses: step-security/harden-runner@c6295a65d1254861815972266d5933fd6e532bdf
         with:
           egress-policy: audit
 
       - name: Checkout
-        uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
       - name: Validate Gradle Wrapper
-        uses: gradle/wrapper-validation-action@216d1ad2b3710bf005dc39237337b9673fd8fcd5
+        uses: gradle/wrapper-validation-action@f9c9c575b8b21b6485636a91ffecd10e558c62f6
 
       - name: Configure JDK ${{ matrix.java-version }}
-        uses: actions/setup-java@99b8673ff64fbf99d8d325f52d9a5bdedb8483e9
+        uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00
         with:
           distribution: 'zulu'
           java-version: ${{ matrix.java-version }}
@@ -130,26 +130,28 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@a4aa98b93cab29d9b1101a6143fb8bce00e2eac4
+        uses: step-security/harden-runner@c6295a65d1254861815972266d5933fd6e532bdf
         with:
           egress-policy: audit
 
       - name: Checkout
-        uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
       - name: Validate Gradle Wrapper
-        uses: gradle/wrapper-validation-action@216d1ad2b3710bf005dc39237337b9673fd8fcd5
+        uses: gradle/wrapper-validation-action@f9c9c575b8b21b6485636a91ffecd10e558c62f6
 
       - name: Configure JDK ${{ matrix.java-version }}
-        uses: actions/setup-java@99b8673ff64fbf99d8d325f52d9a5bdedb8483e9
+        uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00
         with:
           distribution: 'zulu'
           java-version: ${{ matrix.java-version }}
           cache: gradle
 
-      - name: Build
-        uses: gradle/gradle-build-action@v3.3.2 # v2.11.1
-        with:
-          gradle-version: 1.12
-          build-root-directory: picocli-tests-java567/
-          arguments: clean build --no-daemon
+      - name: Change wrapper permission
+        working-directory: picocli-tests-java567
+        run: chmod +x ./gradlew
+
+      - name: Run build in subdirectory
+        working-directory: picocli-tests-java567
+        run: ./gradlew clean build --no-daemon
+

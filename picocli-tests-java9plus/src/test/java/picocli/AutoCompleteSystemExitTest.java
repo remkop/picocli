@@ -251,19 +251,19 @@ public class AutoCompleteSystemExitTest {
                 "  local prev_word=${COMP_WORDS[COMP_CWORD-1]}\n" +
                 "\n" +
                 "  local commands=\"\"\n" +
-                "  local flag_opts=\"-w --writeCommandScript -f --force -h --help -V --version\"\n" +
-                "  local arg_opts=\"-c --factory -n --name -o --completionScript\"\n" +
+                "  local flag_opts=\"'-w' '--writeCommandScript' '-f' '--force' '-h' '--help' '-V' '--version'\"\n" +
+                "  local arg_opts=\"'-c' '--factory' '-n' '--name' '-o' '--completionScript'\"\n" +
                 "\n" +
                 "  type compopt &>/dev/null && compopt +o default\n" +
                 "\n" +
                 "  case ${prev_word} in\n" +
-                "    -c|--factory)\n" +
+                "    '-c'|'--factory')\n" +
                 "      return\n" +
                 "      ;;\n" +
-                "    -n|--name)\n" +
+                "    '-n'|'--name')\n" +
                 "      return\n" +
                 "      ;;\n" +
-                "    -o|--completionScript)\n" +
+                "    '-o'|'--completionScript')\n" +
                 "      local IFS=$'\\n'\n" +
                 "      type compopt &>/dev/null && compopt -o filenames\n" +
                 "      COMPREPLY=( $( compgen -f -- \"${curr_word}\" ) ) # files\n" +
@@ -481,12 +481,12 @@ public class AutoCompleteSystemExitTest {
                 "\n" +
                 "  local commands=\"\"\n" +
                 "  local flag_opts=\"\"\n" +
-                "  local arg_opts=\"-t --timeout\"\n" +
+                "  local arg_opts=\"'-t' '--timeout'\"\n" +
                 "\n" +
                 "  type compopt &>/dev/null && compopt +o default\n" +
                 "\n" +
                 "  case ${prev_word} in\n" +
-                "    -t|--timeout)\n" +
+                "    '-t'|'--timeout')\n" +
                 "      return\n" +
                 "      ;;\n" +
                 "  esac\n" +
@@ -521,7 +521,7 @@ public class AutoCompleteSystemExitTest {
     }
 
     @Test
-    @DisabledForJreRange(min = JRE.JAVA_18, max = JRE.JAVA_21, disabledReason = "UnsupportedOperationException in SystemLambda.withSecurityManager")
+    @DisabledForJreRange(min = JRE.JAVA_18, disabledReason = "UnsupportedOperationException in SystemLambda.withSecurityManager")
     public void testAutoCompleteAppHelp() throws Exception {
         String[][] argsList = new String[][] {
             {"-h"},
@@ -559,7 +559,7 @@ public class AutoCompleteSystemExitTest {
     }
 
     @Test
-    @DisabledForJreRange(min = JRE.JAVA_18, max = JRE.JAVA_21, disabledReason = "UnsupportedOperationException in SystemLambda.withSecurityManager")
+    @DisabledForJreRange(min = JRE.JAVA_18, disabledReason = "UnsupportedOperationException in SystemLambda.withSecurityManager")
     public void testAutoCompleteRequiresCommandLineFQCN() throws Exception {
         int statusCode = catchSystemExit(() -> {
             restoreSystemProperties(() -> {
@@ -584,7 +584,7 @@ public class AutoCompleteSystemExitTest {
     }
 
     @Test
-    @DisabledForJreRange(min = JRE.JAVA_18, max = JRE.JAVA_21, disabledReason = "UnsupportedOperationException in SystemLambda.withSecurityManager")
+    @DisabledForJreRange(min = JRE.JAVA_18, disabledReason = "UnsupportedOperationException in SystemLambda.withSecurityManager")
     public void testAutoCompleteAppCannotInstantiate() throws Exception {
         @CommandLine.Command(name = "test")
         class TestApp {
@@ -619,7 +619,7 @@ public class AutoCompleteSystemExitTest {
     }
 
     @Test
-    @DisabledForJreRange(min = JRE.JAVA_18, max = JRE.JAVA_21, disabledReason = "UnsupportedOperationException in SystemLambda.withSecurityManager")
+    @DisabledForJreRange(min = JRE.JAVA_18, disabledReason = "UnsupportedOperationException in SystemLambda.withSecurityManager")
     public void testAutoCompleteAppCompletionScriptFileWillNotOverwrite() throws Exception {
         File dir = new File(System.getProperty("java.io.tmpdir"));
         final File completionScript = new File(dir, "App_completion");
@@ -668,7 +668,7 @@ public class AutoCompleteSystemExitTest {
     }
 
     @Test
-    @DisabledForJreRange(min = JRE.JAVA_18, max = JRE.JAVA_21, disabledReason = "UnsupportedOperationException in SystemLambda.withSecurityManager")
+    @DisabledForJreRange(min = JRE.JAVA_18, disabledReason = "UnsupportedOperationException in SystemLambda.withSecurityManager")
     public void testAutoCompleteAppCommandScriptFileWillNotOverwrite() throws Exception {
         File dir = new File(System.getProperty("java.io.tmpdir"));
         final File commandScript = new File(dir, "picocli.AutoComplete");
@@ -721,7 +721,7 @@ public class AutoCompleteSystemExitTest {
     }
 
     @Test
-    @DisabledForJreRange(min = JRE.JAVA_18, max = JRE.JAVA_21, disabledReason = "UnsupportedOperationException in SystemLambda.withSecurityManager")
+    @DisabledForJreRange(min = JRE.JAVA_18, disabledReason = "UnsupportedOperationException in SystemLambda.withSecurityManager")
     public void testAutoCompleteAppCommandScriptFileWillOverwriteIfRequested() throws Exception {
         File dir = new File(System.getProperty("java.io.tmpdir"));
         final File commandScript = new File(dir, "picocli.AutoComplete");
@@ -751,7 +751,7 @@ public class AutoCompleteSystemExitTest {
     }
 
     @Test
-    @DisabledForJreRange(min = JRE.JAVA_18, max = JRE.JAVA_21, disabledReason = "UnsupportedOperationException in SystemLambda.withSecurityManager")
+    @DisabledForJreRange(min = JRE.JAVA_18, disabledReason = "UnsupportedOperationException in SystemLambda.withSecurityManager")
     public void testAutoCompleteAppBothScriptFilesForceOverwrite() throws Exception {
         File dir = new File(System.getProperty("java.io.tmpdir"));
         final File commandScript = new File(dir, "picocli.AutoComplete");
@@ -837,7 +837,7 @@ public class AutoCompleteSystemExitTest {
     }
 
     @Test
-    @DisabledForJreRange(min = JRE.JAVA_18, max = JRE.JAVA_21, disabledReason = "UnsupportedOperationException in SystemLambda.withSecurityManager")
+    @DisabledForJreRange(min = JRE.JAVA_18, disabledReason = "UnsupportedOperationException in SystemLambda.withSecurityManager")
     public void testAutoCompleteAppGeneratesScriptNameBasedOnCommandName() throws Exception {
 
         final String commandName = "bestCommandEver";
@@ -893,7 +893,7 @@ public class AutoCompleteSystemExitTest {
     }
 
     @Test
-    @DisabledForJreRange(min = JRE.JAVA_18, max = JRE.JAVA_21, disabledReason = "UnsupportedOperationException in SystemLambda.withSecurityManager")
+    @DisabledForJreRange(min = JRE.JAVA_18, disabledReason = "UnsupportedOperationException in SystemLambda.withSecurityManager")
     public void testAutoCompleteAppUsesCustomFactory() throws Exception {
 
         final String commandName = "nondefault";
@@ -925,7 +925,7 @@ public class AutoCompleteSystemExitTest {
     private static class PrivateCommandClass { }
     //Support generating autocompletion scripts for non-public @Command classes #306
     @Test
-    @DisabledForJreRange(min = JRE.JAVA_18, max = JRE.JAVA_21, disabledReason = "UnsupportedOperationException in SystemLambda.withSecurityManager")
+    @DisabledForJreRange(min = JRE.JAVA_18, disabledReason = "UnsupportedOperationException in SystemLambda.withSecurityManager")
     public void test306_SupportGeneratingAutocompletionScriptForNonPublicCommandClasses() throws Exception {
         File dir = new File(System.getProperty("java.io.tmpdir"));
         final File completionScript = new File(dir, "App_completion");

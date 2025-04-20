@@ -56,7 +56,6 @@ public class Issue2349 {
         }
     }
 
-    @Ignore("https://github.com/remkop/picocli/issues/2349")
     @Test
     public void issue2349() {
         String[] rawArgs = new String[]{

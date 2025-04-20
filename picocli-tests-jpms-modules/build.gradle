@@ -24,7 +24,6 @@ subprojects {
     }
 
     test {
-        useJUnitPlatform()
 
 //        testLogging {
 //            events 'PASSED', 'FAILED', 'SKIPPED'
@@ -34,11 +33,9 @@ subprojects {
     }
 
     dependencies {
-        implementation     supportDependencies.junit5Api
-        testRuntimeOnly    supportDependencies.junit5Engine
+        testImplementation(platform("org.junit:junit-bom:${junit5Version}"))
+        testImplementation("org.junit.jupiter:junit-jupiter")
+        testRuntimeOnly("org.junit.platform:junit-platform-launcher")
         implementation     supportDependencies.systemLambda
-//        testImplementation supportDependencies.junit5Api
-//        testRuntimeOnly    supportDependencies.junit5Engine
-//        testImplementation supportDependencies.systemLambda
     }
 }

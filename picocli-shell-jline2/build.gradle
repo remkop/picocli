@@ -2,9 +2,9 @@ plugins {
     id 'java'
 }
 
-group 'info.picocli'
-description 'Picocli Shell JLine2 - easily build interactive shell applications with JLine 2 and picocli.'
-version "$projectVersion"
+group = 'info.picocli'
+description = 'Picocli Shell JLine2 - easily build interactive shell applications with JLine 2 and picocli.'
+version = "$projectVersion"
 ext.moduleName = 'info.picocli.shell.jline2'
 
 dependencies {

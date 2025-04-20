@@ -246,7 +246,7 @@ throw new CommandLine.ExecutionException(new CommandLine(this), "Hi this is a te
 @picocli.CommandLine.Command
 @picocli.groovy.PicocliScript2
 import picocli.CommandLine
-    
+
 throw new CommandLine.ExecutionException(new CommandLine(this), "Hi this is a test ExecutionException")
 '''
         GroovyShell shell = new GroovyShell()

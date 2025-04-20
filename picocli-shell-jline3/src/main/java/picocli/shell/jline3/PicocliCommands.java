@@ -289,7 +289,7 @@ public class PicocliCommands implements CommandRegistry {
         arguments.add( command );
         arguments.addAll( Arrays.stream( args ).map( Object::toString ).collect( Collectors.toList() ) );
         cmd.execute( arguments.toArray( new String[0] ) );
-        return null;
+        return cmd.getParseResult();
     }
 
     // @Override This method was removed in JLine 3.16.0; keep it in case this component is used with an older version of JLine

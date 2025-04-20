@@ -1,6 +1,6 @@
-group 'info.picocli'
-description 'Compile and test the picocli project in legacy Java environments.'
-version "CURRENT"
+group = 'info.picocli'
+description = 'Compile and test the picocli project in legacy Java environments.'
+version = "CURRENT"
 
 apply plugin: 'java'
 

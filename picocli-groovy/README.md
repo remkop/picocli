@@ -12,7 +12,7 @@ This module was introduced in picocli 4.0; in previous versions these classes we
 ## Example
 
 ```groovy
-@Grab('info.picocli:picocli-groovy:4.7.6')
+@Grab('info.picocli:picocli-groovy:4.7.7')
 @Command(description = "Print a checksum of each specified FILE.",
         mixinStandardHelpOptions = true,
         version = 'checksum v1.2.3',
