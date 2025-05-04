@@ -243,6 +243,7 @@ public class ModelArgSpecTest {
         public <T extends Annotation> T getAnnotation(Class<T> annotationClass) { return null;}
         public String getName() {return name;}
         public String getMixinName() {return null;}
+        public String[] getOptionNameTransformations() {return null;}
         public boolean isArgSpec() {return false;}
         public boolean isOption() {return false;}
         public boolean isParameter() {return false;}
