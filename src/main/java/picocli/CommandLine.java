@@ -6013,6 +6013,19 @@ public class CommandLine {
              *  @return {@link IScope} instance */
             IScope getScope();
         }
+        
+        /**
+         * Provides access to the underlying {@link AnnotatedElement}.
+         * @since 4.8.0
+         */
+        public interface IAnnotatedElementProvider {
+        	
+        	/**
+        	 * @return {@link AnnotatedElement} used for reflection - field, method, ...
+        	 */
+        	AnnotatedElement getAnnotatedElement();
+        	
+        }
 
         /** Customizable getter for obtaining the current value of an option or positional parameter.
          * When an option or positional parameter is matched on the command line, its getter or setter is invoked to capture the value.
@@ -8889,6 +8902,17 @@ public class CommandLine {
                 if (!empty(splitRegex) && !typeInfo.isMultiValue() && System.getProperty("picocli.ignore.invalid.split") == null) {
                     throw new InitializationException("Only multi-value options and positional parameters should have a split regex (this check can be disabled by setting system property 'picocli.ignore.invalid.split')");
                 }
+            }
+
+            /**
+             * Provides access to annotations of the underlying {@link AnnotatedElement}
+             * @param annotationClass Annotation class
+             * @return Annotation instance or <code>null</code>
+             * @param <T> Annotation type
+             * @since 4.8.0
+             */
+            public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
+                return annotatedElement == null ? null : annotatedElement.getAnnotation(annotationClass);
             }
 
             void applyInitialValue() {
@@ -12116,7 +12140,7 @@ public class CommandLine {
             }
         }
 
-        static class FieldBinding implements IGetter, ISetter, IScoped {
+        static class FieldBinding implements IGetter, ISetter, IScoped, IAnnotatedElementProvider {
             private final IScope scope;
             private final Field field;
             FieldBinding(Object scope, Field field) { this(ObjectScope.asScope(scope), field); }
@@ -12151,8 +12175,12 @@ public class CommandLine {
                 return String.format("%s(%s %s.%s)", getClass().getSimpleName(), field.getType().getName(),
                         field.getDeclaringClass().getName(), field.getName());
             }
+			@Override
+			public AnnotatedElement getAnnotatedElement() {
+				return field;
+			}
         }
-        static class MethodBinding implements IGetter, ISetter, IScoped {
+        static class MethodBinding implements IGetter, ISetter, IScoped, IAnnotatedElementProvider {
             private final IScope scope;
             private final Method method;
             private final CommandSpec spec;
@@ -12189,6 +12217,10 @@ public class CommandLine {
             public String toString() {
                 return String.format("%s(%s)", getClass().getSimpleName(), method);
             }
+			@Override
+			public AnnotatedElement getAnnotatedElement() {
+				return method;
+			}
         }
         private static class PicocliInvocationHandler implements InvocationHandler {
             final Map<String, Object> map = new HashMap<String, Object>();
