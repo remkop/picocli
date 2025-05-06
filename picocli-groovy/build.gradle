@@ -3,10 +3,22 @@ plugins {
     id 'groovy'
 }
 
-group 'info.picocli'
-description 'Picocli Groovy - easily use picocli in Groovy scripts.'
-version "$projectVersion"
+group = 'info.picocli'
+description = 'Picocli Groovy - easily use picocli in Groovy scripts.'
+version = "$projectVersion"
 ext.moduleName = 'info.picocli.groovy'
+
+apply plugin: 'org.beryx.jar' // for compiling module-info on Java 8
+compileJava {
+    inputs.property("moduleName", moduleName)
+}
+moduleConfig {
+    // copy module-info.class to META-INF/versions/9
+    multiReleaseVersion = 9
+    moduleInfoPath = 'src/main/java9/module-info.java'
+    version = project.version
+    neverCompileModuleInfo = true
+}
 
 configurations {
     ivy

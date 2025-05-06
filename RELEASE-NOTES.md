@@ -1,5 +1,89 @@
 # picocli Release Notes
 
+# <a name="4.7.7"></a> Picocli 4.7.7
+The picocli community is pleased to announce picocli 4.7.7.
+
+This release includes bugfixes and enhancements.
+
+Many thanks to the picocli community for raising these issues and providing the pull requests to address them!
+
+This is the eighty-sixth public release.
+Picocli follows [semantic versioning](https://semver.org/).
+Artifacts in this release are signed by Remko Popma (6601 E5C0 8DCC BB96).
+
+## <a name="4.7.7-toc"></a> Table of Contents
+* [New and noteworthy](#4.7.7-new)
+* [Fixed issues](#4.7.7-fixes)
+* [Deprecations](#4.7.7-deprecated)
+* [Potential breaking changes](#4.7.7-breaking-changes)
+
+## <a name="4.7.7-new"></a> New and Noteworthy
+
+This release fixes a problem that was introduced in the previous release (4.7.6), where using an `ArgGroup` in a `Mixin` would result in options being added twice, or `DuplicateOptionAnnotationsException`.
+
+The built-in `picocli.CommandLine.HelpCommand` subcommand now implements `Callable<Integer>` and returns the exit code of the subcommand's `exitCodeOnUsageHelp` value for the subcommand whose help was requested.
+
+From this release, if a command implements both `Callable` and `Runnable`, then the default execution strategy will invoke the `call` method instead of the `run` method.
+
+
+
+## <a name="4.7.7-fixes"></a> Fixed issues
+
+* [#2353] Enhancement: `picocli.shell.jline3.PicocliCommands::invoke` now returns `ParseResult` instead of null. Thanks to [Paul](https://github.com/pford19) for raising this.
+* [#2336] Enhancement: Avoid syntax error in auto-completion script for invalid option names and `paramLabel` values starting with a digit. Thanks to [Ruud Senden](https://github.com/rsenden) and [Tobias Knerr](https://github.com/tordanik) for raising this.
+* [#2281] Enhancement: Variable interpolation should work for `ArgGroup.heading` attribute. Thanks to [Marc Philipp](https://github.com/marcphilipp) for raising this.
+* [#2355] Bugfix: The built-in `help` subcommand should return the exit code of the subcommand's `exitCodeOnUsageHelp` value for the subcommand whose help was requested. Thanks to [marco-brandizi](https://github.com/marco-brandizi) for raising this.
+* [#2335] Bugfix: Module info missing in all jars except the main picocli jar file. Thanks to [Oliver B. Fischer](https://github.com/obfischer) for raising this.
+* [#2331] Bugfix: AutoComplete with jline3 was showing hidden commands. Thanks to [clebertsuconic](https://github.com/clebertsuconic) for raising this.
+* [#2291] Bugfix: NullPointerException when using PropertiesDefaultProvider. Thanks to [JessHolle](https://github.com/JessHolle) for raising this.
+* [#2344] Bugfix: `negatable=true` option in an `ArgGroup` should not add negated option twice. Thanks to [Robin Fritz](https://github.com/DevSnobo) for raising this.
+* [#2309] Bugfix: Duplicate help output for `ArgGroup` from a `Mixin`. Thanks to [s-falke](https://github.com/s-falke) for raising this. Thanks to [Simon Gamma](https://github.com/simschla) for providing a pull request for this.
+* [#2341] Bugfix: Options get doubled in non validating `ArgGroup` when used in `Mixin`. Thanks to [Selene Feigl](https://github.com/sfeigl) for raising this.
+* [#2349] Bugfix: Incorrect results when using `ArgGroup` + defaultValue + split + List/Set. Thanks to [Mithun Josalyn Gonsalvez](https://github.com/mithungonsalvez) for raising this.
+* [#2292] Bugfix: `DuplicateOptionAnnotationsException` on using negatable option in `ArgGroup`. Thanks to [Bhavik Patel](https://github.com/bhavikp19) for raising this.
+* [#2380] Bugfix: boolean with `arity=0` and `defaultValue=false` behaved unexpectedly. Thanks to [Leonard Brünings](https://github.com/leonard84) for raising this.
+* [#2290] DOC: User guide, CDI 2.0 (JSR 365) section: fix example and add warning about dynamic proxies. Thanks to [Mert Zeybekler](https://github.com/Mert-Z) for the pull request.
+* [#2347] DOC: Fix line-endings in generated asciidoc HTML. Thanks to [Fridrich Štrba](https://github.com/fridrich) for the pull request.
+* [#2367] DOC: Fix broken link. Thanks to [yeoleobun](https://github.com/yeoleobun) for the pull request.
+* [#2370] DOC: Add at least a link to how to use the CodeGen APT under Bazel. Thanks to [Michael Vorburger](https://github.com/vorburger) for the pull request.
+* [#2302] DEP: Bump actions/checkout from 4.1.4 to 4.1.7
+* [#2391] DEP: Bump actions/checkout from 4.1.7 to 4.2.2
+* [#2388] DEP: Bump actions/setup-java from 4.2.1 to 4.7.1
+* [#2390] DEP: Bump actions/upload-artifact from 4.3.3 to 4.6.2
+* [#2317] DEP: Bump gradle/wrapper-validation-action from 3.3.2 to 3.5.0
+* [#2321] DEP: Bump com.google.errorprone:error_prone_core from 2.27.1 to 2.29.2
+* [#2382] DEP: Bump com.google.errorprone:error_prone_core from 2.29.2 to 2.37.0
+* [#2329] DEP: Bump github/codeql-action from 3.25.3 to 3.25.15
+* [#2387] DEP: Bump github/codeql-action from 3.25.15 to 3.28.15
+  [#2399] DEP: Bump jakarta.validation:jakarta.validation-api from 3.1.0 to 3.1.1
+* [#2384] DEP: Bump junit5Version from 5.10.2 to 5.12.2
+* [#2392] DEP: Bump log4j2Version from 2.23.1 to 2.24.3
+* [#2308] DEP: Bump net.ltgt.gradle:gradle-errorprone-plugin from 3.1.0 to 4.0.1
+  [#2403] DEP: Bump net.ltgt.gradle:gradle-errorprone-plugin from 4.1.0 to 4.2.0
+* [#2393] DEP: Bump org.apache.ivy:ivy from 2.5.2 to 2.5.3
+* [#2385] DEP: Bump org.asciidoctor:asciidoctor-gradle-jvm from 4.0.2 to 4.0.4
+* [#2386] DEP: Bump org.asciidoctor:asciidoctorj-pdf from 2.3.15 to 2.3.19
+* [#2394] DEP: Bump org.hamcrest:hamcrest-core from 2.2 to 3.0  (REVERTED)
+* [#2396] DEP: Bump org.hibernate.validator:hibernate-validator from 8.0.1.Final to 8.0.2.Final
+* [#2395] DEP: Bump org.hibernate.validator:hibernate-validator-annotation-processor from 8.0.1.Final to 8.0.2.Final
+  [#2400] DEP: Bump org.jetbrains.kotlin:kotlin-gradle-plugin from 2.0.0 to 2.1.20
+  [#2401] DEP: Bump org.jetbrains.kotlin:kotlin-script-runtime from 2.0.0 to 2.1.20
+  [#2402] DEP: Bump org.jline:jline from 3.26.1 to 3.29.0
+* [#2383] DEP: Bump org.scala-lang:scala-library from 2.13.14 to 2.13.16
+* [#2330] DEP: Bump ossf/scorecard-action from 2.3.1 to 2.4.0
+* [#2389] DEP: Bump ossf/scorecard-action from 2.4.0 to 2.4.1
+* [#2320] DEP: Bump step-security/harden-runner from 2.7.1 to 2.9.0
+* [#2397] DEP: Bump step-security/harden-runner from 2.9.0 to 2.11.1
+
+
+## <a name="4.7.7-deprecated"></a> Deprecations
+No features were deprecated in this release.
+
+## <a name="4.7.7-breaking-changes"></a> Potential breaking changes
+This release has no breaking changes.
+
+
+
 # <a name="4.7.6"></a> Picocli 4.7.6
 The picocli community is pleased to announce picocli 4.7.6.
 

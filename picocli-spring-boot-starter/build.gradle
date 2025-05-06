@@ -2,9 +2,9 @@ plugins {
     id 'java'
 }
 
-group 'info.picocli'
-description 'Picocli Spring Boot Starter - Enables Spring Dependency Injection and Spring Boot AutoConfiguration in Picocli Commands.'
-version "$projectVersion"
+group = 'info.picocli'
+description = 'Picocli Spring Boot Starter - Enables Spring Dependency Injection and Spring Boot AutoConfiguration in Picocli Commands.'
+version = "$projectVersion"
 ext.moduleName = 'info.picocli.spring.boot'
 
 // Spring 3 requires Java 17
@@ -13,16 +13,32 @@ logger.quiet("picocli-spring-boot-starter/build.gradle: JavaVersion=${JavaVersio
 logger.quiet("picocli-spring-boot-starter/build.gradle: JavaVersion.majorVersion=${JavaVersion.current().majorVersion}")
 logger.quiet("picocli-spring-boot-starter/build.gradle: useJava17=${useJava17}")
 
-if (useJava17) {
-    logger.quiet("picocli-spring-boot-starter/build.gradle: JavaVersion=${JavaVersion.current()}")
-    logger.quiet("picocli-spring-boot-starter/build.gradle: sourceCompatibility = 17")
-    logger.quiet("picocli-spring-boot-starter/build.gradle: targetCompatibility = 17")
-    sourceCompatibility = 17
-    targetCompatibility = 17
-} else { // from Java 9 and up
-    sourceCompatibility = 1.8
-    targetCompatibility = 1.8
+java {
+    if (useJava17) {
+        logger.quiet("picocli-spring-boot-starter/build.gradle: JavaVersion=${JavaVersion.current()}")
+        logger.quiet("picocli-spring-boot-starter/build.gradle: sourceCompatibility = 17")
+        logger.quiet("picocli-spring-boot-starter/build.gradle: targetCompatibility = 17")
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    } else { // from Java 9 and up
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
 }
+
+apply plugin: 'org.beryx.jar' // for compiling module-info on Java 8
+compileJava {
+    inputs.property("moduleName", moduleName)
+}
+moduleConfig {
+    // copy module-info.class to META-INF/versions/9
+    multiReleaseVersion = 9
+    moduleInfoPath = 'src/main/java9/module-info.java'
+    version = project.version
+    neverCompileModuleInfo = true
+}
+
+ext['junit-jupiter.version'] = "${junit5Version}"
 
 dependencies {
     api                 rootProject

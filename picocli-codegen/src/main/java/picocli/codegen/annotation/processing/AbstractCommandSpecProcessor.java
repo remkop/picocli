@@ -508,7 +508,9 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
             @Override public ArgGroupSpec.Builder visitVariable(VariableElement e, Void aVoid) {
                 return ArgGroupSpec.builder(new TypedMember(e, -1));
             }
-            @Override public ArgGroupSpec.Builder visitExecutable(ExecutableElement e, Void aVoid) {
+
+            @Override
+            public ArgGroupSpec.Builder visitExecutable(ExecutableElement e, Void aVoid) {
                 return ArgGroupSpec.builder(new TypedMember(e, AbstractCommandSpecProcessor.this));
             }
         }, null);
@@ -516,15 +518,34 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
             error(element, "Only methods or variables can be annotated with @ArgGroup, not %s", element);
         } else {
             builder.updateArgGroupAttributes(element.getAnnotation(ArgGroup.class));
-            context.argGroupElements.put(element, builder);
+            context.argGroupElementsByVar.put(element, builder);
 
-            DeclaredType declaredType = (elementType.getKind() == TypeKind.ARRAY)
-                    ? (DeclaredType) ((ArrayType) elementType).getComponentType()
-                    : (DeclaredType) elementType;
-
-            TypeElement typeElement = (TypeElement) declaredType.asElement();
-            processEnclosedElements(context, roundEnv, typeElement.getEnclosedElements());
+            DeclaredType declaredType = getDeclaredTypeForArgGroupVarOrMethod(element, this);
+            if (declaredType != null) {
+                context.argGroupElementsByType.put(declaredType, builder);
+                processEnclosedElements(context, roundEnv, declaredType.asElement().getEnclosedElements());
+            }
         }
+    }
+
+    private static DeclaredType getDeclaredTypeForArgGroupVarOrMethod(Element element, AbstractCommandSpecProcessor proc) {
+        TypeMirror elementType = element.asType();
+
+        if (elementType.getKind() == TypeKind.EXECUTABLE) {
+            // for @ArgGroup-annotated methods, use the method return type
+            elementType = ((ExecutableType) elementType).getReturnType();
+        }
+        if (elementType.getKind() != TypeKind.DECLARED && elementType.getKind() != TypeKind.ARRAY) {
+            proc.error(element,
+                    "The type of an @ArgGroup-annotated element '%s' must be a declared class, " +
+                            "a collection or an array, but was %s", element.getSimpleName(), elementType);
+            return null;
+        }
+
+        DeclaredType declaredType = (elementType.getKind() == TypeKind.ARRAY)
+                ? (DeclaredType) ((ArrayType) elementType).getComponentType()
+                : (DeclaredType) elementType;
+        return declaredType;
     }
 
     private void buildOptions(RoundEnvironment roundEnv, Context context) {
@@ -613,7 +634,12 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
                 TypedMember typedMember = new TypedMember(variable, -1);
                 ArgGroupSpec.Builder builder = ArgGroupSpec.builder(typedMember);
                 builder.updateArgGroupAttributes(variable.getAnnotation(ArgGroup.class));
-                context.argGroupElements.put(variable, builder);
+                context.argGroupElementsByVar.put(variable, builder);
+
+                DeclaredType declaredType = getDeclaredTypeForArgGroupVarOrMethod(variable, this);
+                if (declaredType != null) {
+                    context.argGroupElementsByType.put(declaredType, builder);
+                }
 
             } else if (!isMixin) { // params without any annotation are also positional
                 position++;
@@ -832,7 +858,8 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
         Map<TypeMirror, List<CommandSpec>> commandTypes = new LinkedHashMap<TypeMirror, List<CommandSpec>>();
         Map<Element, OptionSpec.Builder> options = new LinkedHashMap<Element, OptionSpec.Builder>();
         Map<Element, PositionalParamSpec.Builder> parameters = new LinkedHashMap<Element, PositionalParamSpec.Builder>();
-        Map<Element, ArgGroupSpec.Builder> argGroupElements = new LinkedHashMap<Element, ArgGroupSpec.Builder>();
+        Map<Element, ArgGroupSpec.Builder> argGroupElementsByVar = new LinkedHashMap<Element, ArgGroupSpec.Builder>();
+        Map<DeclaredType, ArgGroupSpec.Builder> argGroupElementsByType = new LinkedHashMap<DeclaredType, ArgGroupSpec.Builder>();
         Map<CommandSpec, Set<MixinInfo>> mixinInfoMap = new IdentityHashMap<CommandSpec, Set<MixinInfo>>();
         Map<Element, IAnnotatedElement> parentCommandElements = new LinkedHashMap<Element, IAnnotatedElement>();
         Map<Element, IAnnotatedElement> specElements = new LinkedHashMap<Element, IAnnotatedElement>();
@@ -854,7 +881,8 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
             }
 
             for (Map.Entry<Element, OptionSpec.Builder> option : options.entrySet()) {
-                ArgGroupSpec.Builder group = argGroupElements.get(option.getKey().getEnclosingElement());
+                TypeMirror typeMirror = option.getKey().getEnclosingElement().asType();
+                ArgGroupSpec.Builder group = argGroupElementsByType.get(typeMirror);
                 if (group != null) {
                     logger.fine("Building OptionSpec for " + option + " in arg group " + group);
                     group.addArg(option.getValue().build());
@@ -865,7 +893,8 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
                 }
             }
             for (Map.Entry<Element, PositionalParamSpec.Builder> parameter : parameters.entrySet()) {
-                ArgGroupSpec.Builder group = argGroupElements.get(parameter.getKey().getEnclosingElement());
+                TypeMirror typeMirror = parameter.getKey().getEnclosingElement().asType();
+                ArgGroupSpec.Builder group = argGroupElementsByType.get(typeMirror);
                 if (group != null) {
                     logger.fine("Building PositionalParamSpec for " + parameter + " in arg group " + group);
                     group.addArg(parameter.getValue().build());
@@ -952,25 +981,20 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
             Map<Element, TypeElement> argGroupElementsToType = new LinkedHashMap<Element, TypeElement>();
             Map<TypeElement, TypeElement> groupTypeToParentGroupType = new LinkedHashMap<TypeElement, TypeElement>();
             Map<TypeElement, ArgGroupSpec.Builder> argGroupsByType = new LinkedHashMap<TypeElement, ArgGroupSpec.Builder>();
-            for (Map.Entry<Element, ArgGroupSpec.Builder> entry : argGroupElements.entrySet()) {
+            for (Map.Entry<Element, ArgGroupSpec.Builder> entry : argGroupElementsByVar.entrySet()) {
                 Element argGroupElement = entry.getKey(); // field, method or parameter
                 ArgGroupSpec.Builder builder = entry.getValue();
                 //logger.severe(argGroupElement.toString());
                 //proc.processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "ArgGroup", argGroupElement);
 
-                Types typeUtils = proc.processingEnv.getTypeUtils();
-
                 // get the type or return type of the @ArgGroup-annotated field, method or parameter
-                TypeMirror typeMirror = argGroupElement.asType();
-                if (typeMirror.getKind() == TypeKind.EXECUTABLE) {
-                    // for @ArgGroup-annotated methods, use the method return type
-                    typeMirror = ((ExecutableType) typeMirror).getReturnType();
-                }
-                if (typeMirror.getKind() != TypeKind.DECLARED && typeMirror.getKind() != TypeKind.ARRAY) {
-                    proc.error(entry.getKey(), "The type of an @ArgGroup-annotated element '%s' must be a declared class, a collection or an array, but was %s", argGroupElement.getSimpleName(), typeMirror);
+                DeclaredType declaredType = getDeclaredTypeForArgGroupVarOrMethod(argGroupElement, proc);
+                if (declaredType == null) {
                     return true;
                 }
-                CompileTimeTypeInfo typeInfo = new CompileTimeTypeInfo(typeMirror);
+
+                Types typeUtils = proc.processingEnv.getTypeUtils();
+                CompileTimeTypeInfo typeInfo = new CompileTimeTypeInfo(declaredType);
                 TypeElement typeElement = (TypeElement) typeUtils.asElement(typeInfo.auxTypeMirrors.get(0));
 
                 CommandSpec argsHolder = commands.get(typeElement);
@@ -994,11 +1018,11 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
                 }
             }
 
-            Element[] lookup = new Element[argGroupElements.size()];
-            Graph graph = new Graph(argGroupElements.size());
+            Element[] lookup = new Element[argGroupElementsByVar.size()];
+            Graph graph = new Graph(argGroupElementsByVar.size());
             int i = 0;
             Map<TypeElement, Integer> typeToIndex = new LinkedHashMap<TypeElement, Integer>();
-            for (Map.Entry<Element, ArgGroupSpec.Builder> entry : argGroupElements.entrySet()) {
+            for (Map.Entry<Element, ArgGroupSpec.Builder> entry : argGroupElementsByVar.entrySet()) {
                 Element argGroupElement = entry.getKey(); // field, method or parameter
                 lookup[i] = argGroupElement;
                 typeToIndex.put(argGroupElementsToType.get(argGroupElement), i++);
@@ -1011,11 +1035,11 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
                 }
             }
             Stack<Integer> sortedGroups = graph.topologicalSort();
-            logger.fine(argGroupElements.toString());
+            logger.fine("@ArgGroup-annotated variables/methods: " + argGroupElementsByVar.toString());
             while (!sortedGroups.isEmpty()) {
                 Element argGroupElement = lookup[sortedGroups.pop()];
-                ArgGroupSpec.Builder argGroupBuilder = argGroupElements.get(argGroupElement);
-                logger.log(Level.FINE, "args=%s, typeInfo=%s", new Object[]{argGroupBuilder.args(), argGroupBuilder.typeInfo()});
+                ArgGroupSpec.Builder argGroupBuilder = argGroupElementsByVar.get(argGroupElement);
+                logger.fine(String.format("ArgGroup args=%s, typeInfo=%s", argGroupBuilder.args(), argGroupBuilder.typeInfo()));
                 ArgGroupSpec group = argGroupBuilder.build();
 
                 CommandSpec commandSpec = getOrCreateCommandSpecForArg(argGroupElement, commands);
@@ -1027,7 +1051,7 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
                 ArgGroupSpec.Builder parentGroup = argGroupsByType.get(parentGroupElement);
                 if (parentGroup != null) {
                     // there may be multiple commands/subcommands with this parent arg group
-                    for (Map.Entry<Element, ArgGroupSpec.Builder> entry : argGroupElements.entrySet()) {
+                    for (Map.Entry<Element, ArgGroupSpec.Builder> entry : argGroupElementsByVar.entrySet()) {
                         TypeMirror entryTypeMirror = entry.getKey().asType();
                         if (entryTypeMirror.getKind() == TypeKind.DECLARED || entryTypeMirror.getKind() == TypeKind.ARRAY) {
                             CompileTimeTypeInfo typeInfo = new CompileTimeTypeInfo(entryTypeMirror);

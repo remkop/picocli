@@ -513,7 +513,7 @@ public class TypeConversionTest {
     }
     @Test
     public void testURLConvertersInvalidError() {
-        parseInvalidValue("-URL", ":::", "java.net.MalformedURLException: no protocol: :::");
+        parseInvalidValue("-URL", ":::", "java.net.URISyntaxException: Expected scheme name at index 0: :::");
     }
     @Test
     public void testURIConvertersInvalidError() {
