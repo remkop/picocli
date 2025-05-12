@@ -263,19 +263,19 @@ public class AutoCompleteSystemExitTest {
                 "  local prev_word=${COMP_WORDS[COMP_CWORD-1]}\n" +
                 "\n" +
                 "  local commands=\"\"\n" +
-                "  local flag_opts=\"-w --writeCommandScript -f --force -h --help -V --version\"\n" +
-                "  local arg_opts=\"-c --factory -n --name -o --completionScript\"\n" +
+                "  local flag_opts=\"'-w' '--writeCommandScript' '-f' '--force' '-h' '--help' '-V' '--version'\"\n" +
+                "  local arg_opts=\"'-c' '--factory' '-n' '--name' '-o' '--completionScript'\"\n" +
                 "\n" +
                 "  type compopt &>/dev/null && compopt +o default\n" +
                 "\n" +
                 "  case ${prev_word} in\n" +
-                "    -c|--factory)\n" +
+                "    '-c'|'--factory')\n" +
                 "      return\n" +
                 "      ;;\n" +
-                "    -n|--name)\n" +
+                "    '-n'|'--name')\n" +
                 "      return\n" +
                 "      ;;\n" +
-                "    -o|--completionScript)\n" +
+                "    '-o'|'--completionScript')\n" +
                 "      local IFS=$'\\n'\n" +
                 "      type compopt &>/dev/null && compopt -o filenames\n" +
                 "      COMPREPLY=( $( compgen -f -- \"${curr_word}\" ) ) # files\n" +
@@ -493,12 +493,12 @@ public class AutoCompleteSystemExitTest {
                 "\n" +
                 "  local commands=\"\"\n" +
                 "  local flag_opts=\"\"\n" +
-                "  local arg_opts=\"-t --timeout\"\n" +
+                "  local arg_opts=\"'-t' '--timeout'\"\n" +
                 "\n" +
                 "  type compopt &>/dev/null && compopt +o default\n" +
                 "\n" +
                 "  case ${prev_word} in\n" +
-                "    -t|--timeout)\n" +
+                "    '-t'|'--timeout')\n" +
                 "      return\n" +
                 "      ;;\n" +
                 "  esac\n" +

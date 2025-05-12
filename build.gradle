@@ -1,10 +1,5 @@
 import aQute.bnd.gradle.Bundle
 
-group 'info.picocli'
-description 'Java command line parser with both an annotations API and a programmatic API. Usage help with ANSI styles and colors. Autocomplete. Nested subcommands. Easily included as source to avoid adding a dependency.'
-version "$projectVersion"
-ext.moduleName = 'info.picocli'
-
 buildscript {
     apply from: 'dependencies.gradle'
 
@@ -15,13 +10,22 @@ buildscript {
 
     dependencies {
         classpath "org.asciidoctor:asciidoctor-gradle-jvm:$asciidoctorGradlePluginVersion"
-        classpath 'org.asciidoctor:asciidoctorj-pdf:2.3.15'
+        classpath 'org.asciidoctor:asciidoctorj-pdf:2.3.19'
         classpath "org.beryx:badass-jar:2.0.0"
         classpath 'biz.aQute.bnd:biz.aQute.bnd.gradle:6.4.0'
         classpath "io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.30.0"
-        classpath "net.ltgt.gradle:gradle-errorprone-plugin:3.1.0"
+        classpath "net.ltgt.gradle:gradle-errorprone-plugin:4.2.0"
     }
 }
+
+plugins {
+    id 'org.jreleaser' version '1.17.0'
+}
+
+group          = 'info.picocli'
+description    = 'Java command line parser with both an annotations API and a programmatic API. Usage help with ANSI styles and colors. Autocomplete. Nested subcommands. Easily included as source to avoid adding a dependency.'
+version        = "$projectVersion"
+ext.moduleName = 'info.picocli'
 
 apply plugin: 'org.beryx.jar' // for compiling module-info on Java 8
 apply plugin: 'io.codearte.nexus-staging'
@@ -51,10 +55,13 @@ pluginManager.withPlugin('biz.aQute.bnd.builder') { // if plugin applied, execut
     sourceSets {
         bundle
     }
-    task bundle(type: Bundle) {
+    tasks.register("bundle", Bundle) {
         from sourceSets.bundle.output
-        bndfile = 'bnd.bnd'
-        sourceSet = sourceSets.bundle
+        bundle {
+            bndfile = file('bundle.bnd')
+            sourceSet = sourceSets.bundle
+            classpath = sourceSets.bundle.compileClasspath
+        }
     }
 }
 
@@ -63,12 +70,12 @@ allprojects {
     apply plugin: 'java'
     apply plugin: 'java-library' // to avoid https://github.com/gradle/gradle/issues/1118
 
-    // https://errorprone.info/docs/installation requires Java 11+
-    if (JavaVersion.current().isJava11Compatible()) {
+    // https://errorprone.info/docs/installation requires Java 17+
+    if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_17)) {
         apply plugin: "net.ltgt.errorprone"
 
         dependencies {
-            errorprone("com.google.errorprone:error_prone_core:2.27.1")
+            errorprone("com.google.errorprone:error_prone_core:2.37.0")
         }
 
         tasks.withType(JavaCompile).configureEach {
@@ -76,24 +83,21 @@ allprojects {
         }
     }
 
-    if (!JavaVersion.current().isJava9Compatible()) {
-        sourceCompatibility = 1.5
-        targetCompatibility = 1.5
-    } else { // from Java 9 and up
-        sourceCompatibility = 1.8
-        targetCompatibility = 1.8
-//        tasks.withType(JavaCompile).configureEach {
-//            javaCompiler = javaToolchains.compilerFor {
-//                languageVersion = JavaLanguageVersion.of(JavaVersion.current().majorVersion)
-//            }
-//        }
+    java {
+        if (!JavaVersion.current().isJava9Compatible()) {
+            sourceCompatibility = JavaVersion.VERSION_1_5
+            targetCompatibility = JavaVersion.VERSION_1_5
+        } else { // from Java 9 and up
+            sourceCompatibility = JavaVersion.VERSION_1_8
+            targetCompatibility = JavaVersion.VERSION_1_8
+        }
     }
 
     compileJava.options.encoding = "UTF-8"
     compileTestJava.options.encoding = "UTF-8"
 
     repositories {
-        maven { url 'https://repo.spring.io/libs-snapshot' }
+        maven { url = 'https://repo.spring.io/libs-snapshot' }
         mavenCentral()
     }
 

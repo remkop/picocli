@@ -2,13 +2,15 @@ plugins {
     id 'java'
 }
 
-group 'info.picocli'
-description 'Picocli Shell JLine3 - easily build interactive shell applications with JLine 3 and picocli.'
-version "$projectVersion"
+group = 'info.picocli'
+description = 'Picocli Shell JLine3 - easily build interactive shell applications with JLine 3 and picocli.'
+version = "$projectVersion"
 ext.moduleName = 'info.picocli.shell.jline3'
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
 
 dependencies {
     api                rootProject

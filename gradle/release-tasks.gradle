@@ -1,3 +1,32 @@
+/**
+ * JReleaser expects all artifacts
+ * (created by the publishing config in gradle/publish-mavencentral.gradle)
+ * to exist in "${rootProject.projectDir}/build/staging-deploy" directory.
+ * JReleaser is only configured once, on the top-level project (not for each sub-project).
+ *
+ * See: https://jreleaser.org/guide/latest/examples/maven/maven-central.html
+ */
+jreleaser {
+    signing {
+        active = 'RELEASE'
+        armored = true
+    }
+    deploy {
+        maven {
+            nexus2 {
+                'maven-central' {
+                    active = 'RELEASE'
+                    url = 'https://oss.sonatype.org/service/local'
+                    snapshotUrl = 'https://oss.sonatype.org/content/repositories/snapshots/'
+                    closeRepository = true
+                    releaseRepository = false
+                    stagingRepository('build/staging-deploy')
+                }
+            }
+        }
+    }
+}
+
 task bumpReadmeVersion {
     doLast {
         // README.md
@@ -140,30 +169,20 @@ task extractReleaseNotesNext {
     }
 }
 task gatherArtifacts(type: Copy) {
-    from('build/libs/') {
-        include '*.jar', '*.asc'
-        exclude '*test*', '*sources*'
+    from('build/staging-deploy/') {
+        include '**/*.jar', '**/*.asc'
+        exclude '**/*test*', '**/*sources*'
     }
-    from('picocli-codegen/build/libs/') {
-        include '*.jar', '*.asc'
-        exclude '*test*', '*sources*', '*javadoc*'
+    // Flatten the hierarchy by setting the path
+    // of all files to their respective basename
+    eachFile {
+        path = name
     }
-    from('picocli-groovy/build/libs/') {
-        include '*.jar', '*.asc'
-        exclude '*test*', '*sources*', '*javadoc*'
-    }
-    from('picocli-shell-jline2/build/libs/') {
-        include '*.jar', '*.asc'
-        exclude '*test*', '*sources*', '*javadoc*'
-    }
-    from('picocli-shell-jline3/build/libs/') {
-        include '*.jar', '*.asc'
-        exclude '*test*', '*sources*', '*javadoc*'
-    }
-    from('picocli-spring-boot-starter/build/libs/') {
-        include '*.jar', '*.asc'
-        exclude '*test*', '*sources*', '*javadoc*'
-    }
+
+    // Flattening the hierarchy leaves empty directories,
+    // do not copy those
+    includeEmptyDirs = false
+
     from('build/distributions/') {
         include '*.zip'
     }
@@ -193,13 +212,15 @@ Release procedure:
     cd picocli-tests-java567 & set JAVA_HOME=C:\apps\jdk1.5.0_22\&& echo ++%JAVA_HOME%++ && gradlew clean build --no-daemon
 11. commit -m "Release picocli version ..."
 12. tag v$version
-13 ./gradlew publishReleasePublicationToSonatypeRepository - creates a Sonatype staging repository, and uploads artifacts
+13a. gradlew jreleaserConfig
+13b. gradlew clean pub jreleaserFullRelease --dryrun
+13c. gradlew clean pub jreleaserFullRelease
 14. Close the Sonatype info/picocli staging repo:
   a. Manually: Log in to https://oss.sonatype.org/ and in the menu on the left, select Staging repositories.
      Click the close button in the GUI and watch progress in the Activity tab.
      When the repository is successfully closed, click Release to deploy, or Drop to abort.
-  b. Automatically with the codearte.nexus-staging plugin:
-     ./gradlew closeAndReleaseRepository
+  b. Automatically with the jreleaser plugin:
+     set releaseRepository to true
 
 15. edit version numbers: increase minor version and add -SNAPSHOT classifier, update releaseDatePreviousRegex
 16. ./gradlew bumpVersion

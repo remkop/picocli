@@ -2,13 +2,15 @@ plugins {
     id 'java'
 }
 
-group 'info.picocli'
-description 'Picocli Codegen Tests for Java 9+: Tests Annotation Processors for picocli Annotations.'
-version "$projectVersion"
+group = 'info.picocli'
+description = 'Picocli Codegen Tests for Java 9+: Tests Annotation Processors for picocli Annotations.'
+version = "$projectVersion"
 
 // since the tests need JVM arg --add-opens, this subproject requires Java 9 or later
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
 
 dependencies {
     api rootProject

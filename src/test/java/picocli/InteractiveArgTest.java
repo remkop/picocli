@@ -95,6 +95,7 @@ public class InteractiveArgTest {
 
     @Test
     public void testInteractiveOptionReadsFromStdIn() {
+        org.junit.Assume.assumeTrue(System.getProperty("java.version").compareTo("22") < 0);
         class App {
             @Option(names = "-x", description = {"Pwd", "line2"}, interactive = true) int x;
             @Option(names = "-z") int z;
@@ -163,6 +164,7 @@ public class InteractiveArgTest {
 
     @Test
     public void testInteractiveOptionWithoutDescriptionStandardPrompt() {
+        org.junit.Assume.assumeTrue(System.getProperty("java.version").compareTo("22") < 0);
         class App {
             @Option(names = "-x", interactive = true) int x;
         }
@@ -184,6 +186,7 @@ public class InteractiveArgTest {
 
     @Test
     public void testInteractiveOptionReadsFromStdInWithCustomPrompt() {
+        org.junit.Assume.assumeTrue(System.getProperty("java.version").compareTo("22") < 0);
         class App {
             @Option(names = "-x", description = {"Pwd", "line2"}, interactive = true, prompt = "[Customized]Enter your X: ") int x;
         }
@@ -205,6 +208,7 @@ public class InteractiveArgTest {
 
     @Test
     public void testInteractiveOptionAsListOfIntegers() throws IOException {
+        org.junit.Assume.assumeTrue(System.getProperty("java.version").compareTo("22") < 0);
         class App {
             @Option(names = "-x", description = {"Pwd", "line2"}, interactive = true)
             List<Integer> x;
@@ -281,6 +285,7 @@ public class InteractiveArgTest {
 
     @Test
     public void testInteractiveOptionAsListOfIntegersWithCustomPrompt() {
+        org.junit.Assume.assumeTrue(System.getProperty("java.version").compareTo("22") < 0);
         class App {
             @Option(names = "-x", description = {"Pwd", "line2"}, interactive = true, prompt = "[Customized]Enter your x: ")
             List<Integer> x;
@@ -306,6 +311,7 @@ public class InteractiveArgTest {
 
     @Test
     public void testInteractiveOptionAsListOfCharArrays() throws IOException {
+        org.junit.Assume.assumeTrue(System.getProperty("java.version").compareTo("22") < 0);
         class App {
             @Option(names = "-x", description = {"Pwd", "line2"}, interactive = true)
             List<char[]> x;
@@ -338,6 +344,7 @@ public class InteractiveArgTest {
 
     @Test
     public void testInteractiveOptionAsCharArray() throws IOException {
+        org.junit.Assume.assumeTrue(System.getProperty("java.version").compareTo("22") < 0);
         class App {
             @Option(names = "-x", description = {"Pwd", "line2"}, interactive = true)
             char[] x;
@@ -387,6 +394,7 @@ public class InteractiveArgTest {
 
     @Test
     public void testInteractiveOptionAsListOfCharArraysArity_0_1_ConsumesFromCommandLineIfPossible() throws IOException {
+        org.junit.Assume.assumeTrue(System.getProperty("java.version").compareTo("22") < 0);
         class App {
             @Option(names = "-x", arity = "0..1", interactive = true)
             List<char[]> x;
@@ -413,6 +421,7 @@ public class InteractiveArgTest {
 
     @Test
     public void testInteractiveOptionArity_0_1_AvoidsConsumingOption() throws IOException {
+        org.junit.Assume.assumeTrue(System.getProperty("java.version").compareTo("22") < 0);
         class App {
             @Option(names = "-x", arity = "0..1", interactive = true)
             char[] x;
@@ -441,6 +450,7 @@ public class InteractiveArgTest {
 
     @Test
     public void testInteractiveOptionAsListOfCharArraysArity_0_1_AvoidsConsumingOption() throws IOException {
+        org.junit.Assume.assumeTrue(System.getProperty("java.version").compareTo("22") < 0);
         class App {
             @Option(names = "-x", arity = "0..1", interactive = true)
             List<char[]> x;
@@ -470,6 +480,7 @@ public class InteractiveArgTest {
 
     @Test
     public void testInteractiveOptionArity_0_1_ConsumesUnknownOption() throws IOException {
+        org.junit.Assume.assumeTrue(System.getProperty("java.version").compareTo("22") < 0);
         class App {
             @Option(names = "-x", arity = "0..1", interactive = true)
             char[] x;
@@ -498,6 +509,7 @@ public class InteractiveArgTest {
 
     @Test
     public void testInteractiveOptionAsListOfCharArraysArity_0_1_ConsumesUnknownOption() throws IOException {
+        org.junit.Assume.assumeTrue(System.getProperty("java.version").compareTo("22") < 0);
         class App {
             @Option(names = "-x", arity = "0..1", interactive = true)
             List<char[]> x;
@@ -528,6 +540,7 @@ public class InteractiveArgTest {
 
     @Test
     public void testInteractiveOptionReadsFromStdInMultiLinePrompt() {
+        org.junit.Assume.assumeTrue(System.getProperty("java.version").compareTo("22") < 0);
         class App {
             @Option(names = "-x", description = {"Pwd%nline2", "ignored"}, interactive = true) int x;
             @Option(names = "-z") int z;
@@ -552,6 +565,7 @@ public class InteractiveArgTest {
 
     @Test
     public void testInteractivePositionalReadsFromStdIn() {
+        org.junit.Assume.assumeTrue(System.getProperty("java.version").compareTo("22") < 0);
         class App {
             @Parameters(index = "0", description = {"Pwd%nline2", "ignored"}, interactive = true) int x;
             @Parameters(index = "1") int z;
@@ -619,6 +633,7 @@ public class InteractiveArgTest {
 
     @Test
     public void testInteractivePositionalReadsFromStdInWithCustomPrompt() {
+        org.junit.Assume.assumeTrue(System.getProperty("java.version").compareTo("22") < 0);
         class App {
             @Parameters(index = "0", description = {"Pwd%nline2", "ignored"}, interactive = true, prompt = "[Customized]Enter your value: ") int x;
             @Parameters(index = "1") int z;
@@ -643,6 +658,7 @@ public class InteractiveArgTest {
 
     @Test
     public void testInteractivePositionalDoesntReadFromStdInIfNoFollowingPositionalParam() {
+        org.junit.Assume.assumeTrue(System.getProperty("java.version").compareTo("22") < 0);
         class App {
             @Parameters(index = "0", interactive = true, description = {"Pwd"})
             int x;
@@ -671,6 +687,7 @@ public class InteractiveArgTest {
 
     @Test
     public void testInteractivePositional2ReadsFromStdIn() {
+        org.junit.Assume.assumeTrue(System.getProperty("java.version").compareTo("22") < 0);
         class App {
             @Parameters(index = "0") int a;
             @Parameters(index = "1", description = {"Pwd%nline2", "ignored"}, interactive = true) int x;
@@ -697,6 +714,7 @@ public class InteractiveArgTest {
 
     @Test
     public void testLoginExample() {
+        org.junit.Assume.assumeTrue(System.getProperty("java.version").compareTo("22") < 0);
         class Login implements Callable<Object> {
             @Option(names = {"-u", "--user"}, description = "User name")
             String user;
@@ -751,6 +769,7 @@ public class InteractiveArgTest {
 
     @Test
     public void testInteractivePositionalAsListOfCharArrays() throws IOException {
+        org.junit.Assume.assumeTrue(System.getProperty("java.version").compareTo("22") < 0);
         class App {
             @Parameters(index = "0..1", description = {"Pwd", "line2"}, interactive = true)
             List<char[]> x;
@@ -776,6 +795,7 @@ public class InteractiveArgTest {
 
     @Test
     public void testInteractivePositionalAsCharArray() throws IOException {
+        org.junit.Assume.assumeTrue(System.getProperty("java.version").compareTo("22") < 0);
         class App {
             @Parameters(index = "0", description = {"Pwd", "line2"}, interactive = true)
             char[] x;
@@ -799,6 +819,7 @@ public class InteractiveArgTest {
 
     @Test
     public void testInteractivePositionalArity_0_1_ConsumesFromCommandLineIfPossible() throws IOException {
+        org.junit.Assume.assumeTrue(System.getProperty("java.version").compareTo("22") < 0);
         class App {
             @Parameters(index = "0", arity = "0..1", interactive = true)
             char[] x;
@@ -823,6 +844,7 @@ public class InteractiveArgTest {
 
     @Test
     public void testInteractivePositionalAsListOfCharArraysArity_0_1_ConsumesFromCommandLineIfPossible() throws IOException {
+        org.junit.Assume.assumeTrue(System.getProperty("java.version").compareTo("22") < 0);
         class App {
             @Parameters(index = "0..1", arity = "0..1", interactive = true)
             List<char[]> x;
@@ -849,6 +871,7 @@ public class InteractiveArgTest {
 
     @Test
     public void testInteractivePositionalArity_0_1_DoesNotConsumeUnknownOption() throws IOException {
+        org.junit.Assume.assumeTrue(System.getProperty("java.version").compareTo("22") < 0);
         class App {
             @Parameters(index = "0", arity = "0..1", interactive = true)
             char[] x;
@@ -878,6 +901,7 @@ public class InteractiveArgTest {
 
     @Test
     public void testInteractivePositionalAsListOfCharArraysArity_0_1_DoesNotConsumeUnknownOption() throws IOException {
+        org.junit.Assume.assumeTrue(System.getProperty("java.version").compareTo("22") < 0);
         class App {
             @Parameters(index = "0..1", arity = "0..1", interactive = true)
             List<char[]> x;

@@ -1674,7 +1674,7 @@ public class ArgGroupTest {
             @ArgGroup(exclusive = true, multiplicity = "0..1")
             Composite composite;
 
-            @ArgGroup(validate = false, heading = "Remaining options:%n", order = 100)
+            @ArgGroup(validate = false, heading = "Remaining options ${MYPROPERTY}:%n", order = 100)
             Object remainder = new Object() {
                 @Option(names = "-D") int D;
                 @Option(names = "-E") boolean E;
@@ -1696,10 +1696,11 @@ public class ArgGroupTest {
                 "Exclusive options:%n" +
                 "  -x=<x>%n" +
                 "  -y=<y>%n" +
-                "Remaining options:%n" +
+                "Remaining options XYZ123:%n" +
                 "  -D=<D>%n" +
                 "  -E%n" +
                 "  -F%n");
+        System.setProperty("MYPROPERTY", "XYZ123");
         String actual = new CommandLine(new App(), new InnerClassFactory(this)).getUsageMessage(Help.Ansi.OFF);
         assertEquals(expected, actual);
     }
