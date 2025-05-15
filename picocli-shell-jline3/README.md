@@ -59,6 +59,14 @@ The following versions of `jline` and `picocli-shell-jline3` are compatible:
 
 Note: JLine v3.17.1 is not compatible as it is affected by [this bug](https://github.com/jline/jline3/issues/640).
 
+## JPMS Compatibility
+
+Prior to version 4.8.0, using this library in a fully modular application was only possible if you also used the JLine3 bundle module `org.jline`, which is provided by the `org.jline:jline` artifact. If for any reason you were using the individual JLine modules, then this library would be unable to find the `org.jline` module. 
+
+As from version 4.8.0, the reverse is true. If you wish to use this library with a fully modular application, you must use JLines individual component artifacts and cannot use the bundle. Now, `picocli-shell-jline3` depends on the artifacts `org.jline:jline-reader` and `org.jline:jline-console` which provides the `org.jline.reader` and `org.jline.consolle` JPMS modules, will all other dependencies transitvely resolved.
+
+For most people, this change will have little obvious effect. You will still be using `requires transitive info.picocli.shell.jline3` in your `module-info.java`, and you still only need to add `picocli-shell-jline3` to your project. You will only be affected if your application as a whole uses other parts of JLine or 3rd party extensions to it.
+
 See [examples for the older versions](https://github.com/remkop/picocli/wiki/JLine-3-Examples).
 
 ## Demo
