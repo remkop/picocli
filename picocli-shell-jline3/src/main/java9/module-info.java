@@ -32,7 +32,8 @@
  */
 module info.picocli.shell.jline3 {
     requires info.picocli;
-    requires org.jline;
+    requires transitive org.jline.reader;
+    requires transitive org.jline.console;
 
     exports picocli.shell.jline3;
 }
