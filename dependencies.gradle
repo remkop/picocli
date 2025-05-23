@@ -56,7 +56,7 @@ ext {
         //el_api            : "jakarta.el:jakarta.el-api:3.0.3",
         el_impl           : "org.glassfish:jakarta.el:4.0.2",
 
-        hibernate_validator_annproc: "org.hibernate.validator:hibernate-validator-annotation-processor:8.0.2.Final",
+        hibernate_validator_annproc: "org.hibernate.validator:hibernate-validator-annotation-processor:9.0.0.Final",
         hibernate_validator        : "org.hibernate.validator:hibernate-validator:8.0.2.Final",
 
         kotlin_script_runtime      : "org.jetbrains.kotlin:kotlin-script-runtime:2.1.20",
