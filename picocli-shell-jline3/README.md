@@ -111,6 +111,7 @@ import org.jline.reader.impl.DefaultParser;
 import org.jline.reader.impl.LineReaderImpl;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
+import org.jline.widget.AutopairWidgets;
 import org.jline.widget.TailTipWidgets;
 import picocli.CommandLine;
 import picocli.CommandLine.ArgGroup;
@@ -268,7 +269,7 @@ public class Example {
                 TailTipWidgets widgets = new TailTipWidgets(reader, systemRegistry::commandDescription, 5, TailTipWidgets.TipType.COMPLETER);
                 widgets.enable();
                 KeyMap<Binding> keyMap = reader.getKeyMaps().get("main");
-                keyMap.bind(new Reference("tailtip-toggle"), KeyMap.alt("s"));
+                keyMap.bind(new Reference(AutopairWidgets.TAILTIP_TOGGLE), KeyMap.alt("s"));
 
                 String prompt = "prompt> ";
                 String rightPrompt = null;
