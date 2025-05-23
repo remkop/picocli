@@ -19,7 +19,7 @@ buildscript {
 }
 
 plugins {
-    id 'org.jreleaser' version '1.17.0'
+    id 'org.jreleaser' version '1.18.0'
 }
 
 group          = 'info.picocli'
