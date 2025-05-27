@@ -10686,14 +10686,27 @@ public class CommandLine {
                         outparam_groupArgs.add(positional);
                     }
                 } else {
+
+                    List<OptionSpec> sortableComponents = new ArrayList<OptionSpec>();
+                    List<PositionalParamSpec> remainder = new ArrayList<PositionalParamSpec>();
                     for (ArgSpec arg : args()) {
-                        String prefix = synopsis.length > 0 ? infix : "";
                         if (arg instanceof OptionSpec) {
-                            synopsis = concatOptionText(prefix, synopsis, colorScheme, (OptionSpec) arg);
+                            sortableComponents.add((OptionSpec) arg);
                         } else {
-                            synopsis = concatPositionalText(prefix, synopsis, colorScheme, (PositionalParamSpec) arg);
+                            remainder.add((PositionalParamSpec) arg);
                         }
+                    }
+                    Collections.sort(sortableComponents, new Help.SortByOptionArityAndNameAlphabetically());
+
+                    for (ArgSpec arg : sortableComponents) {
+                        String prefix = synopsis.length > 0 ? infix : "";
+                        synopsis = concatOptionText(prefix, synopsis, colorScheme, (OptionSpec) arg);
                         outparam_groupArgs.add(arg);
+                    }
+                    for (PositionalParamSpec positional : remainder) {
+                        String prefix = synopsis.length > 0 ? infix : "";
+                        synopsis = concatPositionalText(prefix, synopsis, colorScheme, positional);                        outparam_groupArgs.add(positional);
+                        outparam_groupArgs.add(positional);
                     }
                     for (ArgGroupSpec subgroup : subgroups()) {
                         if (synopsis.length > 0) { synopsis = synopsis.concat(infix); }
