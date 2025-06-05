@@ -9595,6 +9595,72 @@ class MyApp : Runnable {
 }
 ----
 
+==== Reusing a Mixin within the same command
+
+Here is an example on how a Mixin can be reused in the same command.
+Option names within the mixin can be transformed using regular expressions to create a command line without
+name collisions.
+
+.Java
+[source,java,role="primary"]
+----
+public class DbParams {
+
+    @Option(names={"--url"})
+    private String url;
+
+    @Option(names={"--user"})
+    private String user;
+
+    @Option(names={"--pass"})
+    private String pass;
+}
+
+@Command(name = "compare", description = "Example reuse with @Mixin annotation.")
+public class MyCommand {
+
+    // Adds the options defined in DbParams to this command with names transformed.
+    // The options exposed by this Mixin will be --firstDb.url, --firstDb.user, --firstDb.pass
+    @Mixin(optionNameTransformations = {"^--(.*)$", "--firstDb.$1"})
+    private DbParams firstDb;
+
+    // Adds the options defined in DbParams to this command with names transformed.
+    // The options exposed by this Mixin will be --secondDb.url, --secondDb.user, --secondDb.pass
+    @Mixin(optionNameTransformations = {"^--(.*)$", "--secondDb.$1"})
+    private DbParams secondDb;
+}
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+public class DbParams {
+
+    @Option(names = ["--url"])
+    private url: String
+
+    @Option(names = ["--user"])
+    private user: String
+
+    @Option(names = ["--pass"])
+    private pass: String
+}
+
+@Command(name = "compare", description = ["Example reuse with @Mixin annotation."])
+public class MyCommand {
+
+    // Adds the options defined in DbParams to this command with names transformed.
+    // The options exposed by this Mixin will be --firstDb.url, --firstDb.user, --firstDb.pass
+    @Mixin(optionNameTransformations = ["^--(.*)$", "--firstDb.$1"])
+    var firstDb: DbParams
+
+    // Adds the options defined in DbParams to this command with name transformed.
+    // The options exposed by this Mixin will be --secondDb.url, --secondDb.user, --secondDb.pass
+    @Mixin(optionNameTransformations = ["^--(.*)$", "--secondDb.$1"])
+    var secondDb: DbParams
+}
+----
+
 ==== Accessing the Mixee from a Mixin
 
 Sometimes you need to write a Mixin class that accesses the mixee (the command where it is mixed in).
