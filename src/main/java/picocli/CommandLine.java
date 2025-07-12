@@ -14997,7 +14997,7 @@ public class CommandLine {
                 return new ITypeConverter<Object>() {
                     @SuppressWarnings({ "unchecked", "rawtypes" })
                     public Object convert(String value) throws Exception {
-                	return enumConverter.convert(value, (Class<Enum>)type, commandSpec.parser().caseInsensitiveEnumValuesAllowed());
+                        return enumConverter.convert(value, (Class<Enum>)type, commandSpec.parser().caseInsensitiveEnumValuesAllowed());
                     }
                 };
             }
