@@ -5091,7 +5091,8 @@ public class CommandLine {
                     String name = enumConstant.name();
                     if (value.equals(str) || value.equals(name) || caseInsensitiveEnumValuesAllowed && (value.equalsIgnoreCase(str) || value.equalsIgnoreCase(name))) {
                         return enumConstant;
-                    }                            }
+                    }
+                }
                 String sensitivity = caseInsensitiveEnumValuesAllowed ? "case-insensitive" : "case-sensitive";
                 E[] constants = enumType.getEnumConstants();
                 List<String> names = new ArrayList<String>();
