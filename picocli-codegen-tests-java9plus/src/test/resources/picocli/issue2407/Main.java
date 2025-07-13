@@ -5,7 +5,7 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
 @Command(name = "top", subcommands = {Main.Edit.class, Main.Update.class})
-static class Main {
+public class Main {
 
     static class UsernameAndPassword {
         @Option(names = "--user", required = false)
