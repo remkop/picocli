@@ -204,9 +204,11 @@ if (JavaVersion.current().isJava11Compatible()) {
     apply from: "gradle/jacoco.gradle"
 }
 
-if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_18)) {
+if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_18)
+&& !JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_24)) {
     // https://github.com/remkop/picocli/issues/1503
     test { // explicitly enable security manager on Java 18 for System.exit tests
+        //from Java24: java.lang.Error: A command line option has attempted to allow or enable the Security Manager. Enabling a Security Manager is not supported.
         systemProperty "java.security.manager", "allow"
     }
 }
