@@ -53,6 +53,36 @@ import static picocli.CommandLine.RunFirst;
 import static picocli.CommandLine.RunLast;
 import static picocli.CommandLine.Spec;
 
+/**
+ * <p>
+ * <b>Implementation Note</b><br />
+ * These tests use the System Rules library for setting and clearing environment
+ * variables. This relies on the Security Manager and reflection to modify
+ * internal fields of the environment variable map.
+ * </p><p>
+ * The Security Manager has been removed in Java 19.
+ * Reflection on private fields fails with IllegalAccessError on Java 16+.
+ * It may be possible to resolve this with command line arguments to explicitly enable this:
+ * </p>
+ * <pre>
+ * {@code
+ * tasks.withType(Test.class) {
+ *     if (org.gradle.api.JavaVersion.current().isCompatibleWith(
+ *                 org.gradle.api.JavaVersion.VERSION_19)) {
+ *         it.jvmArgs '--add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED'
+ *     }
+ * }
+ * }
+ * </pre>
+ * <p>
+ *   To resolve this, tests that use the {@code org.junit.contrib.java.lang.system.EnvironmentVariables}
+ *   rule have been moved to the "legacy" test module that is executed in Java 5, 6 and 7.
+ * </p>
+ * <p>
+ *   Tests that use {@code com.github.stefanbirkner.systemlambda.SystemLambda.withEnvironmentVariable}
+ *   have been moved to the "java8plus" test module that is executed in Java 8 and later.
+ * </p>
+ */
 @SuppressWarnings("deprecation")
 public class ExecuteLegacyTest {
     @Rule

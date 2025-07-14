@@ -294,7 +294,10 @@ public class AutoCompleteTest {
             AutoComplete.bash("script", null, commandFile,  new CommandLine(new TopLevel()));
             fail("Expected NPE");
         } catch (NullPointerException ok) {
-            assertEquals(null, ok.getMessage());
+            //Cannot invoke
+            String actual = ok.getMessage();
+            assertTrue(actual, actual == null
+                    || "Cannot invoke \"java.io.File.isInvalid()\" because \"file\" is null".equals(actual));
         }
     }
 
