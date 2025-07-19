@@ -3389,12 +3389,42 @@ public class CommandLine {
      * @param converter the class capable of converting string values to the specified target type
      * @param <K> the target type
      * @return this CommandLine object, to allow method chaining
+     * @see #registerEnumConverter(IEnumConverter)
      * @see #addSubcommand(String, Object)
      */
     public <K> CommandLine registerConverter(Class<K> cls, ITypeConverter<K> converter) {
         interpreter.converterRegistry.put(Assert.notNull(cls, "class"), Assert.notNull(converter, "converter"));
         for (CommandLine command : getCommandSpec().commands.values()) {
             command.registerConverter(cls, converter);
+        }
+        return this;
+    }
+
+    /**
+     * Registers the specified enum converter for converting enum types for which
+     * there is not a converter registered for some specific enum type
+     * via {@link #registerConverter(Class, ITypeConverter)}.
+     * <p>This setting replaces existing enum conversion <em>for all enum types</em>
+     * that have no specific type converter installed. This allows categorically
+     * converting all <code>kebab-case</code> command-line option values to the
+     * standard enum <code>CONSTANT_CASE</code> form, for example.
+     * If it is desired to selectively convert only certain enum types, the
+     * installed converter should check the type being converted and, for
+     * enums requiring the default conversion functionality, delegate to
+     * {@link #DEFAULT_ENUM_CONVERTER}.</p>
+     * <p>The specified converter will be registered with this {@code CommandLine} and the full hierarchy of its
+     * subcommands and nested sub-subcommands <em>at the moment the converter is registered</em>. Subcommands added
+     * later will not have this converter added automatically. To ensure a custom type converter is available to all
+     * subcommands, register the type converter last, after adding subcommands.</p>
+     *
+     * @param enumConverter the class capable of converting string values to enums
+     * @return this CommandLine object, to allow method chaining
+     * @see #registerConverter(Class, ITypeConverter)
+     */
+    public CommandLine registerEnumConverter(IEnumConverter enumConverter) {
+        interpreter.enumConverter = Assert.notNull(enumConverter, "enumCconverter");
+        for (CommandLine command : getCommandSpec().commands.values()) {
+            command.registerEnumConverter(enumConverter);
         }
         return this;
     }
@@ -4969,7 +4999,7 @@ public class CommandLine {
      * String values can be converted to any type for which a {@code ITypeConverter} is registered.
      * </p><p>
      * This interface defines the contract for classes that know how to convert a String into some domain object.
-     * Custom converters can be registered with the {@link #registerConverter(Class, ITypeConverter)} method.
+     * Custom converters can be registered with the {@link CommandLine#registerConverter(Class, ITypeConverter)} method.
      * </p><p>
      * Java 8 lambdas make it easy to register custom type converters:
      * </p>
@@ -4999,6 +5029,7 @@ public class CommandLine {
      *   <li>String</li>
      * </ul>
      * @param <K> the type of the object that is the result of the conversion
+     * @see IEnumConverter
      */
     public interface ITypeConverter<K> {
         /**
@@ -5017,6 +5048,68 @@ public class CommandLine {
         K convert(String value) throws Exception;
     }
 
+    /**
+     * A pluggable converter for enums.
+     * <p>
+     * This interface defines the contract for classes that know how to convert a String
+     * into enum types in general. Custom converters can be registered with the
+     * {@link CommandLine#registerEnumConverter(IEnumConverter)} method.
+     * </p>
+     * @see ITypeConverter
+     */
+    public interface IEnumConverter {
+        /**
+         * Converts the specified command line argument value to some enum.
+         * @param value the command line argument String value
+         * @param enumType the class representing the type of enum
+         * @param caseInsensitiveEnumValuesAllowed whether the parser should ignore case when converting arguments to {@code enum} values
+         * @return the resulting enum
+         * @throws Exception an exception detailing what went wrong during the conversion.
+         *          Any exception thrown from this method will be caught and shown to the end user.
+         *          An example error message shown to the end user could look something like this:
+         *          {@code Invalid value for option '--some-option': cannot convert 'xxxinvalidinput' to SomeEnumType (java.lang.IllegalArgumentException: Invalid format: must be 'x:y:z' but was 'xxxinvalidinput')}
+         * @throws TypeConversionException throw this exception to have more control over the error
+         *          message that is shown to the end user when type conversion fails.
+         *          An example message shown to the user could look like this:
+         *          {@code Invalid value for option '--some-option': Invalid format: must be 'x:y:z' but was 'xxxinvalidinput'}
+         */
+        <E extends Enum<E>> E convert(String value, Class<E> enumType, boolean caseInsensitiveEnumValuesAllowed) throws Exception;
+    }
+
+    /**
+     * The enum converter installed by default. Custom enum converters can replace
+     * the default enum converter altogether, or selectively convert certain enums
+     * and then fall back to the default behavior by delegating to this default implementation.
+     */
+    public static final IEnumConverter DEFAULT_ENUM_CONVERTER = new IEnumConverter() {
+        @Override
+        public <E extends Enum<E>> E convert(String value, Class<E> enumType, boolean caseInsensitiveEnumValuesAllowed) throws Exception {
+            try { return Enum.valueOf(enumType, value); }
+            catch (IllegalArgumentException ex) {
+                for (E enumConstant : enumType.getEnumConstants()) {
+                    String str = enumConstant.toString();
+                    String name = enumConstant.name();
+                    if (value.equals(str) || value.equals(name) || caseInsensitiveEnumValuesAllowed && (value.equalsIgnoreCase(str) || value.equalsIgnoreCase(name))) {
+                        return enumConstant;
+                    }
+                }
+                String sensitivity = caseInsensitiveEnumValuesAllowed ? "case-insensitive" : "case-sensitive";
+                E[] constants = enumType.getEnumConstants();
+                List<String> names = new ArrayList<String>();
+                for (Enum<?> constant : constants) {
+                    names.add(constant.name());
+                    if (!names.contains(constant.toString())) { // name() != toString()
+                        if (!(caseInsensitiveEnumValuesAllowed && constant.name().equalsIgnoreCase(constant.toString()))) {
+                            names.add(constant.toString());
+                        }
+                    }
+                }
+                throw new TypeConversionException(
+                        format("expected one of %s (%s) but was '%s'", names, sensitivity, value));
+            }
+        }
+    };
+    
     /**
      * Provides version information for a command. Commands may configure a provider with the
      * {@link Command#versionProvider()} annotation attribute.
@@ -13378,6 +13471,7 @@ public class CommandLine {
         /** Value displayed in trace logs for options with echo=false. */
         private static final String MASKED_VALUE = "*****(masked)"; // see #2087
         private final Map<Class<?>, ITypeConverter<?>> converterRegistry = new HashMap<Class<?>, ITypeConverter<?>>();
+        private IEnumConverter enumConverter = DEFAULT_ENUM_CONVERTER;
         private boolean isHelpRequested;
         private int position;
         private int interactiveCount;
@@ -14901,40 +14995,14 @@ public class CommandLine {
             if (char[].class.equals(argSpec.type()) && argSpec.interactive()) { return converterRegistry.get(char[].class); }
             if (converterRegistry.containsKey(type)) { return converterRegistry.get(type); }
             if (type.isEnum()) {
-                return getEnumTypeConverter(type);
+                return new ITypeConverter<Object>() {
+                    @SuppressWarnings({ "unchecked", "rawtypes" })
+                    public Object convert(String value) throws Exception {
+                        return enumConverter.convert(value, (Class<Enum>)type, commandSpec.parser().caseInsensitiveEnumValuesAllowed());
+                    }
+                };
             }
             throw new MissingTypeConverterException(CommandLine.this, "No TypeConverter registered for " + type.getName() + " of " + argSpec);
-        }
-
-        private ITypeConverter<Object> getEnumTypeConverter(final Class<?> type) {
-            return new ITypeConverter<Object>() {
-                @SuppressWarnings("unchecked")
-                public Object convert(String value) throws Exception {
-                    try { return Enum.valueOf((Class<Enum>) type, value); }
-                    catch (IllegalArgumentException ex) {
-                        boolean insensitive = commandSpec.parser().caseInsensitiveEnumValuesAllowed();
-                        for (Enum<?> enumConstant : ((Class<Enum<?>>) type).getEnumConstants()) {
-                            String str = enumConstant.toString();
-                            String name = enumConstant.name();
-                            if (value.equals(str) || value.equals(name) || insensitive && (value.equalsIgnoreCase(str) || value.equalsIgnoreCase(name))) {
-                                return enumConstant;
-                            }                            }
-                        String sensitivity = insensitive ? "case-insensitive" : "case-sensitive";
-                        Enum<?>[] constants = ((Class<Enum<?>>) type).getEnumConstants();
-                        List<String> names = new ArrayList<String>();
-                        for (Enum<?> constant : constants) {
-                            names.add(constant.name());
-                            if (!names.contains(constant.toString())) { // name() != toString()
-                                if (!(insensitive && constant.name().equalsIgnoreCase(constant.toString()))) {
-                                    names.add(constant.toString());
-                                }
-                            }
-                        }
-                        throw new TypeConversionException(
-                                format("expected one of %s (%s) but was '%s'", names, sensitivity, value));
-                    }
-                }
-            };
         }
 
         private boolean booleanValue(ArgSpec argSpec, Object value) {
