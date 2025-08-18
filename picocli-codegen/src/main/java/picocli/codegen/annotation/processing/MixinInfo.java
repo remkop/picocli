@@ -16,6 +16,7 @@ import java.util.List;
  */
 class MixinInfo {
     private final String mixinName;
+    private final String[] optionNameTransformations;
     private final IAnnotatedElement annotatedElement;
     private final VariableElement element;
     private final CommandSpec mixin;
@@ -29,6 +30,7 @@ class MixinInfo {
             name = element.getSimpleName().toString();
         }
         this.mixinName = name;
+        this.optionNameTransformations = element.getAnnotation(CommandLine.Mixin.class).optionNameTransformations();
         Element targetType = element.getEnclosingElement();
         int position = -1;
         if (EnumSet.of(ElementKind.METHOD, ElementKind.CONSTRUCTOR).contains(targetType.getKind())) {
