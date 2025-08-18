@@ -1039,6 +1039,9 @@ assert(mixed.positional == Arrays.asList("param0", "param1", "param2", "param3")
 assert(mixed.options == Arrays.asList("AAA", "BBB"))
 ----
 
+Note that the mixing of positional parameters and options is configurable, see <<End of Options Behaviour>>.
+
+
 === Double dash (`--`)
 Picocli offers built-in support for the End-of-Options delimiter (`--`), as defined in Guideline 10 of the link:https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html#tag_12_02[POSIX Utility Syntax Guidelines].
 
@@ -5261,6 +5264,12 @@ java App -x mySubcommand
 java App -x=-y
 java App -x -y -y=123
 ----
+
+
+=== End of Options Behaviour
+Since picocli 2.0, positional parameters can be specified anywhere on the command line and no longer need to follow the options.
+Starting with v4.8.0, `CommandLine::setParameterAllowedBeforeEndOfOptions` can be set to false in order to restrict
+the mixing of options and positional parameters.  This option forces positional parameters to follow the <<Double dash (`--`),End of Options delimiter>>.
 
 
 === Toggle Boolean Flags
