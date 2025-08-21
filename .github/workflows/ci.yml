@@ -26,7 +26,7 @@ jobs:
         uses: gradle/wrapper-validation-action@f9c9c575b8b21b6485636a91ffecd10e558c62f6
 
       - name: Configure JDK ${{ matrix.java-version }}
-        uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
         with:
           distribution: 'zulu'
           java-version: ${{ matrix.java-version }}
@@ -141,7 +141,7 @@ jobs:
         uses: gradle/wrapper-validation-action@f9c9c575b8b21b6485636a91ffecd10e558c62f6
 
       - name: Configure JDK ${{ matrix.java-version }}
-        uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
         with:
           distribution: 'zulu'
           java-version: ${{ matrix.java-version }}
