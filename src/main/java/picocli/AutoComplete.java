@@ -219,22 +219,49 @@ public class AutoComplete {
     @Command(name = "generate-completion", version = "generate-completion " + CommandLine.VERSION,
             mixinStandardHelpOptions = true,
             description = {
-                "Generate bash/zsh completion script for ${ROOT-COMMAND-NAME:-the root command of this command}.",
+                "Generate bash/zsh or fish completion script for ${ROOT-COMMAND-NAME:-the root command of this command}.",
                 "Run the following command to give `${ROOT-COMMAND-NAME:-$PARENTCOMMAND}` TAB completion in the current shell:",
                 "",
-                "  source <(${PARENT-COMMAND-FULL-NAME:-$PARENTCOMMAND} ${COMMAND-NAME})",
+                "  bash/zsh: source <(${PARENT-COMMAND-FULL-NAME:-$PARENTCOMMAND} ${COMMAND-NAME})",
+                "",
+                "  fish: eval (<(${PARENT-COMMAND-FULL-NAME:-$PARENTCOMMAND} ${COMMAND-NAME} --shell fish)\"",
                 ""},
             optionListHeading = "Options:%n",
             helpCommand = true
     )
     public static class GenerateCompletion implements Runnable {
 
+        enum Shell {
+            BASH {
+                @Override
+                String generate(CommandSpec spec) {
+                    return AutoComplete.bash(
+                        spec.root().name(),
+                        spec.root().commandLine());
+                }
+            },
+            FISH {
+                @Override
+                String generate(CommandSpec spec) {
+                    return AutoComplete.fish(
+                        spec.root().name(),
+                        spec.root().commandLine());
+                }
+            };
+
+            abstract String generate(CommandSpec spec);
+        }
+
         @Spec CommandLine.Model.CommandSpec spec;
 
+        @Option(names = {"-s", "--shell"}, description = "Specify the shell to generate the completion script for. " +
+                "When omitted, the default shell is bash. " +
+                "Valid values are: bash, fish", defaultValue = "bash")
+        Shell shell;
+
         public void run() {
-            String script = AutoComplete.bash(
-                    spec.root().name(),
-                    spec.root().commandLine());
+            String script = shell.generate(spec);
+           
             // not PrintWriter.println: scripts with Windows line separators fail in strange ways!
             spec.commandLine().getOut().print(script);
             spec.commandLine().getOut().print('\n');
