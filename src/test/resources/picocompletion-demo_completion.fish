@@ -14,9 +14,13 @@ complete -c picocompletion-demo --condition "__fish_seen_subcommand_from sub1-al
 complete -c picocompletion-demo --no-files --condition "not __fish_seen_subcommand_from $_picocli_picocompletion_demo" --arguments sub2 -d 'First level subcommand 2'
 complete -c picocompletion-demo --condition "__fish_seen_subcommand_from sub2" --long-option num2 -d 'another number'
 complete -c picocompletion-demo --condition "__fish_seen_subcommand_from sub2" --long-option directory --short-option d -d 'a directory'
+complete -c picocompletion-demo --condition "__fish_seen_subcommand_from sub2" --long-option thread-state --no-files --arguments 'NEW RUNNABLE BLOCKED WAITING TIMED_WAITING TERMINATED'  -d ''
+complete -c picocompletion-demo --condition "__fish_seen_subcommand_from sub2" --long-option <invalid-name> -d ''
 complete -c picocompletion-demo --no-files --condition "not __fish_seen_subcommand_from $_picocli_picocompletion_demo" --arguments sub2-alias -d 'First level subcommand 2'
 complete -c picocompletion-demo --condition "__fish_seen_subcommand_from sub2-alias" --long-option num2 -d 'another number'
 complete -c picocompletion-demo --condition "__fish_seen_subcommand_from sub2-alias" --long-option directory --short-option d -d 'a directory'
+complete -c picocompletion-demo --condition "__fish_seen_subcommand_from sub2-alias" --long-option thread-state --no-files --arguments 'NEW RUNNABLE BLOCKED WAITING TIMED_WAITING TERMINATED'  -d ''
+complete -c picocompletion-demo --condition "__fish_seen_subcommand_from sub2-alias" --long-option <invalid-name> -d ''
 
 # _picocli_picocompletion_demo_sub2 completion
 set -l _picocli_picocompletion_demo_sub2 subsub1 sub2child1-alias subsub2 sub2child2-alias subsub3 sub2child3-alias

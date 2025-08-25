@@ -224,7 +224,7 @@ public class AutoComplete {
                 "",
                 "  bash/zsh: source <(${PARENT-COMMAND-FULL-NAME:-$PARENTCOMMAND} ${COMMAND-NAME})",
                 "",
-                "  fish: eval (<(${PARENT-COMMAND-FULL-NAME:-$PARENTCOMMAND} ${COMMAND-NAME} --shell fish)\"",
+                "  fish: eval (${PARENT-COMMAND-FULL-NAME:-$PARENTCOMMAND} ${COMMAND-NAME} --shell fish)",
                 ""},
             optionListHeading = "Options:%n",
             helpCommand = true
@@ -232,7 +232,7 @@ public class AutoComplete {
     public static class GenerateCompletion implements Runnable {
 
         enum Shell {
-            BASH {
+            bash {
                 @Override
                 String generate(CommandSpec spec) {
                     return AutoComplete.bash(
@@ -240,7 +240,7 @@ public class AutoComplete {
                         spec.root().commandLine());
                 }
             },
-            FISH {
+            fish {
                 @Override
                 String generate(CommandSpec spec) {
                     return AutoComplete.fish(
