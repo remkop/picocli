@@ -540,6 +540,129 @@ public class AutoComplete {
         return result.toString();
     }
 
+
+    public static String fish(String scriptName, CommandLine commandLine) {
+        if (scriptName == null)  { throw new NullPointerException("scriptName"); }
+        if (commandLine == null) { throw new NullPointerException("commandLine"); }
+        List<CommandDescriptor> hierarchy = createHierarchy(scriptName, commandLine);
+        StringBuilder result = new StringBuilder();
+
+        String parentFunction = "";
+        List<CommandDescriptor> currentLevel = new ArrayList<CommandDescriptor>();
+        List<String> currentLevelCommands = new ArrayList<String>();
+
+        CommandDescriptor rootDescriptor = null;
+        for (CommandDescriptor descriptor : hierarchy) {
+            if (descriptor.parentFunctionName.equals("")) {
+                rootDescriptor = descriptor;
+                parentFunction = descriptor.functionName;
+                continue;
+            }
+            if (!descriptor.parentFunctionName.equals(parentFunction)) {
+                processLevel(scriptName, result, currentLevel, currentLevelCommands, parentFunction, rootDescriptor);
+                rootDescriptor = null;
+
+                currentLevel.clear();
+                currentLevelCommands.clear();
+                parentFunction = descriptor.parentFunctionName;
+            }
+
+            currentLevel.add(descriptor);
+            currentLevelCommands.add(descriptor.commandName);
+        }
+        processLevel(scriptName, result, currentLevel, currentLevelCommands, parentFunction, rootDescriptor);
+
+
+        return result.toString();
+    }
+
+    private static void processLevel(String scriptName, StringBuilder result, List<CommandDescriptor> currentLevel,
+                                     List<String> currentLevelCommands, String levelName,
+                                     CommandDescriptor rootDescriptor) {
+        if (levelName.equals("")) {
+            levelName = "root";
+        }
+
+        // fish doesn't like dashes in variable names
+        levelName = levelName.replaceAll("-", "_");
+
+        result.append("\n# ").append(levelName).append(" completion\n");
+        result.append("set -l ").append(levelName);
+        if (!currentLevelCommands.isEmpty()) {
+            result.append(" ").append(join(" ", currentLevelCommands));
+        }
+        result.append("\n");
+        if (rootDescriptor != null) {
+            String condition = " --condition \"not __fish_seen_subcommand_from $" + levelName + "\"";
+            for (OptionSpec optionSpec : rootDescriptor.commandLine.getCommandSpec().options()) {
+                completeFishOption(scriptName, optionSpec, condition, result);
+            }
+        }
+        for (CommandDescriptor commandDescriptor : currentLevel) {
+
+            result.append("complete -c ").append(scriptName);
+            result.append(" --no-files"); // do not show files
+            result.append(" --condition \"not __fish_seen_subcommand_from $").append(levelName).append("\"");
+            if (!commandDescriptor.parentWithoutTopLevelCommand.equals("")) {
+                result.append(" --condition '__fish_seen_subcommand_from ").append(
+                        commandDescriptor.parentWithoutTopLevelCommand).append("'");
+            }
+
+            result.append(" --arguments ").append(commandDescriptor.commandName);
+
+            String[] descriptions = commandDescriptor.commandLine.getCommandSpec().usageMessage().description();
+            String description = descriptions.length > 0 ? descriptions[0] : "";
+            result.append(" -d '").append(sanitizeFishDescription(description)).append("'\n");
+
+            String condition = getFishCondition(commandDescriptor);
+            for (OptionSpec optionSpec : commandDescriptor.commandLine.getCommandSpec().options()) {
+                completeFishOption(scriptName, optionSpec, condition, result);
+            }
+        }
+    }
+
+    private static String getFishCondition(CommandDescriptor commandDescriptor) {
+        StringBuilder condition = new StringBuilder();
+        condition.append(" --condition \"__fish_seen_subcommand_from ").append(commandDescriptor.commandName).append("\"");
+        if (!commandDescriptor.parentWithoutTopLevelCommand.equals("")) {
+            condition.append(" --condition '__fish_seen_subcommand_from ").append(
+                commandDescriptor.parentWithoutTopLevelCommand).append("'");
+        }
+        return condition.toString();
+    }
+
+    private static void completeFishOption(String scriptName, OptionSpec optionSpec, String conditions, StringBuilder result) {
+        result.append("complete -c ").append(scriptName);
+        result.append(conditions);
+        result.append(" --long-option ").append(optionSpec.longestName().replace("--", ""));
+
+        if (!optionSpec.shortestName().equals(optionSpec.longestName())) {
+            result.append(" --short-option ").append(optionSpec.shortestName().replace("-", ""));
+        }
+
+        if (optionSpec.completionCandidates() != null) {
+            result.append(" --no-files --arguments '").append(join(" ", extract(optionSpec.completionCandidates()))).append("' ");
+        }
+
+        String optionDescription =  sanitizeFishDescription(optionSpec.description().length > 0 ? optionSpec.description()[0] : "");
+        result.append(" -d '").append(optionDescription).append("'\n");
+    }
+
+    private static String sanitizeFishDescription(String description) {
+        return description.replace("'", "\\'");
+    }
+
+    private static String join(String delimeter, List<String> list) {
+        StringBuilder result = new StringBuilder();
+        for (int i = 0; i < list.size(); i++) {
+            if (i > 0) {
+                result.append(delimeter);
+            }
+            result.append(list.get(i));
+        }
+        return result.toString();
+    }
+
     private static List<CommandDescriptor> createHierarchy(String scriptName, CommandLine commandLine) {
         List<CommandDescriptor> result = new ArrayList<CommandDescriptor>();
         result.add(new CommandDescriptor("_picocli_" + scriptName, "", "", scriptName, commandLine));
