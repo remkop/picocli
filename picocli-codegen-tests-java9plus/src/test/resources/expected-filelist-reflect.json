@@ -44,6 +44,13 @@
     ]
   },
   {
+    "name" : "picocli.AutoComplete$GenerateCompletion$Shell",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true
+  },
+  {
     "name" : "picocli.CommandLine$AutoHelpMixin",
     "allDeclaredConstructors" : true,
     "allPublicConstructors" : true,

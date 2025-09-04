@@ -1,0 +1,23 @@
+set timeout 1
+
+# Setup completion and fake command
+send "source ../resources/basic.fish\r"
+expect -re "(.+>)"
+
+send "function basicExample; echo 'do'; end\r"
+expect -re "(.+>)"
+
+set cmd "basicExample -"
+set test "Tab should show options for '$cmd'"
+set candidates "-t  -u  --timeout  --timeUnit  --timeUnit="
+run_completion_test $cmd $test $candidates
+
+set cmd "basicExample --"
+set test "Tab should show options for '$cmd'"
+set candidates "--timeout  --timeUnit  --timeUnit="
+run_completion_test $cmd $test $candidates
+
+set cmd "basicExample --timeUnit="
+set test "Tab should show time unit enum values for '$cmd'"
+set candidates ".*timeUnit=DAYS.*timeUnit=MICROSECONDS.*timeUnit=MINUTES.*timeUnit=SECONDS.*timeUnit=HOURS.*timeUnit=MILLISECONDS.*timeUnit=NANOSECONDS.*"
+run_completion_test $cmd $test $candidates
