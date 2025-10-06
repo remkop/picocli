@@ -292,6 +292,7 @@ Annotate fields with the command line parameter names and description. Optionall
 
 ```java
 import picocli.CommandLine;
+import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 import java.io.File;
