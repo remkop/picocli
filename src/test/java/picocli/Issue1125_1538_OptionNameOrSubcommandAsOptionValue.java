@@ -7,6 +7,7 @@ import java.util.concurrent.Callable;
 
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.ProvideSystemProperty;
 import org.junit.contrib.java.lang.system.SystemErrRule;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Help.Ansi;
@@ -22,6 +23,8 @@ public class Issue1125_1538_OptionNameOrSubcommandAsOptionValue {
 
     @Rule
     public SystemErrRule systemErrRule = new SystemErrRule().enableLog().muteForSuccessfulTests();
+    @Rule
+    public final ProvideSystemProperty ansiOFF = new ProvideSystemProperty("picocli.ansi", "false");
 
     @Command(name = "mycommand")
     static class MyCommand implements Callable<Integer> {

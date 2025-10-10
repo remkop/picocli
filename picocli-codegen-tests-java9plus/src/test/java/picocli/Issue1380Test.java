@@ -56,7 +56,7 @@ public class Issue1380Test {
     public void testingWithExclusiveTrue() {
         ByteArrayOutputStream tempOut = new ByteArrayOutputStream();
         PrintStream printStream = new PrintStream(tempOut);
-        new CommandLine(new TestingClassExclusiveTrue()).usage(printStream);
+        new CommandLine(new TestingClassExclusiveTrue()).usage(printStream, CommandLine.Help.Ansi.OFF);
 
         String returnedText = tempOut.toString();
         String expectedText = String.format(
@@ -75,7 +75,7 @@ public class Issue1380Test {
     public void testingWithExclusiveFalse() {
         ByteArrayOutputStream tempOut = new ByteArrayOutputStream();
         PrintStream printStream = new PrintStream(tempOut);
-        new CommandLine(new TestingClassExclusiveFalse()).usage(printStream);
+        new CommandLine(new TestingClassExclusiveFalse()).usage(printStream, CommandLine.Help.Ansi.OFF);
 
         String returnedText = tempOut.toString();
         String expectedText = String.format(
