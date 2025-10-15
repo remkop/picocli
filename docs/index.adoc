@@ -1490,8 +1490,7 @@ class KebabCaseEnumConverter implements IEnumConverter {
 new CommandLine(obj).registerEnumConverter(new KebabCaseEnumConveter());
 ----
 
-The predefined enum converter `CommandLine.DEFAULT_ENUM_CONVERTER` encapsulates the enum conversion logic historically used by picocli, and which is installed by default. If a customer enum converter wants to convert only some enum types and/or values,
-it can delegate to `CommandLine.DEFAULT_ENUM_CONVERTER` as a fallback for the enums it does not wish to handle.
+The predefined enum converter `CommandLine.DEFAULT_ENUM_CONVERTER` encapsulates the enum conversion logic historically used by picocli, and which is installed by default. If a customer enum converter wants to convert only some enum types and/or values, it can delegate to `CommandLine.DEFAULT_ENUM_CONVERTER` as a fallback for the enums it does not wish to handle.
 
 === Handling Invalid Input
 
