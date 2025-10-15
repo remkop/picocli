@@ -3422,7 +3422,7 @@ public class CommandLine {
      * @see #registerConverter(Class, ITypeConverter)
      */
     public CommandLine registerEnumConverter(IEnumConverter enumConverter) {
-        interpreter.enumConverter = Assert.notNull(enumConverter, "enumCconverter");
+        interpreter.enumConverter = Assert.notNull(enumConverter, "enumConverter");
         for (CommandLine command : getCommandSpec().commands.values()) {
             command.registerEnumConverter(enumConverter);
         }
