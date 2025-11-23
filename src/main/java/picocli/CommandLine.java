@@ -17120,7 +17120,7 @@ public class CommandLine {
                 String s1 = CommandSpec.stripPrefix(names1[0]);
                 String s2 = CommandSpec.stripPrefix(names2[0]);
                 int result = s1.toUpperCase().compareTo(s2.toUpperCase()); // case insensitive sort
-                result = result == 0 ? -s1.compareTo(s2) : result; // lower case before upper case
+                result = result == 0 ? s2.compareTo(s1) : result; // lower case before upper case
                 return o1.help() == o2.help() ? result : o2.help() ? -1 : 1; // help options come last
             }
         }
