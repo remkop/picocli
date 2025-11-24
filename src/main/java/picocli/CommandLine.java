@@ -2297,6 +2297,7 @@ public class CommandLine {
             Tracer t = CommandLine.tracer();
             t.debug("resolveExitCode: exit code generators resulted in exit code=%d", result);
             if (executionResult instanceof List) {
+                List<?> resultList = (List<?>) executionResult;
                 result = resolveExecutionResultAsExitCode(result, (List<?>) executionResult);
             }
             t.debug("resolveExitCode: execution results resulted in exit code=%d", result);
@@ -14117,6 +14118,7 @@ public class CommandLine {
                         parseResultBuilder.nowProcessing.set(parseResultBuilder.nowProcessing.size() - 1, argSpec); // replace
                     }
                     int argCount = args.size();
+                    int consumed = applyOption(argSpec, false, lookBehind, alreadyUnquoted, arity, args, initialized, argDescription);
                     // if cluster was consumed as a parameter or if this field was the last in the cluster we're done; otherwise continue do-while loop
                     if (empty(cluster) || args.isEmpty() || args.size() < argCount) {
                         return;
@@ -15080,7 +15082,7 @@ public class CommandLine {
     }
     static String smartUnquote(String value) {
         String unquoted = unquote(value);
-        if (unquoted.equals(value)) { return value; }
+        if (unquoted == value) { return value; }
         StringBuilder result = new StringBuilder();
         int slashCount = 0;
         for (int ch, i = 0; i < unquoted.length(); i += Character.charCount(ch)) {
