@@ -1986,104 +1986,155 @@ public class CommandLine {
     public static Integer executeHelpRequest(ParseResult parseResult) {
         return executeHelpRequest(parseResult.asCommandLineList());
     }
+
+    public enum HelpType{
+        USAGE,
+        VERSION,
+        HELP_COMMAND,
+        NONE
+    }
+
+    private static HelpType detectHelpType(CommandLine parsed){
+        if (parsed.isUsageHelpRequested()){
+            return HelpType.USAGE;
+        }
+        if(parsed.isVersionHelpRequested()){
+            return HelpType.VERSION;
+        }
+        if(parsed.getCommandSpec().helpCommand()){
+            return HelpType.HELP_COMMAND;
+        }
+        return HelpType.NONE;
+    }
+
+    public static Integer handleUsageHelp(CommandLine parsed, PrintWriter out, Help.ColorScheme colorScheme, Tracer t){
+        t.debug("Printing usage help for '%s' as requested.", parsed.commandSpec.qualifiedName());
+        parsed.usage(out, colorScheme);
+        return parsed.getCommandSpec().exitCodeOnUsageHelp();
+    }
+
+    public static Integer handleVersionHelp(CommandLine parsed, PrintWriter out, Help.ColorScheme colorScheme, Tracer t){
+        t.debug("Printing version info for '%s' as requested.", parsed.commandSpec.qualifiedName());
+        parsed.printVersionHelp(out, colorScheme.ansi);
+        return parsed.getCommandSpec().exitCodeOnVersionHelp();
+    }
+
+    public static Integer handleHelpCommand(CommandLine parsed, PrintWriter out, Help.ColorScheme colorScheme, Tracer t){
+        String fullName = parsed.commandSpec.qualifiedName();
+        PrintWriter err = parsed.getErr();
+        if (((Object) parsed.getCommand()) instanceof IHelpCommandInitializable2) {
+            t.debug("Initializing helpCommand '%s' (IHelpCommandInitializable2::init)...", fullName);
+            ((IHelpCommandInitializable2) parsed.getCommand()).init(parsed, colorScheme, out, err);
+        } else if (((Object) parsed.getCommand()) instanceof IHelpCommandInitializable) {
+            t.debug("Initializing helpCommand '%s' (IHelpCommandInitializable::init)...", fullName);
+            ((IHelpCommandInitializable) parsed.getCommand()).init(parsed, colorScheme.ansi, System.out, System.err);
+        } else {
+            t.debug("helpCommand '%s' does not implement IHelpCommandInitializable2 or IHelpCommandInitializable...", fullName);
+        }
+        t.debug("Executing helpCommand '%s'...", fullName);
+        List<Object> execResult = executeUserObject(parsed, new ArrayList<Object>());
+        return AbstractParseResultHandler.resolveExecutionResultAsExitCode(ExitCode.OK, execResult);
+    }
+
     /** @since 4.0 */
     static Integer executeHelpRequest(List<CommandLine> parsedCommands) {
         Tracer t = CommandLine.tracer();
         for (CommandLine parsed : parsedCommands) {
             Help.ColorScheme colorScheme = parsed.getColorScheme();
             PrintWriter out = parsed.getOut();
-            if (parsed.isUsageHelpRequested()) {
-                t.debug("Printing usage help for '%s' as requested.", parsed.commandSpec.qualifiedName());
-                parsed.usage(out, colorScheme);
-                return parsed.getCommandSpec().exitCodeOnUsageHelp();
-            } else if (parsed.isVersionHelpRequested()) {
-                t.debug("Printing version info for '%s' as requested.", parsed.commandSpec.qualifiedName());
-                parsed.printVersionHelp(out, colorScheme.ansi);
-                return parsed.getCommandSpec().exitCodeOnVersionHelp();
-            } else if (parsed.getCommandSpec().helpCommand()) {
-                String fullName = parsed.commandSpec.qualifiedName();
-                PrintWriter err = parsed.getErr();
-                if (((Object) parsed.getCommand()) instanceof IHelpCommandInitializable2) {
-                    t.debug("Initializing helpCommand '%s' (IHelpCommandInitializable2::init)...", fullName);
-                    ((IHelpCommandInitializable2) parsed.getCommand()).init(parsed, colorScheme, out, err);
-                } else if (((Object) parsed.getCommand()) instanceof IHelpCommandInitializable) {
-                    t.debug("Initializing helpCommand '%s' (IHelpCommandInitializable::init)...", fullName);
-                    ((IHelpCommandInitializable) parsed.getCommand()).init(parsed, colorScheme.ansi, System.out, System.err);
-                } else {
-                    t.debug("helpCommand '%s' does not implement IHelpCommandInitializable2 or IHelpCommandInitializable...", fullName);
-                }
-                t.debug("Executing helpCommand '%s'...", fullName);
-                List<Object> execResult = executeUserObject(parsed, new ArrayList<Object>());
-                return AbstractParseResultHandler.resolveExecutionResultAsExitCode(ExitCode.OK, execResult);
+            HelpType helpType = detectHelpType(parsed);
+            switch(helpType) {
+                case USAGE:
+                    return handleUsageHelp(parsed, out, colorScheme, t);
+                case VERSION:
+                    return handleVersionHelp(parsed, out, colorScheme, t);
+                case HELP_COMMAND:
+                    return handleHelpCommand(parsed, out, colorScheme, t);
+                default:
+                    continue;
             }
         }
         t.debug("Help was not requested. Continuing to process ParseResult...");
         return null;
     }
-    private static List<Object> executeUserObject(CommandLine parsed, List<Object> executionResultList) {
-        Tracer tracer = CommandLine.tracer();
 
+    private static List<Object> executeCallable(CommandLine parsed, List<Object> executionResultList, Object command){
+        Tracer tracer = CommandLine.tracer();
+        try {
+            tracer.debug("Invoking Callable::call on user object %s@%s...", command.getClass().getName(), Integer.toHexString(command.hashCode()));
+            @SuppressWarnings("unchecked") Callable<Object> callable = (Callable<Object>) command;
+            Object executionResult = callable.call();
+            parsed.setExecutionResult(executionResult);
+            executionResultList.add(executionResult);
+            return executionResultList;
+        } catch (ParameterException ex) {
+            throw ex;
+        } catch (ExecutionException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            throw new ExecutionException(parsed, "Error while calling command (" + command + "): " + ex, ex);
+        }
+    }
+
+    private static List<Object> executeRunnable(CommandLine parsed, List<Object> executionResultList, Object command){
+        Tracer tracer = CommandLine.tracer();
+        try {
+            tracer.debug("Invoking Runnable::run on user object %s@%s...", command.getClass().getName(), Integer.toHexString(command.hashCode()));
+            ((Runnable) command).run();
+            parsed.setExecutionResult(null); // 4.0
+            executionResultList.add(null); // for compatibility with picocli 2.x
+            return executionResultList;
+        } catch (ParameterException ex) {
+            throw ex;
+        } catch (ExecutionException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            throw new ExecutionException(parsed, "Error while running command (" + command + "): " + ex, ex);
+        }
+    }
+
+    private static List<Object> executeMethod(CommandLine parsed, List<Object> executionResultList, Object command){
+        Tracer tracer = CommandLine.tracer();
+        try {
+            Method method = (Method) command;
+            Object[] parsedArgs = parsed.getCommandSpec().commandMethodParamValues();
+            Object executionResult;
+            if (Modifier.isStatic(method.getModifiers())) {
+                tracer.debug("Invoking static method %s with parameters %s", method, Arrays.toString(parsedArgs));
+                executionResult = method.invoke(null, parsedArgs); // invoke static method
+            } else {
+                Object instance = (parsed.getCommandSpec().parent() != null)
+                    ? parsed.getCommandSpec().parent().userObject()
+                    : parsed.factory.create(method.getDeclaringClass());
+                tracer.debug("Invoking method %s on %s@%s with parameters %s",
+                    method, instance.getClass().getName(), Integer.toHexString(instance.hashCode()), Arrays.toString(parsedArgs));
+                executionResult = method.invoke(instance, parsedArgs);
+            }
+            parsed.setExecutionResult(executionResult);
+            executionResultList.add(executionResult);
+            return executionResultList;
+        } catch (InvocationTargetException ex) {
+            Throwable t = ex.getTargetException();
+            if (t instanceof ParameterException) {
+                throw (ParameterException) t;
+            } else if (t instanceof ExecutionException) {
+                throw (ExecutionException) t;
+            } else {
+                throw new ExecutionException(parsed, "Error while calling command (" + command + "): " + t, t);
+            }
+        } catch (Exception ex) {
+            throw new ExecutionException(parsed, "Unhandled error while calling command (" + command + "): " + ex, ex);
+        }
+    }
+
+    private static List<Object> executeUserObject(CommandLine parsed, List<Object> executionResultList) {
         Object command = parsed.getCommand();
         if (command instanceof Callable) {
-            try {
-                tracer.debug("Invoking Callable::call on user object %s@%s...", command.getClass().getName(), Integer.toHexString(command.hashCode()));
-                @SuppressWarnings("unchecked") Callable<Object> callable = (Callable<Object>) command;
-                Object executionResult = callable.call();
-                parsed.setExecutionResult(executionResult);
-                executionResultList.add(executionResult);
-                return executionResultList;
-            } catch (ParameterException ex) {
-                throw ex;
-            } catch (ExecutionException ex) {
-                throw ex;
-            } catch (Exception ex) {
-                throw new ExecutionException(parsed, "Error while calling command (" + command + "): " + ex, ex);
-            }
+            return executeCallable(parsed, executionResultList, command);
         } else if (command instanceof Runnable) {
-            try {
-                tracer.debug("Invoking Runnable::run on user object %s@%s...", command.getClass().getName(), Integer.toHexString(command.hashCode()));
-                ((Runnable) command).run();
-                parsed.setExecutionResult(null); // 4.0
-                executionResultList.add(null); // for compatibility with picocli 2.x
-                return executionResultList;
-            } catch (ParameterException ex) {
-                throw ex;
-            } catch (ExecutionException ex) {
-                throw ex;
-            } catch (Exception ex) {
-                throw new ExecutionException(parsed, "Error while running command (" + command + "): " + ex, ex);
-            }
+            return executeRunnable(parsed, executionResultList, command);
         } else if (command instanceof Method) {
-            try {
-                Method method = (Method) command;
-                Object[] parsedArgs = parsed.getCommandSpec().commandMethodParamValues();
-                Object executionResult;
-                if (Modifier.isStatic(method.getModifiers())) {
-                    tracer.debug("Invoking static method %s with parameters %s", method, Arrays.toString(parsedArgs));
-                    executionResult = method.invoke(null, parsedArgs); // invoke static method
-                } else {
-                    Object instance = (parsed.getCommandSpec().parent() != null)
-                        ? parsed.getCommandSpec().parent().userObject()
-                        : parsed.factory.create(method.getDeclaringClass());
-                    tracer.debug("Invoking method %s on %s@%s with parameters %s",
-                        method, instance.getClass().getName(), Integer.toHexString(instance.hashCode()), Arrays.toString(parsedArgs));
-                    executionResult = method.invoke(instance, parsedArgs);
-                }
-                parsed.setExecutionResult(executionResult);
-                executionResultList.add(executionResult);
-                return executionResultList;
-            } catch (InvocationTargetException ex) {
-                Throwable t = ex.getTargetException();
-                if (t instanceof ParameterException) {
-                    throw (ParameterException) t;
-                } else if (t instanceof ExecutionException) {
-                    throw (ExecutionException) t;
-                } else {
-                    throw new ExecutionException(parsed, "Error while calling command (" + command + "): " + t, t);
-                }
-            } catch (Exception ex) {
-                throw new ExecutionException(parsed, "Unhandled error while calling command (" + command + "): " + ex, ex);
-            }
+            return executeMethod(parsed, executionResultList, command);
         }
         if (parsed.getSubcommands().isEmpty()) {
             throw new ExecutionException(parsed, "Parsed command (" + command + ") is not a Method, Runnable or Callable");
