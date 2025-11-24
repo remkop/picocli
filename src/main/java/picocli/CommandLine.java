@@ -2297,7 +2297,6 @@ public class CommandLine {
             Tracer t = CommandLine.tracer();
             t.debug("resolveExitCode: exit code generators resulted in exit code=%d", result);
             if (executionResult instanceof List) {
-                List<?> resultList = (List<?>) executionResult;
                 result = resolveExecutionResultAsExitCode(result, (List<?>) executionResult);
             }
             t.debug("resolveExitCode: execution results resulted in exit code=%d", result);
@@ -13974,7 +13973,7 @@ public class CommandLine {
                     tracer.debug("Parser was configured with stopAtPositional=true, treating remaining arguments as positional parameters.");}
                 endOfOptions = true;
             }
-            int originalInteractiveCount = this.interactiveCount;
+                originalInteractiveCount = this.interactiveCount;
             int consumedByGroup = 0;
             int argsConsumed = 0;
             int interactiveConsumed = 0;
@@ -14118,7 +14117,6 @@ public class CommandLine {
                         parseResultBuilder.nowProcessing.set(parseResultBuilder.nowProcessing.size() - 1, argSpec); // replace
                     }
                     int argCount = args.size();
-                    int consumed = applyOption(argSpec, false, lookBehind, alreadyUnquoted, arity, args, initialized, argDescription);
                     // if cluster was consumed as a parameter or if this field was the last in the cluster we're done; otherwise continue do-while loop
                     if (empty(cluster) || args.isEmpty() || args.size() < argCount) {
                         return;
@@ -15082,7 +15080,7 @@ public class CommandLine {
     }
     static String smartUnquote(String value) {
         String unquoted = unquote(value);
-        if (unquoted == value) { return value; }
+        if (unquoted.equals(value)) { return value; }
         StringBuilder result = new StringBuilder();
         int slashCount = 0;
         for (int ch, i = 0; i < unquoted.length(); i += Character.charCount(ch)) {
@@ -17120,7 +17118,7 @@ public class CommandLine {
                 String s1 = CommandSpec.stripPrefix(names1[0]);
                 String s2 = CommandSpec.stripPrefix(names2[0]);
                 int result = s1.toUpperCase().compareTo(s2.toUpperCase()); // case insensitive sort
-                result = result == 0 ? -s1.compareTo(s2) : result; // lower case before upper case
+                result = result == 0 ? s2.compareTo(s1) : result; // lower case before upper case
                 return o1.help() == o2.help() ? result : o2.help() ? -1 : 1; // help options come last
             }
         }
