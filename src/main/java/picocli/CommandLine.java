@@ -7938,9 +7938,11 @@ public class CommandLine {
                             reader = new BufferedReader(new InputStreamReader(proc.getInputStream()));
                             String txt = "";
                             String line;
+                            StringBuilder txtBuf = new StringBuilder();
                             while ((line = reader.readLine()) != null) {
-                                txt += " " + line;
+                                txtBuf.append(" ").append(line);
                             }
+                            txt = txtBuf.toString();
                             tracer.debug("getTerminalWidth() parsing output: %s", txt);
                             Pattern pattern = (Help.Ansi.isWindows() && !Help.Ansi.isPseudoTTY())
                                     ? Pattern.compile(".*?:\\s*(\\d+)\\D.*?:\\s*(\\d+)\\D.*", Pattern.DOTALL)
@@ -13111,10 +13113,10 @@ public class CommandLine {
 
             private void failGroupMultiplicityExceeded(List<ParseResult.GroupMatch> groupMatches, CommandLine commandLine) {
                 Map<ArgGroupSpec, List<List<ParseResult.GroupMatch>>> matchesPerGroup = new LinkedHashMap<ArgGroupSpec, List<List<GroupMatch>>>();
-                String msg = "";
+                StringBuilder msgBuf = new StringBuilder();
                 for (ParseResult.GroupMatch match : groupMatches) {
-                    if (msg.length() > 0) { msg += " and "; }
-                    msg += match;
+                    if (msgBuf.length() > 0) { msgBuf.append(" and "); }
+                    msgBuf.append(match);
                     Map<ArgGroupSpec, GroupMatchContainer> subgroups = match.matchedSubgroups();
                     for (ArgGroupSpec group : subgroups.keySet()) {
                         if (group.validate()) { // don't raise errors for non-validating groups: https://github.com/remkop/picocli/issues/810
@@ -13122,6 +13124,7 @@ public class CommandLine {
                         }
                     }
                 }
+                String msg = msgBuf.toString();
                 if (!matchesPerGroup.isEmpty()) {
                     if (!simplifyErrorMessageForSingleGroup(matchesPerGroup, commandLine)) {
                         commandLine.interpreter.maybeThrow(new MaxValuesExceededException(commandLine, "Error: expected only one match but got " + msg));
