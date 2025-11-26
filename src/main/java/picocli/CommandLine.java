@@ -15048,18 +15048,20 @@ public class CommandLine {
                 return "Missing required parameter for " + optionDescription("", argSpec, 0);
             }
             String sep = "";
-            String names = ": ";
-            String indices = "";
+            StringBuilder namesBuf = new StringBuilder();
+            StringBuilder indicesBuf = new StringBuilder();
             String infix = " at index ";
             int count = 0;
             for (PositionalParamSpec missing : missingList) {
                 if (missing.arity().min > 0) {
-                    names += sep + "'" + missing.paramLabel() + "'";
-                    indices += sep + missing.index();
+                    namesBuf.append(sep).append("'").append(missing.paramLabel()).append("'");
+                    indicesBuf.append(sep).append(missing.index());
                     sep = ", ";
                     count++;
                 }
             }
+            String names = namesBuf.toString();
+            String indices = indicesBuf.toString();
             String msg = "Missing required parameter";
             if (count > 1 || arity.min - available > 1) {
                 msg += "s";
