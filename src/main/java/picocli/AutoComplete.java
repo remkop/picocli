@@ -260,7 +260,7 @@ public class AutoComplete {
             char c = value.charAt(i);
             if (Character.isLetterOrDigit(c) || c == '_') {
                 builder.append(c);
-            } else if (Character.isSpaceChar(c)) {
+            } else if (Character.isSpaceChar(c) || c == '-') {
                 builder.append('_');
             }
         }
