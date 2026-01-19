@@ -550,18 +550,22 @@ public class AutoComplete {
 
     private static void createSubHierarchy(String scriptName, String parentWithoutTopLevelCommand, CommandLine commandLine, List<CommandDescriptor> out) {
         // breadth-first: generate command lists and function calls for predecessors + each subcommand
-        Map<String, Integer> functionAliasCounts = new HashMap<>();
+        Map<String, Integer> functionAliasCounts = new HashMap<String, Integer>();
         for (Map.Entry<String, CommandLine> entry : commandLine.getSubcommands().entrySet()) {
             CommandSpec spec = entry.getValue().getCommandSpec();
             if (spec.usageMessage().hidden()) { continue; } // #887 skip hidden subcommands
             String commandName = entry.getKey(); // may be an alias
             String functionNameWithoutPrefix = bashify(concat("_", parentWithoutTopLevelCommand.replace(' ', '_'), commandName));
-            int functionAliasCount = functionAliasCounts.merge(functionNameWithoutPrefix,  1, Integer::sum);
-            if (functionAliasCount > 1) {
+            Integer functionAliasCount = functionAliasCounts.get(functionNameWithoutPrefix);
+            if (functionAliasCount == null) {
+                functionAliasCount = 0;
+            }
+            functionAliasCounts.put(functionNameWithoutPrefix, functionAliasCount + 1);
+            if (functionAliasCount > 0) {
                 functionNameWithoutPrefix = concat("_", functionNameWithoutPrefix, "alias", String.valueOf(functionAliasCount));
             }
             String functionName = concat("_", "_picocli", scriptName, functionNameWithoutPrefix);
-            String parentFunctionName = parentWithoutTopLevelCommand.isEmpty()
+            String parentFunctionName = parentWithoutTopLevelCommand.length() == 0
                 ? concat("_", "_picocli", scriptName)
                 : concat("_", "_picocli", scriptName, bashify(parentWithoutTopLevelCommand.replace(' ', '_')));
 
