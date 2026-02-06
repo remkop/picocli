@@ -17956,29 +17956,42 @@ public class CommandLine {
                 if (jansiInstalled == null) { jansiInstalled = calcIsJansiConsoleInstalled(); }
                 return jansiInstalled;
             }
-            /** Returns {@code false} if system property {@code org.fusesource.jansi.Ansi.disable} is set to {@code "true"}
-             * (case-insensitive); otherwise, returns {@code false} if the Jansi library is in the classpath but has been disabled
-             * (either via system property {@code org.fusesource.jansi.Ansi.disable} or via a Jansi API call);
+            /** Returns {@code false} if either system properties {@code org.fusesource.jansi.Ansi.disable}
+             * or {@code org.jline.jansi.Ansi.disable} are set to {@code "true"} (case-insensitive);
+             * otherwise, returns {@code false} if the Jansi library is in the classpath but has been disabled
+             * (either via the aforementioned system properties or via a Jansi API call);
              * otherwise, returns {@code true} if the Jansi library is in the classpath and has been installed.
              */
             static boolean calcIsJansiConsoleInstalled() {
                 try {
                     // first check if JANSI was explicitly disabled _without loading any JANSI classes_:
                     // see https://github.com/remkop/picocli/issues/1106
-                    if (Boolean.getBoolean("org.fusesource.jansi.Ansi.disable")) {
+                    if (Boolean.getBoolean("org.jline.jansi.Ansi.disable") ||
+                        Boolean.getBoolean("org.fusesource.jansi.Ansi.disable")) {
                         return false;
                     }
-                    // the Ansi class internally also checks system property "org.fusesource.jansi.Ansi.disable"
+                    // the Ansi class internally also checks system property "org.jline.jansi.Ansi.disable"
                     // but may also have been set with Ansi.setEnabled or a custom detector
-                    Class<?> ansi = Class.forName("org.fusesource.jansi.Ansi");
+                    Class<?> ansi;
+                    try {
+                        // Try to support both the original jansi library and the newer jline jansi
+                        ansi = Class.forName("org.fusesource.jansi.Ansi");
+                    } catch (ClassNotFoundException e) {
+                        ansi = Class.forName("org.jline.jansi.Ansi");
+                    }
                     Boolean enabled = (Boolean) ansi.getDeclaredMethod("isEnabled").invoke(null);
                     if (!enabled) {
                         return false;
                     }
-                    // loading this class will load the native library org.fusesource.jansi.internal.CLibrary
-                    Class<?> ansiConsole = Class.forName("org.fusesource.jansi.AnsiConsole");
-                    Field out = ansiConsole.getField("out");
-                    return out.get(null) == System.out;
+                    // loading this class will load the native library org.jline.jansi.internal.CLibrary
+                    Class<?> ansiConsole;
+                    try {
+                        ansiConsole = Class.forName("org.fusesource.jansi.AnsiConsole");
+                    } catch (ClassNotFoundException e) {
+                        ansiConsole = Class.forName("org.jline.jansi.AnsiConsole");
+                    }
+                    Object out = ansiConsole.getDeclaredMethod("out").invoke(null);
+                    return out == System.out;
                 } catch (Exception reflectionFailed) {
                     return false;
                 }
