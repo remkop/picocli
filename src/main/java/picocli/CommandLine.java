@@ -17988,8 +17988,7 @@ public class CommandLine {
                     } catch (ClassNotFoundException e) {
                         ansiConsole = Class.forName("org.jline.jansi.AnsiConsole");
                     }
-                    Object out = ansiConsole.getDeclaredMethod("out").invoke(null);
-                    return out == System.out;
+                    return (Boolean) ansiConsole.getDeclaredMethod("isInstalled").invoke(null);
                 } catch (Exception reflectionFailed) {
                     return false;
                 }
