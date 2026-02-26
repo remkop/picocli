@@ -45,6 +45,7 @@ Artifact | Target Java Version
 `picocli-shell-jline2` | Java 5
 `picocli-shell-jline3` | Java 8
 `picocli-spring-boot-starter` | Java 8
+`picocli-spring-boot-4-starter` | Java 17
 
 Please be aware that pull requests can only use language features that are supported in the above version of Java.
 

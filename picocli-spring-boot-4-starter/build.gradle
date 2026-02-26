@@ -1,0 +1,56 @@
+plugins {
+    id 'java'
+}
+
+group = 'info.picocli'
+description = 'Picocli Spring Boot 4 Starter - Enables Spring Dependency Injection and Spring Boot AutoConfiguration in Picocli Commands.'
+version = "$projectVersion"
+ext.moduleName = 'info.picocli.spring.boot4'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+compileJava {
+    inputs.property("moduleName", moduleName)
+}
+moduleConfig {
+    // copy module-info.class to META-INF/versions/9
+    multiReleaseVersion = 9
+    moduleInfoPath = 'src/main/java9/module-info.java'
+    version = project.version
+    neverCompileModuleInfo = true
+}
+
+ext['junit-jupiter.version'] = "${junit5Version}"
+
+dependencies {
+    api                 rootProject
+    api                 supportDependencies.springboot4starter
+    annotationProcessor supportDependencies.springboot4annproc
+    testImplementation  supportDependencies.springboot4test
+
+    logger.quiet("picocli-spring-boot-starter/build.gradle: api                 ${supportDependencies.springboot4starter}")
+    logger.quiet("picocli-spring-boot-starter/build.gradle: annotationProcessor ${supportDependencies.springboot4annproc}")
+    logger.quiet("picocli-spring-boot-starter/build.gradle: testImplementation  ${supportDependencies.springboot4test}")
+}
+
+jar {
+    manifest {
+        attributes  'Specification-Title'   : 'Picocli Spring Boot 4 Starter',
+                    'Specification-Vendor'  : 'Remko Popma',
+                    'Specification-Version' : archiveVersion.get(),
+                    'Implementation-Title'  : 'Picocli Spring Boot 4 Starter',
+                    'Implementation-Vendor' : 'Remko Popma',
+                    'Implementation-Version': archiveVersion.get()
+    }
+}
+
+ext {
+    PUBLISH_GROUP_ID = group
+    PUBLISH_ARTIFACT_ID = project.name
+    PUBLISH_VERSION = "$projectVersion"
+}
+apply from: "${rootProject.projectDir}/gradle/publish-mavencentral.gradle"
+
