@@ -11698,7 +11698,8 @@ fun main(args: Array<String>) {
 === Spring Boot Example
 image:https://picocli.info/images/spring-boot.png[Spring Boot Logo,width=350,height=167]
 
-As of version 4.0, picocli comes with Spring Boot support by providing a custom factory in the `picocli-spring-boot-starter` and `picocli-spring-boot-4-starter` modules.
+As of version 4.0, picocli comes with Spring Boot 2 and 3 support by providing a custom factory in the `picocli-spring-boot-starter` module.
+As of version 4.7.8-SNAPSHOT, picocli comes with Spring Boot 4 support by providing a custom factory in the `picocli-spring-boot-4-starter` module.
 
 The Spring Boot example app below provides a command line interface to a mail client that can be used to send emails using an SMTP server.
 The `To` address(es) and the subject line can be given as options, while a message body can be specified as parameter text.
@@ -12470,7 +12471,7 @@ class MyCDIApp implements Runnable {
 ====
 Depending on your configuration, CDI may use dynamic proxies for managed instances.
 
-The safest thing to do in CDI applications is to use public <<option-parameters-methods,annotated **setter methods**>> for picocli's `@Option` and `@Parameters`, `@Spec`, and other annotations.
+The safest thing to do in CDI applications is to use public <<option-parameters-methods,annotated **setter methods**>> for picocli's `@Option` and `@Parameters`, `@Spec`, and other annotations. 
 Using picocli annotations on fields or on non-public methods may result in picocli-injected values not being available in the proxied instance.
 ====
 
