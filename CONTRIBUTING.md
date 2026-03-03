@@ -34,7 +34,7 @@ Ideally prefix commit comments with either the pull request number, or the assoc
 
 
 ## <a name="java_version"></a> Java version
-The project is built with Java 8, and different artifacts target different versions of Java.
+The project is built with Java 17, and different artifacts target different versions of Java.
 See the table below.
 
 Artifact | Target Java Version

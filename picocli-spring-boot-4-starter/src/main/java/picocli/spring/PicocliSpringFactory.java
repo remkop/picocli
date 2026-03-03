@@ -13,8 +13,8 @@ import java.util.Objects;
  * to have {@code javax.inject} annotations that will be populated
  * by Spring's dependency injection framework.
  *
- * @author Thibaud Leprêtre
- * @since 4.7.8
+ * @author Adam Bruce
+ * @since 4.7.8-SNAPSHOT
  */
 public class PicocliSpringFactory implements CommandLine.IFactory {
     private static final Logger logger = Logger.getLogger(PicocliSpringFactory.class.getName());
@@ -39,7 +39,7 @@ public class PicocliSpringFactory implements CommandLine.IFactory {
      * @param applicationContext the application context to look up classes in; must be non-{@code null}
      * @param fallbackFactory the factory used to instantiate classes that are
      *                        not found in the specified application context; must be non-{@code null}
-     * @since 4.7.8
+     * @since 4.7.8-SNAPSHOT
      */
     public PicocliSpringFactory(ApplicationContext applicationContext, CommandLine.IFactory fallbackFactory) {
         this.applicationContext = Objects.requireNonNull(applicationContext, "applicationContext");

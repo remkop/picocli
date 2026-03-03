@@ -11,7 +11,8 @@ import picocli.CommandLine.IFactory;
 import picocli.spring.PicocliSpringFactory;
 
 /**
- * @author Thibaud Leprêtre
+ * @author Adam Bruce
+ * @since 4.7.8-SNAPSHOT
  */
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnClass(CommandLine.class)

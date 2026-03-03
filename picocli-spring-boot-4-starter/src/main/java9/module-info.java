@@ -28,7 +28,7 @@
  * Defines Spring-based implementations of picocli APIs and picocli-based implementations
  * of Spring APIs for integrating picocli with Spring Boot and Spring Boot AutoConfiguration.
  *
- * @since 4.7.8
+ * @since 4.7.8-SNAPSHOT
  */
 module info.picocli.spring.boot {
     requires info.picocli;

@@ -159,4 +159,4 @@ public class MyCommand implements Callable<Integer> {
 
 ## Testing
 
-See [this example](https://github.com/remkop/picocli/blob/main/picocli-spring-boot-starter/src/test/java/picocli/spring/boot/autoconfigure/example/test/ExampleTest.java).
+See [this example](https://github.com/remkop/picocli/blob/main/picocli-spring-boot-4-starter/src/test/java/picocli/spring/boot/autoconfigure/example/test/ExampleTest.java).
