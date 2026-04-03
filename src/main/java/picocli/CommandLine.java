@@ -46,6 +46,7 @@ import picocli.CommandLine.Help.Ansi.Style;
 import picocli.CommandLine.Help.Ansi.Text;
 import picocli.CommandLine.Model.*;
 import picocli.CommandLine.ParseResult.GroupMatchContainer;
+import picocli.CommandLine.Spec;
 
 import static java.util.Locale.ENGLISH;
 import static picocli.CommandLine.Help.Column.Overflow.SPAN;
@@ -4486,7 +4487,7 @@ public class CommandLine {
      * @since 3.2
      */
     @Retention(RetentionPolicy.RUNTIME)
-    @Target({ElementType.FIELD, ElementType.METHOD})
+    @Target({ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER})
     public @interface Spec {
         /** Identifies what kind of {@code CommandSpec} should be injected.
          * @since 4.3.0 */
@@ -7170,6 +7171,10 @@ public class CommandLine {
                 CommandSpec autoHelpMixin = mixins.get(AutoHelpMixin.KEY);
                 int argIndex = autoHelpMixin == null || autoHelpMixin.inherited() ? 0 : 2;
                 for (int i = 0; i < methodParams.length; i++) {
+                    if (methodParams[i].isAnnotationPresent(Spec.class)) {
+                        values[i] = this;
+                        continue;
+                    }
                     if (methodParams[i].isAnnotationPresent(Mixin.class)) {
                         String name = methodParams[i].getAnnotation(Mixin.class).name();
                         CommandSpec mixin = mixins.get(empty(name) ? methodParams[i].name : name);
@@ -11988,6 +11993,9 @@ public class CommandLine {
                         commandSpec.addUnmatchedArgsBinding(buildUnmatchedForMember(member));
                     }
                 }
+                if (member.isAnnotationPresent(Spec.class) && member.isMethodParameter()) {
+                    return false;
+                }
                 if (member.isArgSpec()) {
                     validateArgSpecMember(member);
                     if (groupBuilder != null) {
@@ -12022,7 +12030,10 @@ public class CommandLine {
                     MethodParam param = new MethodParam(method, i);
                     if (param.isAnnotationPresent(Option.class) || param.isAnnotationPresent(Mixin.class) || param.isAnnotationPresent(ArgGroup.class)) {
                         optionCount++;
-                    } else {
+                    } else if (param.isAnnotationPresent(Spec.class)){
+                            // Skipping the optionCount, since @Spec is not an option.
+                    }
+                    else {
 
                         param.position = i - optionCount;
                     }
