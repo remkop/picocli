@@ -763,13 +763,15 @@ Usage: <main class> [-AbeEnstTuv] [--help] [--version] [FILE...]
 ==== Parameter Labels
 Non-boolean options require a value. The usage help should explain this, and picocli shows the option parameter
 in the synopsis and in the option list. By default, the field name is shown in `<` and `>` fish brackets.
-Use the `paramLabel` attribute to display a different name. For example:
+Use the `paramLabel` attribute to display a different name. For manual control with no automatic formatting,
+such as the two parameter case below, consider setting `hideParamSyntax=false`. For example:
 ----
 Usage: <main class> [-f=FILE] [-n=<number>] NUM <host>
       NUM        number param
       host       the host
   -f= FILE       a file
   -n= <number>   number option
+  -d= NAME BODY  option with two params
 ----
 Some annotated fields in the below example class have a `paramLabel` attribute and others don't:
 [source,java]
@@ -780,6 +782,7 @@ class ParamLabels {
     @Option(names = "-n",    description = "number option")                     int number;
     @Parameters(index = "0", description = "number param", paramLabel = "NUM")  int n;
     @Parameters(index = "1", description = "the host")                          InetAddress host;
+    @Option(names = "-d", arity = "2", description = "option with two params", paramLabel = "NAME BODY", hideParamSyntax = true)
 }
 ----
 
