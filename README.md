@@ -18,7 +18,7 @@ Picocli is a modern library and framework, written in Java, that contains both a
 In a single file, so you can include it _in source form_.
 This lets users run picocli-based applications without requiring picocli as an external dependency.
 
-Picocli-based applications can be ahead-of-time compiled to a <img src="https://www.graalvm.org/resources/img/logo-colored.svg" alt="GraalVM">
+Picocli-based applications can be ahead-of-time compiled to a <img src="https://www.graalvm.org/resources/img/brand-guidelines/downloads/GraalVM-logo.svg" style="height:1ex;" alt="GraalVM logo" >
 [native image](https://picocli.info/#_graalvm_native_image), with extremely fast startup time and lower memory requirements,
 which can be distributed as a single executable file.
 Picocli comes with an [annotation processor](https://picocli.info/#_annotation_processor) that automatically Graal-enables your jar during compilation.
@@ -92,7 +92,7 @@ The user manual has examples of integrating with [Guice](https://picocli.info/#_
 * [Command line autocompletion](https://picocli.info/autocomplete.html)
 * [Programmatic API](https://picocli.info/picocli-programmatic-api.html)
 * [FAQ](https://github.com/remkop/picocli/wiki/FAQ)
-* [GraalVM AOT Compilation to Native Image](https://picocli.info/picocli-on-graalvm.html) <img src="https://www.graalvm.org/resources/img/logo-colored.svg" >
+* [GraalVM AOT Compilation to Native Image](https://picocli.info/picocli-on-graalvm.html) <img src="https://www.graalvm.org/resources/img/brand-guidelines/downloads/GraalVM-logo.svg" style="height:1ex;" alt="GraalVM logo" >
 
 ### Older
 * ~~[3.x User manual](https://picocli.info/man/3.x)~~
