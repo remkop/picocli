@@ -43,7 +43,7 @@ public class ModelTransformerTest {
             "  -h, --help      Show this help message and exit.%n" +
             "  -V, --version   Print version information and exit.%n" +
             "Commands:%n" +
-            "  generate-completion  Generate bash/zsh completion script for mycmd.%n" +
+            "  generate-completion  Generate bash/zsh or fish completion script for mycmd.%n" +
             "  generate-manpage     Generates man pages%n");
         assertEquals(expected, sw.toString());
     }

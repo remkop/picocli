@@ -13,8 +13,16 @@
     "allDeclaredMethods" : true,
     "allPublicMethods" : true,
     "fields" : [
+      { "name" : "shell" },
       { "name" : "spec" }
     ]
+  },
+  {
+    "name" : "picocli.AutoComplete$GenerateCompletion$Shell",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true
   },
   {
     "name" : "picocli.CommandLine$AutoHelpMixin",

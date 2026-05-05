@@ -67,11 +67,19 @@ public class AutoCompleteDejaGnuTest {
 
         // ignores test if dejagnu not installed
         org.junit.Assume.assumeTrue("dejagnu must be installed to run this test", isDejaGnuInstalled());
-        runDejaGnuCompletionTests();
+        runDejaGnuCompletionTests("src/test/dejagnu.tests");
     }
 
-    private void runDejaGnuCompletionTests() throws Exception {
-        final File testDir = new File("src/test/dejagnu.tests");
+    @Test
+    public void tryRunFishDejaGnuCompletionTests() throws Exception {
+        // ignores test if dejagnu not installed
+        org.junit.Assume.assumeTrue("dejagnu must be installed to run this test", isDejaGnuInstalled());
+        runDejaGnuCompletionTests("src/test/dejagnu.fishtests");
+    }
+
+
+    private void runDejaGnuCompletionTests(String pathname) throws Exception {
+        final File testDir = new File(pathname);
         assertTrue(testDir.getAbsolutePath() + " should exist", testDir.exists());
         File runCompletionScript = new File(testDir, "runCompletion");
         assertTrue(runCompletionScript.getAbsolutePath() + " should exist", runCompletionScript.exists());

@@ -91,6 +91,14 @@ public class AutoCompleteTest {
         assertEquals(expected, script);
     }
 
+    @Test
+    public void basicFish() throws Exception {
+        String script = AutoComplete.fish("basicExample", new CommandLine(new BasicExample()));
+        System.out.println(script);
+        String expected = loadTextFromClasspath("/basic.fish");
+        assertEquals(expected, script);
+    }
+
     public static class TopLevel {
         @Option(names = {"-V", "--version"}, help = true) boolean versionRequested;
         @Option(names = {"-h", "--help"}, help = true) boolean helpRequested;
@@ -175,17 +183,31 @@ public class AutoCompleteTest {
     //    }
     @Test
     public void nestedSubcommands() throws Exception {
-        CommandLine hierarchy = new CommandLine(new TopLevel())
-                .addSubcommand("sub1", new Sub1())
-                .addSubcommand("sub2", new CommandLine(new Sub2())
-                        .addSubcommand("subsub1", new Sub2Child1())
-                        .addSubcommand("subsub2", new Sub2Child2())
-                        .addSubcommand("subsub3", new Sub2Child3())
-                );
+        CommandLine hierarchy = getNestedSubcommandsCommandLine();
         String script = AutoComplete.bash("picocompletion-demo", hierarchy);
         String expected = format(loadTextFromClasspath("/picocompletion-demo_completion.bash"),
                 CommandLine.VERSION, concat("\" \"", TimeUnit.values()));
         assertEquals(expected, script);
+    }
+
+    @Test
+    public void nestedSubcommandsFish() throws Exception {
+        CommandLine hierarchy = getNestedSubcommandsCommandLine();
+        String script = AutoComplete.fish("picocompletion-demo", hierarchy);
+        System.out.println(script);
+        String expected = loadTextFromClasspath("/picocompletion-demo_completion.fish");
+        assertEquals(expected, script);
+    }
+
+    private static CommandLine getNestedSubcommandsCommandLine() {
+        CommandLine hierarchy = new CommandLine(new TopLevel())
+            .addSubcommand("sub1", new Sub1())
+            .addSubcommand("sub2", new CommandLine(new Sub2())
+                .addSubcommand("subsub1", new Sub2Child1())
+                .addSubcommand("subsub2", new Sub2Child2())
+                .addSubcommand("subsub3", new Sub2Child3())
+            );
+        return hierarchy;
     }
 
     @Test
@@ -584,7 +606,7 @@ public class AutoCompleteTest {
                 "  -h, --help      Show this help message and exit.%n" +
                 "  -V, --version   Print version information and exit.%n" +
                 "Commands:%n" +
-                "  generate-completion  Generate bash/zsh completion script for myapp.%n");
+                "  generate-completion  Generate bash/zsh or fish completion script for myapp.%n");
         assertEquals(expected, cmd.getUsageMessage(CommandLine.Help.Ansi.OFF));
     }
 
@@ -605,15 +627,20 @@ public class AutoCompleteTest {
     public void testGenerateCompletionUsageMessage() {
         CommandLine cmd = new CommandLine(new MyApp());
         String expected = String.format("" +
-                "Usage: myapp generate-completion [-hV]%n" +
-                "Generate bash/zsh completion script for myapp.%n" +
+                "Usage: myapp generate-completion [-hV] [-s=<shell>]%n" +
+                "Generate bash/zsh or fish completion script for myapp.%n" +
                 "Run the following command to give `myapp` TAB completion in the current shell:%n" +
                 "%n" +
-                "  source <(myapp generate-completion)%n" +
+                "  bash/zsh: source <(myapp generate-completion)%n" +
+                "%n" +
+                "  fish: eval (myapp generate-completion --shell fish)%n" +
                 "%n" +
                 "Options:%n" +
-                "  -h, --help      Show this help message and exit.%n" +
-                "  -V, --version   Print version information and exit.%n");
+                "  -h, --help            Show this help message and exit.%n" +
+                "  -s, --shell=<shell>   Specify the shell to generate the completion script%n" +
+                "                          for. When omitted, the default shell is bash. Valid%n" +
+                "                          values are: bash, fish%n" +
+                "  -V, --version         Print version information and exit.%n");
         CommandLine gen = cmd.getSubcommands().get("generate-completion");
         assertEquals(expected, gen.getUsageMessage(CommandLine.Help.Ansi.OFF));
     }
@@ -794,12 +821,12 @@ public class AutoCompleteTest {
                     "# to generate possible options and subcommands for the last specified subcommand.\n" +
                     "function _complete_%1$s() {\n" +
                     "  # Edge case: if command line has no space after subcommand, then don't assume this subcommand is selected (remkop/picocli#1468).\n" +
-                    "  if [ \"${COMP_LINE}\" = \"${COMP_WORDS[0]} generate-completion\" ];    then _picocli_myapp; return $?; fi\n" +
+                    "  if [ \"${COMP_LINE}\" = \"${COMP_WORDS[0]} generate-completion\" ];    then _picocli_%1$s; return $?; fi\n" +
                     "\n" +
                     "  # Find the longest sequence of subcommands and call the bash function for that subcommand.\n" +
                     "  local cmds0=(generate-completion)\n" +
                     "\n" +
-                    "  if CompWordsContainsArray \"${cmds0[@]}\"; then _picocli_myapp_generatecompletion; return $?; fi\n" +
+                    "  if CompWordsContainsArray \"${cmds0[@]}\"; then _picocli_%1$s_generatecompletion; return $?; fi\n" +
                     "\n" +
                     "  # No subcommands were specified; generate completions for the top-level command.\n" +
                     "  _picocli_%1$s; return $?;\n" +
@@ -827,10 +854,22 @@ public class AutoCompleteTest {
                     "function _picocli_%1$s_generatecompletion() {\n" +
                     "  # Get completion data\n" +
                     "  local curr_word=${COMP_WORDS[COMP_CWORD]}\n" +
+                    "  local prev_word=${COMP_WORDS[COMP_CWORD-1]}\n" +
                     "\n" +
                     "  local commands=\"\"\n" +
                     "  local flag_opts=\"'-h' '--help' '-V' '--version'\"\n" +
-                    "  local arg_opts=\"\"\n" +
+                    "  local arg_opts=\"'-s' '--shell'\"\n" +
+                    "  local shell_option_args=(\"bash\" \"fish\") # --shell values\n" +
+                    "\n" +
+                    "  type compopt &>/dev/null && compopt +o default\n" +
+                    "\n" +
+                    "  case ${prev_word} in\n" +
+                    "    '-s'|'--shell')\n" +
+                    "      local IFS=$'\\n'\n" +
+                    "      COMPREPLY=( $( compReplyArray \"${shell_option_args[@]}\" ) )\n" +
+                    "      return $?\n" +
+                    "      ;;\n" +
+                    "  esac\n" +
                     "\n" +
                     "  if [[ \"${curr_word}\" == -* ]]; then\n" +
                     "    COMPREPLY=( $(compgen -W \"${flag_opts} ${arg_opts}\" -- \"${curr_word}\") )\n" +
@@ -1132,22 +1171,27 @@ public class AutoCompleteTest {
         String expectedLevel2 = String.format("" +
                 "Usage: Demo Level1 Level2 [COMMAND]%n" +
                 "Commands:%n" +
-                "  generate-completion  Generate bash/zsh completion script for Demo.%n");
+                "  generate-completion  Generate bash/zsh or fish completion script for Demo.%n");
         assertEquals(expectedLevel2, level2.getUsageMessage(CommandLine.Help.Ansi.OFF));
 
         CommandLine gen = level2
                 .getSubcommands().get("generate-completion");
         gen.getCommandSpec().usageMessage().hidden(true);
         String expectedGen = String.format("" +
-                "Usage: Demo Level1 Level2 generate-completion [-hV]%n" +
-                "Generate bash/zsh completion script for Demo.%n" +
+                "Usage: Demo Level1 Level2 generate-completion [-hV] [-s=<shell>]%n" +
+                "Generate bash/zsh or fish completion script for Demo.%n" +
                 "Run the following command to give `Demo` TAB completion in the current shell:%n" +
                 "%n" +
-                "  source <(Demo Level1 Level2 generate-completion)%n" +
+                "  bash/zsh: source <(Demo Level1 Level2 generate-completion)%n" +
+                "%n" +
+                "  fish: eval (Demo Level1 Level2 generate-completion --shell fish)%n" +
                 "%n" +
                 "Options:%n" +
-                "  -h, --help      Show this help message and exit.%n" +
-                "  -V, --version   Print version information and exit.%n");
+                "  -h, --help            Show this help message and exit.%n" +
+                "  -s, --shell=<shell>   Specify the shell to generate the completion script%n" +
+                "                          for. When omitted, the default shell is bash. Valid%n" +
+                "                          values are: bash, fish%n" +
+                "  -V, --version         Print version information and exit.%n");
         assertEquals(expectedGen, gen.getUsageMessage(CommandLine.Help.Ansi.OFF));
     }
 
