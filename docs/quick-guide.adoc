@@ -764,9 +764,9 @@ Usage: <main class> [-AbeEnstTuv] [--help] [--version] [FILE...]
 Non-boolean options require a value. The usage help should explain this, and picocli shows the option parameter
 in the synopsis and in the option list. By default, the field name is shown in `<` and `>` fish brackets.
 Use the `paramLabel` attribute to display a different name. For manual control with no automatic formatting,
-such as the two parameter case below, consider setting `hideParamSyntax=false`. For example:
+such as the two parameter case below, consider setting `hideParamSyntax=true`. For example:
 ----
-Usage: <main class> [-f=FILE] [-n=<number>] NUM <host>
+Usage: <main class>  [-d=NAME BODY] [-f=FILE] [-n=<number>] NUM <host>
       NUM        number param
       host       the host
   -f= FILE       a file

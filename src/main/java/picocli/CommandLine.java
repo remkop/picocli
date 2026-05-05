@@ -3923,8 +3923,8 @@ public class CommandLine {
         /** Returns whether usage syntax decorations around the {@linkplain #paramLabel() paramLabel} should be suppressed.
          * The default is {@code false}: by default, the paramLabel is surrounded with {@code '['} and {@code ']'} characters
          * if the value is optional and followed by ellipses ("...") when multiple values can be specified, and the parameter
-         * label is repeated for each parameter for multi-arity options. Should be disabled if full control over the formating
-         * is desired, such as different labels for each parameter.
+         * label is repeated for each parameter for multi-arity options.
+         * May be set to {@code true} if full control over the formating is desired, such as different labels for each parameter.
          * @since 3.6.0 */
         boolean hideParamSyntax() default false;
 

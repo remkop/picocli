@@ -6259,9 +6259,9 @@ Usage: <main class> [-AbeEnstTuv] [--help] [--version] [FILE...]
 Non-boolean options require a value. The usage help should explain this, and picocli shows the option parameter
 in the synopsis and in the option list. By default, the field name is shown in `<` and `>` fish brackets.
 Use the `paramLabel` attribute to display a different name. For manual control with no automatic formatting,
-such as the two parameter case below, consider setting `hideParamSyntax=false`. For example:
+such as the two parameter case below, consider setting `hideParamSyntax=true`. For example:
 ----
-Usage: <main class> [-f=FILE] [-n=<number>] NUM <host>
+Usage: <main class> [-d=NAME BODY] [-f=FILE] [-n=<number>] NUM <host>
       NUM        number param
       host       the host parameter
   -f= FILE       a file
@@ -12447,7 +12447,7 @@ class MyCDIApp implements Runnable {
 ====
 Depending on your configuration, CDI may use dynamic proxies for managed instances.
 
-The safest thing to do in CDI applications is to use public <<option-parameters-methods,annotated **setter methods**>> for picocli's `@Option` and `@Parameters`, `@Spec`, and other annotations. 
+The safest thing to do in CDI applications is to use public <<option-parameters-methods,annotated **setter methods**>> for picocli's `@Option` and `@Parameters`, `@Spec`, and other annotations.
 Using picocli annotations on fields or on non-public methods may result in picocli-injected values not being available in the proxied instance.
 ====
 
