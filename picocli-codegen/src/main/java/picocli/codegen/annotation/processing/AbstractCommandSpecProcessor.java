@@ -522,7 +522,12 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
 
             DeclaredType declaredType = getDeclaredTypeForArgGroupVarOrMethod(element, this);
             if (declaredType != null) {
-                context.argGroupElementsByType.put(declaredType, builder);
+                List<ArgGroupSpec.Builder> existingBuilders = context.argGroupElementsByType.get(declaredType);
+                if (existingBuilders == null) {
+                    existingBuilders = new ArrayList<ArgGroupSpec.Builder>();
+                    context.argGroupElementsByType.put(declaredType, existingBuilders);
+                }
+                existingBuilders.add(builder);
                 processEnclosedElements(context, roundEnv, declaredType.asElement().getEnclosedElements());
             }
         }
@@ -638,7 +643,12 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
 
                 DeclaredType declaredType = getDeclaredTypeForArgGroupVarOrMethod(variable, this);
                 if (declaredType != null) {
-                    context.argGroupElementsByType.put(declaredType, builder);
+                    List<ArgGroupSpec.Builder> existingBuilders = context.argGroupElementsByType.get(declaredType);
+                    if (existingBuilders == null) {
+                        existingBuilders = new ArrayList<ArgGroupSpec.Builder>();
+                        context.argGroupElementsByType.put(declaredType, existingBuilders);
+                    }
+                    existingBuilders.add(builder);
                 }
 
             } else if (!isMixin) { // params without any annotation are also positional
@@ -859,7 +869,7 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
         Map<Element, OptionSpec.Builder> options = new LinkedHashMap<Element, OptionSpec.Builder>();
         Map<Element, PositionalParamSpec.Builder> parameters = new LinkedHashMap<Element, PositionalParamSpec.Builder>();
         Map<Element, ArgGroupSpec.Builder> argGroupElementsByVar = new LinkedHashMap<Element, ArgGroupSpec.Builder>();
-        Map<DeclaredType, ArgGroupSpec.Builder> argGroupElementsByType = new LinkedHashMap<DeclaredType, ArgGroupSpec.Builder>();
+        Map<DeclaredType, List<ArgGroupSpec.Builder>> argGroupElementsByType = new LinkedHashMap<DeclaredType, List<ArgGroupSpec.Builder>>();
         Map<CommandSpec, Set<MixinInfo>> mixinInfoMap = new IdentityHashMap<CommandSpec, Set<MixinInfo>>();
         Map<Element, IAnnotatedElement> parentCommandElements = new LinkedHashMap<Element, IAnnotatedElement>();
         Map<Element, IAnnotatedElement> specElements = new LinkedHashMap<Element, IAnnotatedElement>();
@@ -882,10 +892,12 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
 
             for (Map.Entry<Element, OptionSpec.Builder> option : options.entrySet()) {
                 TypeMirror typeMirror = option.getKey().getEnclosingElement().asType();
-                ArgGroupSpec.Builder group = argGroupElementsByType.get(typeMirror);
-                if (group != null) {
-                    logger.fine("Building OptionSpec for " + option + " in arg group " + group);
-                    group.addArg(option.getValue().build());
+                List<ArgGroupSpec.Builder> groups = argGroupElementsByType.get(typeMirror);
+                if (groups != null && !groups.isEmpty()) {
+                    for (ArgGroupSpec.Builder group : groups) {
+                        logger.fine("Building OptionSpec for " + option + " in arg group " + group);
+                        group.addArg(option.getValue().build());
+                    }
                 } else {
                     CommandSpec commandSpec = getOrCreateCommandSpecForArg(option.getKey(), commands);
                     logger.fine("Building OptionSpec for " + option + " in spec " + commandSpec);
@@ -894,10 +906,12 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
             }
             for (Map.Entry<Element, PositionalParamSpec.Builder> parameter : parameters.entrySet()) {
                 TypeMirror typeMirror = parameter.getKey().getEnclosingElement().asType();
-                ArgGroupSpec.Builder group = argGroupElementsByType.get(typeMirror);
-                if (group != null) {
-                    logger.fine("Building PositionalParamSpec for " + parameter + " in arg group " + group);
-                    group.addArg(parameter.getValue().build());
+                List<ArgGroupSpec.Builder> groups = argGroupElementsByType.get(typeMirror);
+                if (groups != null && !groups.isEmpty()) {
+                    for (ArgGroupSpec.Builder group : groups) {
+                        logger.fine("Building PositionalParamSpec for " + parameter + " in arg group " + group);
+                        group.addArg(parameter.getValue().build());
+                    }
                 } else {
                     CommandSpec commandSpec = getOrCreateCommandSpecForArg(parameter.getKey(), commands);
                     logger.fine("Building PositionalParamSpec for " + parameter);
