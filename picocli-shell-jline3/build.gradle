@@ -14,7 +14,8 @@ java {
 
 dependencies {
     api                rootProject
-    api                supportDependencies.jline3
+    api                supportDependencies.jline3reader
+    api                supportDependencies.jline3console
 }
 
 apply plugin: 'org.beryx.jar' // for compiling module-info on Java 8
