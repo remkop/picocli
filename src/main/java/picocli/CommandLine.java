@@ -10589,12 +10589,17 @@ public class CommandLine {
              * @return an immutable list of all options in this group and its subgroups.
              * @since 4.4 */
             public List<OptionSpec> allOptionsNested() {
-                return addGroupOptionsToListRecursively(new ArrayList<OptionSpec>());
+                return addGroupOptionsToListRecursively(new ArrayList<OptionSpec>(), Collections.<ArgGroupSpec>emptyList());
             }
-            private List<OptionSpec> addGroupOptionsToListRecursively(List<OptionSpec> result) {
+            private List<OptionSpec> allOptionsNestedExcept(List<ArgGroupSpec> excluded) {
+                return addGroupOptionsToListRecursively(new ArrayList<OptionSpec>(), excluded);
+            }
+            private List<OptionSpec> addGroupOptionsToListRecursively(List<OptionSpec> result, List<ArgGroupSpec> excluded) {
                 result.addAll(options());
                 for (ArgGroupSpec subGroup : subgroups()) {
-                    subGroup.addGroupOptionsToListRecursively(result);
+                    if (!excluded.contains(subGroup)) {
+                        subGroup.addGroupOptionsToListRecursively(result, excluded);
+                    }
                 }
                 return result;
             }
@@ -16156,7 +16161,7 @@ public class CommandLine {
 
             StringBuilder sb = new StringBuilder();
             for (ArgGroupSpec group : groups) {
-                List<OptionSpec> groupOptions = new ArrayList<OptionSpec>(group.allOptionsNested());
+                List<OptionSpec> groupOptions = new ArrayList<OptionSpec>(group.allOptionsNestedExcept(groups));
                 if (optionSort != null) { Collections.sort(groupOptions, optionSort); }
                 groupOptions.removeAll(done);
                 done.addAll(groupOptions);
