@@ -10113,6 +10113,11 @@ usage.description.1 = second line
 usage.description.2 = third line
 usage.synopsisHeading = Usage:\u0020
 
+# For subcommands, prefix the entry with the top-level command name.
+# For example, if the name of the top-level command is MYTOPCOMMAND with a help subcommand,
+# then this is how to change the help subcommand main description:
+MYTOPCOMMAND.help.usage.header = MY CUSTOM HELP HEADER
+
 # Leading whitespace is removed by default.
 # Start with \u0020 to keep the leading whitespace.
 usage.customSynopsis.0 =      Usage: ln [OPTION]... [-T] TARGET LINK_NAME   (1st form)
