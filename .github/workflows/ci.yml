@@ -46,7 +46,7 @@ jobs:
         id: test-results-nix
         if: ${{ always() && matrix.os == 'ubuntu-latest' }}
         with:
-          junit_files: |
+          files: |
             build/test-results/test/**/*.xml
             picocli-*/build/test-results/test/**/*.xml
 
@@ -55,7 +55,7 @@ jobs:
         id: test-results
         if: ${{ always() && (matrix.os == 'macos-latest' || matrix.os == 'windows-latest') }}
         with:
-          junit_files: |
+          files: |
             build/test-results/test/**/*.xml
             picocli-*/build/test-results/test/**/*.xml
 
