@@ -799,7 +799,7 @@ public class AutoCompleteTest {
                     "  # Find the longest sequence of subcommands and call the bash function for that subcommand.\n" +
                     "  local cmds0=(generate-completion)\n" +
                     "\n" +
-                    "  if CompWordsContainsArray \"${cmds0[@]}\"; then _picocli_myapp_generatecompletion; return $?; fi\n" +
+                    "  if CompWordsContainsArray \"${cmds0[@]}\"; then _picocli_myapp_generate_completion; return $?; fi\n" +
                     "\n" +
                     "  # No subcommands were specified; generate completions for the top-level command.\n" +
                     "  _picocli_%1$s; return $?;\n" +
@@ -824,7 +824,7 @@ public class AutoCompleteTest {
                     "}\n" +
                     "\n" +
                     "# Generates completions for the options and subcommands of the `generate-completion` subcommand.\n" +
-                    "function _picocli_%1$s_generatecompletion() {\n" +
+                    "function _picocli_%1$s_generate_completion() {\n" +
                     "  # Get completion data\n" +
                     "  local curr_word=${COMP_WORDS[COMP_CWORD]}\n" +
                     "\n" +
