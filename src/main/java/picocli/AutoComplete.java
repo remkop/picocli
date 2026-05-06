@@ -777,15 +777,16 @@ public class AutoComplete {
     }
 
     private static void generateCompletionCandidates(StringBuilder buff, OptionSpec f) {
-        buff.append(generateCompletionCandidates(f));
+        buff.append(format("  local %s_option_args=(\"%s\") # %s values\n",
+            bashify(optionNameAndParamLabel(f)),
+            concat("\" \"", extract(f.completionCandidates())).trim(),
+            f.longestName()));
     }
 
-    private static String generateCompletionCandidates(OptionSpec f) {
-        return format("  local %s_%s_option_args=(\"%s\") # %s values\n",
+    private static String optionNameAndParamLabel(OptionSpec f) {
+        return format("%s_%s",
             bashify(f.longestName()).replaceFirst("^_+", ""),
-            bashify(f.paramLabel()),
-            concat("\" \"", extract(f.completionCandidates())).trim(),
-            f.longestName());
+            bashify(f.paramLabel()));
     }
 
     private static List<String> extract(Iterable<String> generator) {
@@ -854,7 +855,7 @@ public class AutoComplete {
             if (option.completionCandidates() != null) {
                 buff.append(format("%s    %s)\n", indent, concat("|", option.names(), null, new SingleQuoteFunction()))); // "    -u|--timeUnit)\n"
                 buff.append(format("%s      local IFS=$'\\n'\n", indent));
-                buff.append(format("%s      COMPREPLY=( $( compReplyArray \"${%s_option_args[@]}\" ) )\n", indent, generateCompletionCandidates(option)));
+                buff.append(format("%s      COMPREPLY=( $( compReplyArray \"${%s_option_args[@]}\" ) )\n", indent, optionNameAndParamLabel(option)));
                 buff.append(format("%s      return $?\n", indent));
                 buff.append(format("%s      ;;\n", indent));
             } else if (type.equals(File.class) || "java.nio.file.Path".equals(type.getName())) {

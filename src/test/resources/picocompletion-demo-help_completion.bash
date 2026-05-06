@@ -240,7 +240,7 @@ function _picocli_picocompletion-demo-help_sub1() {
   local commands=""
   local flag_opts=""
   local arg_opts="'--num' '--str' '--candidates'"
-  local str2_option_args=("aaa" "bbb" "ccc") # --candidates values
+  local candidates_str2_option_args=("aaa" "bbb" "ccc") # --candidates values
 
   type compopt &>/dev/null && compopt +o default
 
@@ -253,7 +253,7 @@ function _picocli_picocompletion-demo-help_sub1() {
       ;;
     '--candidates')
       local IFS=$'\n'
-      COMPREPLY=( $( compReplyArray "${str2_option_args[@]}" ) )
+      COMPREPLY=( $( compReplyArray "${candidates_str2_option_args[@]}" ) )
       return $?
       ;;
   esac
@@ -276,7 +276,7 @@ function _picocli_picocompletion-demo-help_sub1_alias() {
   local commands=""
   local flag_opts=""
   local arg_opts="'--num' '--str' '--candidates'"
-  local str2_option_args=("aaa" "bbb" "ccc") # --candidates values
+  local candidates_str2_option_args=("aaa" "bbb" "ccc") # --candidates values
 
   type compopt &>/dev/null && compopt +o default
 
@@ -289,7 +289,7 @@ function _picocli_picocompletion-demo-help_sub1_alias() {
       ;;
     '--candidates')
       local IFS=$'\n'
-      COMPREPLY=( $( compReplyArray "${str2_option_args[@]}" ) )
+      COMPREPLY=( $( compReplyArray "${candidates_str2_option_args[@]}" ) )
       return $?
       ;;
   esac
@@ -312,7 +312,7 @@ function _picocli_picocompletion-demo-help_sub2() {
   local commands="subsub1 sub2child1-alias subsub2 sub2child2-alias subsub3 sub2child3-alias"
   local flag_opts=""
   local arg_opts="'--num2' '--directory' '-d' '--thread-state' '--<invalid-name>'"
-  local _0123_option_args=("NEW" "RUNNABLE" "BLOCKED" "WAITING" "TIMED_WAITING" "TERMINATED") # --thread-state values
+  local thread_state__0123_option_args=("NEW" "RUNNABLE" "BLOCKED" "WAITING" "TIMED_WAITING" "TERMINATED") # --thread-state values
 
   type compopt &>/dev/null && compopt +o default
 
@@ -328,7 +328,7 @@ function _picocli_picocompletion-demo-help_sub2() {
       ;;
     '--thread-state')
       local IFS=$'\n'
-      COMPREPLY=( $( compReplyArray "${_0123_option_args[@]}" ) )
+      COMPREPLY=( $( compReplyArray "${thread_state__0123_option_args[@]}" ) )
       return $?
       ;;
     '--<invalid-name>')
@@ -360,7 +360,7 @@ function _picocli_picocompletion-demo-help_sub2_alias() {
   local commands="subsub1 sub2child1-alias subsub2 sub2child2-alias subsub3 sub2child3-alias"
   local flag_opts=""
   local arg_opts="'--num2' '--directory' '-d' '--thread-state' '--<invalid-name>'"
-  local _0123_option_args=("NEW" "RUNNABLE" "BLOCKED" "WAITING" "TIMED_WAITING" "TERMINATED") # --thread-state values
+  local thread_state__0123_option_args=("NEW" "RUNNABLE" "BLOCKED" "WAITING" "TIMED_WAITING" "TERMINATED") # --thread-state values
 
   type compopt &>/dev/null && compopt +o default
 
@@ -376,7 +376,7 @@ function _picocli_picocompletion-demo-help_sub2_alias() {
       ;;
     '--thread-state')
       local IFS=$'\n'
-      COMPREPLY=( $( compReplyArray "${_0123_option_args[@]}" ) )
+      COMPREPLY=( $( compReplyArray "${thread_state__0123_option_args[@]}" ) )
       return $?
       ;;
     '--<invalid-name>')
@@ -484,14 +484,14 @@ function _picocli_picocompletion-demo-help_sub2_subsub2() {
   local commands=""
   local flag_opts=""
   local arg_opts="'-u' '--timeUnit' '-t' '--timeout'"
-  local timeUnit_option_args=("%2$s") # --timeUnit values
+  local timeUnit_timeUnit_option_args=("%2$s") # --timeUnit values
 
   type compopt &>/dev/null && compopt +o default
 
   case ${prev_word} in
     '-u'|'--timeUnit')
       local IFS=$'\n'
-      COMPREPLY=( $( compReplyArray "${timeUnit_option_args[@]}" ) )
+      COMPREPLY=( $( compReplyArray "${timeUnit_timeUnit_option_args[@]}" ) )
       return $?
       ;;
     '-t'|'--timeout')
@@ -523,14 +523,14 @@ function _picocli_picocompletion-demo-help_sub2_sub2child2_alias() {
   local commands=""
   local flag_opts=""
   local arg_opts="'-u' '--timeUnit' '-t' '--timeout'"
-  local timeUnit_option_args=("%2$s") # --timeUnit values
+  local timeUnit_timeUnit_option_args=("%2$s") # --timeUnit values
 
   type compopt &>/dev/null && compopt +o default
 
   case ${prev_word} in
     '-u'|'--timeUnit')
       local IFS=$'\n'
-      COMPREPLY=( $( compReplyArray "${timeUnit_option_args[@]}" ) )
+      COMPREPLY=( $( compReplyArray "${timeUnit_timeUnit_option_args[@]}" ) )
       return $?
       ;;
     '-t'|'--timeout')
@@ -682,14 +682,14 @@ function _picocli_picocompletion-demo-help_sub2_alias_subsub2() {
   local commands=""
   local flag_opts=""
   local arg_opts="'-u' '--timeUnit' '-t' '--timeout'"
-  local timeUnit_option_args=("%2$s") # --timeUnit values
+  local timeUnit_timeUnit_option_args=("%2$s") # --timeUnit values
 
   type compopt &>/dev/null && compopt +o default
 
   case ${prev_word} in
     '-u'|'--timeUnit')
       local IFS=$'\n'
-      COMPREPLY=( $( compReplyArray "${timeUnit_option_args[@]}" ) )
+      COMPREPLY=( $( compReplyArray "${timeUnit_timeUnit_option_args[@]}" ) )
       return $?
       ;;
     '-t'|'--timeout')
@@ -721,14 +721,14 @@ function _picocli_picocompletion-demo-help_sub2_alias_sub2child2_alias() {
   local commands=""
   local flag_opts=""
   local arg_opts="'-u' '--timeUnit' '-t' '--timeout'"
-  local timeUnit_option_args=("%2$s") # --timeUnit values
+  local timeUnit_timeUnit_option_args=("%2$s") # --timeUnit values
 
   type compopt &>/dev/null && compopt +o default
 
   case ${prev_word} in
     '-u'|'--timeUnit')
       local IFS=$'\n'
-      COMPREPLY=( $( compReplyArray "${timeUnit_option_args[@]}" ) )
+      COMPREPLY=( $( compReplyArray "${timeUnit_timeUnit_option_args[@]}" ) )
       return $?
       ;;
     '-t'|'--timeout')

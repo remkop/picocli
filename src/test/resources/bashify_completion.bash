@@ -171,14 +171,14 @@ function _picocli_bashify() {
   local commands=""
   local flag_opts=""
   local arg_opts="'-x'"
-  local _AB_C_option_args=("1") # -x values
+  local x__AB_C_option_args=("1") # -x values
 
   type compopt &>/dev/null && compopt +o default
 
   case ${prev_word} in
     '-x')
       local IFS=$'\n'
-      COMPREPLY=( $( compReplyArray "${_AB_C_option_args[@]}" ) )
+      COMPREPLY=( $( compReplyArray "${x__AB_C_option_args[@]}" ) )
       return $?
       ;;
   esac
