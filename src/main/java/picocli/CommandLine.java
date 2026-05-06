@@ -11702,19 +11702,19 @@ public class CommandLine {
                 } catch (Exception ignored) { return "?"; }
             }
             public Messages parent() {
-            	CommandSpec parentSpec = this.spec.parent();
-            	if (parent == null || parent.spec != parentSpec) {
-            		parent = null; // Refresh if parentSpec doesn't match
-            		while (parent == null && parentSpec != null) {
-		            	String parentResourceBundleBaseName = parentSpec.resourceBundleBaseName();
-		            	if (parentResourceBundleBaseName != null && !parentResourceBundleBaseName.equals(this.bundleBaseName)) {
-		            		parent = new Messages(parentSpec, parentResourceBundleBaseName);
-		            	} else {
-		            		parentSpec = parentSpec.parent();
-		            	}
-            		}
-            	}
-	            return parent;
+                CommandSpec parentSpec = this.spec.parent();
+                if (parent == null || parent.spec != parentSpec) {
+                    parent = null; // Refresh if parentSpec doesn't match
+                    while (parent == null && parentSpec != null) {
+                        String parentResourceBundleBaseName = parentSpec.resourceBundleBaseName();
+                        if (parentResourceBundleBaseName != null && !parentResourceBundleBaseName.equals(this.bundleBaseName)) {
+                            parent = new Messages(parentSpec, parentResourceBundleBaseName);
+                        } else {
+                            parentSpec = parentSpec.parent();
+                        }
+                    }
+                }
+                return parent;
             }
             private static Set<String> keys(ResourceBundle rb) {
                 if (rb == null) { return Collections.emptySet(); }
@@ -11733,7 +11733,7 @@ public class CommandLine {
              */
             public static final void setLoadBundles(boolean loadBundles) {
                 tracer().debug("Messages: loadBundles was set to %s", loadBundles);
-            	Messages.loadBundles = loadBundles;
+                Messages.loadBundles = loadBundles;
             }
 
             /** Returns a copy of the specified Messages object with the CommandSpec replaced by the specified one.
@@ -11763,9 +11763,9 @@ public class CommandLine {
             }
 
             private String getStringForExactKey(String key) {
-            	if (keys.contains(key)) { return rb.getString(key); }
-            	else if (parent() != null) { return parent().getStringForExactKey(key); }
-            	else { return null; }
+                if (keys.contains(key)) { return rb.getString(key); }
+                else if (parent() != null) { return parent().getStringForExactKey(key); }
+                else { return null; }
             }
 
             boolean isEmpty() { return (rb == null || keys.isEmpty()) && (parent() == null || parent().isEmpty()); }
@@ -11786,9 +11786,9 @@ public class CommandLine {
                 return result != null ? result : defaultValues;
             }
             private String[] getStringArrayForExactKey(String key) {
-            	List<String> result = addAllWithPrefix(rb, key, keys, new ArrayList<String>());
-            	if (!result.isEmpty()) { return result.toArray(new String[0]); }
-            	return parent() == null ? null : parent().getStringArrayForExactKey(key);
+                List<String> result = addAllWithPrefix(rb, key, keys, new ArrayList<String>());
+                if (!result.isEmpty()) { return result.toArray(new String[0]); }
+                return parent() == null ? null : parent().getStringArrayForExactKey(key);
             }
             private static List<String> addAllWithPrefix(ResourceBundle rb, String key, Set<String> keys, List<String> result) {
                 if (keys.contains(key)) { result.add(rb.getString(key)); }
