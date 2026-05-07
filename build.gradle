@@ -97,7 +97,13 @@ allprojects {
     compileTestJava.options.encoding = "UTF-8"
 
     repositories {
-        maven { url = 'https://repo.spring.io/libs-snapshot' }
+        maven {
+            url = 'https://repo.spring.io/libs-snapshot'
+            content {
+                includeGroupByRegex 'org\\.springframework.*'
+                includeGroupByRegex 'io\\.spring.*'
+            }
+        }
         mavenCentral()
     }
 

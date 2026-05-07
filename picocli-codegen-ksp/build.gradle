@@ -1,0 +1,51 @@
+plugins {
+    id 'java'
+    id 'org.jetbrains.kotlin.jvm' version '2.1.20'
+}
+
+group = 'info.picocli'
+description = 'Picocli KSP - Kotlin Symbol Processing support for picocli. Generates GraalVM native-image configuration at compile time.'
+version = "$projectVersion"
+
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+    kotlinOptions.jvmTarget = '1.8'
+}
+// The kctfork compile-testing API is marked @ExperimentalCompilerApi; opt-in only for tests
+compileTestKotlin {
+    kotlinOptions {
+        freeCompilerArgs += ['-opt-in=org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi']
+    }
+}
+
+dependencies {
+    api rootProject
+    compileOnly "com.google.devtools.ksp:symbol-processing-api:2.1.20-1.0.32"
+
+    testImplementation "dev.zacsweers.kctfork:core:0.7.1"
+    testImplementation "dev.zacsweers.kctfork:ksp:0.7.1"
+    testImplementation supportDependencies.junit5Api
+    testRuntimeOnly supportDependencies.junit5Engine
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher:1.${junit5Version.tokenize('.')[1]}.${junit5Version.tokenize('.')[2]}"
+}
+
+test {
+    useJUnitPlatform()
+}
+
+jar {
+    manifest {
+        attributes 'Specification-Title'   : 'Picocli KSP',
+                   'Specification-Vendor'  : 'Remko Popma',
+                   'Specification-Version' : archiveVersion.get(),
+                   'Implementation-Title'  : 'Picocli KSP',
+                   'Implementation-Vendor' : 'Remko Popma',
+                   'Implementation-Version': archiveVersion.get()
+    }
+}
+
+ext {
+    PUBLISH_GROUP_ID = group
+    PUBLISH_ARTIFACT_ID = project.name
+    PUBLISH_VERSION = "$projectVersion"
+}
+apply from: "${rootProject.projectDir}/gradle/publish-mavencentral.gradle"
