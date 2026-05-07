@@ -164,12 +164,12 @@ function _complete_picocompletion-demo() {
   if [ "${COMP_LINE}" = "${COMP_WORDS[0]} sub2 sub2child2-alias" ];    then _picocli_picocompletion-demo_sub2; return $?; fi
   if [ "${COMP_LINE}" = "${COMP_WORDS[0]} sub2 subsub3" ];    then _picocli_picocompletion-demo_sub2; return $?; fi
   if [ "${COMP_LINE}" = "${COMP_WORDS[0]} sub2 sub2child3-alias" ];    then _picocli_picocompletion-demo_sub2; return $?; fi
-  if [ "${COMP_LINE}" = "${COMP_WORDS[0]} sub2-alias subsub1" ];    then _picocli_picocompletion-demo_sub2alias; return $?; fi
-  if [ "${COMP_LINE}" = "${COMP_WORDS[0]} sub2-alias sub2child1-alias" ];    then _picocli_picocompletion-demo_sub2alias; return $?; fi
-  if [ "${COMP_LINE}" = "${COMP_WORDS[0]} sub2-alias subsub2" ];    then _picocli_picocompletion-demo_sub2alias; return $?; fi
-  if [ "${COMP_LINE}" = "${COMP_WORDS[0]} sub2-alias sub2child2-alias" ];    then _picocli_picocompletion-demo_sub2alias; return $?; fi
-  if [ "${COMP_LINE}" = "${COMP_WORDS[0]} sub2-alias subsub3" ];    then _picocli_picocompletion-demo_sub2alias; return $?; fi
-  if [ "${COMP_LINE}" = "${COMP_WORDS[0]} sub2-alias sub2child3-alias" ];    then _picocli_picocompletion-demo_sub2alias; return $?; fi
+  if [ "${COMP_LINE}" = "${COMP_WORDS[0]} sub2-alias subsub1" ];    then _picocli_picocompletion-demo_sub2_alias; return $?; fi
+  if [ "${COMP_LINE}" = "${COMP_WORDS[0]} sub2-alias sub2child1-alias" ];    then _picocli_picocompletion-demo_sub2_alias; return $?; fi
+  if [ "${COMP_LINE}" = "${COMP_WORDS[0]} sub2-alias subsub2" ];    then _picocli_picocompletion-demo_sub2_alias; return $?; fi
+  if [ "${COMP_LINE}" = "${COMP_WORDS[0]} sub2-alias sub2child2-alias" ];    then _picocli_picocompletion-demo_sub2_alias; return $?; fi
+  if [ "${COMP_LINE}" = "${COMP_WORDS[0]} sub2-alias subsub3" ];    then _picocli_picocompletion-demo_sub2_alias; return $?; fi
+  if [ "${COMP_LINE}" = "${COMP_WORDS[0]} sub2-alias sub2child3-alias" ];    then _picocli_picocompletion-demo_sub2_alias; return $?; fi
 
   # Find the longest sequence of subcommands and call the bash function for that subcommand.
   local cmds0=(sub1)
@@ -189,21 +189,21 @@ function _complete_picocompletion-demo() {
   local cmds14=(sub2-alias subsub3)
   local cmds15=(sub2-alias sub2child3-alias)
 
-  if CompWordsContainsArray "${cmds15[@]}"; then _picocli_picocompletion-demo_sub2alias_sub2child3alias; return $?; fi
-  if CompWordsContainsArray "${cmds14[@]}"; then _picocli_picocompletion-demo_sub2alias_subsub3; return $?; fi
-  if CompWordsContainsArray "${cmds13[@]}"; then _picocli_picocompletion-demo_sub2alias_sub2child2alias; return $?; fi
-  if CompWordsContainsArray "${cmds12[@]}"; then _picocli_picocompletion-demo_sub2alias_subsub2; return $?; fi
-  if CompWordsContainsArray "${cmds11[@]}"; then _picocli_picocompletion-demo_sub2alias_sub2child1alias; return $?; fi
-  if CompWordsContainsArray "${cmds10[@]}"; then _picocli_picocompletion-demo_sub2alias_subsub1; return $?; fi
-  if CompWordsContainsArray "${cmds9[@]}"; then _picocli_picocompletion-demo_sub2_sub2child3alias; return $?; fi
+  if CompWordsContainsArray "${cmds15[@]}"; then _picocli_picocompletion-demo_sub2_alias_sub2child3_alias; return $?; fi
+  if CompWordsContainsArray "${cmds14[@]}"; then _picocli_picocompletion-demo_sub2_alias_subsub3; return $?; fi
+  if CompWordsContainsArray "${cmds13[@]}"; then _picocli_picocompletion-demo_sub2_alias_sub2child2_alias; return $?; fi
+  if CompWordsContainsArray "${cmds12[@]}"; then _picocli_picocompletion-demo_sub2_alias_subsub2; return $?; fi
+  if CompWordsContainsArray "${cmds11[@]}"; then _picocli_picocompletion-demo_sub2_alias_sub2child1_alias; return $?; fi
+  if CompWordsContainsArray "${cmds10[@]}"; then _picocli_picocompletion-demo_sub2_alias_subsub1; return $?; fi
+  if CompWordsContainsArray "${cmds9[@]}"; then _picocli_picocompletion-demo_sub2_sub2child3_alias; return $?; fi
   if CompWordsContainsArray "${cmds8[@]}"; then _picocli_picocompletion-demo_sub2_subsub3; return $?; fi
-  if CompWordsContainsArray "${cmds7[@]}"; then _picocli_picocompletion-demo_sub2_sub2child2alias; return $?; fi
+  if CompWordsContainsArray "${cmds7[@]}"; then _picocli_picocompletion-demo_sub2_sub2child2_alias; return $?; fi
   if CompWordsContainsArray "${cmds6[@]}"; then _picocli_picocompletion-demo_sub2_subsub2; return $?; fi
-  if CompWordsContainsArray "${cmds5[@]}"; then _picocli_picocompletion-demo_sub2_sub2child1alias; return $?; fi
+  if CompWordsContainsArray "${cmds5[@]}"; then _picocli_picocompletion-demo_sub2_sub2child1_alias; return $?; fi
   if CompWordsContainsArray "${cmds4[@]}"; then _picocli_picocompletion-demo_sub2_subsub1; return $?; fi
-  if CompWordsContainsArray "${cmds3[@]}"; then _picocli_picocompletion-demo_sub2alias; return $?; fi
+  if CompWordsContainsArray "${cmds3[@]}"; then _picocli_picocompletion-demo_sub2_alias; return $?; fi
   if CompWordsContainsArray "${cmds2[@]}"; then _picocli_picocompletion-demo_sub2; return $?; fi
-  if CompWordsContainsArray "${cmds1[@]}"; then _picocli_picocompletion-demo_sub1alias; return $?; fi
+  if CompWordsContainsArray "${cmds1[@]}"; then _picocli_picocompletion-demo_sub1_alias; return $?; fi
   if CompWordsContainsArray "${cmds0[@]}"; then _picocli_picocompletion-demo_sub1; return $?; fi
 
   # No subcommands were specified; generate completions for the top-level command.
@@ -237,7 +237,7 @@ function _picocli_picocompletion-demo_sub1() {
   local commands=""
   local flag_opts=""
   local arg_opts="'--num' '--str' '--candidates'"
-  local str2_option_args=("aaa" "bbb" "ccc") # --candidates values
+  local candidates_str2_option_args=("aaa" "bbb" "ccc") # --candidates values
 
   type compopt &>/dev/null && compopt +o default
 
@@ -250,7 +250,7 @@ function _picocli_picocompletion-demo_sub1() {
       ;;
     '--candidates')
       local IFS=$'\n'
-      COMPREPLY=( $( compReplyArray "${str2_option_args[@]}" ) )
+      COMPREPLY=( $( compReplyArray "${candidates_str2_option_args[@]}" ) )
       return $?
       ;;
   esac
@@ -265,7 +265,7 @@ function _picocli_picocompletion-demo_sub1() {
 }
 
 # Generates completions for the options and subcommands of the `sub1-alias` subcommand.
-function _picocli_picocompletion-demo_sub1alias() {
+function _picocli_picocompletion-demo_sub1_alias() {
   # Get completion data
   local curr_word=${COMP_WORDS[COMP_CWORD]}
   local prev_word=${COMP_WORDS[COMP_CWORD-1]}
@@ -273,7 +273,7 @@ function _picocli_picocompletion-demo_sub1alias() {
   local commands=""
   local flag_opts=""
   local arg_opts="'--num' '--str' '--candidates'"
-  local str2_option_args=("aaa" "bbb" "ccc") # --candidates values
+  local candidates_str2_option_args=("aaa" "bbb" "ccc") # --candidates values
 
   type compopt &>/dev/null && compopt +o default
 
@@ -286,7 +286,7 @@ function _picocli_picocompletion-demo_sub1alias() {
       ;;
     '--candidates')
       local IFS=$'\n'
-      COMPREPLY=( $( compReplyArray "${str2_option_args[@]}" ) )
+      COMPREPLY=( $( compReplyArray "${candidates_str2_option_args[@]}" ) )
       return $?
       ;;
   esac
@@ -309,7 +309,7 @@ function _picocli_picocompletion-demo_sub2() {
   local commands="subsub1 sub2child1-alias subsub2 sub2child2-alias subsub3 sub2child3-alias"
   local flag_opts=""
   local arg_opts="'--num2' '--directory' '-d' '--thread-state' '--<invalid-name>'"
-  local _0123_option_args=("NEW" "RUNNABLE" "BLOCKED" "WAITING" "TIMED_WAITING" "TERMINATED") # --thread-state values
+  local thread_state__0123_option_args=("NEW" "RUNNABLE" "BLOCKED" "WAITING" "TIMED_WAITING" "TERMINATED") # --thread-state values
 
   type compopt &>/dev/null && compopt +o default
 
@@ -325,7 +325,7 @@ function _picocli_picocompletion-demo_sub2() {
       ;;
     '--thread-state')
       local IFS=$'\n'
-      COMPREPLY=( $( compReplyArray "${_0123_option_args[@]}" ) )
+      COMPREPLY=( $( compReplyArray "${thread_state__0123_option_args[@]}" ) )
       return $?
       ;;
     '--<invalid-name>')
@@ -349,7 +349,7 @@ function _picocli_picocompletion-demo_sub2() {
 }
 
 # Generates completions for the options and subcommands of the `sub2-alias` subcommand.
-function _picocli_picocompletion-demo_sub2alias() {
+function _picocli_picocompletion-demo_sub2_alias() {
   # Get completion data
   local curr_word=${COMP_WORDS[COMP_CWORD]}
   local prev_word=${COMP_WORDS[COMP_CWORD-1]}
@@ -357,7 +357,7 @@ function _picocli_picocompletion-demo_sub2alias() {
   local commands="subsub1 sub2child1-alias subsub2 sub2child2-alias subsub3 sub2child3-alias"
   local flag_opts=""
   local arg_opts="'--num2' '--directory' '-d' '--thread-state' '--<invalid-name>'"
-  local _0123_option_args=("NEW" "RUNNABLE" "BLOCKED" "WAITING" "TIMED_WAITING" "TERMINATED") # --thread-state values
+  local thread_state__0123_option_args=("NEW" "RUNNABLE" "BLOCKED" "WAITING" "TIMED_WAITING" "TERMINATED") # --thread-state values
 
   type compopt &>/dev/null && compopt +o default
 
@@ -373,7 +373,7 @@ function _picocli_picocompletion-demo_sub2alias() {
       ;;
     '--thread-state')
       local IFS=$'\n'
-      COMPREPLY=( $( compReplyArray "${_0123_option_args[@]}" ) )
+      COMPREPLY=( $( compReplyArray "${thread_state__0123_option_args[@]}" ) )
       return $?
       ;;
     '--<invalid-name>')
@@ -426,7 +426,7 @@ function _picocli_picocompletion-demo_sub2_subsub1() {
 }
 
 # Generates completions for the options and subcommands of the `sub2child1-alias` subcommand.
-function _picocli_picocompletion-demo_sub2_sub2child1alias() {
+function _picocli_picocompletion-demo_sub2_sub2child1_alias() {
   # Get completion data
   local curr_word=${COMP_WORDS[COMP_CWORD]}
   local prev_word=${COMP_WORDS[COMP_CWORD-1]}
@@ -463,14 +463,14 @@ function _picocli_picocompletion-demo_sub2_subsub2() {
   local commands=""
   local flag_opts=""
   local arg_opts="'-u' '--timeUnit' '-t' '--timeout'"
-  local timeUnit_option_args=("%2$s") # --timeUnit values
+  local timeUnit_timeUnit_option_args=("%2$s") # --timeUnit values
 
   type compopt &>/dev/null && compopt +o default
 
   case ${prev_word} in
     '-u'|'--timeUnit')
       local IFS=$'\n'
-      COMPREPLY=( $( compReplyArray "${timeUnit_option_args[@]}" ) )
+      COMPREPLY=( $( compReplyArray "${timeUnit_timeUnit_option_args[@]}" ) )
       return $?
       ;;
     '-t'|'--timeout')
@@ -494,7 +494,7 @@ function _picocli_picocompletion-demo_sub2_subsub2() {
 }
 
 # Generates completions for the options and subcommands of the `sub2child2-alias` subcommand.
-function _picocli_picocompletion-demo_sub2_sub2child2alias() {
+function _picocli_picocompletion-demo_sub2_sub2child2_alias() {
   # Get completion data
   local curr_word=${COMP_WORDS[COMP_CWORD]}
   local prev_word=${COMP_WORDS[COMP_CWORD-1]}
@@ -502,14 +502,14 @@ function _picocli_picocompletion-demo_sub2_sub2child2alias() {
   local commands=""
   local flag_opts=""
   local arg_opts="'-u' '--timeUnit' '-t' '--timeout'"
-  local timeUnit_option_args=("%2$s") # --timeUnit values
+  local timeUnit_timeUnit_option_args=("%2$s") # --timeUnit values
 
   type compopt &>/dev/null && compopt +o default
 
   case ${prev_word} in
     '-u'|'--timeUnit')
       local IFS=$'\n'
-      COMPREPLY=( $( compReplyArray "${timeUnit_option_args[@]}" ) )
+      COMPREPLY=( $( compReplyArray "${timeUnit_timeUnit_option_args[@]}" ) )
       return $?
       ;;
     '-t'|'--timeout')
@@ -564,7 +564,7 @@ function _picocli_picocompletion-demo_sub2_subsub3() {
 }
 
 # Generates completions for the options and subcommands of the `sub2child3-alias` subcommand.
-function _picocli_picocompletion-demo_sub2_sub2child3alias() {
+function _picocli_picocompletion-demo_sub2_sub2child3_alias() {
   # Get completion data
   local curr_word=${COMP_WORDS[COMP_CWORD]}
 
@@ -595,7 +595,7 @@ function _picocli_picocompletion-demo_sub2_sub2child3alias() {
 }
 
 # Generates completions for the options and subcommands of the `subsub1` subcommand.
-function _picocli_picocompletion-demo_sub2alias_subsub1() {
+function _picocli_picocompletion-demo_sub2_alias_subsub1() {
   # Get completion data
   local curr_word=${COMP_WORDS[COMP_CWORD]}
   local prev_word=${COMP_WORDS[COMP_CWORD-1]}
@@ -624,7 +624,7 @@ function _picocli_picocompletion-demo_sub2alias_subsub1() {
 }
 
 # Generates completions for the options and subcommands of the `sub2child1-alias` subcommand.
-function _picocli_picocompletion-demo_sub2alias_sub2child1alias() {
+function _picocli_picocompletion-demo_sub2_alias_sub2child1_alias() {
   # Get completion data
   local curr_word=${COMP_WORDS[COMP_CWORD]}
   local prev_word=${COMP_WORDS[COMP_CWORD-1]}
@@ -653,7 +653,7 @@ function _picocli_picocompletion-demo_sub2alias_sub2child1alias() {
 }
 
 # Generates completions for the options and subcommands of the `subsub2` subcommand.
-function _picocli_picocompletion-demo_sub2alias_subsub2() {
+function _picocli_picocompletion-demo_sub2_alias_subsub2() {
   # Get completion data
   local curr_word=${COMP_WORDS[COMP_CWORD]}
   local prev_word=${COMP_WORDS[COMP_CWORD-1]}
@@ -661,14 +661,14 @@ function _picocli_picocompletion-demo_sub2alias_subsub2() {
   local commands=""
   local flag_opts=""
   local arg_opts="'-u' '--timeUnit' '-t' '--timeout'"
-  local timeUnit_option_args=("%2$s") # --timeUnit values
+  local timeUnit_timeUnit_option_args=("%2$s") # --timeUnit values
 
   type compopt &>/dev/null && compopt +o default
 
   case ${prev_word} in
     '-u'|'--timeUnit')
       local IFS=$'\n'
-      COMPREPLY=( $( compReplyArray "${timeUnit_option_args[@]}" ) )
+      COMPREPLY=( $( compReplyArray "${timeUnit_timeUnit_option_args[@]}" ) )
       return $?
       ;;
     '-t'|'--timeout')
@@ -692,7 +692,7 @@ function _picocli_picocompletion-demo_sub2alias_subsub2() {
 }
 
 # Generates completions for the options and subcommands of the `sub2child2-alias` subcommand.
-function _picocli_picocompletion-demo_sub2alias_sub2child2alias() {
+function _picocli_picocompletion-demo_sub2_alias_sub2child2_alias() {
   # Get completion data
   local curr_word=${COMP_WORDS[COMP_CWORD]}
   local prev_word=${COMP_WORDS[COMP_CWORD-1]}
@@ -700,14 +700,14 @@ function _picocli_picocompletion-demo_sub2alias_sub2child2alias() {
   local commands=""
   local flag_opts=""
   local arg_opts="'-u' '--timeUnit' '-t' '--timeout'"
-  local timeUnit_option_args=("%2$s") # --timeUnit values
+  local timeUnit_timeUnit_option_args=("%2$s") # --timeUnit values
 
   type compopt &>/dev/null && compopt +o default
 
   case ${prev_word} in
     '-u'|'--timeUnit')
       local IFS=$'\n'
-      COMPREPLY=( $( compReplyArray "${timeUnit_option_args[@]}" ) )
+      COMPREPLY=( $( compReplyArray "${timeUnit_timeUnit_option_args[@]}" ) )
       return $?
       ;;
     '-t'|'--timeout')
@@ -731,7 +731,7 @@ function _picocli_picocompletion-demo_sub2alias_sub2child2alias() {
 }
 
 # Generates completions for the options and subcommands of the `subsub3` subcommand.
-function _picocli_picocompletion-demo_sub2alias_subsub3() {
+function _picocli_picocompletion-demo_sub2_alias_subsub3() {
   # Get completion data
   local curr_word=${COMP_WORDS[COMP_CWORD]}
 
@@ -762,7 +762,7 @@ function _picocli_picocompletion-demo_sub2alias_subsub3() {
 }
 
 # Generates completions for the options and subcommands of the `sub2child3-alias` subcommand.
-function _picocli_picocompletion-demo_sub2alias_sub2child3alias() {
+function _picocli_picocompletion-demo_sub2_alias_sub2child3_alias() {
   # Get completion data
   local curr_word=${COMP_WORDS[COMP_CWORD]}
 

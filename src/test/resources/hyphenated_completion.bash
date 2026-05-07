@@ -161,8 +161,8 @@ function _complete_rcmd() {
   local cmds0=(sub-1)
   local cmds1=(sub-2)
 
-  if CompWordsContainsArray "${cmds1[@]}"; then _picocli_rcmd_sub2; return $?; fi
-  if CompWordsContainsArray "${cmds0[@]}"; then _picocli_rcmd_sub1; return $?; fi
+  if CompWordsContainsArray "${cmds1[@]}"; then _picocli_rcmd_sub_2; return $?; fi
+  if CompWordsContainsArray "${cmds0[@]}"; then _picocli_rcmd_sub_1; return $?; fi
 
   # No subcommands were specified; generate completions for the top-level command.
   _picocli_rcmd; return $?;
@@ -187,7 +187,7 @@ function _picocli_rcmd() {
 }
 
 # Generates completions for the options and subcommands of the `sub-1` subcommand.
-function _picocli_rcmd_sub1() {
+function _picocli_rcmd_sub_1() {
   # Get completion data
   local curr_word=${COMP_WORDS[COMP_CWORD]}
   local prev_word=${COMP_WORDS[COMP_CWORD-1]}
@@ -214,7 +214,7 @@ function _picocli_rcmd_sub1() {
 }
 
 # Generates completions for the options and subcommands of the `sub-2` subcommand.
-function _picocli_rcmd_sub2() {
+function _picocli_rcmd_sub_2() {
   # Get completion data
   local curr_word=${COMP_WORDS[COMP_CWORD]}
   local prev_word=${COMP_WORDS[COMP_CWORD-1]}

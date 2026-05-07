@@ -60,7 +60,7 @@ public class Issue1380Test {
 
         String returnedText = tempOut.toString();
         String expectedText = String.format(
-        "Usage: <main class> [-s | -v | -j]%n"+
+        "Usage: <main class> [-j | -s | -v]%n"+
                 "  -j, --json      JSON printing%n"+
                 "  -s, --silent    Silent mode%n"+
                 "  -v, --verbose   Verbose mode%n");
@@ -79,7 +79,7 @@ public class Issue1380Test {
 
         String returnedText = tempOut.toString();
         String expectedText = String.format(
-                "Usage: <main class> [[-s] [-v] [-j]]%n" +
+                "Usage: <main class> [[-j] [-s] [-v]]%n" +
                 "  -j, --json      JSON printing%n" +
                 "  -s, --silent    Silent mode%n" +
                 "  -v, --verbose   Verbose mode%n");

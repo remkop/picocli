@@ -1022,16 +1022,16 @@ public class ArgGroupTest {
                 .addArg(OptionSpec.builder("-a").required(true).build())
                 .addArg(OptionSpec.builder("-b").required(true).build())
                 .addArg(OptionSpec.builder("-c").required(true).build());
-        assertEquals("[ARG1 | ARG2 | ARG3 | -a | -b | -c]", builder.build().synopsis());
+        assertEquals("[-a | -b | -c | ARG1 | ARG2 | ARG3]", builder.build().synopsis());
 
         builder.multiplicity("1");
-        assertEquals("(ARG1 | ARG2 | ARG3 | -a | -b | -c)", builder.build().synopsis());
+        assertEquals("(-a | -b | -c | ARG1 | ARG2 | ARG3)", builder.build().synopsis());
 
         builder.exclusive(false);
-        assertEquals("(ARG1 ARG2 ARG3 -a -b -c)", builder.build().synopsis());
+        assertEquals("(-a -b -c ARG1 ARG2 ARG3)", builder.build().synopsis());
 
         builder.multiplicity("0..1");
-        assertEquals("[ARG1 ARG2 ARG3 -a -b -c]", builder.build().synopsis());
+        assertEquals("[-a -b -c ARG1 ARG2 ARG3]", builder.build().synopsis());
     }
 
     @Test
@@ -1805,7 +1805,7 @@ public class ArgGroupTest {
         CommandLine cmd = new CommandLine(app);
 
         String synopsis = new Help(cmd.getCommandSpec(), Help.defaultColorScheme(Help.Ansi.OFF)).synopsis(0);
-        assertEquals("viewer [-f=<fallback>] (-a -d=<dataset> [-c=<container>] [-t=<type>])... <positional>", synopsis.trim());
+        assertEquals("viewer [-f=<fallback>] (-a [-c=<container>] -d=<dataset> [-t=<type>])... <positional>", synopsis.trim());
 
         ParseResult parseResult = cmd.parseArgs("-a", "-d", "data1", "-a", "-d=data2", "-c=contain2", "-t=typ2", "pos", "-a", "-d=data3", "-c=contain3");
         assertEquals("pos", parseResult.matchedPositionalValue(0, ""));

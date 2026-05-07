@@ -3922,7 +3922,9 @@ public class CommandLine {
 
         /** Returns whether usage syntax decorations around the {@linkplain #paramLabel() paramLabel} should be suppressed.
          * The default is {@code false}: by default, the paramLabel is surrounded with {@code '['} and {@code ']'} characters
-         * if the value is optional and followed by ellipses ("...") when multiple values can be specified.
+         * if the value is optional and followed by ellipses ("...") when multiple values can be specified, and the parameter
+         * label is repeated for each parameter for multi-arity options.
+         * May be set to {@code true} if full control over the formating is desired, such as different labels for each parameter.
          * @since 3.6.0 */
         boolean hideParamSyntax() default false;
 
@@ -10587,12 +10589,17 @@ public class CommandLine {
              * @return an immutable list of all options in this group and its subgroups.
              * @since 4.4 */
             public List<OptionSpec> allOptionsNested() {
-                return addGroupOptionsToListRecursively(new ArrayList<OptionSpec>());
+                return addGroupOptionsToListRecursively(new ArrayList<OptionSpec>(), Collections.<ArgGroupSpec>emptyList());
             }
-            private List<OptionSpec> addGroupOptionsToListRecursively(List<OptionSpec> result) {
+            private List<OptionSpec> allOptionsNestedExcept(List<ArgGroupSpec> excluded) {
+                return addGroupOptionsToListRecursively(new ArrayList<OptionSpec>(), excluded);
+            }
+            private List<OptionSpec> addGroupOptionsToListRecursively(List<OptionSpec> result, List<ArgGroupSpec> excluded) {
                 result.addAll(options());
                 for (ArgGroupSpec subGroup : subgroups()) {
-                    subGroup.addGroupOptionsToListRecursively(result);
+                    if (!excluded.contains(subGroup)) {
+                        subGroup.addGroupOptionsToListRecursively(result, excluded);
+                    }
                 }
                 return result;
             }
@@ -10686,14 +10693,27 @@ public class CommandLine {
                         outparam_groupArgs.add(positional);
                     }
                 } else {
+
+                    List<OptionSpec> sortableComponents = new ArrayList<OptionSpec>();
+                    List<PositionalParamSpec> remainder = new ArrayList<PositionalParamSpec>();
                     for (ArgSpec arg : args()) {
-                        String prefix = synopsis.length > 0 ? infix : "";
                         if (arg instanceof OptionSpec) {
-                            synopsis = concatOptionText(prefix, synopsis, colorScheme, (OptionSpec) arg);
+                            sortableComponents.add((OptionSpec) arg);
                         } else {
-                            synopsis = concatPositionalText(prefix, synopsis, colorScheme, (PositionalParamSpec) arg);
+                            remainder.add((PositionalParamSpec) arg);
                         }
+                    }
+                    Collections.sort(sortableComponents, new Help.SortByOptionArityAndNameAlphabetically());
+
+                    for (ArgSpec arg : sortableComponents) {
+                        String prefix = synopsis.length > 0 ? infix : "";
+                        synopsis = concatOptionText(prefix, synopsis, colorScheme, (OptionSpec) arg);
                         outparam_groupArgs.add(arg);
+                    }
+                    for (PositionalParamSpec positional : remainder) {
+                        String prefix = synopsis.length > 0 ? infix : "";
+                        synopsis = concatPositionalText(prefix, synopsis, colorScheme, positional);                        outparam_groupArgs.add(positional);
+                        outparam_groupArgs.add(positional);
                     }
                     for (ArgGroupSpec subgroup : subgroups()) {
                         if (synopsis.length > 0) { synopsis = synopsis.concat(infix); }
@@ -11682,19 +11702,19 @@ public class CommandLine {
                 } catch (Exception ignored) { return "?"; }
             }
             public Messages parent() {
-            	CommandSpec parentSpec = this.spec.parent();
-            	if (parent == null || parent.spec != parentSpec) {
-            		parent = null; // Refresh if parentSpec doesn't match
-            		while (parent == null && parentSpec != null) {
-		            	String parentResourceBundleBaseName = parentSpec.resourceBundleBaseName();
-		            	if (parentResourceBundleBaseName != null && !parentResourceBundleBaseName.equals(this.bundleBaseName)) {
-		            		parent = new Messages(parentSpec, parentResourceBundleBaseName);
-		            	} else {
-		            		parentSpec = parentSpec.parent();
-		            	}
-            		}
-            	}
-	            return parent;
+                CommandSpec parentSpec = this.spec.parent();
+                if (parent == null || parent.spec != parentSpec) {
+                    parent = null; // Refresh if parentSpec doesn't match
+                    while (parent == null && parentSpec != null) {
+                        String parentResourceBundleBaseName = parentSpec.resourceBundleBaseName();
+                        if (parentResourceBundleBaseName != null && !parentResourceBundleBaseName.equals(this.bundleBaseName)) {
+                            parent = new Messages(parentSpec, parentResourceBundleBaseName);
+                        } else {
+                            parentSpec = parentSpec.parent();
+                        }
+                    }
+                }
+                return parent;
             }
             private static Set<String> keys(ResourceBundle rb) {
                 if (rb == null) { return Collections.emptySet(); }
@@ -11713,7 +11733,7 @@ public class CommandLine {
              */
             public static final void setLoadBundles(boolean loadBundles) {
                 tracer().debug("Messages: loadBundles was set to %s", loadBundles);
-            	Messages.loadBundles = loadBundles;
+                Messages.loadBundles = loadBundles;
             }
 
             /** Returns a copy of the specified Messages object with the CommandSpec replaced by the specified one.
@@ -11743,9 +11763,9 @@ public class CommandLine {
             }
 
             private String getStringForExactKey(String key) {
-            	if (keys.contains(key)) { return rb.getString(key); }
-            	else if (parent() != null) { return parent().getStringForExactKey(key); }
-            	else { return null; }
+                if (keys.contains(key)) { return rb.getString(key); }
+                else if (parent() != null) { return parent().getStringForExactKey(key); }
+                else { return null; }
             }
 
             boolean isEmpty() { return (rb == null || keys.isEmpty()) && (parent() == null || parent().isEmpty()); }
@@ -11766,9 +11786,9 @@ public class CommandLine {
                 return result != null ? result : defaultValues;
             }
             private String[] getStringArrayForExactKey(String key) {
-            	List<String> result = addAllWithPrefix(rb, key, keys, new ArrayList<String>());
-            	if (!result.isEmpty()) { return result.toArray(new String[0]); }
-            	return parent() == null ? null : parent().getStringArrayForExactKey(key);
+                List<String> result = addAllWithPrefix(rb, key, keys, new ArrayList<String>());
+                if (!result.isEmpty()) { return result.toArray(new String[0]); }
+                return parent() == null ? null : parent().getStringArrayForExactKey(key);
             }
             private static List<String> addAllWithPrefix(ResourceBundle rb, String key, Set<String> keys, List<String> result) {
                 if (keys.contains(key)) { result.add(rb.getString(key)); }
@@ -16141,7 +16161,7 @@ public class CommandLine {
 
             StringBuilder sb = new StringBuilder();
             for (ArgGroupSpec group : groups) {
-                List<OptionSpec> groupOptions = new ArrayList<OptionSpec>(group.allOptionsNested());
+                List<OptionSpec> groupOptions = new ArrayList<OptionSpec>(group.allOptionsNestedExcept(groups));
                 if (optionSort != null) { Collections.sort(groupOptions, optionSort); }
                 groupOptions.removeAll(done);
                 done.addAll(groupOptions);
@@ -17954,29 +17974,47 @@ public class CommandLine {
                 if (jansiInstalled == null) { jansiInstalled = calcIsJansiConsoleInstalled(); }
                 return jansiInstalled;
             }
-            /** Returns {@code false} if system property {@code org.fusesource.jansi.Ansi.disable} is set to {@code "true"}
-             * (case-insensitive); otherwise, returns {@code false} if the Jansi library is in the classpath but has been disabled
-             * (either via system property {@code org.fusesource.jansi.Ansi.disable} or via a Jansi API call);
+            /** Returns {@code false} if either system properties {@code org.fusesource.jansi.Ansi.disable}
+             * or {@code org.jline.jansi.Ansi.disable} are set to {@code "true"} (case-insensitive);
+             * otherwise, returns {@code false} if the Jansi library is in the classpath but has been disabled
+             * (either via the aforementioned system properties or via a Jansi API call);
              * otherwise, returns {@code true} if the Jansi library is in the classpath and has been installed.
              */
             static boolean calcIsJansiConsoleInstalled() {
                 try {
                     // first check if JANSI was explicitly disabled _without loading any JANSI classes_:
                     // see https://github.com/remkop/picocli/issues/1106
-                    if (Boolean.getBoolean("org.fusesource.jansi.Ansi.disable")) {
+                    if (Boolean.getBoolean("org.jline.jansi.Ansi.disable") ||
+                        Boolean.getBoolean("org.fusesource.jansi.Ansi.disable")) {
                         return false;
                     }
-                    // the Ansi class internally also checks system property "org.fusesource.jansi.Ansi.disable"
+                    // the Ansi class internally also checks system property "org.jline.jansi.Ansi.disable"
                     // but may also have been set with Ansi.setEnabled or a custom detector
-                    Class<?> ansi = Class.forName("org.fusesource.jansi.Ansi");
+                    Class<?> ansi;
+                    try {
+                        // Try to support both the original jansi library and the newer jline jansi
+                        ansi = Class.forName("org.fusesource.jansi.Ansi");
+                    } catch (ClassNotFoundException e) {
+                        ansi = Class.forName("org.jline.jansi.Ansi");
+                    }
                     Boolean enabled = (Boolean) ansi.getDeclaredMethod("isEnabled").invoke(null);
                     if (!enabled) {
                         return false;
                     }
-                    // loading this class will load the native library org.fusesource.jansi.internal.CLibrary
-                    Class<?> ansiConsole = Class.forName("org.fusesource.jansi.AnsiConsole");
-                    Field out = ansiConsole.getField("out");
-                    return out.get(null) == System.out;
+                    // loading this class will load the native library org.jline.jansi.internal.CLibrary
+                    Class<?> ansiConsole;
+                    try {
+                        ansiConsole = Class.forName("org.fusesource.jansi.AnsiConsole");
+                    } catch (ClassNotFoundException e) {
+                        ansiConsole = Class.forName("org.jline.jansi.AnsiConsole");
+                    }
+                    try {
+                        return (Boolean) ansiConsole.getDeclaredMethod("isInstalled").invoke(null);
+                    } catch (Exception e) {
+                        // isInstalled was "only" added in 2.1.0, try to support older jansi
+                        Field out = ansiConsole.getField("out");
+                        return out.get(null) == System.out;
+                    }
                 } catch (Exception reflectionFailed) {
                     return false;
                 }
