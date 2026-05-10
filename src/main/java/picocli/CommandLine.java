@@ -14993,14 +14993,19 @@ public class CommandLine {
 
         char[] readUserInput(ArgSpec argSpec) {
             String name = argSpec.isOption() ? ((OptionSpec) argSpec).longestName() : "position " + position;
-            String desc = str(argSpec.description(), 0);
-            String standardPrompt = empty(desc) ? String.format("Enter value for %s: ", name) : String.format("Enter value for %s (%s): ", name, desc);
-            String prompt = empty(argSpec.prompt()) ? standardPrompt : argSpec.prompt();
+
+            if (Help.Ansi.isTTY()) {
+                String desc = str(argSpec.description(), 0);
+                String standardPrompt = empty(desc) ? String.format("Enter value for %s: ", name) : String.format("Enter value for %s (%s): ", name, desc);
+                String prompt = empty(argSpec.prompt()) ? standardPrompt : argSpec.prompt();
+                System.out.print(prompt);
+            }
+
             try {
                 Tracer t = tracer();
                 if (t.isDebug()) {
                     t.debug("Reading value for %s from console...", name);}
-                char[] result = argSpec.echo() ? readUserInputWithEchoing(prompt) : readPassword(prompt);
+                char[] result = argSpec.echo() ? readUserInputWithEchoing() : readPassword();
                 if (t.isDebug()) {
                     t.debug(createUserInputDebugString(argSpec, result, name));}
                 return result;
@@ -15013,17 +15018,16 @@ public class CommandLine {
                 String.format("User entered %s for %s.%n", new String(result), name) :
                 String.format("User entered %d characters for %s.%n", result.length, name);
         }
-        char[] readPassword(String prompt) {
+        char[] readPassword() {
             try {
                 Object console = System.class.getDeclaredMethod("console").invoke(null);
-                Method method = Class.forName("java.io.Console").getDeclaredMethod("readPassword", String.class, Object[].class);
-                return (char[]) method.invoke(console, prompt, new Object[0]);
+                Method method = Class.forName("java.io.Console").getDeclaredMethod("readPassword");
+                return (char[]) method.invoke(console);
             } catch (Exception e) {
-                return readUserInputWithEchoing(prompt);
+                return readUserInputWithEchoing();
             }
         }
-        char[] readUserInputWithEchoing(String prompt) {
-            System.out.print(prompt);
+        char[] readUserInputWithEchoing() {
             InputStreamReader isr = new InputStreamReader(System.in);
             BufferedReader in = new BufferedReader(isr);
             try {
