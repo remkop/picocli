@@ -1,0 +1,4 @@
+Run
+```
+runtest --outdir log --tool completion
+```
