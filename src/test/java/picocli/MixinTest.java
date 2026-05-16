@@ -27,6 +27,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.*;
@@ -1099,5 +1100,24 @@ public class MixinTest {
     public void testIssue1836CommandAliasOnMixin() {
         Help help = new Help(new App_Issue1836());
         assertEquals("list, ls", help.commandList().trim());
+    }
+
+    @Test
+    public void testOptionNameTransformations() {
+        class ReusableMixin {
+            @Option(names = "--url")
+            String  url;
+        }
+        class Application {
+            @Mixin(optionNameTransformations = {"^--(.*)$", "--firstDb.$1"})
+            ReusableMixin firstDb;
+            @Mixin(optionNameTransformations = {"^--(.*)$", "--secondDb.$1"})
+            ReusableMixin secondDb;
+        }
+        Application application = new Application();
+        CommandLine commandLine = new CommandLine(application, new InnerClassFactory(this));
+        List<OptionSpec> options = commandLine.getCommandSpec().options();
+        assertArrayEquals(options.get(0).names(), new String[]{"--firstDb.url"});
+        assertArrayEquals(options.get(1).names(), new String[]{"--secondDb.url"});
     }
 }
