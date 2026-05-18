@@ -3546,6 +3546,43 @@ public class HelpTest {
         assertEquals(format("[picocli WARN] Invalid picocli.usage.width value 54. Using minimum usage width 55.%n"), baos.toString("UTF-8"));
     }
 
+    @Test
+    public void testInvalidUsageWidthPropertyValueWarnsOnlyOnce() throws UnsupportedEncodingException {
+        PrintStream originalErr = System.err;
+        ByteArrayOutputStream baos = new ByteArrayOutputStream(2500);
+        System.setErr(new PrintStream(baos));
+
+        System.clearProperty("picocli.trace");
+        UsageMessageSpec.resetUsageWidthWarningCache();
+        System.setProperty("picocli.usage.width", "bogus");
+        new UsageMessageSpec().width();
+        new UsageMessageSpec().width();
+        new UsageMessageSpec().width();
+        System.setErr(originalErr);
+        System.clearProperty("picocli.usage.width");
+
+        assertEquals(format("[picocli WARN] Invalid picocli.usage.width value 'bogus'. Using usage width 80.%n"), baos.toString("UTF-8"));
+    }
+
+    @Test
+    public void testInvalidUsageWidthPropertyValueWarnsAgainForDifferentValue() throws UnsupportedEncodingException {
+        PrintStream originalErr = System.err;
+        ByteArrayOutputStream baos = new ByteArrayOutputStream(2500);
+        System.setErr(new PrintStream(baos));
+
+        System.clearProperty("picocli.trace");
+        UsageMessageSpec.resetUsageWidthWarningCache();
+        System.setProperty("picocli.usage.width", "first");
+        new UsageMessageSpec().width();
+        System.setProperty("picocli.usage.width", "second");
+        new UsageMessageSpec().width();
+        System.setErr(originalErr);
+        System.clearProperty("picocli.usage.width");
+
+        assertEquals(format("[picocli WARN] Invalid picocli.usage.width value 'first'. Using usage width 80.%n" +
+                "[picocli WARN] Invalid picocli.usage.width value 'second'. Using usage width 80.%n"), baos.toString("UTF-8"));
+    }
+
     @SuppressWarnings("deprecation")
     @Test
     public void testTextTableWithLargeWidth() {
