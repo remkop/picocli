@@ -7745,6 +7745,11 @@ public class CommandLine {
             public  final static int    DEFAULT_USAGE_WIDTH              = 80;
             private final static int    MINIMUM_USAGE_WIDTH              = 55;
                     final static int    DEFAULT_USAGE_LONG_OPTIONS_WIDTH = 20;
+            // remembers the last invalid picocli.usage.width value warned about, so the warning is logged only once per value
+            private static String lastWarnedInvalidWidthValue;
+
+            // resets the cached invalid picocli.usage.width value; intended for testing
+            static void resetUsageWidthWarningCache() { lastWarnedInvalidWidthValue = null; }
             private final static int    DEFAULT_SYNOPSIS_INDENT          = -1; // by default, fall back to aligning to the synopsis heading
             private final static double DEFAULT_SYNOPSIS_AUTO_INDENT_THRESHOLD = 0.5;
             private final static double MAX_SYNOPSIS_AUTO_INDENT_THRESHOLD     = 0.9;
@@ -7893,12 +7898,18 @@ public class CommandLine {
                 try {
                     int width = Integer.parseInt(userValue);
                     if (width < MINIMUM_USAGE_WIDTH) {
-                        CommandLine.tracer().warn("Invalid picocli.usage.width value %d. Using minimum usage width %d.", width, MINIMUM_USAGE_WIDTH);
+                        if (!userValue.equals(lastWarnedInvalidWidthValue)) {
+                            lastWarnedInvalidWidthValue = userValue;
+                            CommandLine.tracer().warn("Invalid picocli.usage.width value %d. Using minimum usage width %d.", width, MINIMUM_USAGE_WIDTH);
+                        }
                         return MINIMUM_USAGE_WIDTH;
                     }
                     return width;
                 } catch (NumberFormatException ex) {
-                    CommandLine.tracer().warn("Invalid picocli.usage.width value '%s'. Using usage width %d.", userValue, defaultWidth);
+                    if (!userValue.equals(lastWarnedInvalidWidthValue)) {
+                        lastWarnedInvalidWidthValue = userValue;
+                        CommandLine.tracer().warn("Invalid picocli.usage.width value '%s'. Using usage width %d.", userValue, defaultWidth);
+                    }
                     return defaultWidth;
                 }
             }
