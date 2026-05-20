@@ -18,7 +18,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  * <pre>
  * dependencies {
  *     // ...
- *     testImplementation "org.springframework.boot:spring-boot-starter-test:$springBoot3Version"
+ *     testImplementation "org.springframework.boot:spring-boot-starter-4-test:$springBoot4Version"
  * }
  * </pre>
  */

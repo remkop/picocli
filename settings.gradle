@@ -24,3 +24,10 @@ if (org.gradle.api.JavaVersion.current().isJava9Compatible()) {
         "picocli-tests-java9plus from the build: " +
         "they require Java 9+ but we have Java version ${org.gradle.api.JavaVersion.current()}")
 }
+
+if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_17)) {
+    include 'picocli-spring-boot-4-starter'
+} else {
+    println("Excluding modules picocli-spring-boot-4-starter: " +
+        "they require Java 17+ but we have Java version ${org.gradle.api.JavaVersion.current()}")
+}

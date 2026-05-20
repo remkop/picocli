@@ -34,7 +34,8 @@ Ideally prefix commit comments with either the pull request number, or the assoc
 
 
 ## <a name="java_version"></a> Java version
-The project is built with Java 8, and different artifacts target different versions of Java.
+Modules requiring Java 8 or earlier are built using Java 8, and different artifacts target different versions of Java.
+Modules requiring more modern Java versions are built using Java 17.
 See the table below.
 
 Artifact | Target Java Version
@@ -45,6 +46,7 @@ Artifact | Target Java Version
 `picocli-shell-jline2` | Java 5
 `picocli-shell-jline3` | Java 8
 `picocli-spring-boot-starter` | Java 8
+`picocli-spring-boot-4-starter` | Java 17
 
 Please be aware that pull requests can only use language features that are supported in the above version of Java.
 
@@ -56,4 +58,4 @@ cd picocli
 gradlew publishToMavenLocal
 ```
 
-That should publish `picocli-4.7.0-SNAPSHOT` to your local .m2 Maven cache. You can then try this in a project that uses the `info.picocli:picocli:4.7.0-SNAPSHOT` dependency.
+That should publish `picocli-4.7.8-SNAPSHOT` to your local .m2 Maven cache. You can then try this in a project that uses the `info.picocli:picocli:4.7.8-SNAPSHOT` dependency.
