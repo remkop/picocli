@@ -26,6 +26,7 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -260,7 +261,7 @@ public class AutoComplete {
             char c = value.charAt(i);
             if (Character.isLetterOrDigit(c) || c == '_') {
                 builder.append(c);
-            } else if (Character.isSpaceChar(c)) {
+            } else if (Character.isSpaceChar(c) || c == '-') {
                 builder.append('_');
             }
         }
@@ -549,11 +550,20 @@ public class AutoComplete {
 
     private static void createSubHierarchy(String scriptName, String parentWithoutTopLevelCommand, CommandLine commandLine, List<CommandDescriptor> out) {
         // breadth-first: generate command lists and function calls for predecessors + each subcommand
+        Map<String, Integer> functionAliasCounts = new HashMap<String, Integer>();
         for (Map.Entry<String, CommandLine> entry : commandLine.getSubcommands().entrySet()) {
             CommandSpec spec = entry.getValue().getCommandSpec();
             if (spec.usageMessage().hidden()) { continue; } // #887 skip hidden subcommands
             String commandName = entry.getKey(); // may be an alias
             String functionNameWithoutPrefix = bashify(concat("_", parentWithoutTopLevelCommand.replace(' ', '_'), commandName));
+            Integer functionAliasCount = functionAliasCounts.get(functionNameWithoutPrefix);
+            if (functionAliasCount == null) {
+                functionAliasCount = 0;
+            }
+            functionAliasCounts.put(functionNameWithoutPrefix, functionAliasCount + 1);
+            if (functionAliasCount > 0) {
+                functionNameWithoutPrefix = concat("_", functionNameWithoutPrefix, "alias", String.valueOf(functionAliasCount));
+            }
             String functionName = concat("_", "_picocli", scriptName, functionNameWithoutPrefix);
             String parentFunctionName = parentWithoutTopLevelCommand.length() == 0
                 ? concat("_", "_picocli", scriptName)
@@ -768,10 +778,17 @@ public class AutoComplete {
 
     private static void generateCompletionCandidates(StringBuilder buff, OptionSpec f) {
         buff.append(format("  local %s_option_args=(\"%s\") # %s values\n",
-                bashify(f.paramLabel()),
-                concat("\" \"", extract(f.completionCandidates())).trim(),
-                f.longestName()));
+            bashify(optionNameAndParamLabel(f)),
+            concat("\" \"", extract(f.completionCandidates())).trim(),
+            f.longestName()));
     }
+
+    private static String optionNameAndParamLabel(OptionSpec f) {
+        return format("%s_%s",
+            bashify(f.longestName()).replaceFirst("^_+", ""),
+            bashify(f.paramLabel()));
+    }
+
     private static List<String> extract(Iterable<String> generator) {
         List<String> result = new ArrayList<String>();
         for (String e : generator) {
@@ -838,7 +855,7 @@ public class AutoComplete {
             if (option.completionCandidates() != null) {
                 buff.append(format("%s    %s)\n", indent, concat("|", option.names(), null, new SingleQuoteFunction()))); // "    -u|--timeUnit)\n"
                 buff.append(format("%s      local IFS=$'\\n'\n", indent));
-                buff.append(format("%s      COMPREPLY=( $( compReplyArray \"${%s_option_args[@]}\" ) )\n", indent, bashify(option.paramLabel())));
+                buff.append(format("%s      COMPREPLY=( $( compReplyArray \"${%s_option_args[@]}\" ) )\n", indent, optionNameAndParamLabel(option)));
                 buff.append(format("%s      return $?\n", indent));
                 buff.append(format("%s      ;;\n", indent));
             } else if (type.equals(File.class) || "java.nio.file.Path".equals(type.getName())) {

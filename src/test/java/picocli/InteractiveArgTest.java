@@ -6,6 +6,8 @@ import org.junit.Test;
 import org.junit.contrib.java.lang.system.ProvideSystemProperty;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.rules.TestRule;
+
+import picocli.CommandLine.Help;
 import picocli.CommandLine.Model.ArgSpec;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
@@ -37,11 +39,13 @@ public class InteractiveArgTest {
         PrintStream out = System.out;
         PrintStream err = System.err;
         InputStream in = System.in;
+        Boolean isTTY = Help.Ansi.tty;
 
         void reset() {
             System.setOut(out);
             System.setOut(err);
             System.setIn(in);
+            Help.Ansi.tty = isTTY;
         }
     }
 
@@ -54,8 +58,13 @@ public class InteractiveArgTest {
         }
 
         Capture(String input) {
+            this(input, true);
+        }
+
+        Capture(String input, boolean isTTY) {
             System.setOut(new PrintStream(baos));
             System.setErr(new PrintStream(errBaos));
+            Help.Ansi.tty = isTTY;
             if (input != null) {
                 System.setIn(new ByteArrayInputStream(input.getBytes()));
             }
@@ -132,6 +141,44 @@ public class InteractiveArgTest {
     }
 
     @Test
+    public void testInteractiveOptionReadsFromStdInNoTTY() {
+        org.junit.Assume.assumeTrue(System.getProperty("java.version").compareTo("22") < 0);
+        class App {
+            @Option(names = "-x", description = {"Pwd", "line2"}, interactive = true) int x;
+            @Option(names = "-z") int z;
+        }
+
+        Streams streams = new Streams();
+        System.setProperty("picocli.trace", "DEBUG");
+        try {
+            Capture capture = new Capture("1234567890", false);
+
+            App app = new App();
+            CommandLine cmd = new CommandLine(app);
+            ParseResult result = cmd.parseArgs("-x");
+            ArgSpec specX = result.matchedArgs().get(0);
+            assertThat(specX.toString(), containsString("App.x"));
+
+            assertEquals("", capture.out());
+            assertEquals(1234567890, app.x);
+            assertEquals(0, app.z);
+
+            String trace = capture.err();
+            assertThat(trace, containsString("User entered 10 characters"));
+            assertThat(trace, containsString(
+                "Setting " + specX.toString() + " to *****(masked) (interactive value)"));
+            assertThat(trace, not(containsString("1234567890")));
+
+            cmd.parseArgs("-z", "678");
+
+            assertEquals(0, app.x);
+            assertEquals(678, app.z);
+        } finally {
+            streams.reset();
+        }
+    }
+
+    @Test
     public void testInteractiveOptionReadsFromStdInWithEchoing() {
         class App {
             @Option(names = "-x", description = {"Pwd", "line2"}, interactive = true, echo = true) int x;
@@ -149,6 +196,37 @@ public class InteractiveArgTest {
             assertThat(specX.toString(), containsString("App.x"));
 
             assertEquals("Enter value for -x (Pwd): ", capture.out());
+            assertEquals(1234567890, app.x);
+
+            String trace = capture.err();
+            assertThat(trace, containsString("User entered 1234567890"));
+            assertThat(trace, containsString(
+                "Setting " + specX.toString() + " to 1234567890"));
+            assertThat(trace, not(containsString("10 characters")));
+            assertThat(trace, not(containsString("***")));
+        } finally {
+            streams.reset();
+        }
+    }
+
+    @Test
+    public void testInteractiveOptionReadsFromStdInWithEchoingNoTTY() {
+        class App {
+            @Option(names = "-x", description = {"Pwd", "line2"}, interactive = true, echo = true) int x;
+        }
+
+        Streams streams = new Streams();
+        System.setProperty("picocli.trace", "DEBUG");
+        try {
+            Capture capture = new Capture("1234567890", false);
+
+            App app = new App();
+            CommandLine cmd = new CommandLine(app);
+            ParseResult result = cmd.parseArgs("-x");
+            ArgSpec specX = result.matchedArgs().get(0);
+            assertThat(specX.toString(), containsString("App.x"));
+
+            assertEquals("", capture.out());
             assertEquals(1234567890, app.x);
 
             String trace = capture.err();

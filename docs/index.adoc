@@ -6258,13 +6258,15 @@ Usage: <main class> [-AbeEnstTuv] [--help] [--version] [FILE...]
 === Parameter Labels
 Non-boolean options require a value. The usage help should explain this, and picocli shows the option parameter
 in the synopsis and in the option list. By default, the field name is shown in `<` and `>` fish brackets.
-Use the `paramLabel` attribute to display a different name. For example:
+Use the `paramLabel` attribute to display a different name. For manual control with no automatic formatting,
+such as the two parameter case below, consider setting `hideParamSyntax=true`. For example:
 ----
-Usage: <main class> [-f=FILE] [-n=<number>] NUM <host>
+Usage: <main class> [-d=NAME BODY] [-f=FILE] [-n=<number>] NUM <host>
       NUM        number param
       host       the host parameter
   -f= FILE       a file
   -n= <number>   a number option
+  -d= NAME BODY  option with two params
 ----
 Some annotated fields in the below example class have a `paramLabel` attribute and others don't:
 
@@ -6277,6 +6279,7 @@ class ParamLabels {
     @Option(names = "-n",    description = "a number option")                   int number;
     @Parameters(index = "0", description = "number param", paramLabel = "NUM")  int n;
     @Parameters(index = "1", description = "the host parameter")                InetAddress host;
+    @Option(names = "-d", arity = "2", description = "option with two params", paramLabel = "NAME BODY", hideParamSyntax = true)
 }
 ----
 
@@ -10110,6 +10113,11 @@ usage.description.1 = second line
 usage.description.2 = third line
 usage.synopsisHeading = Usage:\u0020
 
+# For subcommands, prefix the entry with the top-level command name.
+# For example, if the name of the top-level command is MYTOPCOMMAND with a help subcommand,
+# then this is how to change the help subcommand main description:
+MYTOPCOMMAND.help.usage.header = MY CUSTOM HELP HEADER
+
 # Leading whitespace is removed by default.
 # Start with \u0020 to keep the leading whitespace.
 usage.customSynopsis.0 =      Usage: ln [OPTION]... [-T] TARGET LINK_NAME   (1st form)
@@ -12471,7 +12479,7 @@ class MyCDIApp implements Runnable {
 ====
 Depending on your configuration, CDI may use dynamic proxies for managed instances.
 
-The safest thing to do in CDI applications is to use public <<option-parameters-methods,annotated **setter methods**>> for picocli's `@Option` and `@Parameters`, `@Spec`, and other annotations. 
+The safest thing to do in CDI applications is to use public <<option-parameters-methods,annotated **setter methods**>> for picocli's `@Option` and `@Parameters`, `@Spec`, and other annotations.
 Using picocli annotations on fields or on non-public methods may result in picocli-injected values not being available in the proxied instance.
 ====
 
