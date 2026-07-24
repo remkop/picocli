@@ -9573,6 +9573,7 @@ public class CommandLine {
                     this(annotatedElement);
                     arity = Range.optionArity(annotatedElement);
                     required = option.required();
+                    originallyRequired = required;
 
                     paramLabel = inferLabel(option.paramLabel(), annotatedElement);
 
@@ -9609,6 +9610,7 @@ public class CommandLine {
                     this(annotatedElement);
                     arity = Range.parameterArity(annotatedElement);
                     required = arity.min > 0; //but arity may still be unresolved...
+                    originallyRequired = required;
 
                     // method parameters may be positional parameters without @Parameters annotation
                     if (parameters == null) {
@@ -9810,7 +9812,7 @@ public class CommandLine {
                 public String toString() { return toString; }
 
                 /** Sets whether this is a required option or positional parameter, and returns this builder. */
-                public T required(boolean required)          { this.required = required; return self(); }
+                public T required(boolean required)          { this.required = this.originallyRequired = required; return self(); }
 
                 /** Sets whether this option prompts the user to enter a value on the command line, and returns this builder. */
                 public T interactive(boolean interactive)    { this.interactive = interactive; return self(); }
@@ -10444,8 +10446,6 @@ public class CommandLine {
                         if (!arg.required()) {
                             modifiedArgs += sep + (arg.isOption() ? ((OptionSpec) arg).longestName() : (arg.paramLabel() + "[" + ((PositionalParamSpec) arg).index() + "]"));
                             sep = ",";
-                            //Keep initial required as originallyRequired for Issue#1380 https://github.com/remkop/picocli/issues/1380
-                            arg.originallyRequired = true;
                             arg.required = true;
                         }
                     }
@@ -16756,7 +16756,7 @@ public class CommandLine {
                 String longOption = join(names, shortOptionCount, names.length - shortOptionCount, ", ");
                 Text longOptionText = createLongOptionText(option, paramLabelRenderer, scheme, longOption);
 
-                String requiredOption = !option.originallyRequired() && option.required() ? requiredMarker : "";
+                String requiredOption = option.originallyRequired() && option.required() ? requiredMarker : "";
                 return renderDescriptionLines(option, scheme, requiredOption, shortOption, longOptionText);
             }
 

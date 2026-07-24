@@ -1698,6 +1698,32 @@ public class HelpTest {
     }
 
     @Test
+    public void testDefaultOptionRenderer_usesOriginalRequiredStateForArgGroupOptions() {
+        class ExclusiveOptions {
+            @Option(names = "--optional") boolean optional;
+            @Option(names = "--required", required = true) boolean required;
+        }
+        @Command(requiredOptionMarker = '*')
+        class Example {
+            @ArgGroup(exclusive = true, multiplicity = "0..1") ExclusiveOptions exclusive;
+        }
+
+        Help help = new Help(new Example());
+        Help.IOptionRenderer renderer = help.createDefaultOptionRenderer();
+        Help.IParamLabelRenderer parameterRenderer = help.createDefaultParamLabelRenderer();
+        OptionSpec optional = help.commandSpec().findOption("--optional");
+        OptionSpec required = help.commandSpec().findOption("--required");
+
+        assertTrue(optional.required());
+        assertFalse(optional.originallyRequired());
+        assertEquals("", renderer.render(optional, parameterRenderer, help.colorScheme())[0][0].plainString());
+
+        assertTrue(required.required());
+        assertTrue(required.originallyRequired());
+        assertEquals("*", renderer.render(required, parameterRenderer, help.colorScheme())[0][0].plainString());
+    }
+
+    @Test
     public void testDefaultOptionRenderer_rendersSpacePrefixByDefaultForRequiredOptionsWithoutDefaultValue() {
         class Example {
             @Option(names = {"-b", "-a", "--alpha"}, required = true, description = "other") String otherField;
