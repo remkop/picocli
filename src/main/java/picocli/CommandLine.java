@@ -9449,6 +9449,7 @@ public class CommandLine {
                 return "options and parameters";
             }
             private static String describe(Collection<ArgSpec> args) { return describe(args, ", ", "=", "", ""); }
+            private static String describe(Collection<ArgSpec> args, String optionParamSeparator) { return describe(args, ", ", optionParamSeparator, "", ""); }
             private static String describe(Collection<ArgSpec> args, String separator, String optionParamSeparator, String openingQuote, String closingQuote) {
                 StringBuilder sb = new StringBuilder();
                 for (ArgSpec arg : args) {
@@ -10863,9 +10864,10 @@ public class CommandLine {
                 int presentCount = intersection.size();
                 boolean haveMissing = !missing.isEmpty() && !exclusive();
                 boolean someButNotAllSpecified = haveMissing && !intersection.isEmpty();
-                String exclusiveElements = ArgSpec.describe(intersection);
-                String requiredElements = ArgSpec.describe(requiredArgs());
-                String missingElements = ArgSpec.describe(missing);
+                String optionParamSeparator = commandLine.getSeparator();
+                String exclusiveElements = ArgSpec.describe(intersection, optionParamSeparator);
+                String requiredElements = ArgSpec.describe(requiredArgs(), optionParamSeparator);
+                String missingElements = ArgSpec.describe(missing, optionParamSeparator);
 
                 return validate(commandLine, presentCount, haveMissing, someButNotAllSpecified, exclusiveElements, requiredElements, missingElements);
             }
@@ -13336,9 +13338,10 @@ public class CommandLine {
                     Set<ArgSpec> found = new LinkedHashSet<ArgSpec>(matchedValues.keySet());
                     missing.removeAll(matchedValues.keySet());
                     intersection.retainAll(found);
-                    String exclusiveElements = ArgSpec.describe(intersection);
-                    String requiredElements = ArgSpec.describe(group().requiredArgs());
-                    String missingElements = ArgSpec.describe(missing);
+                    String optionParamSeparator = commandLine.getSeparator();
+                    String exclusiveElements = ArgSpec.describe(intersection, optionParamSeparator);
+                    String requiredElements = ArgSpec.describe(group().requiredArgs(), optionParamSeparator);
+                    String missingElements = ArgSpec.describe(missing, optionParamSeparator);
 
                     Set<ArgGroupSpec> missingSubgroups = new LinkedHashSet<ArgGroupSpec>(group().subgroups());
                     missingSubgroups.removeAll(matchedSubgroups.keySet());

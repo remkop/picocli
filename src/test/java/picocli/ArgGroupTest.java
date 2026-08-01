@@ -4440,4 +4440,34 @@ public class ArgGroupTest {
             assertEquals("Error: Missing required argument(s): ([-f=<feature>] [-p=<project>])", ok.getMessage());
         }
     }
+
+    @Test // https://github.com/remkop/picocli/issues/2500
+    public void testIssue2500CustomSeparatorInArgGroupValidationMessages() {
+        class ChildGroup {
+            @Option(names = "--child", required = true) boolean child;
+        }
+        class Group {
+            @Option(names = "--file", required = true) String file;
+            @Option(names = "--output", required = true) String output;
+            @ArgGroup(exclusive = false, multiplicity = "1") ChildGroup childGroup;
+        }
+        @Command(separator = ":")
+        class App {
+            @ArgGroup(exclusive = false, multiplicity = "1") Group group;
+        }
+
+        try {
+            new CommandLine(new App(), new InnerClassFactory(this)).parseArgs("--file:value");
+            fail("Expected exception");
+        } catch (MissingParameterException ex) {
+            assertEquals("Error: Missing required argument(s): --output:<output>", ex.getMessage());
+        }
+
+        try {
+            new CommandLine(new App(), new InnerClassFactory(this)).parseArgs("--child");
+            fail("Expected exception");
+        } catch (MissingParameterException ex) {
+            assertEquals("Error: Missing required argument(s): --file:<file>, --output:<output>", ex.getMessage());
+        }
+    }
 }
