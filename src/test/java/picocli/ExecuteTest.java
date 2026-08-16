@@ -1626,5 +1626,46 @@ public class ExecuteTest {
         }
         assertEquals(expected, lines);
     }
+
+    @Command(name = "demo")
+    static class Issue2514Command implements Callable<Integer> {
+        @Spec CommandSpec spec;
+        private final boolean writeErr;
+
+        Issue2514Command(boolean writeErr) {
+            this.writeErr = writeErr;
+        }
+
+        public Integer call() {
+            if (writeErr) {
+                spec.commandLine().getErr().print("err-hello");
+            } else {
+                spec.commandLine().getOut().print("hello");
+            }
+            return 0;
+        }
+    }
+
+    @Test
+    public void testExecuteFlushesOutAfterPrintWithoutNewline() {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        PrintWriter out = CommandLine.newPrintWriter(baos, getStdoutEncoding());
+
+        int exit = new CommandLine(new Issue2514Command(false)).setOut(out).execute();
+
+        assertEquals(ExitCode.OK, exit);
+        assertEquals("hello", baos.toString());
+    }
+
+    @Test
+    public void testExecuteFlushesErrAfterPrintWithoutNewline() {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        PrintWriter err = CommandLine.newPrintWriter(baos, getStdoutEncoding());
+
+        int exit = new CommandLine(new Issue2514Command(true)).setErr(err).execute();
+
+        assertEquals(ExitCode.OK, exit);
+        assertEquals("err-hello", baos.toString());
+    }
 }
 
