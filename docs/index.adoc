@@ -1440,6 +1440,58 @@ See the sections on <<Custom Parameter Processing>> for more details.
 
 CAUTION: Make sure any nested classes are `static`, or picocli will not be able to instantiate them.
 
+==== Enum Converters
+A type converter is useful when you know ahead of time exactly which type you want to convert. This works for specific enum types as well, such as a hypothetical `DayOfWeek` enum. However if you want to install a converter for _all_ enum types, a `ITypeConverter` will not work; creating an enum at runtime requires knowing the enum type, something that `ITypeConverter.convert(String value)` does not provide.
+
+Instead you can install an `IEnumConverter`, which entirely replaces picocli's default enum conversion logic. The converter is installed using `CommandSpec.registerEnumConverter(IEnumConverter enumConverter)`.
+
+[source,java]
+----
+public interface IEnumConverter {
+    /**
+     * Converts the specified command line argument value to some enum.
+     * @param value The command line argument String value.
+     * @param enumType The class representing the type of enum.
+     * @param caseInsensitiveEnumValuesAllowed Whether the parser should ignore case.
+     * @return The resulting enum.
+     * @throws Exception an exception detailing what went wrong during the conversion.
+     * @throws TypeConversionException An exception giving more control over the error message.
+     */
+    <E extends Enum<E>> E convert(String value, Class<E> enumType, boolean caseInsensitiveEnumValuesAllowed) throws Exception;
+}
+----
+
+For example the following code shows one way to accept any enum value in its `kebab-case` form and automatically create the equivalent enum value in `ENUM_CASE` form.
+
+[source,java]
+----
+import java.util.Locale;
+import picocli.CommandLine;
+import picocli.CommandLine.IEnumConverter;
+import picocli.CommandLine.TypeConversionException;
+import picocli.CommandLine.Model.CommandSpec;
+
+class KebabCaseEnumConverter implements IEnumConverter {
+    public <E extends Enum<E>> E convert(String value, Class<E> enumType, boolean caseInsensitiveEnumValuesAllowed) throws Exception {
+        if (!caseInsensitiveEnumValuesAllowed) {
+            // if case-sensitive, we expect any `kebab-case` letters to be lowercase
+            if (!value.codePoints().allMatch(cp -> cp == '-'
+                    || Character.isDigit(cp)
+                    || (Character.isLetter(cp) && !Character.isUpperCase(cp)))) {
+                throw new TypeConversionException("Enum not in case-sensitive `kebab-case` form: " + value);
+            }
+        }
+        return Enum.valueOf(enumType, value.toUpperCase(Locale.ROOT).replace('-', '_'));
+    }
+};
+
+…
+
+new CommandLine(obj).registerEnumConverter(new KebabCaseEnumConveter());
+----
+
+The predefined enum converter `CommandLine.DEFAULT_ENUM_CONVERTER` encapsulates the enum conversion logic historically used by picocli, and which is installed by default. If a customer enum converter wants to convert only some enum types and/or values, it can delegate to `CommandLine.DEFAULT_ENUM_CONVERTER` as a fallback for the enums it does not wish to handle.
+
 === Handling Invalid Input
 
 If the user specifies invalid input, custom type converters should throw an exception.
