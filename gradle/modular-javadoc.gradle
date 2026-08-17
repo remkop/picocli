@@ -51,13 +51,21 @@ task makeModuleSourcePath {
             from('picocli-spring-boot-starter/src/main/java9')
             into "${targetDir}/info.picocli.spring.boot"
         }
+        copy {
+            from('picocli-spring-boot-4-starter/src/main/java')
+            into "${targetDir}/info.picocli.spring.boot"
+        }
+        copy {
+            from('picocli-spring-boot-4-starter/src/main/java9')
+            into "${targetDir}/info.picocli.spring.boot"
+        }
     }
 }
 
 def makeModulePath() {
     var result = ""
     project.subprojects {
-        if (['picocli-codegen', 'picocli-groovy', 'picocli-shell-jline2', 'picocli-shell-jline3', 'picocli-spring-boot-starter'].contains(it.name)) {
+        if (['picocli-codegen', 'picocli-groovy', 'picocli-shell-jline2', 'picocli-shell-jline3', 'picocli-spring-boot-starter', 'picocli-spring-boot-4-starter'].contains(it.name)) {
             logger.info("makeModulePath: listing dependencies for ${it}")
             it.sourceSets.main.runtimeClasspath.each {
                 if (it.isFile() && !it.name.startsWith('picocli')) {

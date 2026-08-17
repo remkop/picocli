@@ -11706,7 +11706,8 @@ fun main(args: Array<String>) {
 === Spring Boot Example
 image:https://picocli.info/images/spring-boot.png[Spring Boot Logo,width=350,height=167]
 
-As of version 4.0, picocli comes with Spring Boot support by providing a custom factory in the `picocli-spring-boot-starter` module.
+As of version 4.0, picocli comes with Spring Boot 2 and 3 support by providing a custom factory in the `picocli-spring-boot-starter` module.
+As of version 4.7.8-SNAPSHOT, picocli comes with Spring Boot 4 support by providing a custom factory in the `picocli-spring-boot-4-starter` module.
 
 The Spring Boot example app below provides a command line interface to a mail client that can be used to send emails using an SMTP server.
 The `To` address(es) and the subject line can be given as options, while a message body can be specified as parameter text.
@@ -11720,6 +11721,7 @@ Extract the archive file to a directory of your choice and open a shell or comma
 Since picocli dependencies are not available in the Spring Initializr, we have to add them manually:
 
 .Maven
+Spring Boot 2 and 3:
 [source,xml,role="primary"]
 ----
 <dependency>
@@ -11728,22 +11730,47 @@ Since picocli dependencies are not available in the Spring Initializr, we have t
   <version>4.7.8-SNAPSHOT</version>
 </dependency>
 ----
+Spring Boot 4:
+[source,xml,role="primary"]
+----
+<dependency>
+  <groupId>info.picocli</groupId>
+  <artifactId>picocli-spring-boot-4-starter</artifactId>
+  <version>4.7.8-SNAPSHOT</version>
+</dependency>
+----
 .Gradle (Groovy)
+Spring Boot 2 and 3:
 [source,groovy,role="secondary"]
 ----
 dependencies {
     implementation 'info.picocli:picocli-spring-boot-starter:4.7.8-SNAPSHOT'
 }
 ----
+Spring Boot 4:
+[source,groovy,role="secondary"]
+----
+dependencies {
+    implementation 'info.picocli:picocli-spring-boot-4-starter:4.7.8-SNAPSHOT'
+}
+----
 .Gradle (Kotlin)
+Spring Boot 2 and 3:
 [source,kotlin,role="secondary"]
 ----
 dependencies {
     implementation("info.picocli:picocli-spring-boot-starter:4.7.8-SNAPSHOT")
 }
 ----
+Spring Boot 4:
+[source,kotlin,role="secondary"]
+----
+dependencies {
+    implementation("info.picocli:picocli-spring-boot-4-starter:4.7.8-SNAPSHOT")
+}
+----
 
-This will bring in the `info.picocli:picocli` and the `info.picocli:picocli-spring-boot-starter` dependencies.
+This will bring in the `info.picocli:picocli` and the `info.picocli:picocli-spring-boot-starter` / `info.picocli:picocli-spring-boot-4-starter` dependencies.
 
 Now open the pre-authored source file `SpringBootDemoApplication.java`, rename it to `MySpringMailer.java` and edit and extend it so that it looks like this:
 

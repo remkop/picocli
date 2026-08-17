@@ -31,12 +31,13 @@ task bumpReadmeVersion {
     doLast {
         // README.md
         ant.replaceregexp(match: "$projectPreviousPublishedVersion", replace: "$version", flags: 'g', byline: true, encoding: 'UTF8') {
-            fileset(dir: '.',                              includes: 'README.md')
-            fileset(dir: './picocli-codegen/',             includes: 'README.adoc')
-            fileset(dir: './picocli-groovy/',              includes: 'README.md')
-            fileset(dir: './picocli-shell-jline2/',        includes: 'README.md')
-            fileset(dir: './picocli-shell-jline3/',        includes: 'README.md')
-            fileset(dir: './picocli-spring-boot-starter/', includes: 'README.md')
+            fileset(dir: '.',                                includes: 'README.md')
+            fileset(dir: './picocli-codegen/',               includes: 'README.adoc')
+            fileset(dir: './picocli-groovy/',                includes: 'README.md')
+            fileset(dir: './picocli-shell-jline2/',          includes: 'README.md')
+            fileset(dir: './picocli-shell-jline3/',          includes: 'README.md')
+            fileset(dir: './picocli-spring-boot-starter/',   includes: 'README.md')
+            fileset(dir: './picocli-spring-boot-4-starter/', includes: 'README.md')
             fileset(dir: './picocli-examples/annotation-processing/') {
                 include(name: '**/pom.xml')
                 include(name: '**/build.gradle')
@@ -82,6 +83,9 @@ task bumpVersion {
         }
         // Spring Boot section
         ant.replaceregexp(match: ":picocli-spring-boot-starter:$projectPreviousVersionRegex", replace: ":picocli-spring-boot-starter:$version", flags: 'g', byline: true, encoding: 'UTF8') {
+            fileset(dir: 'docs', includes: 'index.adoc')
+        }
+        ant.replaceregexp(match: ":picocli-spring-boot-4-starter:$projectPreviousVersionRegex", replace: ":picocli-spring-boot-4-starter:$version", flags: 'g', byline: true, encoding: 'UTF8') {
             fileset(dir: 'docs', includes: 'index.adoc')
         }
         // Downloads section, Gradle

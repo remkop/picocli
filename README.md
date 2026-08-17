@@ -73,8 +73,9 @@ implement [custom parameter processing](https://picocli.info/#_custom_parameter_
 Picocli-based applications can easily [integrate](https://picocli.info/#_dependency_injection) with Dependency Injection containers.
 The [Micronaut](https://micronaut.io/) microservices framework has [built-in support](https://docs.micronaut.io/latest/guide/index.html#commandLineApps) for picocli.
 [Quarkus](https://quarkus.io/) has a [Command Mode with Picocli](https://quarkus.io/guides/picocli) extension for facilitating the creation of picocli-based CLI applications with Quarkus.
-Picocli ships with a [`picocli-spring-boot-starter` module](https://github.com/remkop/picocli/tree/main/picocli-spring-boot-starter)
-that includes a `PicocliSpringFactory` and Spring Boot auto-configuration to use Spring dependency injection in your picocli command line application.
+Picocli ships with [`picocli-spring-boot-starter`](https://github.com/remkop/picocli/tree/main/picocli-spring-boot-starter) and
+[`picocli-spring-boot-4-starter`](https://github.com/remkop/picocli/tree/main/picocli-spring-boot-4-starter) modules
+which include a `PicocliSpringFactory` and Spring Boot auto-configuration to use Spring dependency injection in your picocli command line application.
 The user manual has examples of integrating with [Guice](https://picocli.info/#_guice_example), [Spring Boot](https://picocli.info/#_spring_boot_example), [Micronaut](https://picocli.info/#_micronaut_example), [Quarkus](https://picocli.info/#_quarkus_example) and with containers that comply to [CDI 2.0 specification](https://picocli.info/#_cdi_2_0_jsr_365) (JSR 365).
 
 ### Releases
