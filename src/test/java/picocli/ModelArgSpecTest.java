@@ -38,6 +38,25 @@ public class ModelArgSpecTest {
     public final ProvideSystemProperty ansiOFF = new ProvideSystemProperty("picocli.ansi", "false");
 
     @Test
+    public void testOriginallyRequiredReflectsAnnotatedRequiredState() {
+        class Example {
+            @CommandLine.Option(names = "--required", required = true) String requiredOption;
+            @CommandLine.Option(names = "--optional") String optionalOption;
+            @CommandLine.Parameters(index = "0") String requiredPosition;
+            @CommandLine.Parameters(index = "1", arity = "0..1") String optionalPosition;
+        }
+
+        CommandSpec spec = new CommandLine(new Example()).getCommandSpec();
+        assertTrue(spec.findOption("--required").originallyRequired());
+        assertFalse(spec.findOption("--optional").originallyRequired());
+        assertTrue(spec.positionalParameters().get(0).originallyRequired());
+        assertFalse(spec.positionalParameters().get(1).originallyRequired());
+
+        assertTrue(OptionSpec.builder("--builder-required").required(true).build().originallyRequired());
+        assertFalse(OptionSpec.builder("--builder-optional").required(false).build().originallyRequired());
+    }
+
+    @Test
     public void testArgSpecConstructorWithEmptyAuxTypes() {
         PositionalParamSpec positional = PositionalParamSpec.builder().auxiliaryTypes(new Class[0]).build();
         assertEquals(CommandLine.Range.valueOf("1"), positional.arity());
