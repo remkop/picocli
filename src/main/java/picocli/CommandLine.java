@@ -13803,25 +13803,9 @@ public class CommandLine {
                                       Set<ArgSpec> initialized,
                                       String[] originalArgs,
                                       List<Object> nowProcessing) throws Exception {
-            // arg must be one of:
-            // 1. the "--" double dash separating options from positional arguments
-            // 1. a stand-alone flag, like "-v" or "--verbose": no value required, must map to boolean or Boolean field
-            // 2. a short option followed by an argument, like "-f file" or "-ffile": may map to any type of field
-            // 3. a long option followed by an argument, like "-file out.txt" or "-file=out.txt"
-            // 3. one or more remaining arguments without any associated options. Must be the last in the list.
-            // 4. a combination of stand-alone options, like "-vxr". Equivalent to "-v -x -r", "-v true -x true -r true"
-            // 5. a combination of stand-alone options and one option with an argument, like "-vxrffile"
-
-            if (parseResultBuilder.expandedArgList.isEmpty()) { // don't add args again if called from do-while in parse()
-                List<String> expandedArgs = new ArrayList<String>(args);
-                Collections.reverse(expandedArgs); // Need to reverse the stack to get args in specified order
-                parseResultBuilder.expandedArgs(expandedArgs);
-                parseResultBuilder.originalArgs(originalArgs);
-                parseResultBuilder.nowProcessing = nowProcessing;
-            }
+            initExpandedArgList(args, originalArgs, nowProcessing);
 
             String separator = config().separator();
-            Tracer tracer = CommandLine.tracer();
             while (!args.isEmpty()) {
                 if (endOfOptions) {
                     processRemainderAsPositionalParameters(required, initialized, args);
@@ -13830,105 +13814,166 @@ public class CommandLine {
                 String originalArg = args.pop();
                 String arg = smartUnquoteIfEnabled(originalArg);
                 boolean actuallyUnquoted = !originalArg.equals(arg);
-                if (tracer.isDebug()) {
-                    int argIndex = originalArgs.length - (args.size() + 1);
-                    if (actuallyUnquoted) { tracer.debug("[%d] Processing argument '%s' (trimmed from '%s'). Remainder=%s", argIndex, arg, originalArg, reverse(copy(args))); }
-                    else { tracer.debug("[%d] Processing argument '%s'. Remainder=%s", argIndex, arg, reverse(copy(args))); }
-                }
+                traceArg(arg, originalArg, actuallyUnquoted, args, originalArgs);
 
-                // Double-dash separates options from positional arguments.
-                // If found, then interpret the remaining args as positional parameters.
-                if (commandSpec.parser.endOfOptionsDelimiter().equals(arg)) {
-                    tracer.info("Found end-of-options delimiter '%s'. Treating remainder as positional parameters.", commandSpec.parser.endOfOptionsDelimiter());
-                    endOfOptions = true;
-                    processRemainderAsPositionalParameters(required, initialized, args);
-                    return; // we are done
+                if (isArgEndOfOptionsDelimiter(arg)) {
+                    handleEndOfOptions(required, initialized, args);
+                    return;
                 }
+                if (tryProcessAsSubcommand(arg, parsedCommands, args, required, initialized, originalArgs, nowProcessing, separator)) {
+                    return;
+                }
+                if (tryProcessAsRepeatableSubcommand(arg, parsedCommands, args, required, initialized, originalArgs, nowProcessing, separator)) {
+                    continue;
+                }
+                arg = resolveAbbreviatedOption(arg);
+                processOption(arg, actuallyUnquoted, args, required, initialized, separator);
+            }
+        }
 
-                // if we find another command, we are done with the current command
-                CommandLine subcommand = commandSpec.subcommands().get(arg);
-                if (subcommand == null && commandSpec.parser().abbreviatedSubcommandsAllowed()) {
-                    subcommand = AbbreviationMatcher.match(commandSpec.subcommands(), arg, commandSpec.subcommandsCaseInsensitive(), CommandLine.this).getValue();
-                }
-                if (subcommand != null) {
-                    processSubcommand(subcommand, parseResultBuilder, parsedCommands, args, required, initialized, originalArgs, nowProcessing, separator, arg);
-                    return; // remainder done by the command
-                }
-                CommandSpec parent = commandSpec.parent();
-                if (parent != null && parent.subcommandsRepeatable()) {
-                    subcommand = parent.subcommands().get(arg);
-                    if (subcommand == null && parent.parser().abbreviatedSubcommandsAllowed()) {
-                        subcommand = AbbreviationMatcher.match(parent.subcommands(), arg, parent.subcommandsCaseInsensitive(), CommandLine.this).getValue();
-                    }
-                    if (subcommand != null) {
-                        tracer.debug("'%s' is a repeatable subcommand of %s", arg,
-                            commandSpec.parent().qualifiedName()); // #454 repeatable subcommands
-                        Set<ArgSpec> inheritedInitialized = initialized;
-                        if (subcommand.interpreter.parseResultBuilder != null) {
-                            tracer.debug("Subcommand '%s' has been matched before. Making a copy...",
-                                subcommand.getCommandName());
-                            subcommand = subcommand.copy();
-                            subcommand.getCommandSpec().parent(commandSpec.parent()); // hook it up with its parent
-                            inheritedInitialized = new LinkedHashSet<ArgSpec>(inheritedInitialized);
-                        }
-                        processSubcommand(subcommand, getParent().interpreter.parseResultBuilder, parsedCommands, args,
-                            required, inheritedInitialized, originalArgs, nowProcessing, separator, arg);
-                        continue;
-                    }
-                }
+        private void initExpandedArgList(Stack<String> args, String[] originalArgs, List<Object> nowProcessing) {
+            if (!parseResultBuilder.expandedArgList.isEmpty()) return;
+            List<String> expandedArgs = new ArrayList<>(args);
+            Collections.reverse(expandedArgs);
+            parseResultBuilder.expandedArgs(expandedArgs);
+            parseResultBuilder.originalArgs(originalArgs);
+            parseResultBuilder.nowProcessing = nowProcessing;
+        }
 
-                // First try to interpret the argument as a single option (as opposed to a compact group of options).
-                // A single option may be without option parameters, like "-v" or "--verbose" (a boolean value),
-                // or an option may have one or more option parameters.
-                // A parameter may be attached to the option.
-                LinkedHashMap<String, OptionSpec> aggregatedOptions = new LinkedHashMap<String, OptionSpec>();
-                if (commandSpec.parser().abbreviatedOptionsAllowed()) {
-                    aggregatedOptions.putAll(commandSpec.optionsMap());
-                    aggregatedOptions.putAll(commandSpec.negatedOptionsMap());
-                    arg = AbbreviationMatcher.match(aggregatedOptions, arg, commandSpec.optionsCaseInsensitive(), CommandLine.this).getFullName();
-                }
-                LookBehind lookBehind = LookBehind.SEPARATE;
-                int separatorIndex = arg.indexOf(separator);
-                if (separatorIndex > 0) {
-                    String key = arg.substring(0, separatorIndex);
-                    key = AbbreviationMatcher.match(aggregatedOptions, key, commandSpec.optionsCaseInsensitive(), CommandLine.this).getFullName(); //#1159, #1162
-                    // be greedy. Consume the whole arg as an option if possible.
-                    if (isStandaloneOption(key) && isStandaloneOption(arg)) {
-                        tracer.warn("Both '%s' and '%s' are valid option names in %s. Using '%s'...", arg, key, getCommandName(), arg);
-                    } else if (isStandaloneOption(key)) {
-                        lookBehind = LookBehind.ATTACHED_WITH_SEPARATOR;
-                        String optionParam = arg.substring(separatorIndex + separator.length());
-                        args.push(optionParam);
-                        arg = key;
-                        if (tracer.isDebug()) {
-                            tracer.debug("Separated '%s' option from '%s' option parameter", key, optionParam);}
-                    } else {
-                        if (tracer.isDebug()) {
-                            tracer.debug("'%s' contains separator '%s' but '%s' is not a known option", arg, separator, key);}
+        private void traceArg(String arg, String originalArg, boolean actuallyUnquoted,
+                              Stack<String> args, String[] originalArgs) {
+            Tracer tracer = CommandLine.tracer();
+            if (!tracer.isDebug()) return;
+            int argIndex = originalArgs.length - (args.size() + 1);
+            if (actuallyUnquoted) {
+                tracer.debug("[%d] Processing argument '%s' (trimmed from '%s'). Remainder=%s",
+                    argIndex, arg, originalArg, reverse(copy(args)));
+            } else {
+                tracer.debug("[%d] Processing argument '%s'. Remainder=%s",
+                    argIndex, arg, reverse(copy(args)));
+            }
+        }
+
+        private boolean isArgEndOfOptionsDelimiter(String arg) {
+            return commandSpec.parser.endOfOptionsDelimiter().equals(arg);
+        }
+
+        private void handleEndOfOptions(Collection<ArgSpec> required,
+                                        Set<ArgSpec> initialized,
+                                        Stack<String> args) throws Exception {
+            CommandLine.tracer().info("Found end-of-options delimiter '%s'. Treating remainder as positional parameters.",
+                commandSpec.parser.endOfOptionsDelimiter());
+            endOfOptions = true;
+            processRemainderAsPositionalParameters(required, initialized, args);
+        }
+
+        private boolean tryProcessAsSubcommand(String arg, List<CommandLine> parsedCommands,
+                                               Stack<String> args, Collection<ArgSpec> required,
+                                               Set<ArgSpec> initialized, String[] originalArgs,
+                                               List<Object> nowProcessing, String separator) throws Exception {
+            CommandLine subcommand = resolveSubcommand(commandSpec, arg);
+            if (subcommand == null) return false;
+            processSubcommand(subcommand, parseResultBuilder, parsedCommands, args,
+                required, initialized, originalArgs, nowProcessing, separator, arg);
+            return true;
+        }
+
+        private boolean tryProcessAsRepeatableSubcommand(String arg, List<CommandLine> parsedCommands,
+                                                         Stack<String> args, Collection<ArgSpec> required,
+                                                         Set<ArgSpec> initialized, String[] originalArgs,
+                                                         List<Object> nowProcessing, String separator) throws Exception {
+            CommandSpec parent = commandSpec.parent();
+            if (parent == null || !parent.subcommandsRepeatable()) return false;
+
+            CommandLine subcommand = resolveSubcommand(parent, arg);
+            if (subcommand == null) return false;
+
+            CommandLine.tracer().debug("'%s' is a repeatable subcommand of %s", arg, parent.qualifiedName());
+            Set<ArgSpec> inheritedInitialized = initialized;
+            if (subcommand.interpreter.parseResultBuilder != null) {
+                CommandLine.tracer().debug("Subcommand '%s' has been matched before. Making a copy...", subcommand.getCommandName());
+                subcommand = subcommand.copy();
+                subcommand.getCommandSpec().parent(commandSpec.parent());
+                inheritedInitialized = new LinkedHashSet<>(initialized);
+            }
+            processSubcommand(subcommand, getParent().interpreter.parseResultBuilder, parsedCommands,
+                args, required, inheritedInitialized, originalArgs, nowProcessing, separator, arg);
+            return true;
+        }
+
+        private CommandLine resolveSubcommand(CommandSpec spec, String arg) {
+            CommandLine sub = spec.subcommands().get(arg);
+            if (sub == null && spec.parser().abbreviatedSubcommandsAllowed()) {
+                sub = AbbreviationMatcher.match(spec.subcommands(), arg,
+                    spec.subcommandsCaseInsensitive(), CommandLine.this).getValue();
+            }
+            return sub;
+        }
+
+        private String resolveAbbreviatedOption(String arg) {
+            if (!commandSpec.parser().abbreviatedOptionsAllowed()) return arg;
+            LinkedHashMap<String, OptionSpec> aggregated = new LinkedHashMap<>();
+            aggregated.putAll(commandSpec.optionsMap());
+            aggregated.putAll(commandSpec.negatedOptionsMap());
+            return AbbreviationMatcher.match(aggregated, arg,
+                commandSpec.optionsCaseInsensitive(), CommandLine.this).getFullName();
+        }
+
+        private void processOption(String arg, boolean actuallyUnquoted, Stack<String> args,
+                                   Collection<ArgSpec> required, Set<ArgSpec> initialized,
+                                   String separator) throws Exception {
+            Tracer tracer = CommandLine.tracer();
+            LookBehind lookBehind = LookBehind.SEPARATE;
+
+            LinkedHashMap<String, OptionSpec> aggregatedOptions = new LinkedHashMap<>();
+            if (commandSpec.parser().abbreviatedOptionsAllowed()) {
+                aggregatedOptions.putAll(commandSpec.optionsMap());
+                aggregatedOptions.putAll(commandSpec.negatedOptionsMap());
+            }
+
+            int separatorIndex = arg.indexOf(separator);
+            if (separatorIndex > 0) {
+                String key = arg.substring(0, separatorIndex);
+                key = AbbreviationMatcher.match(aggregatedOptions, key,
+                    commandSpec.optionsCaseInsensitive(), CommandLine.this).getFullName();
+                if (isStandaloneOption(key) && isStandaloneOption(arg)) {
+                    tracer.warn("Both '%s' and '%s' are valid option names in %s. Using '%s'...",
+                        arg, key, getCommandName(), arg);
+                } else if (isStandaloneOption(key)) {
+                    lookBehind = LookBehind.ATTACHED_WITH_SEPARATOR;
+                    String optionParam = arg.substring(separatorIndex + separator.length());
+                    args.push(optionParam);
+                    arg = key;
+                    if (tracer.isDebug()) {
+                        tracer.debug("Separated '%s' option from '%s' option parameter", key, optionParam);
                     }
                 } else {
                     if (tracer.isDebug()) {
-                        tracer.debug("'%s' cannot be separated into <option>%s<option-parameter>", arg, separator);}
+                        tracer.debug("'%s' contains separator '%s' but '%s' is not a known option", arg, separator, key);
+                    }
                 }
-                if (isStandaloneOption(arg)) {
-                    processStandaloneOption(required, initialized, arg, actuallyUnquoted, args, lookBehind);
+            } else {
+                if (tracer.isDebug()) {
+                    tracer.debug("'%s' cannot be separated into <option>%s<option-parameter>", arg, separator);
                 }
-                // Compact (single-letter) options can be grouped with other options or with an argument.
-                // only single-letter options can be combined with other options or with an argument
-                else if (config().posixClusteredShortOptionsAllowed() && arg.length() > 2 && arg.startsWith("-")) {
-                    if (tracer.isDebug()) {
-                        tracer.debug("Trying to process '%s' as clustered short options", arg, args);}
-                    processClusteredShortOptions(required, initialized, arg, actuallyUnquoted, args);
+            }
+
+            if (isStandaloneOption(arg)) {
+                processStandaloneOption(required, initialized, arg, actuallyUnquoted, args, lookBehind);
+            } else if (config().posixClusteredShortOptionsAllowed() && arg.length() > 2 && arg.startsWith("-")) {
+                if (tracer.isDebug()) {
+                    tracer.debug("Trying to process '%s' as clustered short options", arg, args);
                 }
-                // The argument could not be interpreted as an option: process it as a positional argument
-                else {
-                    args.push(arg);
-                    if (tracer.isDebug()) {
-                        tracer.debug("Could not find option '%s', deciding whether to treat as unmatched option or positional parameter...", arg);}
-                    if (tracer.isDebug()) {
-                        tracer.debug("No option named '%s' found. Processing as positional parameter", arg);}
-                    processPositionalParameter(required, initialized, actuallyUnquoted, args);
+                processClusteredShortOptions(required, initialized, arg, actuallyUnquoted, args);
+            } else {
+                args.push(arg);
+                if (tracer.isDebug()) {
+                    tracer.debug("Could not find option '%s', deciding whether to treat as unmatched option or positional parameter...", arg);
                 }
+                if (tracer.isDebug()) {
+                    tracer.debug("No option named '%s' found. Processing as positional parameter", arg);
+                }
+                processPositionalParameter(required, initialized, actuallyUnquoted, args);
             }
         }
 
