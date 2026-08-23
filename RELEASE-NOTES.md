@@ -1,5 +1,11 @@
 # picocli Release Notes
 
+# <a name="4.7.8"></a> Picocli 4.7.8 (unreleased)
+
+## <a name="4.7.8-fixes"></a> Fixed issues
+
+* [#2504] Enhancement: Opt `picocli-codegen` into Gradle incremental annotation processing. The processor is registered as `dynamic`: aggregating while GraalVM config files are generated (those files combine all `@Command` types), isolating when all three `disable.*.config` options are set so only per-type validation runs. Thanks to [Vampire](https://github.com/Vampire) for raising this.
+
 # <a name="4.7.7"></a> Picocli 4.7.7
 The picocli community is pleased to announce picocli 4.7.7.
 

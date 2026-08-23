@@ -121,6 +121,11 @@ dependencies {
 }
 ```
 
+From picocli 4.7.8, the annotation processor opts into https://docs.gradle.org/current/userguide/java_plugin.html#sec:incremental_annotation_processing[Gradle incremental annotation processing] as a `dynamic` processor:
+
+* *aggregating* (default) -- each generated GraalVM `*-config.json` file is built from every `@Command` in the compilation, so Gradle reprocesses all annotated sources when any of them changes (instead of compiling the whole project).
+* *isolating* -- when `disable.reflect.config`, `disable.resource.config` and `disable.proxy.config` are all set, no GraalVM files are written and the processor only validates annotations. Gradle can then recompile just the changed and dependent sources.
+
 ==== Kotlin Projects Using Maven
 
 Add an execution of the `kapt` goal from `kotlin-maven-plugin` before `compile`:
