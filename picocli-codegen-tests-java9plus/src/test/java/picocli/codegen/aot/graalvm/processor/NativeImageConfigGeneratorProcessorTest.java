@@ -8,6 +8,10 @@ import javax.tools.Diagnostic;
 import javax.tools.JavaFileManager;
 import javax.tools.StandardLocation;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
@@ -138,6 +142,70 @@ public class NativeImageConfigGeneratorProcessorTest {
                 { ProxyConfigGen.class.getSimpleName(),    "proxy-config.json",    "false", "false" },
         };
         expectGeneratedWithNotes(compilation, allParams);
+    }
+
+    @Test
+    public void testGradleIncrementalDescriptorIsDynamic() throws Exception {
+        InputStream in = NativeImageConfigGeneratorProcessor.class.getClassLoader()
+                .getResourceAsStream("META-INF/gradle/incremental.annotation.processors");
+        assertNotNull("META-INF/gradle/incremental.annotation.processors must be on the processor classpath", in);
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
+            String line = reader.readLine();
+            assertEquals(NativeImageConfigGeneratorProcessor.class.getName() + ",dynamic", line.trim());
+        }
+    }
+
+    @Test
+    public void testGradleCategoryAggregatingByDefault() {
+        NativeImageConfigGeneratorProcessor processor = new NativeImageConfigGeneratorProcessor();
+        assertEquals(NativeImageConfigGeneratorProcessor.GRADLE_AGGREGATING,
+                processor.gradleIncrementalProcessingCategory());
+        Compilation compilation =
+                javac()
+                        .withProcessors(processor)
+                        .compile(JavaFileObjects.forResource(
+                                "picocli/examples/subcommands/ParentCommandDemo.java"));
+        assertThat(compilation).succeeded();
+        assertTrue(processor.getSupportedOptions().contains(NativeImageConfigGeneratorProcessor.GRADLE_AGGREGATING));
+        assertFalse(processor.getSupportedOptions().contains(NativeImageConfigGeneratorProcessor.GRADLE_ISOLATING));
+        assertTrue(processor.getSupportedOptions().contains(OPTION_PROJECT));
+    }
+
+    @Test
+    public void testGradleCategoryStillAggregatingIfOnlySomeGeneratorsDisabled() {
+        NativeImageConfigGeneratorProcessor processor = new NativeImageConfigGeneratorProcessor();
+        Compilation compilation =
+                javac()
+                        .withProcessors(processor)
+                        .withOptions("-A" + ReflectConfigGen.OPTION_DISABLE,
+                                "-A" + ResourceConfigGen.OPTION_DISABLE)
+                        .compile(JavaFileObjects.forResource(
+                                "picocli/examples/subcommands/ParentCommandDemo.java"));
+        assertThat(compilation).succeeded();
+        assertTrue(processor.getSupportedOptions().contains(NativeImageConfigGeneratorProcessor.GRADLE_AGGREGATING));
+        assertFalse(processor.getSupportedOptions().contains(NativeImageConfigGeneratorProcessor.GRADLE_ISOLATING));
+    }
+
+    @Test
+    public void testGradleCategoryIsolatingWhenAllGeneratorsDisabled() {
+        NativeImageConfigGeneratorProcessor processor = new NativeImageConfigGeneratorProcessor();
+        Compilation compilation =
+                javac()
+                        .withProcessors(processor)
+                        .withOptions("-A" + ReflectConfigGen.OPTION_DISABLE,
+                                "-A" + ResourceConfigGen.OPTION_DISABLE,
+                                "-A" + ProxyConfigGen.OPTION_DISABLE)
+                        .compile(JavaFileObjects.forResource(
+                                "picocli/examples/subcommands/ParentCommandDemo.java"));
+        assertThat(compilation).succeeded();
+        String[][] allParams = {
+                { ReflectConfigGen.class.getSimpleName(),  "reflect-config.json",  "false", "false" },
+                { ResourceConfigGen.class.getSimpleName(), "resource-config.json", "false", "false" },
+                { ProxyConfigGen.class.getSimpleName(),    "proxy-config.json",    "false", "false" },
+        };
+        expectGeneratedWithNotes(compilation, allParams);
+        assertTrue(processor.getSupportedOptions().contains(NativeImageConfigGeneratorProcessor.GRADLE_ISOLATING));
+        assertFalse(processor.getSupportedOptions().contains(NativeImageConfigGeneratorProcessor.GRADLE_AGGREGATING));
     }
 
     @Test
