@@ -1,0 +1,3 @@
+#!/bin/bash
+mkdir -p log
+runtest --outdir log --tool completion

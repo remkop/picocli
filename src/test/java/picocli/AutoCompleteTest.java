@@ -91,6 +91,14 @@ public class AutoCompleteTest {
         assertEquals(expected, script);
     }
 
+    @Test
+    public void basicFish() throws Exception {
+        String script = AutoComplete.fish("basicExample", new CommandLine(new BasicExample()));
+        System.out.println(script);
+        String expected = loadTextFromClasspath("/basic.fish");
+        assertEquals(expected, script);
+    }
+
     public static class TopLevel {
         @Option(names = {"-V", "--version"}, help = true) boolean versionRequested;
         @Option(names = {"-h", "--help"}, help = true) boolean helpRequested;
@@ -175,17 +183,31 @@ public class AutoCompleteTest {
     //    }
     @Test
     public void nestedSubcommands() throws Exception {
-        CommandLine hierarchy = new CommandLine(new TopLevel())
-                .addSubcommand("sub1", new Sub1())
-                .addSubcommand("sub2", new CommandLine(new Sub2())
-                        .addSubcommand("subsub1", new Sub2Child1())
-                        .addSubcommand("subsub2", new Sub2Child2())
-                        .addSubcommand("subsub3", new Sub2Child3())
-                );
+        CommandLine hierarchy = getNestedSubcommandsCommandLine();
         String script = AutoComplete.bash("picocompletion-demo", hierarchy);
         String expected = format(loadTextFromClasspath("/picocompletion-demo_completion.bash"),
                 CommandLine.VERSION, concat("\" \"", TimeUnit.values()));
         assertEquals(expected, script);
+    }
+
+    @Test
+    public void nestedSubcommandsFish() throws Exception {
+        CommandLine hierarchy = getNestedSubcommandsCommandLine();
+        String script = AutoComplete.fish("picocompletion-demo", hierarchy);
+        System.out.println(script);
+        String expected = loadTextFromClasspath("/picocompletion-demo_completion.fish");
+        assertEquals(expected, script);
+    }
+
+    private static CommandLine getNestedSubcommandsCommandLine() {
+        CommandLine hierarchy = new CommandLine(new TopLevel())
+            .addSubcommand("sub1", new Sub1())
+            .addSubcommand("sub2", new CommandLine(new Sub2())
+                .addSubcommand("subsub1", new Sub2Child1())
+                .addSubcommand("subsub2", new Sub2Child2())
+                .addSubcommand("subsub3", new Sub2Child3())
+            );
+        return hierarchy;
     }
 
     @Test
