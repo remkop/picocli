@@ -27,6 +27,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.*;
@@ -1099,5 +1101,52 @@ public class MixinTest {
     public void testIssue1836CommandAliasOnMixin() {
         Help help = new Help(new App_Issue1836());
         assertEquals("list, ls", help.commandList().trim());
+    }
+
+    public static class MixinReuseModelTransformer implements IModelTransformer {
+        @Override
+        public CommandSpec transform(CommandSpec commandSpec) {
+            String prefix = commandSpec.name();
+            ArrayList<OptionSpec> options = new ArrayList<OptionSpec>(commandSpec.options());
+            for (OptionSpec option : options) {
+                commandSpec.remove(option);
+                OptionSpec.Builder optionBuilder = option.toBuilder();
+                String[] names = optionBuilder.names();
+                String[] newNames = new String[names.length];
+                for (int i = 0; i < names.length; i++) {
+                    String name = names[i];
+                    String newName = "--" + prefix + name.substring(2, 3).toUpperCase() + name.substring(3);
+                    newNames[i] = newName;
+                }
+                optionBuilder.names(newNames);
+                String defaultValue = optionBuilder.defaultValue();
+                if (defaultValue.startsWith("${env:")) {
+                    optionBuilder.defaultValue("${env:" + prefix.toUpperCase() + "_" + defaultValue.substring(6, defaultValue.length() - 1).toUpperCase() + "}");
+                }
+                commandSpec.add(optionBuilder.build());
+            }
+            return commandSpec;
+        }
+    }
+
+    @Test
+    public void testModelTransformation() {
+        class ReusableMixin {
+            @Option(names = "--url", defaultValue = "${env:URL}")
+            String  url;
+        }
+        class Application {
+            @Mixin(modelTransformer = MixinReuseModelTransformer.class)
+            ReusableMixin first;
+            @Mixin(modelTransformer = MixinReuseModelTransformer.class)
+            ReusableMixin second;
+        }
+        Application application = new Application();
+        CommandLine commandLine = new CommandLine(application, new InnerClassFactory(this));
+        List<OptionSpec> options = commandLine.getCommandSpec().options();
+        assertArrayEquals(new String[]{"--firstUrl"}, options.get(0).names());
+        assertEquals("${env:FIRST_URL}", options.get(0).defaultValueString());
+        assertArrayEquals(new String[]{"--secondUrl"}, options.get(1).names());
+        assertEquals("${env:SECOND_URL}", options.get(1).defaultValueString());
     }
 }
