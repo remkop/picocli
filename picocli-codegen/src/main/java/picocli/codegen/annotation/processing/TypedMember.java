@@ -114,6 +114,10 @@ class TypedMember implements CommandLine.Model.IAnnotatedElement, CommandLine.Mo
         return empty(annotationName) ? getName() : annotationName;
     }
 
+    public String[] getOptionNameTransformations() {
+        return getAnnotation(CommandLine.Mixin.class).optionNameTransformations();
+    }
+
     static String propertyName(String methodName) {
         if (methodName.length() > 3 && (methodName.startsWith("get") || methodName.startsWith("set"))) { return decapitalize(methodName.substring(3)); }
         return decapitalize(methodName);
