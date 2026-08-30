@@ -3491,6 +3491,55 @@ public class HelpTest {
         assertEquals(format("[picocli WARN] Invalid picocli.usage.width value 'INVALID'. Using usage width 80.%n"), baos.toString("UTF-8"));
     }
 
+    @Command(name = "app", description = "Sample application")
+    static class InvalidUsageWidthApp {
+        @Option(names = "-x", description = "Sample option") String value;
+    }
+
+    @Test
+    public void testInvalidUsageWidthWarningIsLoggedOncePerUsageMessage() {
+        System.clearProperty("picocli.trace");
+        System.setProperty("picocli.usage.width", "INVALID");
+
+        new CommandLine(new InvalidUsageWidthApp()).getUsageMessage(Help.Ansi.OFF);
+
+        assertEquals(format("[picocli WARN] Invalid picocli.usage.width value 'INVALID'. Using usage width 80.%n"),
+                systemErrRule.getLog());
+    }
+
+    @Test
+    public void testInvalidUsageWidthWarningIsLoggedForEachUsageMessageWhenHelpIsReused() {
+        System.clearProperty("picocli.trace");
+        final CommandLine commandLine = new CommandLine(new InvalidUsageWidthApp());
+        final Help reusedHelp = commandLine.getHelp();
+        commandLine.setHelpFactory(new IHelpFactory() {
+            public Help create(CommandSpec commandSpec, ColorScheme colorScheme) {
+                return reusedHelp;
+            }
+        });
+
+        System.setProperty("picocli.usage.width", "FIRST_INVALID");
+        commandLine.getUsageMessage(Help.Ansi.OFF);
+        commandLine.getUsageMessage(Help.Ansi.OFF);
+        System.setProperty("picocli.usage.width", "SECOND_INVALID");
+        commandLine.getUsageMessage(Help.Ansi.OFF);
+
+        String firstWarning = format("[picocli WARN] Invalid picocli.usage.width value 'FIRST_INVALID'. Using usage width 80.%n");
+        String secondWarning = format("[picocli WARN] Invalid picocli.usage.width value 'SECOND_INVALID'. Using usage width 80.%n");
+        assertEquals(firstWarning + firstWarning + secondWarning, systemErrRule.getLog());
+    }
+
+    @Test
+    public void testTooSmallUsageWidthWarningIsLoggedOncePerUsageMessage() {
+        System.clearProperty("picocli.trace");
+        System.setProperty("picocli.usage.width", "54");
+
+        new CommandLine(new InvalidUsageWidthApp()).getUsageMessage(Help.Ansi.OFF);
+
+        assertEquals(format("[picocli WARN] Invalid picocli.usage.width value 54. Using minimum usage width 55.%n"),
+                systemErrRule.getLog());
+    }
+
     @Test
     public void testUsageWidthFromCommandAttribute() {
         @Command(usageHelpWidth = 60,
