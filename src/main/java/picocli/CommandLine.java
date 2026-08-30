@@ -2790,11 +2790,16 @@ public class CommandLine {
     }
 
     private StringBuilder usage(StringBuilder sb, Help help) {
-        for (String key : getHelpSectionKeys()) {
-            IHelpSectionRenderer renderer = getHelpSectionMap().get(key);
-            if (renderer != null) { sb.append(renderer.render(help)); }
+        help.startCachingWidth();
+        try {
+            for (String key : getHelpSectionKeys()) {
+                IHelpSectionRenderer renderer = getHelpSectionMap().get(key);
+                if (renderer != null) { sb.append(renderer.render(help)); }
+            }
+            return sb;
+        } finally {
+            help.stopCachingWidth();
         }
-        return sb;
     }
 
     /**
@@ -15604,6 +15609,8 @@ public class CommandLine {
         private final Map<String, Help> allCommands = new LinkedHashMap<String, Help>();
         private final Map<String, Help> visibleCommands = new LinkedHashMap<String, Help>();
         private List<String> aliases;
+        private boolean cacheWidth;
+        private Integer cachedWidth;
 
         private final IParamLabelRenderer parameterLabelRenderer;
 
@@ -16328,7 +16335,23 @@ public class CommandLine {
             }
             return sb;
         }
-        private int width() { return commandSpec.usageMessage().width(); }
+        private void startCachingWidth() {
+            cacheWidth = true;
+            cachedWidth = null;
+        }
+        private void stopCachingWidth() {
+            cacheWidth = false;
+            cachedWidth = null;
+        }
+        private int width() {
+            if (!cacheWidth) {
+                return commandSpec.usageMessage().width();
+            }
+            if (cachedWidth == null) {
+                cachedWidth = Integer.valueOf(commandSpec.usageMessage().width());
+            }
+            return cachedWidth.intValue();
+        }
         private boolean adjustCJK() { return commandSpec.usageMessage().adjustLineBreaksForWideCJKCharacters(); }
         /** Returns command custom synopsis as a string. A custom synopsis can be zero or more lines, and can be
          * specified declaratively with the {@link Command#customSynopsis()} annotation attribute or programmatically
