@@ -5749,6 +5749,7 @@ See also <<Printing Help Automatically>>.
 Picocli 3.0 introduced the `mixinStandardHelpOptions` command attribute. When this attribute is set to `true`, picocli adds a <<Mixins,mixin>> to the
 command that adds <<Help Options,`usageHelp`>> and <<Help Options,`versionHelp`>> options to the command. For example:
 
+
 .Java
 [source,java,role="primary"]
 ----
@@ -5783,6 +5784,30 @@ Usage: <main class> [-hV] [--option=<option>]
   -h, --help              Show this help message and exit.
   -V, --version           Print version information and exit.
 ----
+
+
+[NOTE]
+====
+ The names of the automatically added help and version options can be customized with system properties set before initializing the `CommandLine` parser. By default these options are `-h`/`--help` and `-V`/`--version`.
+
+.Java
+[source,java,role="primary"]
+----
+System.setProperty("picocli.version.name.0", "-v");
+System.setProperty("picocli.help.name.0", "-H");
+
+CommandLine commandLine = new CommandLine(AutoHelpDemo.class);
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+System.setProperty("picocli.version.name.0", "-v")
+System.setProperty("picocli.help.name.0", "--help")
+
+val commandLine = CommandLine(AutoHelpDemo::class.java)
+----
+====
 
 === Built-in Help Subcommand
 As of version 3.0, picocli provides a `help` subcommand (`picocli.CommandLine.HelpCommand`) that can be installed as a subcommand
