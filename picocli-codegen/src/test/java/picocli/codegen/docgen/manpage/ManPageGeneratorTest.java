@@ -74,6 +74,37 @@ public class ManPageGeneratorTest {
         assertEquals(expected, sw.toString());
     }
 
+    @Test
+    public void testRequiredOptionIsMarkedInDescription() {
+        @Command(name = "app", sortOptions = false)
+        class App {
+            @Option(names = "--required", required = true, description = "Required option.")
+            boolean required;
+
+            @Option(names = "--optional", description = "Optional option.")
+            boolean optional;
+        }
+
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        ManPageGenerator.genOptions(pw, new CommandLine(new App()).getCommandSpec());
+        pw.flush();
+
+        String expected = String.format("" +
+                "// tag::picocli-generated-man-section-options[]%n" +
+                "== Options%n" +
+                "%n" +
+                "*--required*::%n" +
+                "  *(required)* Required option.%n" +
+                "%n" +
+                "*--optional*::%n" +
+                "  Optional option.%n" +
+                "%n" +
+                "// end::picocli-generated-man-section-options[]%n" +
+                "%n");
+        assertEquals(expected, sw.toString());
+    }
+
     static class CsvOptions {
         @Option(names = {"-e", "--encoding"}, defaultValue = "Shift_JIS", order = 2,
                 description = "(CSV/TSV-only) Character encoding of the file to import. Default: ${DEFAULT-VALUE}")
