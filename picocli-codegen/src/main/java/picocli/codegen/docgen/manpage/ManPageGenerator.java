@@ -567,7 +567,7 @@ public class ManPageGenerator implements Callable<Integer> {
         pw.println();
         Text[][] rows = optionRenderer.render(option, paramLabelRenderer, COLOR_SCHEME);
         pw.printf("%s::%n", join(", ", rows[0][1], rows[0][3]));
-        pw.printf("  %s%n", rows[0][4]);
+        pw.printf("  %s%s%n", option.required() ? "*(required)* " : "", rows[0][4]);
         for (int i = 1; i < rows.length; i++) {
             pw.printf("+%n%s%n", rows[i][4]);
         }

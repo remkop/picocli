@@ -61,7 +61,7 @@ _<extraFile>_::
   Extra CSV file.
 
 *-C*, *--column*=_<file-column>=<db-column>_::
-  (CSV/TSV-only) Key-value pair specifying the column mapping between the import file column name and the destination table column name.
+  *(required)* (CSV/TSV-only) Key-value pair specifying the column mapping between the import file column name and the destination table column name.
 
 *-e*, *--encoding*=_<charset>_::
   (CSV/TSV-only) Character encoding of the file to import. Default: Shift_JIS
