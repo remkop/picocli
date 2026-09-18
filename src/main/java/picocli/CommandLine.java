@@ -18583,12 +18583,12 @@ public class CommandLine {
         static List<String> mostSimilar(String pattern, Iterable<String> candidates) { return mostSimilar(pattern, candidates, 0); }
         static List<String> mostSimilar(String pattern, Iterable<String> candidates, double threshold) {
             pattern = pattern.toLowerCase();
-            SortedMap<Double, String> sorted = new TreeMap<Double, String>();
+            SortedMap<Double, List<String>> sorted = new TreeMap<Double, List<String>>(Collections.<Double>reverseOrder());
             for (String candidate : candidates) {
                 double score = similarity(pattern, candidate.toLowerCase(), 2);
-                if (score > threshold) { sorted.put(score, candidate); }
+                if (score > threshold) { addValueToListInMap(sorted, score, candidate); }
             }
-            return reverseList(new ArrayList<String>(sorted.values()));
+            return flatList(sorted.values());
         }
 
         private static double similarity(String sequence1, String sequence2, int degree) {

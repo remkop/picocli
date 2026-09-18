@@ -80,7 +80,7 @@ public class UnmatchedArgumentExceptionTest {
         Demo.mainCommand().parseWithHandler(((CommandLine.IParseResultHandler)null), new PrintStream(baos), new String[]{"chekcout"});
         String expected = format("" +
                 "Unmatched argument at index 0: 'chekcout'%n" +
-                "Did you mean: git checkout or git help or git branch?%n");
+                "Did you mean: git checkout or git help or git commit?%n");
         assertEquals(expected, baos.toString());
     }
     @Test
@@ -92,6 +92,29 @@ public class UnmatchedArgumentExceptionTest {
                 "Unmatched argument at index 0: 'me'%n" +
                 "Did you mean: git merge?%n");
         assertEquals(expected, baos.toString());
+    }
+
+    @Test
+    public void testSubcommandSuggestionsRetainEqualScores() {
+        CommandLine cmd = new CommandLine(new Example())
+                .addSubcommand("status", new Example())
+                .addSubcommand("start", new Example())
+                .addSubcommand("stash", new Example());
+        UnmatchedArgumentException ex = new UnmatchedArgumentException(cmd, Arrays.asList("sta"));
+
+        assertEquals(Arrays.asList("start", "stash", "status"), ex.getSuggestions());
+    }
+
+    @Test
+    public void testSubcommandSuggestionsLimitEqualScoresToThree() {
+        CommandLine cmd = new CommandLine(new Example())
+                .addSubcommand("start", new Example())
+                .addSubcommand("stark", new Example())
+                .addSubcommand("stars", new Example())
+                .addSubcommand("staff", new Example());
+        UnmatchedArgumentException ex = new UnmatchedArgumentException(cmd, Arrays.asList("sta"));
+
+        assertEquals(Arrays.asList("start", "stark", "stars"), ex.getSuggestions());
     }
 
     @Test
