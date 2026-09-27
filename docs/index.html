@@ -18478,9 +18478,6 @@ It pays special attention to Windows, where setting up the compiler toolchain ca
 <div class="paragraph">
 <p>See also this <a href="https://github.com/remkop/picocli-native-image-demo">demo Gradle project</a> and this <a href="https://github.com/remkop/picocli-native-image-maven-demo">demo Maven project</a> that provide a simple complete CLI app, with build instructions, that developers can clone, and build to get the stand-alone executable.</p>
 </div>
-<div class="paragraph">
-<p>See also the <a href="http://github.com/korandoru/hawkeye">korandoru/hawkeye</a> for a real-world Maven project that provide a native image and a slim Docker image powered by native image.</p>
-</div>
 <div class="admonitionblock tip">
 <table>
 <tr>
@@ -18519,9 +18516,6 @@ It pays special attention to Windows, where setting up the compiler toolchain ca
 <h3 id="_spring_boot_maven_plugin"><a class="anchor" href="#_spring_boot_maven_plugin"></a>29.4. Spring Boot Maven Plugin</h3>
 <div class="paragraph">
 <p>The <a href="https://docs.spring.io/spring-boot/docs/current/maven-plugin/reference/htmlsingle/#packaging">Spring Boot Maven Plugin</a> provides a <code>repackage</code> goal to create executable archives that contain all of an application’s dependencies. It thus functions as an executable, is portable across operating systems and architectures, and is still a valid JAR file that can be executed explicitly or otherwise used as a JAR.</p>
-</div>
-<div class="paragraph">
-<p><a href="http://github.com/korandoru/hawkeye">korandoru/hawkeye</a> provides a real-world example to package a picocli application into an executable file. You can read the <code>pom.xml</code> file of <a href="https://github.com/korandoru/hawkeye/blob/main/hawkeye-cli/pom.xml">hawkeye-cli</a> module for details. Note that the default <code>embeddedLaunchScript.sh</code> assumes that the application may be a Spring Application while the hawkeye-cli example uses a customized tidy script.</p>
 </div>
 </div>
 <div class="sect2">
