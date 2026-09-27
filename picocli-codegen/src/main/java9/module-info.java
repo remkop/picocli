@@ -39,4 +39,10 @@ module info.picocli.codegen {
     exports picocli.codegen.aot.graalvm;
     exports picocli.codegen.aot.graalvm.processor;
     exports picocli.codegen.docgen.manpage;
+
+    // Required for discovery when picocli-codegen is on the processor module path
+    // (--processor-module-path). META-INF/services covers the classpath case.
+    // See https://github.com/remkop/picocli/issues/2464
+    provides javax.annotation.processing.Processor
+            with picocli.codegen.aot.graalvm.processor.NativeImageConfigGeneratorProcessor;
 }
