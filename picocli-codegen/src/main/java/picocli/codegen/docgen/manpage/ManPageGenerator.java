@@ -536,7 +536,7 @@ public class ManPageGenerator implements Callable<Integer> {
                     writePositional(pw, positional, parameterRenderer, paramLabelRenderer);
                 }
             }
-            List<OptionSpec> groupOptions = new ArrayList<OptionSpec>(group.allOptionsNested());
+            List<OptionSpec> groupOptions = new ArrayList<OptionSpec>(group.allOptionsNestedExcept(groups));
             if (optionSort != null) {
                 Collections.sort(groupOptions, optionSort);
             }
