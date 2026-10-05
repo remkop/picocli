@@ -10591,7 +10591,12 @@ public class CommandLine {
             public List<OptionSpec> allOptionsNested() {
                 return addGroupOptionsToListRecursively(new ArrayList<OptionSpec>(), Collections.<ArgGroupSpec>emptyList());
             }
-            private List<OptionSpec> allOptionsNestedExcept(List<ArgGroupSpec> excluded) {
+            /** Returns all options configured for this group and its subgroups, excluding options in the specified
+             * subgroups and their descendants. Options configured for this group are always included.
+             * @param excluded the subgroups to exclude, along with their descendants
+             * @return a list of options in this group and its subgroups, excluding the specified subgroups and their descendants
+             * @since 4.8 */
+            public List<OptionSpec> allOptionsNestedExcept(List<ArgGroupSpec> excluded) {
                 return addGroupOptionsToListRecursively(new ArrayList<OptionSpec>(), excluded);
             }
             private List<OptionSpec> addGroupOptionsToListRecursively(List<OptionSpec> result, List<ArgGroupSpec> excluded) {

@@ -3837,6 +3837,28 @@ public class ArgGroupTest {
     }
 
     @Test
+    public void testAllOptionsNestedExcept() {
+        OptionSpec outerOption = OptionSpec.builder("--outer").build();
+        OptionSpec nestedOption = OptionSpec.builder("--nested").build();
+        OptionSpec descendantOption = OptionSpec.builder("--descendant").build();
+        OptionSpec siblingOption = OptionSpec.builder("--sibling").build();
+        ArgGroupSpec descendant = ArgGroupSpec.builder().addArg(descendantOption).build();
+        ArgGroupSpec nested = ArgGroupSpec.builder().addArg(nestedOption).addSubgroup(descendant).build();
+        ArgGroupSpec sibling = ArgGroupSpec.builder().addArg(siblingOption).build();
+        ArgGroupSpec outer = ArgGroupSpec.builder().addArg(outerOption).addSubgroup(nested).addSubgroup(sibling).build();
+
+        assertEquals(Arrays.asList(outerOption, nestedOption, descendantOption, siblingOption),
+                outer.allOptionsNestedExcept(Collections.<ArgGroupSpec>emptyList()));
+        assertEquals(Arrays.asList(outerOption, siblingOption),
+                outer.allOptionsNestedExcept(Collections.singletonList(nested)));
+        assertEquals(Arrays.asList(outerOption, nestedOption, siblingOption),
+                outer.allOptionsNestedExcept(Collections.singletonList(descendant)));
+        assertEquals(Collections.singletonList(outerOption),
+                outer.allOptionsNestedExcept(Arrays.asList(outer, nested, sibling)));
+        assertEquals(Arrays.asList(outerOption, nestedOption, descendantOption, siblingOption), outer.allOptionsNested());
+    }
+
+    @Test
     public void testAllPositionalParametersNested() {
         class Nested {
             @ArgGroup(exclusive = false, multiplicity = "0..*")

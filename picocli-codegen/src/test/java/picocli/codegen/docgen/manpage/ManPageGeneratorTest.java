@@ -9,6 +9,9 @@ import org.junit.rules.TestRule;
 import picocli.CommandLine;
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
+import picocli.CommandLine.Model.ArgGroupSpec;
+import picocli.CommandLine.Model.CommandSpec;
+import picocli.CommandLine.Model.OptionSpec;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 import picocli.codegen.util.Assert;
@@ -160,6 +163,75 @@ public class ManPageGeneratorTest {
         String expected = read("/import.manpage.txt.adoc");
         expected = expected.replace("\r\n", "\n");
         expected = expected.replace("\n", System.getProperty("line.separator"));
+        assertEquals(expected, sw.toString());
+    }
+
+    @Test
+    public void testNestedOptionGroupsOuterFirst() {
+        ArgGroupSpec nested = ArgGroupSpec.builder().heading("Nested group%n").order(20)
+                .addArg(OptionSpec.builder("--nested-opt").type(boolean.class).description("Nested option").build()).build();
+        ArgGroupSpec outer = ArgGroupSpec.builder().heading("Outer group%n").order(10)
+                .addArg(OptionSpec.builder("--outer-opt").type(boolean.class).description("Outer option").build())
+                .addSubgroup(nested).build();
+
+        String expected = String.format("" +
+                "// tag::picocli-generated-man-section-options[]%n" +
+                "%n== Outer group%n" +
+                "%n*--outer-opt*::%n  Outer option%n" +
+                "%n== Nested group%n" +
+                "%n*--nested-opt*::%n  Nested option%n" +
+                "%n// end::picocli-generated-man-section-options[]%n%n");
+        assertOptionsSection(expected, CommandSpec.create().addArgGroup(outer));
+    }
+
+    @Test
+    public void testNestedOptionGroupsNestedFirst() {
+        ArgGroupSpec nested = ArgGroupSpec.builder().heading("Nested group%n").order(10)
+                .addArg(OptionSpec.builder("--nested-opt").type(boolean.class).description("Nested option").build()).build();
+        ArgGroupSpec outer = ArgGroupSpec.builder().heading("Outer group%n").order(20)
+                .addArg(OptionSpec.builder("--outer-opt").type(boolean.class).description("Outer option").build())
+                .addSubgroup(nested).build();
+
+        String expected = String.format("" +
+                "// tag::picocli-generated-man-section-options[]%n" +
+                "%n== Nested group%n" +
+                "%n*--nested-opt*::%n  Nested option%n" +
+                "%n== Outer group%n" +
+                "%n*--outer-opt*::%n  Outer option%n" +
+                "%n// end::picocli-generated-man-section-options[]%n%n");
+        assertOptionsSection(expected, CommandSpec.create().addArgGroup(outer));
+    }
+
+    @Test
+    public void testNestedOptionGroupsWithoutHeading() {
+        ArgGroupSpec nested = ArgGroupSpec.builder().heading("Nested group%n").order(20)
+                .addArg(OptionSpec.builder("--nested-opt").type(boolean.class).description("Nested option").build()).build();
+        ArgGroupSpec intermediate = ArgGroupSpec.builder()
+                .addArg(OptionSpec.builder("--intermediate-opt").type(boolean.class).description("Intermediate option").build())
+                .addSubgroup(nested).build();
+        ArgGroupSpec outer = ArgGroupSpec.builder().heading("Outer group%n").order(10)
+                .addArg(OptionSpec.builder("--outer-opt").type(boolean.class).description("Outer option").build())
+                .addSubgroup(intermediate).build();
+        CommandSpec spec = CommandSpec.create().addArgGroup(outer);
+        spec.usageMessage().sortOptions(false);
+
+        String expected = String.format("" +
+                "// tag::picocli-generated-man-section-options[]%n" +
+                "%n== Outer group%n" +
+                "%n*--outer-opt*::%n  Outer option%n" +
+                "%n*--intermediate-opt*::%n  Intermediate option%n" +
+                "%n== Nested group%n" +
+                "%n*--nested-opt*::%n  Nested option%n" +
+                "%n// end::picocli-generated-man-section-options[]%n%n");
+        assertOptionsSection(expected, spec);
+    }
+
+    private void assertOptionsSection(String expected, CommandSpec spec) {
+        new CommandLine(spec).setColorScheme(ManPageGenerator.COLOR_SCHEME);
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        ManPageGenerator.genOptions(pw, spec);
+        pw.flush();
         assertEquals(expected, sw.toString());
     }
 
