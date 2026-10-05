@@ -15245,7 +15245,9 @@ public class CommandLine {
         static class ISO8601DateConverter implements ITypeConverter<Date> {
             public Date convert(String value) {
                 try {
-                    return new SimpleDateFormat("yyyy-MM-dd").parse(value);
+                    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+                    format.setLenient(false);
+                    return format.parse(value);
                 } catch (ParseException e) {
                     throw new TypeConversionException("'" + value + "' is not a yyyy-MM-dd date");
                 }
