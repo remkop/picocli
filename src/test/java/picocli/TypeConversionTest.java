@@ -1342,4 +1342,23 @@ public class TypeConversionTest {
         assertEquals("ABC", app.address.toString());
         assertTrue(app.address instanceof StringBuilder);
     }
+
+    @Test
+    public void testDateRejectsInvalidCalendarValues() {
+        String[] invalidDates = {"2024-02-30", "2023-02-29", "2024-00-01", "2024-13-01", "2024-01-00", "2024-01-32"};
+        for (String date : invalidDates) {
+            try {
+                CommandLine.populateCommand(new SupportedTypes(), "-Date", date);
+                fail("Invalid calendar date was accepted: " + date);
+            } catch (CommandLine.ParameterException expected) {
+                assertEquals("Invalid value for option '-Date': '" + date + "' is not a yyyy-MM-dd date", expected.getMessage());
+            }
+        }
+    }
+
+    @Test
+    public void testDateAcceptsLeapDay() throws ParseException {
+        SupportedTypes bean = CommandLine.populateCommand(new SupportedTypes(), "-Date", "2024-02-29");
+        assertEquals(new SimpleDateFormat("yyyy-MM-dd").parse("2024-02-29"), bean.aDateField);
+    }
 }
