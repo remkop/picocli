@@ -929,23 +929,9 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
                     logger.fine("Adding " + entry + " to commandSpec " + commandSpec1);
                     commandSpec1.addSpecElement(entry.getValue());
                 } else {
-                    Element enclosingElement = entry.getKey().getEnclosingElement();
-                    if (enclosingElement.getKind() == ElementKind.CLASS || enclosingElement.getKind() == ENUM) {
-                        TypeMirror typeMirror = enclosingElement.asType();
-                        TypeElement typeElement = (TypeElement) ((DeclaredType) typeMirror).asElement();
-                        List<? extends TypeMirror> interfaces = typeElement.getInterfaces();
-                        boolean valid = false;
-                        for (TypeMirror interf : interfaces) {
-                            if (interf.toString().equals("picocli.CommandLine.IVersionProvider")) {
-                                valid = true;
-                            }
-                        }
-                        if (!valid) {
-                            proc.error(entry.getKey(), "@Spec must be enclosed in a @Command, or in a class that implements IVersionProvider but was %s: %s", entry.getKey().getEnclosingElement(), entry.getKey().getEnclosingElement().getSimpleName());
-                        }
-                    } else {
-                        proc.error(entry.getKey(), "@Spec must be enclosed in a @Command, but was %s: %s", entry.getKey().getEnclosingElement(), entry.getKey().getEnclosingElement().getSimpleName());
-                    }
+                    // #2430 @Spec is also valid outside a @Command, for example in ArgGroup classes
+                    // or in IVersionProvider implementations; picocli injects the CommandSpec at runtime
+                    logger.fine("Not adding " + entry + " to any commandSpec: enclosing element " + entry.getKey().getEnclosingElement() + " is not a @Command");
                 }
             }
             for (Map.Entry<Element, IAnnotatedElement> entry : parentCommandElements.entrySet()) {
