@@ -29,6 +29,90 @@ public class RangeTest {
     public final ProvideSystemProperty ansiOFF = new ProvideSystemProperty("picocli.ansi", "false");
 
     @Test
+    public void testValueOfSentinelsAndLenientEndpoints() {
+        Object[][] expected = {
+                {"", 0, Integer.MAX_VALUE, true, true, false, null},
+                {"*", 0, Integer.MAX_VALUE, true, false, false, "*"},
+                {"0..*", 0, Integer.MAX_VALUE, true, false, false, "0..*"},
+                {"1..*", 1, Integer.MAX_VALUE, true, false, false, "1..*"},
+                {"*..*", 0, Integer.MAX_VALUE, true, false, false, "*..*"},
+                {"*..2", 0, 2, false, false, false, "*..2"},
+                {"2", 2, 2, false, false, false, "2"},
+                {"1..3", 1, 3, false, false, false, "1..3"},
+                {" \t ", 0, Integer.MAX_VALUE, true, true, false, null},
+                {" 1..* ", 1, Integer.MAX_VALUE, true, false, false, "1..*"},
+                {"1 .. 3", 0, Integer.MAX_VALUE, true, false, false, "1 .. 3"},
+                {"..", 0, Integer.MAX_VALUE, true, true, false, null},
+                {"..*", 0, Integer.MAX_VALUE, true, true, false, null},
+                {"1..", 1, Integer.MAX_VALUE, true, false, false, "1.."},
+                {"+", Integer.MAX_VALUE, Integer.MAX_VALUE, false, false, true, "+"},
+                {"0+", 0, 0, false, false, true, "0+"},
+                {"2+", 2, 2, false, false, true, "2+"},
+                {"+2", Integer.MAX_VALUE, Integer.MAX_VALUE, false, false, true, "+2"},
+                {"wat", 0, Integer.MAX_VALUE, true, false, false, "wat"},
+                {"wat..3", 0, 3, false, false, false, "wat..3"},
+                {"1..wat", 1, Integer.MAX_VALUE, true, false, false, "1..wat"},
+                {"2147483648", 0, Integer.MAX_VALUE, true, false, false, "2147483648"},
+        };
+        for (Object[] row : expected) {
+            assertRange((String) row[0], CommandLine.Range.valueOf((String) row[0]),
+                    (Integer) row[1], (Integer) row[2], (Boolean) row[3],
+                    (Boolean) row[4], (Boolean) row[5], (String) row[6]);
+        }
+    }
+
+    @Test
+    public void testValueOfInvalidRanges() {
+        String[] inputs = {"-1", "1..0"};
+        String[] messages = {"Invalid negative range (min=-1, max=-1)", "Invalid range (min=1, max=0)"};
+        for (int i = 0; i < inputs.length; i++) {
+            try {
+                CommandLine.Range.valueOf(inputs[i]);
+                fail("Expected InitializationException for " + inputs[i]);
+            } catch (CommandLine.InitializationException ex) {
+                assertEquals(messages[i], ex.getMessage());
+            }
+        }
+    }
+
+    @Test
+    public void testDefaultArityAndIndexSentinels() throws Exception {
+        class App {
+            @CommandLine.Option(names = "--flag") boolean flag;
+            @CommandLine.Option(names = "--value") String value;
+            @Parameters String scalar;
+            @Parameters List<String> many;
+            @Parameters(arity = "1..*", index = "1..*") List<String> explicit;
+        }
+        assertRange("boolean option", CommandLine.Range.optionArity(App.class.getDeclaredField("flag")),
+                0, 0, false, true, false, "0");
+        assertRange("value option", CommandLine.Range.optionArity(App.class.getDeclaredField("value")),
+                1, 1, false, true, false, "1");
+        assertRange("scalar arity", CommandLine.Range.parameterArity(App.class.getDeclaredField("scalar")),
+                1, 1, false, true, false, "1");
+        assertRange("list arity", CommandLine.Range.parameterArity(App.class.getDeclaredField("many")),
+                0, 1, false, true, false, "0..1");
+        assertRange("scalar index", CommandLine.Range.parameterIndex(App.class.getDeclaredField("scalar")),
+                0, 0, false, false, true, "0+");
+        assertRange("list index", CommandLine.Range.parameterIndex(App.class.getDeclaredField("many")),
+                0, Integer.MAX_VALUE, true, false, false, "*");
+        assertRange("explicit arity", CommandLine.Range.parameterArity(App.class.getDeclaredField("explicit")),
+                1, Integer.MAX_VALUE, true, false, false, "1..*");
+        assertRange("explicit index", CommandLine.Range.parameterIndex(App.class.getDeclaredField("explicit")),
+                1, Integer.MAX_VALUE, true, false, false, "1..*");
+    }
+
+    private static void assertRange(String message, CommandLine.Range range, int min, int max,
+                                    boolean variable, boolean unspecified, boolean relative, String originalValue) {
+        assertEquals(message, min, range.min());
+        assertEquals(message, max, range.max());
+        assertEquals(message, variable, range.isVariable());
+        assertEquals(message, unspecified, range.isUnspecified());
+        assertEquals(message, relative, range.isRelative());
+        assertEquals(message, originalValue, range.originalValue());
+    }
+
+    @Test
     public void testRelativeRangeWithoutAnchor() {
         class App {
             @Parameters(index = "+", descriptionKey = "a") String a;

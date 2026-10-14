@@ -5857,6 +5857,9 @@ public class CommandLine {
             return new Range(min, max, variable, unspecified, unspecified ? null : range);
         }
         private static int parseInt(String str, int defaultValue) {
+            if (str.length() == 0 || "*".equals(str)) {
+                return defaultValue;
+            }
             try {
                 int pos = str.indexOf('+');
                 return Integer.parseInt(pos < 0 ? str : str.substring(0, str.indexOf('+')));

@@ -1,5 +1,11 @@
 # picocli Release Notes
 
+# <a name="4.7.8"></a> Picocli 4.7.8 (unreleased)
+
+## <a name="4.7.8-fixes"></a> Fixed issues
+
+* Enhancement: Avoid throwing and catching `NumberFormatException` for unspecified (`""`) and unbounded (`"*"`) arity and index endpoints during command model construction, preserving existing range parsing behaviour.
+
 # <a name="4.7.7"></a> Picocli 4.7.7
 The picocli community is pleased to announce picocli 4.7.7.
 
