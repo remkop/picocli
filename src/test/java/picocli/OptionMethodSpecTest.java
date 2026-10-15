@@ -80,6 +80,26 @@ public class OptionMethodSpecTest {
         assertTrue(((Object) cmd.getCommand()) instanceof Primitives);
     }
 
+    interface ParentOptions {
+        @Option(names = "--host")
+        String host();
+    }
+
+    interface ChildOptions extends ParentOptions {
+        @Option(names = "--port")
+        int port();
+    }
+
+    @Test
+    public void testChildInterfaceParsesParentAndChildOptions() {
+        CommandLine cmd = new CommandLine(ChildOptions.class);
+        cmd.parseArgs("--host", "localhost", "--port", "8080");
+
+        ChildOptions options = cmd.getCommand();
+        assertEquals("localhost", options.host());
+        assertEquals(8080, options.port());
+    }
+
     @Test
     public void testPrimitiveWithoutDefaultValues() {
         CommandLine cmd = new CommandLine(Primitives.class);
