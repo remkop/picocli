@@ -10610,6 +10610,10 @@ val counter: Counter = cmd.getCommand() // picocli created an instance
 assertEquals(3, counter.count) // method returns command line value
 ----
 
+Annotated methods inherited from parent interfaces are also supported.
+For example, if an interface extends another interface, options and positional parameters from both interfaces are recognized.
+If a child interface overrides a method, picocli uses the annotations on the child method.
+
 ==== Annotating Methods of a Concrete Class
 The `@Option` and `@Parameters` annotations can be used on methods of a class that accept a parameter. For example:
 

@@ -11961,7 +11961,7 @@ public class CommandLine {
                 for (Field field : cls.getDeclaredFields()) {
                     result |= initFromAnnotatedTypedMembers(TypedMember.createIfAnnotated(field, scope), predicate, receiver, groupBuilder, factory);
                 }
-                for (Method method : cls.getDeclaredMethods()) {
+                for (Method method : cls.isInterface() ? cls.getMethods() : cls.getDeclaredMethods()) {
                     result |= initFromAnnotatedTypedMembers(TypedMember.createIfAnnotated(method, scope, receiver), predicate, receiver, groupBuilder, factory);
                 }
                 return result;

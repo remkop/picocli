@@ -80,6 +80,89 @@ public class OptionMethodSpecTest {
         assertTrue(((Object) cmd.getCommand()) instanceof Primitives);
     }
 
+    interface ParentOptions {
+        @Option(names = "--host")
+        String host();
+    }
+
+    interface ChildOptions extends ParentOptions {
+        @Option(names = "--port")
+        int port();
+    }
+
+    @Test
+    public void testChildInterfaceParsesParentAndChildOptions() {
+        CommandLine cmd = new CommandLine(ChildOptions.class);
+        cmd.parseArgs("--host", "localhost", "--port", "8080");
+
+        ChildOptions options = cmd.getCommand();
+        assertEquals("localhost", options.host());
+        assertEquals(8080, options.port());
+    }
+
+    interface TimeoutOptions extends ParentOptions {
+        @Option(names = "--timeout")
+        int timeout();
+    }
+
+    interface ConnectionOptions extends ChildOptions, TimeoutOptions {
+        @Option(names = "--verbose")
+        boolean verbose();
+    }
+
+    @Test
+    public void testDiamondInterfaceParsesOptionsFromBothParentsAndSharedAncestor() {
+        CommandLine cmd = new CommandLine(ConnectionOptions.class);
+        cmd.parseArgs("--host", "localhost", "--port", "8080", "--timeout", "30", "--verbose");
+
+        ConnectionOptions options = cmd.getCommand();
+        assertEquals("localhost", options.host());
+        assertEquals(8080, options.port());
+        assertEquals(30, options.timeout());
+        assertTrue(options.verbose());
+    }
+
+    interface OverriddenHostOptions extends ChildOptions {
+        @Option(names = "--host", required = true)
+        String host();
+    }
+
+    @Test
+    public void testChildInterfaceOverrideUsesChildOptionAnnotation() {
+        CommandLine cmd = new CommandLine(OverriddenHostOptions.class);
+        try {
+            cmd.parseArgs("--port", "8080");
+            fail("The child interface makes --host required");
+        } catch (MissingParameterException expected) {
+            assertEquals("Missing required option: '--host=<host>'", expected.getMessage());
+        }
+
+        cmd.parseArgs("--host", "localhost", "--port", "8080");
+        OverriddenHostOptions options = cmd.getCommand();
+        assertEquals("localhost", options.host());
+        assertEquals(8080, options.port());
+    }
+
+    interface FileParameters {
+        @Parameters(index = "0")
+        String file();
+    }
+
+    interface FileOptions extends FileParameters {
+        @Option(names = "--verbose")
+        boolean verbose();
+    }
+
+    @Test
+    public void testChildInterfaceParsesParentParametersAndChildOptions() {
+        CommandLine cmd = new CommandLine(FileOptions.class);
+        cmd.parseArgs("--verbose", "report.txt");
+
+        FileOptions options = cmd.getCommand();
+        assertEquals("report.txt", options.file());
+        assertTrue(options.verbose());
+    }
+
     @Test
     public void testPrimitiveWithoutDefaultValues() {
         CommandLine cmd = new CommandLine(Primitives.class);
