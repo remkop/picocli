@@ -13723,7 +13723,11 @@ public class CommandLine {
             for (ArgSpec arg : commandSpec.args()) {
                 if (arg.group() == null && !initialized.contains(arg)) {
                     if (arg.inherited()) {
-                        tracer.debug("Not applying default value for inherited %s", optionDescription("", arg, -1));
+                        if (required.contains(arg)) {
+                            applyInheritedDefault(arg, required, initialized);
+                        } else {
+                            tracer.debug("Not applying default value for inherited %s", optionDescription("", arg, -1));
+                        }
                     } else {
                         if (applyDefault(commandSpec.defaultValueProvider(), arg)) { required.remove(arg); }
                     }
@@ -13733,6 +13737,25 @@ public class CommandLine {
                 applyGroupDefaults(commandSpec.defaultValueProvider(), group, required, initialized);
             }
             parseResultBuilder.isInitializingDefaultValues = false;
+        }
+        private void applyInheritedDefault(ArgSpec arg, List<ArgSpec> required, Set<ArgSpec> initialized) throws Exception {
+            ArgSpec root = arg.root();
+            if (root == null) { return; }
+            Interpreter owner = root.command().commandLine().interpreter;
+            ParseResult.Builder previous = owner.parseResultBuilder;
+            if (previous == null) { owner.parseResultBuilder = ParseResult.builder(root.command()); }
+            boolean initializing = owner.parseResultBuilder.isInitializingDefaultValues;
+            owner.parseResultBuilder.isInitializingDefaultValues = true;
+            try {
+                // The defining command has not applied its defaults when its subcommand validates required arguments.
+                if (owner.applyDefault(root.command().defaultValueProvider(), root)) {
+                    required.remove(arg);
+                    addToInitialized(arg, initialized);
+                }
+            } finally {
+                owner.parseResultBuilder.isInitializingDefaultValues = initializing;
+                owner.parseResultBuilder = previous;
+            }
         }
         private void applyGroupDefaults(IDefaultValueProvider defaultValueProvider, ArgGroupSpec group, List<ArgSpec> required, Set<ArgSpec> initialized) throws Exception {
             Tracer tracer = CommandLine.tracer();
