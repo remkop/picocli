@@ -152,8 +152,10 @@ public class CommandLine {
     private static final Tracer TRACER = new Tracer();
 
     private CommandSpec commandSpec;
-    private final Interpreter interpreter;
+    private Interpreter interpreter;
     private final IFactory factory;
+    private volatile LazySubcommand lazySubcommand;
+    private boolean buildingLazySubcommand;
 
     private Object executionResult;
     private PrintWriter out;
@@ -234,13 +236,106 @@ public class CommandLine {
         if (commandSpec.unmatchedArgsBindings().size() > 0) { setUnmatchedArgumentsAllowed(true); }
     }
 
+    private CommandLine(LazySubcommand lazySubcommand, IFactory factory) {
+        this.factory = factory;
+        this.lazySubcommand = lazySubcommand;
+    }
+
+    /** A subcommand declared in {@link Command#subcommands()} that is registered under its names only, when the
+     * {@code picocli.lazy.subcommands} system property is {@code true}. Reading its model builds it. It then gets
+     * its parent's state as a declared subcommand gets it when built eagerly, and the settings applied to its parent
+     * since it was registered. */
+    private static class LazySubcommand {
+        private final Class<?> type;
+        private final CommandSpec parent;
+        private final String name;
+        private final List<String> registeredAliases;
+        private String bundleBaseName;
+        private ResourceBundle bundle;
+        private final Map<Object, SubcommandSetting> settings = new LinkedHashMap<Object, SubcommandSetting>();
+        private boolean applyModelTransformations;
+
+        private LazySubcommand(Class<?> type, CommandSpec parent, String name, String[] aliases) {
+            this.type = type;
+            this.parent = parent;
+            this.name = name;
+            this.registeredAliases = Arrays.asList(aliases);
+            this.bundleBaseName = parent.resourceBundleBaseName();
+            this.bundle = parent.resourceBundle();
+        }
+
+        private void record(SubcommandSetting setting) {
+            settings.remove(setting.key());
+            settings.put(setting.key(), setting);
+        }
+    }
+
+    /** A setter call that propagates to subcommands, kept for a {@link LazySubcommand} until it is built.
+     * A later call with the same key replaces it. */
+    private abstract static class SubcommandSetting {
+        abstract void applyTo(CommandLine subcommand);
+        Object key() { return getClass(); }
+    }
+
+    private void applyToSubcommands(SubcommandSetting setting) {
+        for (CommandLine sub : getCommandSpec().commands.values()) {
+            LazySubcommand lazy = sub.lazySubcommand;
+            if (lazy != null) {
+                lazy.record(setting);
+            } else {
+                setting.applyTo(sub);
+            }
+        }
+    }
+
+    /** The thread building the subcommand reads its partly built model. Other threads wait until it is built. */
+    private synchronized void buildLazySubcommand() {
+        LazySubcommand lazy = lazySubcommand;
+        if (lazy == null || buildingLazySubcommand) { return; }
+        buildingLazySubcommand = true;
+        boolean built = false;
+        try {
+            CommandSpec spec = CommandSpec.forAnnotatedObject(lazy.type, factory);
+            interpreter = new Interpreter();
+            commandSpec = spec;
+            spec.commandLine(this);
+            spec.validate();
+            if (spec.unmatchedArgsBindings().size() > 0) { setUnmatchedArgumentsAllowed(true); }
+            lazy.parent.attachSubcommand(lazy.name, this, tracer(), lazy);
+            spec.injectParentCommandWithMixins(lazy.parent);
+            if (lazy.applyModelTransformations) { applyModelTransformations(); }
+            for (String alias : commandSpec.aliases()) {
+                if (!lazy.registeredAliases.contains(alias)) {
+                    throw new InitializationException("Alias '" + alias + "' of subcommand '" + lazy.name + "' is not in its @Command(aliases), " +
+                            "so it cannot be matched before the subcommand is built with picocli.lazy.subcommands. Declare it in @Command(aliases).");
+                }
+            }
+            for (SubcommandSetting setting : lazy.settings.values()) {
+                setting.applyTo(this);
+            }
+            built = true;
+        } finally {
+            buildingLazySubcommand = false;
+            if (built) {
+                lazySubcommand = null;
+            } else { // so every later use reports the same error
+                commandSpec = null;
+                interpreter = null;
+            }
+        }
+    }
+
     /** Apply transformers to command spec recursively. */
     private void applyModelTransformations() {
         if (commandSpec.modelTransformer != null) {
             commandSpec = commandSpec.modelTransformer.transform(commandSpec);
         }
-        for (CommandLine cmd : getSubcommands().values()) {
-            cmd.applyModelTransformations();
+        for (CommandLine cmd : new ArrayList<CommandLine>(getCommandSpec().commands.values())) {
+            if (cmd.lazySubcommand != null) {
+                cmd.lazySubcommand.applyModelTransformations = true;
+            } else {
+                cmd.applyModelTransformations();
+            }
         }
     }
 
@@ -263,7 +358,10 @@ public class CommandLine {
      * Returns the {@code CommandSpec} model that this {@code CommandLine} was constructed with.
      * @return the {@code CommandSpec} model
      * @since 3.0 */
-    public CommandSpec getCommandSpec() { return commandSpec; }
+    public CommandSpec getCommandSpec() {
+        if (lazySubcommand != null) { buildLazySubcommand(); }
+        return commandSpec;
+    }
 
     /**
      * Adds the options and positional parameters in the specified mixin to this command.
@@ -383,6 +481,7 @@ public class CommandLine {
      * @since 0.9.7
      */
     public Map<String, CommandLine> getSubcommands() {
+        getCommandSpec().buildLazySubcommands();
         return new CaseAwareLinkedMap<String, CommandLine>(getCommandSpec().commands);
     }
     /**
@@ -448,11 +547,11 @@ public class CommandLine {
      * @return this {@code CommandLine} object, to allow method chaining
      * @since 3.9
      */
-    public CommandLine setHelpFactory(IHelpFactory helpFactory) {
+    public CommandLine setHelpFactory(final IHelpFactory helpFactory) {
         getCommandSpec().usageMessage().helpFactory(helpFactory);
-        for (CommandLine command : getCommandSpec().subcommands().values()) {
-            command.setHelpFactory(helpFactory);
-        }
+        applyToSubcommands(new SubcommandSetting() {
+            void applyTo(CommandLine command) { command.setHelpFactory(helpFactory); }
+        });
         return this;
     }
 
@@ -492,11 +591,11 @@ public class CommandLine {
      * @see #getHelpSectionKeys
      * @since 3.9
      */
-    public CommandLine setHelpSectionKeys(List<String> keys) {
+    public CommandLine setHelpSectionKeys(final List<String> keys) {
         getCommandSpec().usageMessage().sectionKeys(keys);
-        for (CommandLine command : getCommandSpec().subcommands().values()) {
-            command.setHelpSectionKeys(keys);
-        }
+        applyToSubcommands(new SubcommandSetting() {
+            void applyTo(CommandLine command) { command.setHelpSectionKeys(keys); }
+        });
         return this;
     }
 
@@ -523,11 +622,11 @@ public class CommandLine {
      * @see #getHelpSectionMap
      * @since 3.9
      */
-    public CommandLine setHelpSectionMap(Map<String, IHelpSectionRenderer> map) {
+    public CommandLine setHelpSectionMap(final Map<String, IHelpSectionRenderer> map) {
         getCommandSpec().usageMessage().sectionMap(map);
-        for (CommandLine command : getCommandSpec().subcommands().values()) {
-            command.setHelpSectionMap(map);
-        }
+        applyToSubcommands(new SubcommandSetting() {
+            void applyTo(CommandLine command) { command.setHelpSectionMap(map); }
+        });
         return this;
     }
     /**
@@ -542,11 +641,11 @@ public class CommandLine {
      * subcommands, call the setter last, after adding subcommands.</p>
      * @param adjustForWideChars if true, wide Chinese, Japanese and Korean characters are counted as double the size of other characters for line-breaking purposes
      * @since 4.0 */
-    public CommandLine setAdjustLineBreaksForWideCJKCharacters(boolean adjustForWideChars) {
+    public CommandLine setAdjustLineBreaksForWideCJKCharacters(final boolean adjustForWideChars) {
         getCommandSpec().usageMessage().adjustLineBreaksForWideCJKCharacters(adjustForWideChars);
-        for (CommandLine command : getCommandSpec().subcommands().values()) {
-            command.setAdjustLineBreaksForWideCJKCharacters(adjustForWideChars);
-        }
+        applyToSubcommands(new SubcommandSetting() {
+            void applyTo(CommandLine command) { command.setAdjustLineBreaksForWideCJKCharacters(adjustForWideChars); }
+        });
         return this;
     }
 
@@ -573,11 +672,11 @@ public class CommandLine {
      * @return this {@code CommandLine} object, to allow method chaining
      * @since 3.0
      */
-    public CommandLine setToggleBooleanFlags(boolean newValue) {
+    public CommandLine setToggleBooleanFlags(final boolean newValue) {
         getCommandSpec().parser().toggleBooleanFlags(newValue);
-        for (CommandLine command : getCommandSpec().subcommands().values()) {
-            command.setToggleBooleanFlags(newValue);
-        }
+        applyToSubcommands(new SubcommandSetting() {
+            void applyTo(CommandLine command) { command.setToggleBooleanFlags(newValue); }
+        });
         return this;
     }
 
@@ -590,11 +689,11 @@ public class CommandLine {
      * later will have the default setting. To ensure a setting is applied to all
      * subcommands, call the setter last, after adding subcommands.</p>
      * @since 4.0 */
-    public CommandLine setInterpolateVariables(boolean interpolate) {
+    public CommandLine setInterpolateVariables(final boolean interpolate) {
         getCommandSpec().interpolateVariables(interpolate);
-        for (CommandLine command : getCommandSpec().subcommands().values()) {
-            command.setInterpolateVariables(interpolate);
-        }
+        applyToSubcommands(new SubcommandSetting() {
+            void applyTo(CommandLine command) { command.setInterpolateVariables(interpolate); }
+        });
         return this;
     }
 
@@ -618,11 +717,11 @@ public class CommandLine {
      * @return this {@code CommandLine} object, to allow method chaining
      * @since 0.9.7
      */
-    public CommandLine setOverwrittenOptionsAllowed(boolean newValue) {
+    public CommandLine setOverwrittenOptionsAllowed(final boolean newValue) {
         getCommandSpec().parser().overwrittenOptionsAllowed(newValue);
-        for (CommandLine command : getCommandSpec().subcommands().values()) {
-            command.setOverwrittenOptionsAllowed(newValue);
-        }
+        applyToSubcommands(new SubcommandSetting() {
+            void applyTo(CommandLine command) { command.setOverwrittenOptionsAllowed(newValue); }
+        });
         return this;
     }
 
@@ -640,11 +739,11 @@ public class CommandLine {
      * @return this {@code CommandLine} object, to allow method chaining
      * @since 3.0
      */
-    public CommandLine setPosixClusteredShortOptionsAllowed(boolean newValue) {
+    public CommandLine setPosixClusteredShortOptionsAllowed(final boolean newValue) {
         getCommandSpec().parser().posixClusteredShortOptionsAllowed(newValue);
-        for (CommandLine command : getCommandSpec().subcommands().values()) {
-            command.setPosixClusteredShortOptionsAllowed(newValue);
-        }
+        applyToSubcommands(new SubcommandSetting() {
+            void applyTo(CommandLine command) { command.setPosixClusteredShortOptionsAllowed(newValue); }
+        });
         return this;
     }
 
@@ -666,11 +765,11 @@ public class CommandLine {
      * @return this {@code CommandLine} object, to allow method chaining
      * @since 3.4
      */
-    public CommandLine setCaseInsensitiveEnumValuesAllowed(boolean newValue) {
+    public CommandLine setCaseInsensitiveEnumValuesAllowed(final boolean newValue) {
         getCommandSpec().parser().caseInsensitiveEnumValuesAllowed(newValue);
-        for (CommandLine command : getCommandSpec().subcommands().values()) {
-            command.setCaseInsensitiveEnumValuesAllowed(newValue);
-        }
+        applyToSubcommands(new SubcommandSetting() {
+            void applyTo(CommandLine command) { command.setCaseInsensitiveEnumValuesAllowed(newValue); }
+        });
         return this;
     }
 
@@ -711,11 +810,11 @@ public class CommandLine {
      * @see ParserSpec#trimQuotes(boolean)
      * @since 3.7
      */
-    public CommandLine setTrimQuotes(boolean newValue) {
+    public CommandLine setTrimQuotes(final boolean newValue) {
         getCommandSpec().parser().trimQuotes(newValue);
-        for (CommandLine command : getCommandSpec().subcommands().values()) {
-            command.setTrimQuotes(newValue);
-        }
+        applyToSubcommands(new SubcommandSetting() {
+            void applyTo(CommandLine command) { command.setTrimQuotes(newValue); }
+        });
         return this;
     }
 
@@ -757,11 +856,11 @@ public class CommandLine {
      * @see ParserSpec#splitQuotedStrings(boolean)
      * @since 3.7
      */
-    @Deprecated public CommandLine setSplitQuotedStrings(boolean newValue) {
+    @Deprecated public CommandLine setSplitQuotedStrings(final boolean newValue) {
         getCommandSpec().parser().splitQuotedStrings(newValue);
-        for (CommandLine command : getCommandSpec().subcommands().values()) {
-            command.setSplitQuotedStrings(newValue);
-        }
+        applyToSubcommands(new SubcommandSetting() {
+            void applyTo(CommandLine command) { command.setSplitQuotedStrings(newValue); }
+        });
         return this;
     }
 
@@ -774,11 +873,11 @@ public class CommandLine {
      * @param delimiter the end-of-options delimiter; must not be {@code null}. The default is {@code "--"}.
      * @return this {@code CommandLine} object, to allow method chaining
      * @since 3.5 */
-    public CommandLine setEndOfOptionsDelimiter(String delimiter) {
+    public CommandLine setEndOfOptionsDelimiter(final String delimiter) {
         getCommandSpec().parser().endOfOptionsDelimiter(delimiter);
-        for (CommandLine command : getCommandSpec().subcommands().values()) {
-            command.setEndOfOptionsDelimiter(delimiter);
-        }
+        applyToSubcommands(new SubcommandSetting() {
+            void applyTo(CommandLine command) { command.setEndOfOptionsDelimiter(delimiter); }
+        });
         return this;
     }
 
@@ -798,11 +897,11 @@ public class CommandLine {
      * @return this {@code CommandLine} object, to allow method chaining
      * @since 4.3
      */
-    public CommandLine setSubcommandsCaseInsensitive(boolean newValue) {
+    public CommandLine setSubcommandsCaseInsensitive(final boolean newValue) {
         getCommandSpec().subcommandsCaseInsensitive(newValue);
-        for (CommandLine command : getCommandSpec().subcommands().values()) {
-            command.setSubcommandsCaseInsensitive(newValue);
-        }
+        applyToSubcommands(new SubcommandSetting() {
+            void applyTo(CommandLine command) { command.setSubcommandsCaseInsensitive(newValue); }
+        });
         return this;
     }
 
@@ -825,11 +924,11 @@ public class CommandLine {
      * @return this {@code CommandLine} object, to allow method chaining
      * @since 4.3
      */
-    public CommandLine setOptionsCaseInsensitive(boolean newValue) {
+    public CommandLine setOptionsCaseInsensitive(final boolean newValue) {
         getCommandSpec().optionsCaseInsensitive(newValue);
-        for (CommandLine command : getCommandSpec().subcommands().values()) {
-            command.setOptionsCaseInsensitive(newValue);
-        }
+        applyToSubcommands(new SubcommandSetting() {
+            void applyTo(CommandLine command) { command.setOptionsCaseInsensitive(newValue); }
+        });
         return this;
     }
 
@@ -851,11 +950,11 @@ public class CommandLine {
      * @return this {@code CommandLine} object, to allow method chaining
      * @since 4.4
      */
-    public CommandLine setAbbreviatedSubcommandsAllowed(boolean newValue) {
+    public CommandLine setAbbreviatedSubcommandsAllowed(final boolean newValue) {
         getCommandSpec().parser().abbreviatedSubcommandsAllowed(newValue);
-        for (CommandLine command : getCommandSpec().subcommands().values()) {
-            command.setAbbreviatedSubcommandsAllowed(newValue);
-        }
+        applyToSubcommands(new SubcommandSetting() {
+            void applyTo(CommandLine command) { command.setAbbreviatedSubcommandsAllowed(newValue); }
+        });
         return this;
     }
 
@@ -877,11 +976,11 @@ public class CommandLine {
      * @return this {@code CommandLine} object, to allow method chaining
      * @since 4.4
      */
-    public CommandLine setAbbreviatedOptionsAllowed(boolean newValue) {
+    public CommandLine setAbbreviatedOptionsAllowed(final boolean newValue) {
         getCommandSpec().parser().abbreviatedOptionsAllowed(newValue);
-        for (CommandLine command : getCommandSpec().subcommands().values()) {
-            command.setAbbreviatedOptionsAllowed(newValue);
-        }
+        applyToSubcommands(new SubcommandSetting() {
+            void applyTo(CommandLine command) { command.setAbbreviatedOptionsAllowed(newValue); }
+        });
         return this;
     }
 
@@ -905,11 +1004,11 @@ public class CommandLine {
      * @return this {@code CommandLine} object, to allow method chaining
      * @since 3.6
      */
-    public CommandLine setDefaultValueProvider(IDefaultValueProvider newValue) {
+    public CommandLine setDefaultValueProvider(final IDefaultValueProvider newValue) {
         getCommandSpec().defaultValueProvider(newValue);
-        for (CommandLine command : getCommandSpec().subcommands().values()) {
-            command.setDefaultValueProvider(newValue);
-        }
+        applyToSubcommands(new SubcommandSetting() {
+            void applyTo(CommandLine command) { command.setDefaultValueProvider(newValue); }
+        });
         return this;
     }
 
@@ -932,11 +1031,11 @@ public class CommandLine {
      * @return this {@code CommandLine} object, to allow method chaining
      * @since 2.3
      */
-    public CommandLine setStopAtPositional(boolean newValue) {
+    public CommandLine setStopAtPositional(final boolean newValue) {
         getCommandSpec().parser().stopAtPositional(newValue);
-        for (CommandLine command : getCommandSpec().subcommands().values()) {
-            command.setStopAtPositional(newValue);
-        }
+        applyToSubcommands(new SubcommandSetting() {
+            void applyTo(CommandLine command) { command.setStopAtPositional(newValue); }
+        });
         return this;
     }
 
@@ -967,11 +1066,11 @@ public class CommandLine {
      * @return this {@code CommandLine} object, to allow method chaining
      * @since 2.3
      */
-    public CommandLine setStopAtUnmatched(boolean newValue) {
+    public CommandLine setStopAtUnmatched(final boolean newValue) {
         getCommandSpec().parser().stopAtUnmatched(newValue);
-        for (CommandLine command : getCommandSpec().subcommands().values()) {
-            command.setStopAtUnmatched(newValue);
-        }
+        applyToSubcommands(new SubcommandSetting() {
+            void applyTo(CommandLine command) { command.setStopAtUnmatched(newValue); }
+        });
         if (newValue) { setUnmatchedArgumentsAllowed(true); }
         return this;
     }
@@ -997,11 +1096,11 @@ public class CommandLine {
      * @since 4.7.8-SNAPSHOT
      * @see ParserSpec#allowSubcommandsAsOptionParameters(boolean)
      */
-    public CommandLine setAllowSubcommandsAsOptionParameters(boolean newValue) {
+    public CommandLine setAllowSubcommandsAsOptionParameters(final boolean newValue) {
         getCommandSpec().parser().allowSubcommandsAsOptionParameters(newValue);
-        for (CommandLine command : getCommandSpec().subcommands().values()) {
-            command.setAllowSubcommandsAsOptionParameters(newValue);
-        }
+        applyToSubcommands(new SubcommandSetting() {
+            void applyTo(CommandLine command) { command.setAllowSubcommandsAsOptionParameters(newValue); }
+        });
         return this;
     }
     /** Returns whether options can have parameter values that match the name of an option in this command,
@@ -1033,11 +1132,11 @@ public class CommandLine {
      * @see #setUnmatchedOptionsAllowedAsOptionParameters(boolean)
      * @see ParserSpec#allowOptionsAsOptionParameters(boolean)
      */
-    public CommandLine setAllowOptionsAsOptionParameters(boolean newValue) {
+    public CommandLine setAllowOptionsAsOptionParameters(final boolean newValue) {
         getCommandSpec().parser().allowOptionsAsOptionParameters(newValue);
-        for (CommandLine command : getCommandSpec().subcommands().values()) {
-            command.setAllowOptionsAsOptionParameters(newValue);
-        }
+        applyToSubcommands(new SubcommandSetting() {
+            void applyTo(CommandLine command) { command.setAllowOptionsAsOptionParameters(newValue); }
+        });
         return this;
     }
 
@@ -1067,11 +1166,11 @@ public class CommandLine {
      * @see #setAllowOptionsAsOptionParameters(boolean)
      * @see ParserSpec#unmatchedOptionsAllowedAsOptionParameters(boolean)
      */
-    public CommandLine setUnmatchedOptionsAllowedAsOptionParameters(boolean newValue) {
+    public CommandLine setUnmatchedOptionsAllowedAsOptionParameters(final boolean newValue) {
         getCommandSpec().parser().unmatchedOptionsAllowedAsOptionParameters(newValue);
-        for (CommandLine command : getCommandSpec().subcommands().values()) {
-            command.setUnmatchedOptionsAllowedAsOptionParameters(newValue);
-        }
+        applyToSubcommands(new SubcommandSetting() {
+            void applyTo(CommandLine command) { command.setUnmatchedOptionsAllowedAsOptionParameters(newValue); }
+        });
         return this;
     }
     /** Returns whether arguments on the command line that resemble an option should be treated as positional parameters.
@@ -1096,11 +1195,11 @@ public class CommandLine {
      * @see #getUnmatchedArguments()
      * @see #isUnmatchedArgumentsAllowed
      */
-    public CommandLine setUnmatchedOptionsArePositionalParams(boolean newValue) {
+    public CommandLine setUnmatchedOptionsArePositionalParams(final boolean newValue) {
         getCommandSpec().parser().unmatchedOptionsArePositionalParams(newValue);
-        for (CommandLine command : getCommandSpec().subcommands().values()) {
-            command.setUnmatchedOptionsArePositionalParams(newValue);
-        }
+        applyToSubcommands(new SubcommandSetting() {
+            void applyTo(CommandLine command) { command.setUnmatchedOptionsArePositionalParams(newValue); }
+        });
         return this;
     }
 
@@ -1126,11 +1225,11 @@ public class CommandLine {
      * @since 0.9.7
      * @see #getUnmatchedArguments()
      */
-    public CommandLine setUnmatchedArgumentsAllowed(boolean newValue) {
+    public CommandLine setUnmatchedArgumentsAllowed(final boolean newValue) {
         getCommandSpec().parser().unmatchedArgumentsAllowed(newValue);
-        for (CommandLine command : getCommandSpec().subcommands().values()) {
-            command.setUnmatchedArgumentsAllowed(newValue);
-        }
+        applyToSubcommands(new SubcommandSetting() {
+            void applyTo(CommandLine command) { command.setUnmatchedArgumentsAllowed(newValue); }
+        });
         return this;
     }
 
@@ -1266,9 +1365,11 @@ public class CommandLine {
      * @see #getUsageMessage()
      * @since 4.0
      */
-    public CommandLine setColorScheme(Help.ColorScheme colorScheme) {
+    public CommandLine setColorScheme(final Help.ColorScheme colorScheme) {
         this.colorScheme = Assert.notNull(colorScheme, "colorScheme");
-        for (CommandLine sub : getSubcommands().values()) { sub.setColorScheme(colorScheme); }
+        applyToSubcommands(new SubcommandSetting() {
+            void applyTo(CommandLine sub) { sub.setColorScheme(colorScheme); }
+        });
         return this;
     }
 
@@ -1294,9 +1395,11 @@ public class CommandLine {
      * @return this CommandLine for method chaining
      * @since 4.0
      */
-    public CommandLine setOut(PrintWriter out) {
+    public CommandLine setOut(final PrintWriter out) {
         this.out = Assert.notNull(out, "out");
-        for (CommandLine sub : getSubcommands().values()) { sub.setOut(out); }
+        applyToSubcommands(new SubcommandSetting() {
+            void applyTo(CommandLine sub) { sub.setOut(out); }
+        });
         return this;
     }
 
@@ -1322,9 +1425,11 @@ public class CommandLine {
      * @param err the new PrintWriter to use
      * @return this CommandLine for method chaining
      * @since 4.0 */
-    public CommandLine setErr(PrintWriter err) {
+    public CommandLine setErr(final PrintWriter err) {
         this.err = Assert.notNull(err, "err");
-        for (CommandLine sub : getSubcommands().values()) { sub.setErr(err); }
+        applyToSubcommands(new SubcommandSetting() {
+            void applyTo(CommandLine sub) { sub.setErr(err); }
+        });
         return this;
     }
 
@@ -1342,9 +1447,11 @@ public class CommandLine {
      * @param exitCodeExceptionMapper the new value
      * @return this CommandLine for method chaining
      * @since 4.0 */
-    public CommandLine setExitCodeExceptionMapper(IExitCodeExceptionMapper exitCodeExceptionMapper) {
+    public CommandLine setExitCodeExceptionMapper(final IExitCodeExceptionMapper exitCodeExceptionMapper) {
         this.exitCodeExceptionMapper = Assert.notNull(exitCodeExceptionMapper, "exitCodeExceptionMapper");
-        for (CommandLine sub : getSubcommands().values()) { sub.setExitCodeExceptionMapper(exitCodeExceptionMapper); }
+        applyToSubcommands(new SubcommandSetting() {
+            void applyTo(CommandLine sub) { sub.setExitCodeExceptionMapper(exitCodeExceptionMapper); }
+        });
         return this;
     }
 
@@ -1364,9 +1471,11 @@ public class CommandLine {
      * @param executionStrategy the new execution strategy to run the user-specified command
      * @return this CommandLine for method chaining
      * @since 4.0 */
-    public CommandLine setExecutionStrategy(IExecutionStrategy executionStrategy) {
+    public CommandLine setExecutionStrategy(final IExecutionStrategy executionStrategy) {
         this.executionStrategy = Assert.notNull(executionStrategy, "executionStrategy");
-        for (CommandLine sub : getSubcommands().values()) { sub.setExecutionStrategy(executionStrategy); }
+        applyToSubcommands(new SubcommandSetting() {
+            void applyTo(CommandLine sub) { sub.setExecutionStrategy(executionStrategy); }
+        });
         return this;
     }
 
@@ -1418,9 +1527,11 @@ public class CommandLine {
      * @return this CommandLine for method chaining
      * @see #getParameterExceptionHandler()  an example short exception handler
      * @since 4.0 */
-    public CommandLine setParameterExceptionHandler(IParameterExceptionHandler parameterExceptionHandler) {
+    public CommandLine setParameterExceptionHandler(final IParameterExceptionHandler parameterExceptionHandler) {
         this.parameterExceptionHandler = Assert.notNull(parameterExceptionHandler, "parameterExceptionHandler");
-        for (CommandLine sub : getSubcommands().values()) { sub.setParameterExceptionHandler(parameterExceptionHandler); }
+        applyToSubcommands(new SubcommandSetting() {
+            void applyTo(CommandLine sub) { sub.setParameterExceptionHandler(parameterExceptionHandler); }
+        });
         return this;
     }
 
@@ -1441,9 +1552,11 @@ public class CommandLine {
      * @param executionExceptionHandler the handler for dealing with exceptions that occurred in the business logic when the {@link #execute(String...) execute} method was invoked.
      * @return this CommandLine for method chaining
      * @since 4.0 */
-    public CommandLine setExecutionExceptionHandler(IExecutionExceptionHandler executionExceptionHandler) {
+    public CommandLine setExecutionExceptionHandler(final IExecutionExceptionHandler executionExceptionHandler) {
         this.executionExceptionHandler = Assert.notNull(executionExceptionHandler, "executionExceptionHandler");
-        for (CommandLine sub : getSubcommands().values()) { sub.setExecutionExceptionHandler(executionExceptionHandler); }
+        applyToSubcommands(new SubcommandSetting() {
+            void applyTo(CommandLine sub) { sub.setExecutionExceptionHandler(executionExceptionHandler); }
+        });
         return this;
     }
 
@@ -1577,7 +1690,7 @@ public class CommandLine {
      * @since 4.0 */
     public void clearExecutionResults() {
         executionResult = null;
-        for (CommandLine sub : getSubcommands().values()) { sub.clearExecutionResults(); }
+        for (CommandLine sub : getCommandSpec().builtSubcommands()) { sub.clearExecutionResults(); }
     }
     /**
      * Represents a function that can process a List of {@code CommandLine} objects resulting from successfully
@@ -3391,11 +3504,12 @@ public class CommandLine {
      * @return this CommandLine object, to allow method chaining
      * @see #addSubcommand(String, Object)
      */
-    public <K> CommandLine registerConverter(Class<K> cls, ITypeConverter<K> converter) {
+    public <K> CommandLine registerConverter(final Class<K> cls, final ITypeConverter<K> converter) {
         interpreter.converterRegistry.put(Assert.notNull(cls, "class"), Assert.notNull(converter, "converter"));
-        for (CommandLine command : getCommandSpec().commands.values()) {
-            command.registerConverter(cls, converter);
-        }
+        applyToSubcommands(new SubcommandSetting() {
+            void applyTo(CommandLine command) { command.registerConverter(cls, converter); }
+            Object key() { return Arrays.asList(getClass(), cls); }
+        });
         return this;
     }
 
@@ -3413,11 +3527,11 @@ public class CommandLine {
      * @param separator the String that separates option names from option values
      * @see ParserSpec#separator(String)
      * @return this {@code CommandLine} object, to allow method chaining */
-    public CommandLine setSeparator(String separator) {
+    public CommandLine setSeparator(final String separator) {
         getCommandSpec().parser().separator(Assert.notNull(separator, "separator"));
-        for (CommandLine command : getCommandSpec().subcommands().values()) {
-            command.setSeparator(separator);
-        }
+        applyToSubcommands(new SubcommandSetting() {
+            void applyTo(CommandLine command) { command.setSeparator(separator); }
+        });
         return this;
     }
 
@@ -3437,11 +3551,11 @@ public class CommandLine {
      * @see Command#resourceBundle()
      * @see CommandSpec#resourceBundle(ResourceBundle)
      * @since 3.6 */
-    public CommandLine setResourceBundle(ResourceBundle bundle) {
+    public CommandLine setResourceBundle(final ResourceBundle bundle) {
         getCommandSpec().resourceBundle(bundle);
-        for (CommandLine command : getCommandSpec().subcommands().values()) {
-            command.setResourceBundle(bundle);
-        }
+        applyToSubcommands(new SubcommandSetting() {
+            void applyTo(CommandLine command) { command.setResourceBundle(bundle); }
+        });
         return this;
     }
 
@@ -3457,11 +3571,11 @@ public class CommandLine {
      * @param width the maximum width of the usage help message
      * @see UsageMessageSpec#width(int)
      * @return this {@code CommandLine} object, to allow method chaining */
-    public CommandLine setUsageHelpWidth(int width) {
+    public CommandLine setUsageHelpWidth(final int width) {
         getCommandSpec().usageMessage().width(width);
-        for (CommandLine command : getCommandSpec().subcommands().values()) {
-            command.setUsageHelpWidth(width);
-        }
+        applyToSubcommands(new SubcommandSetting() {
+            void applyTo(CommandLine command) { command.setUsageHelpWidth(width); }
+        });
         return this;
     }
 
@@ -3485,11 +3599,11 @@ public class CommandLine {
      * @see UsageMessageSpec#longOptionsMaxWidth(int)
      * @return this {@code CommandLine} object, to allow method chaining
      * @since 4.2 */
-    public CommandLine setUsageHelpLongOptionsMaxWidth(int columnWidth) {
+    public CommandLine setUsageHelpLongOptionsMaxWidth(final int columnWidth) {
         getCommandSpec().usageMessage().longOptionsMaxWidth(columnWidth);
-        for (CommandLine command : getCommandSpec().subcommands().values()) {
-            command.setUsageHelpLongOptionsMaxWidth(columnWidth);
-        }
+        applyToSubcommands(new SubcommandSetting() {
+            void applyTo(CommandLine command) { command.setUsageHelpLongOptionsMaxWidth(columnWidth); }
+        });
         return this;
     }
 
@@ -3511,11 +3625,11 @@ public class CommandLine {
      * @see UsageMessageSpec#autoWidth(boolean)
      * @return this {@code CommandLine} object, to allow method chaining
      * @since 4.0 */
-    public CommandLine setUsageHelpAutoWidth(boolean detectTerminalSize) {
+    public CommandLine setUsageHelpAutoWidth(final boolean detectTerminalSize) {
         getCommandSpec().usageMessage().autoWidth(detectTerminalSize);
-        for (CommandLine command : getCommandSpec().subcommands().values()) {
-            command.setUsageHelpAutoWidth(detectTerminalSize);
-        }
+        applyToSubcommands(new SubcommandSetting() {
+            void applyTo(CommandLine command) { command.setUsageHelpAutoWidth(detectTerminalSize); }
+        });
         return this;
     }
 
@@ -3571,11 +3685,11 @@ public class CommandLine {
      * @return this {@code CommandLine} object, to allow method chaining
      * @see ParserSpec#atFileCommentChar(Character)
      * @since 3.5 */
-    public CommandLine setAtFileCommentChar(Character atFileCommentChar) {
+    public CommandLine setAtFileCommentChar(final Character atFileCommentChar) {
         getCommandSpec().parser().atFileCommentChar(atFileCommentChar);
-        for (CommandLine command : getCommandSpec().subcommands().values()) {
-            command.setAtFileCommentChar(atFileCommentChar);
-        }
+        applyToSubcommands(new SubcommandSetting() {
+            void applyTo(CommandLine command) { command.setAtFileCommentChar(atFileCommentChar); }
+        });
         return this;
     }
 
@@ -3596,11 +3710,11 @@ public class CommandLine {
      * @return this {@code CommandLine} object, to allow method chaining
      * @see ParserSpec#useSimplifiedAtFiles(boolean)
      * @since 3.9 */
-    public CommandLine setUseSimplifiedAtFiles(boolean simplifiedAtFiles) {
+    public CommandLine setUseSimplifiedAtFiles(final boolean simplifiedAtFiles) {
         getCommandSpec().parser().useSimplifiedAtFiles(simplifiedAtFiles);
-        for (CommandLine command : getCommandSpec().subcommands().values()) {
-            command.setUseSimplifiedAtFiles(simplifiedAtFiles);
-        }
+        applyToSubcommands(new SubcommandSetting() {
+            void applyTo(CommandLine command) { command.setUseSimplifiedAtFiles(simplifiedAtFiles); }
+        });
         return this;
     }
     /** Returns the {@code INegatableOptionTransformer} used to create the negative form of {@linkplain Option#negatable() negatable} options.
@@ -3624,11 +3738,11 @@ public class CommandLine {
      * @see Option#negatable()
      * @see CommandSpec#negatableOptionTransformer(CommandLine.INegatableOptionTransformer)
      * @since 4.0 */
-    public CommandLine setNegatableOptionTransformer(INegatableOptionTransformer transformer) {
+    public CommandLine setNegatableOptionTransformer(final INegatableOptionTransformer transformer) {
         getCommandSpec().negatableOptionTransformer(transformer);
-        for (CommandLine command : getCommandSpec().subcommands().values()) {
-            command.setNegatableOptionTransformer(transformer);
-        }
+        applyToSubcommands(new SubcommandSetting() {
+            void applyTo(CommandLine command) { command.setNegatableOptionTransformer(transformer); }
+        });
         return this;
     }
     private static boolean empty(String str) { return str == null || str.trim().length() == 0; }
@@ -6455,7 +6569,7 @@ public class CommandLine {
                 for (CommandSpec mixedInSpec : mixins.values()) {
                     mixedInSpec.commandLine(commandLine);
                 }
-                for (CommandLine sub : commands.values()) {
+                for (CommandLine sub : builtSubcommands()) {
                     sub.getCommandSpec().parent(this);
                 }
                 return this;
@@ -6549,7 +6663,37 @@ public class CommandLine {
             }
 
             /** Returns a read-only view of the subcommand map. */
-            public Map<String, CommandLine> subcommands() { return Collections.unmodifiableMap(commands); }
+            public Map<String, CommandLine> subcommands() { return Collections.unmodifiableMap(subcommandsView); }
+
+            /** Reading a value builds the {@code LazySubcommand} behind it, so callers never see one unbuilt. */
+            private final Map<String, CommandLine> subcommandsView = new AbstractMap<String, CommandLine>() {
+                public CommandLine get(Object key) {
+                    CommandLine result = commands.get(key);
+                    if (result != null) { result.getCommandSpec(); }
+                    return result;
+                }
+                public boolean containsKey(Object key) { return commands.containsKey(key); }
+                public int size() { return commands.size(); }
+                public Set<String> keySet() { return commands.keySet(); }
+                public Set<Entry<String, CommandLine>> entrySet() {
+                    buildLazySubcommands();
+                    return commands.entrySet();
+                }
+            };
+
+            private void buildLazySubcommands() {
+                for (CommandLine sub : new ArrayList<CommandLine>(commands.values())) {
+                    sub.getCommandSpec();
+                }
+            }
+
+            private List<CommandLine> builtSubcommands() {
+                List<CommandLine> result = new ArrayList<CommandLine>();
+                for (CommandLine sub : commands.values()) {
+                    if (sub.lazySubcommand == null) { result.add(sub); }
+                }
+                return result;
+            }
 
             /** Adds the specified subcommand with the specified name.
              * If the specified subcommand does not have a ResourceBundle set, it is initialized to the ResourceBundle of this command spec.
@@ -6584,15 +6728,49 @@ public class CommandLine {
                 String actualName = validateSubcommandName(interpolator.interpolateCommandName(name), subSpec);
                 Tracer t = CommandLine.tracer();
                 if (t.isDebug()) {t.debug("Adding subcommand '%s' to '%s'", actualName, this.qualifiedName());}
+                putSubcommandName(actualName, subCommandLine);
+                attachSubcommand(actualName, subCommandLine, t, null);
+                return this;
+            }
+
+            /** Registers a {@code LazySubcommand} under its name and aliases. */
+            void addLazySubcommand(Class<?> type, String name, String[] aliases, IFactory factory) {
+                String actualName = interpolator.interpolateCommandName(name);
+                Tracer t = CommandLine.tracer();
+                if (t.isDebug()) {t.debug("Adding lazy subcommand '%s' to '%s'", actualName, this.qualifiedName());}
+                CommandLine subCommandLine = new CommandLine(new LazySubcommand(type, this, actualName, aliases), factory);
+                putSubcommandName(actualName, subCommandLine);
+                for (String alias : aliases) {
+                    putAlias(alias, actualName, subCommandLine);
+                }
+            }
+
+            private void putSubcommandName(String actualName, CommandLine subCommandLine) {
                 String previousName = commands.getCaseSensitiveKey(actualName);
                 CommandLine previous = commands.put(actualName, subCommandLine);
                 if (previous != null && previous != subCommandLine) { throw new DuplicateNameException("Another subcommand named '" + previousName + "' already exists for command '" + this.name() + "'"); }
+            }
+
+            /** A {@code lazy} subcommand gets its parent's state in the order a declared subcommand gets it when built eagerly. */
+            private void attachSubcommand(String actualName, CommandLine subCommandLine, Tracer t, LazySubcommand lazy) {
+                CommandSpec subSpec = subCommandLine.getCommandSpec();
                 if (subSpec.name == null) { subSpec.name(actualName); }
                 subSpec.parent(this);
                 for (String alias : subSpec.aliases()) {
-                    addAlias(alias, actualName, subCommandLine, t);
+                    boolean registered = lazy != null && commands.get(interpolator.interpolate(alias)) == subCommandLine;
+                    if (!registered) { addAlias(alias, actualName, subCommandLine, t); }
                 }
-                subSpec.initCommandHierarchyWithResourceBundle(resourceBundleBaseName(), resourceBundle());
+                if (lazy == null) {
+                    subSpec.initCommandHierarchyWithResourceBundle(resourceBundleBaseName(), resourceBundle());
+                    inheritScopeInto(subSpec);
+                    addInheritedArgsTo(subSpec);
+                } else {
+                    subSpec.initCommandHierarchyWithResourceBundle(lazy.bundleBaseName, lazy.bundle);
+                    addInheritedArgsTo(subSpec);
+                    inheritScopeInto(subSpec);
+                }
+            }
+            private void inheritScopeInto(CommandSpec subSpec) {
                 if (scopeType() == ScopeType.INHERIT) {
                     subSpec.inheritAttributesFrom(this);
                 } else if (this.inherited()) {
@@ -6601,7 +6779,8 @@ public class CommandLine {
                     if (root == null) { throw new InitializationException("Cannot find scope=INHERIT root for " + this); }
                     subSpec.inheritAttributesFrom(root);
                 }
-
+            }
+            private void addInheritedArgsTo(CommandSpec subSpec) {
                 for (ArgSpec arg : args()) {
                     if (arg.scopeType() == ScopeType.INHERIT) {
                         subSpec.add(arg.isOption()
@@ -6609,11 +6788,13 @@ public class CommandLine {
                                 : PositionalParamSpec.builder((PositionalParamSpec) arg).inherited(true).build());
                     }
                 }
-                return this;
             }
             private void addAlias(String alias, String name, CommandLine subCommandLine, Tracer t) {
                 CommandSpec subSpec = subCommandLine.getCommandSpec();
                 if (t.isDebug()) {t.debug("Adding alias '%s' for '%s'", (subSpec.parent() == null ? "" : subSpec.parent().qualifiedName() + " ") + alias, subSpec.qualifiedName());}
+                putAlias(alias, name, subCommandLine);
+            }
+            private void putAlias(String alias, String name, CommandLine subCommandLine) {
                 CommandLine previous = commands.put(interpolator.interpolate(alias), subCommandLine);
                 if (previous != null && previous != subCommandLine) {
                     throw new DuplicateNameException("Alias '" + alias + "' for subcommand '" + name + "' is already used by another subcommand of '" + name() + "'");
@@ -6633,7 +6814,7 @@ public class CommandLine {
             // before mixing in the standard help options
             private void setInheritedDeep() {
                 inherited = true;
-                for (CommandLine sub : subcommands().values()) {
+                for (CommandLine sub : builtSubcommands()) {
                     sub.getCommandSpec().setInheritedDeep();
                 }
             }
@@ -6641,7 +6822,7 @@ public class CommandLine {
                 if (root != this && root.mixinStandardHelpOptions()) { // #1331 only add, don't remove
                     mixinStandardHelpOptions(true);
                 }
-                Set<CommandLine> subcommands = new HashSet<CommandLine>(subcommands().values());
+                Set<CommandLine> subcommands = new HashSet<CommandLine>(builtSubcommands());
                 for (CommandLine sub : subcommands) {
                     sub.getCommandSpec().inheritAttributesFrom(root);
                 }
@@ -6702,7 +6883,13 @@ public class CommandLine {
                     setBundle(bundleBaseName, rb);
                 }
                 for (CommandLine sub : commands.values()) { // percolate down the hierarchy
-                    sub.getCommandSpec().initCommandHierarchyWithResourceBundle(bundleBaseName, rb);
+                    LazySubcommand lazy = sub.lazySubcommand;
+                    if (lazy == null) {
+                        sub.getCommandSpec().initCommandHierarchyWithResourceBundle(bundleBaseName, rb);
+                    } else if (lazy.bundle == null && lazy.bundleBaseName == null) {
+                        lazy.bundleBaseName = bundleBaseName;
+                        lazy.bundle = rb;
+                    }
                 }
             }
 
@@ -6803,7 +6990,7 @@ public class CommandLine {
                 addOptionNegative(option, tracer);
                 if (option.scopeType() == ScopeType.INHERIT) {
                     Set<CommandLine> done = new HashSet<CommandLine>();
-                    for (CommandLine sub : subcommands().values()) {
+                    for (CommandLine sub : builtSubcommands()) {
                         if (!done.contains(sub)) {
                             sub.getCommandSpec().addOption(OptionSpec.builder(option).inherited(true).build());
                             done.add(sub);
@@ -6863,7 +7050,7 @@ public class CommandLine {
                 }
                 adjustRelativeIndices(positional);
                 if (positional.scopeType() == ScopeType.INHERIT) {
-                    Set<CommandLine> subCmds = new HashSet<CommandLine>(subcommands().values());// subcommands may be registered multiple times with different aliases
+                    Set<CommandLine> subCmds = new HashSet<CommandLine>(builtSubcommands());// subcommands may be registered multiple times with different aliases
                     for (CommandLine sub : subCmds) {
                         sub.getCommandSpec().addPositional(PositionalParamSpec.builder(positional).inherited(true).build());
                     }
@@ -7084,6 +7271,12 @@ public class CommandLine {
              * @return this CommandSpec for method chaining
              * @since 4.0 */
             public CommandSpec addParentCommandElement(IAnnotatedElement spec) { parentCommandElements.add(spec); return this; }
+            void injectParentCommandWithMixins(CommandSpec parent) {
+                injectParentCommand(parent.userObject);
+                for (CommandSpec mixin : mixins().values()) {
+                    mixin.injectParentCommand(parent.userObject);
+                }
+            }
             void injectParentCommand(CommandUserObject commandUserObject) {
                 try {
                     for (IAnnotatedElement injectionTarget : parentCommandElements()) {
@@ -7413,7 +7606,7 @@ public class CommandLine {
                     }
                     // #1331 if inherit(ed) we also add to subcommands
                     if (scopeType() == ScopeType.INHERIT || inherited()) {
-                        for (CommandLine sub : new HashSet<CommandLine>(subcommands().values())) {
+                        for (CommandLine sub : new HashSet<CommandLine>(builtSubcommands())) {
                             sub.getCommandSpec().mixinStandardHelpOptions(newValue);
                         }
                     }
@@ -11915,6 +12108,7 @@ public class CommandLine {
 
             private static void initSubcommands(Command cmd, Class<?> cls, CommandSpec parent, IFactory factory, Set<Class<?>> hierarchy) {
                 if (cmd == null) { return; }
+                boolean lazy = Boolean.getBoolean("picocli.lazy.subcommands");
                 for (Class<?> sub : cmd.subcommands()) {
                     if (sub.equals(cls)) {
                         throw new InitializationException(cmd.name() + " (" + cls.getName() + ") cannot be a subcommand of itself");
@@ -11924,12 +12118,14 @@ public class CommandLine {
                     }
                     try {
                         if (Help.class == sub) { throw new InitializationException(Help.class.getName() + " is not a valid subcommand. Did you mean " + HelpCommand.class.getName() + "?"); }
+                        Command subCommand = sub.getAnnotation(Command.class);
+                        if (lazy && subCommand != null && !hasAliasWithVariables(subCommand)) {
+                            parent.addLazySubcommand(sub, subcommandName(sub), subCommand.aliases(), factory);
+                            continue;
+                        }
                         CommandLine subcommandLine = toCommandLine(sub, factory);
                         parent.addSubcommand(subcommandName(sub), subcommandLine);
-                        subcommandLine.getCommandSpec().injectParentCommand(parent.userObject);
-                        for (CommandSpec mixin : subcommandLine.getCommandSpec().mixins().values()) {
-                            mixin.injectParentCommand(parent.userObject);
-                        }
+                        subcommandLine.getCommandSpec().injectParentCommandWithMixins(parent);
                     }
                     catch (InitializationException ex) { throw ex; }
                     catch (Exception ex) {
@@ -11947,6 +12143,13 @@ public class CommandLine {
                         }
                     }
                 }
+            }
+            /** The subcommand interpolates its own aliases too, so an alias with variables is known only once it is built. */
+            private static boolean hasAliasWithVariables(Command cmd) {
+                for (String alias : cmd.aliases()) {
+                    if (alias.contains("${")) { return true; }
+                }
+                return false;
             }
             private static String subcommandName(Class<?> sub) {
                 Command subCommand = sub.getAnnotation(Command.class);
@@ -19248,15 +19451,18 @@ public class CommandLine {
                 return result;
             }
             List<String> abbreviatedKeyChunks = splitIntoChunks(abbreviation, caseInsensitive);
-            Map<String, T> candidates = new LinkedHashMap<String, T>();
-            for (Map.Entry<String, T> entry : map.entrySet()) {
-                List<String> keyChunks = splitIntoChunks(entry.getKey(), caseInsensitive);
-                if (matchKeyChunks(abbreviatedKeyChunks, keyChunks, caseInsensitive)) {
-                    if (!result.hasValue()) {
-                        result = new MatchResult<T>(entry.getKey(), entry.getValue());
-                    }
-                    candidates.put(entry.getKey(), entry.getValue());
+            List<String> matchingKeys = new ArrayList<String>();
+            for (String key : map.keySet()) {
+                if (matchKeyChunks(abbreviatedKeyChunks, splitIntoChunks(key, caseInsensitive), caseInsensitive)) {
+                    matchingKeys.add(key);
                 }
+            }
+            Map<String, T> candidates = new LinkedHashMap<String, T>();
+            for (String key : matchingKeys) { // a value of a lazily registered subcommand is built when read
+                if (!result.hasValue()) {
+                    result = new MatchResult<T>(key, map.get(key));
+                }
+                candidates.put(key, map.get(key));
             }
             if (!isAllCandidatesSame(candidates.values())) {
                 String str = candidates.keySet().toString();
