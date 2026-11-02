@@ -5287,6 +5287,38 @@ languages like Clojure where idiomatic error handling does not involve throwing 
 
 When using this feature, applications are responsible for actively verifying that no errors occurred before executing the business logic. Use with care!
 
+For example, when a required option is missing and the command line also contains an unknown option,
+picocli validates the missing required option before reporting the unmatched argument.
+By default, parsing throws a `MissingParameterException` in this case, so the unknown option is not reported yet.
+Enable `collectErrors` to inspect both errors in the `ParseResult`:
+
+[source,java]
+----
+class Options {
+    @Option(names = "--report", required = true)
+    String report;
+}
+
+CommandLine cmd = new CommandLine(new Options());
+cmd.getCommandSpec().parser().collectErrors(true);
+CommandLine.ParseResult result = cmd.parseArgs("--unknown");
+for (Exception error : result.errors()) {
+    System.err.println(error.getMessage());
+}
+if (!result.errors().isEmpty()) {
+    return; // do not run the application's business logic
+}
+----
+
+This prints both messages:
+
+[source,text]
+----
+Missing required option: '--report=<report>'
+Unknown option: '--unknown'
+----
+
+
 === Quoted Values
 ==== Trimming Quotes
 From picocli 3.7, quotes around command line parameters are preserved by default (previously they were removed). This can be configured with `CommandLine::setTrimQuotes`, or the parser configuration `trimQuotes`. From picocli 4.0, quoted arguments can contain nested quoted substrings, to give end users fine-grained control over how values are split.
