@@ -1,6 +1,7 @@
 package picocli.shell.jline3;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -288,6 +289,7 @@ public class PicocliCommands implements CommandRegistry {
         List<String> arguments = new ArrayList<>();
         arguments.add( command );
         arguments.addAll( Arrays.stream( args ).map( Object::toString ).collect( Collectors.toList() ) );
+        connectSessionStreams(session);
         cmd.execute( arguments.toArray( new String[0] ) );
         return cmd.getParseResult();
     }
@@ -297,8 +299,36 @@ public class PicocliCommands implements CommandRegistry {
         List<String> arguments = new ArrayList<>();
         arguments.add(command);
         arguments.addAll(Arrays.asList(args));
+        connectSessionStreams(session);
         cmd.execute(arguments.toArray(new String[0]));
         return null;
+    }
+
+    /**
+     * Points the writers of this CommandLine and its subcommands at the out and err streams of the
+     * current JLine {@link CommandRegistry.CommandSession CommandSession}, so that output written via
+     * {@link CommandLine#getOut()} and {@link CommandLine#getErr()} follows JLine output redirection.
+     * <p>
+     * When command output is redirected (for example {@code mycommand > file.txt}), JLine replaces
+     * {@code System.out} and {@code System.err} and passes a {@code CommandSession} whose out and err
+     * streams point at the redirect target. Without this, writers obtained earlier (from the terminal,
+     * or from {@code getOut()} caching {@code System.out}) keep writing to the original streams that
+     * JLine replaced, so redirected output is lost. See
+     * <a href="https://github.com/remkop/picocli/issues/2546">#2546</a>.
+     * </p>
+     */
+    @SuppressWarnings("deprecation")
+    private void connectSessionStreams(CommandRegistry.CommandSession session) {
+        if (session == null) { return; }
+        if (cmd.getExecutionStrategy() instanceof CommandLine.AbstractHandler) {
+            // Deprecated API: keep the execution strategy's streams in sync with the session so that
+            // the backwards-compatibility writer propagation in CommandLine#execute cannot replace
+            // the writers configured below with writers around a PrintStream captured earlier
+            // (before JLine replaced System.out and System.err).
+            ((CommandLine.AbstractHandler<?, ?>) cmd.getExecutionStrategy()).useOut(session.out()).useErr(session.err());
+        }
+        cmd.setOut(new PrintWriter(session.out(), true));
+        cmd.setErr(new PrintWriter(session.err(), true));
     }
 
     @Override
