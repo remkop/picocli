@@ -42,6 +42,7 @@ import javax.tools.Diagnostic;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
@@ -985,7 +986,68 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
             //#377 Standard help options should be added last
             for (CommandSpec commandSpec : commandsRequestingStandardHelpOptions) {
                 commandSpec.mixinStandardHelpOptions(true);
+                validateStandardHelpOptions(commandSpec, proc); //#2426
             }
+        }
+
+        /**
+         * Default names of the standard help options added by
+         * {@link CommandSpec#mixinStandardHelpOptions(boolean)}.
+         * (These names may be customized via the {@code picocli.help.name.*} and
+         * {@code picocli.version.name.*} system properties; when customized,
+         * the validation below simply finds no overlap and does not report anything.)
+         */
+        static final Set<String> STANDARD_HELP_OPTION_NAMES = new LinkedHashSet<String>(
+                Arrays.asList("-h", "--help", "-V", "--version"));
+
+        /**
+         * Detects commands that declare a {@code @Command(mixinStandardHelpOptions = true)}
+         * annotation as well as a custom {@code @Option} with a name that is also used by
+         * the standard help options, and reports a compile-time error for it. (#2426)
+         * <p>
+         * When such an overlap exists, {@link CommandSpec#mixinStandardHelpOptions(boolean)}
+         * does not add the standard help options at all (to avoid a
+         * {@code DuplicateOptionAnnotationsException}), so the command ends up without
+         * working {@code --help} and {@code --version} options. In GraalVM native images
+         * this is even more painful: the generated reflection configuration does not have an
+         * entry for {@code picocli.CommandLine$AutoHelpMixin}, and the application fails at
+         * native image <em>runtime</em> with a cryptic
+         * {@code InitializationException: picocli.CommandLine$AutoHelpMixin is not a command}.
+         * Reporting this at compile time gives users an early and clear error instead.
+         * </p>
+         */
+        private void validateStandardHelpOptions(CommandSpec commandSpec, AbstractCommandSpecProcessor proc) {
+            if (commandSpec.mixinStandardHelpOptions()) {
+                return; // standard help options were mixed in successfully: no name overlap
+            }
+            List<String> conflictingNames = new ArrayList<String>();
+            for (OptionSpec option : commandSpec.options()) {
+                for (String name : option.names()) {
+                    if (STANDARD_HELP_OPTION_NAMES.contains(name) && !conflictingNames.contains(name)) {
+                        conflictingNames.add(name);
+                    }
+                }
+            }
+            String names = conflictingNames.toString();
+            proc.error(elementFor(commandSpec),
+                    "Option name(s) %s of command '%s' conflict with the standard help option names (-h, --help, -V, --version) "
+                            + "that are added to the command by @Command(mixinStandardHelpOptions = true). "
+                            + "picocli does not add standard help options when their names overlap with user-defined options, "
+                            + "so this command will silently end up without working --help and --version options, "
+                            + "and GraalVM native images will fail at runtime with a cryptic InitializationException: "
+                            + "picocli.CommandLine$AutoHelpMixin is not a command: it has no @Command, @Option, @Parameters or @Unmatched annotations. "
+                            + "Consider renaming the custom option, or set mixinStandardHelpOptions = false and define the help and version options "
+                            + "explicitly with usageHelp = true and versionHelp = true.",
+                    names, commandSpec.name());
+        }
+
+        private Element elementFor(CommandSpec commandSpec) {
+            for (Map.Entry<Element, CommandSpec> entry : commands.entrySet()) {
+                if (entry.getValue() == commandSpec) {
+                    return entry.getKey();
+                }
+            }
+            return null;
         }
 
         private boolean connectArgGroups(AbstractCommandSpecProcessor proc) {
