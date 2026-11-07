@@ -719,6 +719,49 @@ public class CommandLine {
         return this;
     }
 
+    /** Returns whether the parser should remove one level of quotes from the resulting values when
+     * {@linkplain ArgSpec#splitRegex() splitting} option or positional parameter values. The default is {@code false}.
+     * <p>If this setting is enabled, the parser first splits the value, where the split regular expression is ignored
+     * within quoted sections, and then removes one level of quotes from each of the resulting values.
+     * Quotes always prevent splitting, and a quote level is removed only if it shielded parts of the value from being split:</p>
+     * <table border="1">
+     *   <caption>split values with {@code trimQuotesAfterSplit == true}</caption>
+     *   <tr><th>Input</th><th>Resulting values</th></tr>
+     *   <tr><td>{@code "1,2,3"}</td><td>{@code [1,2,3]}</td></tr>
+     *   <tr><td>{@code "11,22,33",44}</td><td>{@code [11,22,33, 44]}</td></tr>
+     *   <tr><td>{@code "11,22,3"3,44}</td><td>{@code [11,22,33, 44]}</td></tr>
+     *   <tr><td>{@code a,b,"c,d",e,"x,y"}</td><td>{@code [a, b, c,d, e, x,y]}</td></tr>
+     * </table>
+     * <p>This differs from the {@linkplain #isTrimQuotes() trimQuotes} setting, which removes quotes from the command
+     * line arguments <em>before</em> splitting, so a quoted value that contains a split separator may still be split up.</p>
+     * @return {@code true} if the parser should remove one level of quotes from the values resulting from a split operation, {@code false} otherwise
+     * @see ParserSpec#trimQuotesAfterSplit()
+     * @see #isTrimQuotes()
+     * @since 4.7.8-SNAPSHOT */
+    public boolean isTrimQuotesAfterSplit() { return getCommandSpec().parser().trimQuotesAfterSplit(); }
+
+    /** Sets whether the parser should remove one level of quotes from the resulting values when
+     * {@linkplain ArgSpec#splitRegex() splitting} option or positional parameter values. The default is {@code false}.
+     * <p>If this setting is enabled, the parser first splits the value, where the split regular expression is ignored
+     * within quoted sections, and then removes one level of quotes from each of the resulting values.</p>
+     * <p>The specified setting will be registered with this {@code CommandLine} and the full hierarchy of its
+     * subcommands and nested sub-subcommands <em>at the moment this method is called</em>. Subcommands added
+     * later will have the default setting. To ensure a setting is applied to all
+     * subcommands, call the setter last, after adding subcommands.</p>
+     * @param newValue the new setting
+     * @return this {@code CommandLine} object, to allow method chaining
+     * @see ParserSpec#trimQuotesAfterSplit(boolean)
+     * @see #setTrimQuotes(boolean)
+     * @since 4.7.8-SNAPSHOT
+     */
+    public CommandLine setTrimQuotesAfterSplit(boolean newValue) {
+        getCommandSpec().parser().trimQuotesAfterSplit(newValue);
+        for (CommandLine command : getCommandSpec().subcommands().values()) {
+            command.setTrimQuotesAfterSplit(newValue);
+        }
+        return this;
+    }
+
     /** Returns whether the parser is allowed to split quoted Strings or not. The default is {@code false},
      * so quotes are respected: quoted strings are treated as a single value that should not be broken up.
      * <p>
@@ -8563,6 +8606,7 @@ public class CommandLine {
             private boolean stopAtUnmatched = false;
             private boolean toggleBooleanFlags = false;
             private boolean trimQuotes = shouldTrimQuotes();
+            private boolean trimQuotesAfterSplit = false;
             private boolean unmatchedArgumentsAllowed = false;
             private boolean unmatchedOptionsAllowedAsOptionParameters = true;
             private boolean unmatchedOptionsArePositionalParams = false;
@@ -8611,6 +8655,9 @@ public class CommandLine {
             /** @see CommandLine#isTrimQuotes()
              * @since 3.7 */
             public boolean trimQuotes()  { return trimQuotes; }
+            /** @see CommandLine#isTrimQuotesAfterSplit()
+             * @since 4.7.8-SNAPSHOT */
+            public boolean trimQuotesAfterSplit()  { return trimQuotesAfterSplit; }
             /** @see CommandLine#isSplitQuotedStrings()
              * @since 3.7 */
             public boolean splitQuotedStrings()  { return splitQuotedStrings; }
@@ -8675,6 +8722,9 @@ public class CommandLine {
             /** @see CommandLine#setTrimQuotes(boolean)
              * @since 3.7 */
             public ParserSpec trimQuotes(boolean trimQuotes) { this.trimQuotes = trimQuotes; return this; }
+            /** @see CommandLine#setTrimQuotesAfterSplit(boolean)
+             * @since 4.7.8-SNAPSHOT */
+            public ParserSpec trimQuotesAfterSplit(boolean trimQuotesAfterSplit) { this.trimQuotesAfterSplit = trimQuotesAfterSplit; return this; }
             /** @see CommandLine#setSplitQuotedStrings(boolean)
              * @since 3.7 */
             public ParserSpec splitQuotedStrings(boolean splitQuotedStrings)  { this.splitQuotedStrings = splitQuotedStrings; return this; }
@@ -8718,14 +8768,14 @@ public class CommandLine {
                                 "caseInsensitiveEnumValuesAllowed=%s, collectErrors=%s, endOfOptionsDelimiter=%s, expandAtFiles=%s, " +
                                 "limitSplit=%s, overwrittenOptionsAllowed=%s, posixClusteredShortOptionsAllowed=%s, " +
                                 "separator=%s, splitQuotedStrings=%s, stopAtPositional=%s, stopAtUnmatched=%s, " +
-                                "toggleBooleanFlags=%s, trimQuotes=%s, " +
+                                "toggleBooleanFlags=%s, trimQuotes=%s, trimQuotesAfterSplit=%s, " +
                                 "unmatchedArgumentsAllowed=%s, unmatchedOptionsAllowedAsOptionParameters=%s, unmatchedOptionsArePositionalParams=%s, useSimplifiedAtFiles=%s",
                         abbreviatedOptionsAllowed, abbreviatedSubcommandsAllowed, allowOptionsAsOptionParameters,
                         allowSubcommandsAsOptionParameters, aritySatisfiedByAttachedOptionParam, atFileCommentChar,
                         caseInsensitiveEnumValuesAllowed, collectErrors, endOfOptionsDelimiter, expandAtFiles,
                         limitSplit, overwrittenOptionsAllowed, posixClusteredShortOptionsAllowed,
                         separator, splitQuotedStrings, stopAtPositional, stopAtUnmatched,
-                        toggleBooleanFlags, trimQuotes,
+                        toggleBooleanFlags, trimQuotes, trimQuotesAfterSplit,
                         unmatchedArgumentsAllowed, unmatchedOptionsAllowedAsOptionParameters, unmatchedOptionsArePositionalParams, useSimplifiedAtFiles);
             }
 
@@ -8749,6 +8799,7 @@ public class CommandLine {
                 stopAtUnmatched = settings.stopAtUnmatched;
                 toggleBooleanFlags = settings.toggleBooleanFlags;
                 trimQuotes = settings.trimQuotes;
+                trimQuotesAfterSplit = settings.trimQuotesAfterSplit;
                 unmatchedArgumentsAllowed = settings.unmatchedArgumentsAllowed;
                 unmatchedOptionsAllowedAsOptionParameters = settings.unmatchedOptionsAllowedAsOptionParameters;
                 unmatchedOptionsArePositionalParams = settings.unmatchedOptionsArePositionalParams;
@@ -9387,7 +9438,7 @@ public class CommandLine {
                             if (!escaping) {
                                 inQuote = !inQuote;
                                 if (!inQuote) { result.append(quotedValues.remove()); }
-//                                skip = parser.trimQuotes();
+                                skip = parser.trimQuotesAfterSplit(); // #2368: remove the quote level that shielded the split
                             }
                             break;
                         default: escaping = false; break;
@@ -14502,8 +14553,8 @@ public class CommandLine {
         }
 
         private String[] unquoteAndSplit(ArgSpec argSpec, LookBehind lookBehind, boolean alreadyUnquoted, Range arity, int consumed, String arg) {
-            String raw = lookBehind.isAttached() && alreadyUnquoted ? arg : smartUnquoteIfEnabled(arg); // if attached, we already trimmed quotes once
-//            String raw = smartUnquoteIfEnabled(arg);
+            boolean splitFirst = commandSpec.parser().trimQuotesAfterSplit() && argSpec.splitRegex().length() > 0; // #2368: split before removing quotes
+            String raw = (lookBehind.isAttached() && alreadyUnquoted) || splitFirst ? arg : smartUnquoteIfEnabled(arg); // if attached, we already trimmed quotes once
             return argSpec.splitValue(raw, commandSpec.parser(), arity, consumed);
         }
 
