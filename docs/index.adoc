@@ -5412,6 +5412,42 @@ yyy"
 ```
 ====
 
+===== Trimming Quotes After Splitting
+From picocli 4.7.8, the `trimQuotesAfterSplit` parser configuration (settable via `CommandLine::setTrimQuotesAfterSplit`) changes how quotes interact with splitting:
+quotes always prevent splitting, and one level of quotes is removed from each of the resulting values.
+
+This differs from the `trimQuotes` configuration, which removes quotes from the command line arguments _before_ the values are split,
+so with `trimQuotes` a quoted value that contains a split separator may still be split up.
+
+Given input like below:
+
+```
+<command> -x "1,2,3"
+<command> -x "11,22,33",44
+<command> -x a,b,"c,d",e,"x,y"
+```
+
+This results in the `parts` array having the following values when `trimQuotesAfterSplit` is `true`:
+
+```
+a
+b
+c,d
+e
+x,y
+```
+
+Example values when `trimQuotesAfterSplit` is `true` (with `trimQuotes` at its default, `false`):
+
+[cols=2*,options="header"]
+|===
+|Input|Resulting values
+|`"1,2,3"`|one value: `1,2,3`
+|`"11,22,33",44`|two values: `11,22,33`; `44`
+|`"11,22,3"3,44`|two values: `11,22,33`; `44`
+|`a,b,"c,d",e,"x,y"`|five values: `a`; `b`; `c,d`; `e`; `x,y`
+|===
+
 === Customizing Negatable Options
 
 <<Negatable Options,Negatable options>> can be customized via the `INegatableOptionTransformer` interface:

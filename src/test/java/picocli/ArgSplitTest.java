@@ -6,6 +6,7 @@ import org.junit.Test;
 import org.junit.contrib.java.lang.system.ProvideSystemProperty;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.rules.TestRule;
+import picocli.CommandLine.Command;
 import picocli.CommandLine.MissingParameterException;
 import picocli.CommandLine.Model.ArgSpec;
 import picocli.CommandLine.Model.ParserSpec;
@@ -407,6 +408,150 @@ public class ArgSplitTest {
         Example example = new Example();
         new CommandLine(example).setTrimQuotes(true).parseArgs(args);
         assertEquals(Arrays.asList("a", "b", "c,d,e", "f", "xxx,yyy"), example.parts);
+    }
+
+    private String[] splitWith(boolean trimQuotes, boolean trimQuotesAfterSplit, String value) {
+        ParserSpec parser = new ParserSpec().trimQuotes(trimQuotes).trimQuotesAfterSplit(trimQuotesAfterSplit);
+        ArgSpec spec = PositionalParamSpec.builder().type(String[].class).splitRegex(",").build();
+        return spec.splitValue(value, parser, Range.valueOf("1"), 0);
+    }
+
+    @Test
+    public void testArgSpecSplitValue_TrimQuotesAfterSplitDefaultIsFalse() {
+        assertArrayEquals(new String[]{"\"1,2,3\""}, splitWith(false, false, "\"1,2,3\""));
+        assertArrayEquals(new String[]{"\"11,22,3\"3", "44"}, splitWith(false, false, "\"11,22,3\"3,44"));
+    }
+
+    @Test
+    public void testArgSpecSplitValue_TrimQuotesAfterSplitRemovesQuoteLevelOnlyWhenQuotesPreventedSplitting() {
+        // https://github.com/remkop/picocli/issues/2368: quotes always prevent splitting,
+        // and one quote level is removed from each of the resulting values
+        assertArrayEquals(new String[]{"1,2,3"}, splitWith(false, true, "\"1,2,3\""));
+        assertArrayEquals(new String[]{"11,22,33", "44"}, splitWith(false, true, "\"11,22,33\",44"));
+        assertArrayEquals(new String[]{"11,22,33", "44"}, splitWith(false, true, "\"11,22,3\"3,44"));
+        assertArrayEquals(new String[]{"a", "b", "c,d", "e", "x,y"}, splitWith(false, true, "a,b,\"c,d\",e,\"x,y\""));
+    }
+
+    @Test
+    public void testArgSpecSplitValue_TrimQuotesAfterSplitCombinedWithTrimQuotes() {
+        assertArrayEquals(new String[]{"1,2,3"}, splitWith(true, true, "\"1,2,3\""));
+        assertArrayEquals(new String[]{"11,22,33", "44"}, splitWith(true, true, "\"11,22,33\",44"));
+        assertArrayEquals(new String[]{"11,22,33", "44"}, splitWith(true, true, "\"11,22,3\"3,44"));
+        assertArrayEquals(new String[]{"a", "b", "c,d", "e", "x,y"}, splitWith(true, true, "a,b,\"c,d\",e,\"x,y\""));
+    }
+
+    @Test
+    public void testSplitWithTrimQuotesAfterSplit() {
+        class Example {
+            @Option(names = "-x", split = ",")
+            List<String> parts;
+        }
+        String[] args = {"-x", "\"1,2,3\""};
+        Example example = new Example();
+        new CommandLine(example).setTrimQuotesAfterSplit(true).parseArgs(args);
+        assertEquals(Arrays.asList("1,2,3"), example.parts);
+
+        example = new Example();
+        new CommandLine(example).setTrimQuotesAfterSplit(true).parseArgs("-x", "\"11,22,33\",44");
+        assertEquals(Arrays.asList("11,22,33", "44"), example.parts);
+
+        example = new Example();
+        new CommandLine(example).setTrimQuotesAfterSplit(true).parseArgs("-x", "\"11,22,3\"3,44");
+        assertEquals(Arrays.asList("11,22,33", "44"), example.parts);
+
+        example = new Example();
+        new CommandLine(example).setTrimQuotesAfterSplit(true).parseArgs("-x", "a,b,\"c,d\",e,\"x,y\"");
+        assertEquals(Arrays.asList("a", "b", "c,d", "e", "x,y"), example.parts);
+    }
+
+    @Test
+    public void testAttachedSplitWithTrimQuotesAfterSplit() {
+        class Example {
+            @Option(names = "-x", split = ",")
+            List<String> parts;
+        }
+        Example example = new Example();
+        new CommandLine(example).setTrimQuotesAfterSplit(true).parseArgs("-x=\"11,22,33\",44");
+        assertEquals(Arrays.asList("11,22,33", "44"), example.parts);
+
+        example = new Example();
+        new CommandLine(example).setTrimQuotesAfterSplit(true).parseArgs("-x=\"1,2,3\"");
+        assertEquals(Arrays.asList("1,2,3"), example.parts);
+
+        example = new Example();
+        new CommandLine(example).setTrimQuotes(true).setTrimQuotesAfterSplit(true).parseArgs("-x=\"1,2,3\"");
+        assertEquals(Arrays.asList("1,2,3"), example.parts);
+    }
+
+    @Test
+    public void testSplitWithTrimQuotesAfterSplitAndTrimQuotes() {
+        // option values keep their quotes until after the split, even when trimQuotes is also enabled;
+        // positional parameter tokens are unquoted before processing when trimQuotes is enabled
+        // (pre-existing trimQuotes behavior), so trimQuotesAfterSplit is best combined
+        // with the default trimQuotes=false
+        class Example {
+            @Option(names = "-x", split = ",")
+            List<String> parts;
+        }
+        Example example = new Example();
+        new CommandLine(example).setTrimQuotes(true).setTrimQuotesAfterSplit(true).parseArgs("-x", "\"1,2,3\"");
+        assertEquals(Arrays.asList("1,2,3"), example.parts);
+
+        example = new Example();
+        new CommandLine(example).setTrimQuotes(true).setTrimQuotesAfterSplit(true).parseArgs("-x", "\"11,22,3\"3,44");
+        assertEquals(Arrays.asList("11,22,33", "44"), example.parts);
+
+        class PositionalExample {
+            @Parameters(index = "0", split = ",")
+            List<String> parts;
+        }
+        PositionalExample positional = new PositionalExample();
+        new CommandLine(positional).setTrimQuotes(true).setTrimQuotesAfterSplit(true).parseArgs("\"1,2,3\"");
+        assertEquals(Arrays.asList("1", "2", "3"), positional.parts);
+
+        positional = new PositionalExample();
+        new CommandLine(positional).setTrimQuotesAfterSplit(true).parseArgs("\"1,2,3\"");
+        assertEquals(Arrays.asList("1,2,3"), positional.parts);
+    }
+
+    @Test
+    public void testTrimQuotesAfterSplitDoesNotAffectOptionsWithoutSplitRegex() {
+        class Example {
+            @Option(names = "-x")
+            List<String> parts;
+        }
+        Example example = new Example();
+        new CommandLine(example).setTrimQuotesAfterSplit(true).parseArgs("-x", "\"a,b\"");
+        assertEquals(Arrays.asList("\"a,b\""), example.parts);
+
+        example = new Example(); // trimQuotes continues to apply to values without a split regex
+        new CommandLine(example).setTrimQuotes(true).setTrimQuotesAfterSplit(true).parseArgs("-x", "\"a,b\"");
+        assertEquals(Arrays.asList("a,b"), example.parts);
+    }
+
+    @Test
+    public void testTrimQuotesAfterSplitDefaultAndPropagationToSubcommands() {
+        @Command(name = "sub")
+        class Sub { }
+        @Command
+        class Example { }
+
+        CommandLine commandLine = new CommandLine(new Example());
+        assertFalse(commandLine.isTrimQuotesAfterSplit());
+        CommandLine sub = commandLine.addSubcommand("sub", new CommandLine(new Sub()));
+        commandLine.setTrimQuotesAfterSplit(true);
+        assertTrue(commandLine.isTrimQuotesAfterSplit());
+        assertTrue(sub.isTrimQuotesAfterSplit());
+    }
+
+    @Test
+    public void testParserSpecTrimQuotesAfterSplitCopiedByInitFromAndShownInToString() {
+        ParserSpec spec = new ParserSpec().trimQuotesAfterSplit(true);
+        assertTrue(spec.toString().contains("trimQuotesAfterSplit=true"));
+        ParserSpec copy = new ParserSpec();
+        copy.initFrom(spec);
+        assertTrue(copy.trimQuotesAfterSplit());
+        assertEquals(spec.toString(), copy.toString());
     }
 
     @Test
