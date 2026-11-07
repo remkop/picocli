@@ -16,12 +16,12 @@ import org.jline.widget.TailTipWidgets;
 import picocli.CommandLine;
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
+import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Option;
-import picocli.CommandLine.ParentCommand;
+import picocli.CommandLine.Spec;
 import picocli.shell.jline3.PicocliCommands;
 import picocli.shell.jline3.PicocliCommands.PicocliCommandsFactory;
 
-import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
@@ -32,6 +32,12 @@ import java.util.function.Supplier;
  * This example requires JLine 3.16+ and picocli 4.4+.
  * <p>
  * The built-in {@code PicocliCommands.ClearScreen} command was introduced in picocli 4.6.
+ * </p>
+ * <p>
+ * Commands write their output via {@code CommandLine.getOut()} instead of a writer obtained from
+ * the {@code Terminal}: {@code PicocliCommands} points this writer at the out and err streams of the
+ * current JLine command session before each command invocation, so JLine output redirection
+ * (for example {@code cmd > file.txt}) works for commands that use {@code getOut()}.
  * </p>
  */
 public class Example {
@@ -49,16 +55,10 @@ public class Example {
             subcommands = {
                     MyCommand.class, PicocliCommands.ClearScreen.class, CommandLine.HelpCommand.class})
     static class CliCommands implements Runnable {
-        PrintWriter out;
-
-        CliCommands() {}
-
-        public void setReader(LineReader reader){
-            out = reader.getTerminal().writer();
-        }
+        @Spec CommandSpec spec;
 
         public void run() {
-            out.println(new CommandLine(this).getUsageMessage());
+            spec.commandLine().getOut().println(new CommandLine(this).getUsageMessage());
         }
     }
 
@@ -90,14 +90,14 @@ public class Example {
             private TimeUnit unit;
         }
 
-        @ParentCommand CliCommands parent;
+        @Spec CommandSpec spec;
 
         public void run() {
             if (verbosity.length > 0) {
-                parent.out.printf("Hi there. You asked for %d %s.%n",
+                spec.commandLine().getOut().printf("Hi there. You asked for %d %s.%n",
                         myDuration.amount, myDuration.unit);
             } else {
-                parent.out.println("hi!");
+                spec.commandLine().getOut().println("hi!");
             }
         }
     }
@@ -164,7 +164,6 @@ public class Example {
                         .variable(LineReader.LIST_MAX, 50)   // max tab completion candidates
                         .build();
                 builtins.setLineReader(reader);
-                commands.setReader(reader);
                 factory.setTerminal(terminal);
                 TailTipWidgets widgets = new TailTipWidgets(reader, systemRegistry::commandDescription, 5, TailTipWidgets.TipType.COMPLETER);
                 widgets.enable();
