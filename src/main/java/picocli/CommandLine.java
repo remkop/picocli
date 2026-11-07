@@ -10813,7 +10813,12 @@ public class CommandLine {
                         arg.scope().set(userObject); // flip the actual user object for the arg (and all other args in this group; they share the same IScope instance)
                         commandLine.interpreter.parseResultBuilder.isInitializingDefaultValues = true;
                         arg.applyInitialValue();
-                        commandLine.interpreter.applyDefault(commandLine.getCommandSpec().defaultValueProvider(), arg);
+                        // #2521: don't apply the default value here for options with defaultValue = Option.NULL_VALUE:
+                        // their null default is applied at the end of parsing (if the option was not specified),
+                        // so applying it here would invoke the setter an additional time
+                        if (!ArgSpec.NULL_VALUE.equals(arg.originalDefaultValue)) {
+                            commandLine.interpreter.applyDefault(commandLine.getCommandSpec().defaultValueProvider(), arg);
+                        }
                         commandLine.interpreter.parseResultBuilder.isInitializingDefaultValues = false;
                     }
                     for (ArgGroupSpec subgroup : subgroups()) {
