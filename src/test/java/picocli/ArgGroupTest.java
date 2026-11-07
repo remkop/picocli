@@ -4440,4 +4440,46 @@ public class ArgGroupTest {
             assertEquals("Error: Missing required argument(s): ([-f=<feature>] [-p=<project>])", ok.getMessage());
         }
     }
+
+    // https://github.com/remkop/picocli/issues/2521
+    static class Issue2521Group {
+        @Option(names = "-v", required = false)
+        boolean verbose;
+
+        @Option(names = {"-i", "--input"}, paramLabel = "<file>", defaultValue = Option.NULL_VALUE)
+        public void setInputFile(String inputFile) {
+            issue2521SetterCalls.add(inputFile);
+        }
+    }
+
+    static class Issue2521Cmd implements Runnable {
+        @ArgGroup(exclusive = false, multiplicity = "0..1")
+        Issue2521Group group;
+
+        public void run() { }
+    }
+
+    static final List<String> issue2521SetterCalls = new ArrayList<String>();
+
+    @Test
+    public void testIssue2521SetterCalledOnceWhenValueSpecified() {
+        issue2521SetterCalls.clear();
+        CommandLine.populateCommand(new Issue2521Cmd(), "--input", "value");
+        assertEquals(Arrays.asList("value"), issue2521SetterCalls);
+
+        issue2521SetterCalls.clear();
+        CommandLine.populateCommand(new Issue2521Cmd(), "-v", "--input", "value");
+        assertEquals(Arrays.asList("value"), issue2521SetterCalls);
+    }
+
+    @Test
+    public void testIssue2521SetterCalledOnceWithNullWhenOptionNotSpecified() {
+        issue2521SetterCalls.clear();
+        CommandLine.populateCommand(new Issue2521Cmd(), "-v");
+        assertEquals(Arrays.asList((String) null), issue2521SetterCalls);
+
+        issue2521SetterCalls.clear();
+        CommandLine.populateCommand(new Issue2521Cmd());
+        assertEquals(Collections.emptyList(), issue2521SetterCalls);
+    }
 }
