@@ -61,6 +61,31 @@ public class ArgGroupTest {
     static final OptionSpec OPTION_C = OptionSpec.builder("-c").required(true).build();
 
     @Test
+    public void testSynopsisBreaksTiesBetweenMethodOptions() throws Exception {
+        CommandSpec spec = CommandSpec.create().name("app");
+        spec.usageMessage().sortSynopsis(false);
+        spec.addArgGroup(ArgGroupSpec.builder().exclusive(false)
+                .addArg(OptionSpec.builder("--zeta").type(boolean.class)
+                        .userObject(SynopsisMethodOptions.class.getDeclaredMethod("setZeta", boolean.class)).build())
+                .addArg(OptionSpec.builder("--field-zeta").type(boolean.class).build())
+                .addArg(OptionSpec.builder("--field-alpha").type(boolean.class).build())
+                .addArg(OptionSpec.builder("--alpha").type(boolean.class)
+                        .userObject(SynopsisMethodOptions.class.getDeclaredMethod("setAlpha", boolean.class)).build())
+                .addArg(OptionSpec.builder("--first").type(boolean.class).order(-2)
+                        .userObject(SynopsisMethodOptions.class.getDeclaredMethod("setFirst", boolean.class)).build())
+                .build());
+
+        String synopsis = new Help(spec, Help.defaultColorScheme(Help.Ansi.OFF)).synopsis(0);
+        assertEquals("app [[--first] [--alpha] [--field-zeta] [--field-alpha] [--zeta]]", synopsis.trim());
+    }
+
+    static class SynopsisMethodOptions {
+        public void setZeta(boolean value) {}
+        public void setAlpha(boolean value) {}
+        public void setFirst(boolean value) {}
+    }
+
+    @Test
     public void testArgSpecHaveNoGroupsByDefault() {
         assertNull(OptionSpec.builder("-x").build().group());
         assertNull(PositionalParamSpec.builder().build().group());
