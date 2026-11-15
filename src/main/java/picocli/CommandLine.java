@@ -10668,21 +10668,35 @@ public class CommandLine {
                     && !args.iterator().next().command().usageMessage().sortSynopsis();
                 if (sortExplicitly) {
                     List<IOrdered> sortableComponents = new ArrayList<IOrdered>();
+                    List<OptionSpec> methodOptions = new ArrayList<OptionSpec>();
                     List<PositionalParamSpec> remainder = new ArrayList<PositionalParamSpec>();
                     for (ArgSpec arg : args()) {
                         if (arg instanceof OptionSpec) {
-                            sortableComponents.add((IOrdered) arg);
+                            OptionSpec option = (OptionSpec) arg;
+                            sortableComponents.add(option);
+                            if (option.userObject() instanceof Method) {
+                                methodOptions.add(option);
+                            }
                         } else {
                             remainder.add((PositionalParamSpec) arg);
                         }
                     }
                     sortableComponents.addAll(subgroups());
                     Collections.sort(sortableComponents, new Help.SortByOrder<IOrdered>());
+                    // Reflection does not guarantee method declaration order. Use arity and name
+                    // for ties between method options, keeping other components in their slots.
+                    Collections.sort(methodOptions, new Help.SortByOptionArityAndNameAlphabetically());
+                    Collections.sort(methodOptions, new Help.SortByOrder<OptionSpec>());
+                    Iterator<OptionSpec> sortedMethodOptions = methodOptions.iterator();
                     for (IOrdered ordered : sortableComponents) {
                         String prefix = synopsis.length > 0 ? infix : "";
                         if (ordered instanceof OptionSpec) {
-                            synopsis = concatOptionText(prefix, synopsis, colorScheme, (OptionSpec) ordered);
-                            outparam_groupArgs.add((OptionSpec) ordered);
+                            OptionSpec option = (OptionSpec) ordered;
+                            if (option.userObject() instanceof Method) {
+                                option = sortedMethodOptions.next();
+                            }
+                            synopsis = concatOptionText(prefix, synopsis, colorScheme, option);
+                            outparam_groupArgs.add(option);
                         } else {
                             synopsis = synopsis.concat(((ArgGroupSpec) ordered).synopsisText(colorScheme, outparam_groupArgs));
                         }
