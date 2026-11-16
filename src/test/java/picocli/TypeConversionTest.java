@@ -402,6 +402,78 @@ public class TypeConversionTest {
         SupportedTypes bean = CommandLine.populateCommand(new SupportedTypes(), "-Time", "23:59:58,123");
         assertEquals("Time", new Time(new SimpleDateFormat("HH:mm:ss,SSS").parse("23:59:58,123").getTime()), bean.aTimeField);
     }
+
+    @Test
+    public void testTimeFormatHHmmRejectsOutOfRangeValues() {
+        for (String value : new String[] {"24:00", "25:00", "-1:00", "23:60", "12:99", "12:-1"}) {
+            assertInvalidTime(value);
+        }
+    }
+
+    @Test
+    public void testTimeFormatHHmmssRejectsOutOfRangeValues() {
+        for (String value : new String[] {"24:00:00", "25:00:00", "23:60:00", "12:34:60", "12:34:99"}) {
+            assertInvalidTime(value);
+        }
+    }
+
+    @Test
+    public void testTimeFormatHHmmssDotSSSRejectsOutOfRangeValues() {
+        for (String value : new String[] {"24:00:00.000", "23:60:00.000", "12:34:60.000", "12:34:56.-01"}) {
+            assertInvalidTime(value);
+        }
+    }
+
+    @Test
+    public void testTimeFormatHHmmssCommaSSSRejectsOutOfRangeValues() {
+        for (String value : new String[] {"24:00:00,000", "23:60:00,000", "12:34:60,000", "12:34:56,-01"}) {
+            assertInvalidTime(value);
+        }
+    }
+
+    private void assertInvalidTime(String value) {
+        try {
+            CommandLine.populateCommand(new SupportedTypes(), "-Time", value);
+            fail("Invalid time was accepted: " + value);
+        } catch (CommandLine.ParameterException expected) {
+            assertEquals("Invalid value for option '-Time': '" + value + "' is not a HH:mm[:ss[.SSS]] time", expected.getMessage());
+        }
+    }
+
+    @Test
+    public void testTimeFormatBoundaryValues() {
+        String[] values = {"00:00", "00:00:00", "00:00:00.000", "00:00:00,000",
+                "23:59", "23:59:59", "23:59:59.999", "23:59:59,999"};
+        long midnight = Time.valueOf("00:00:00").getTime();
+        long lastMinute = Time.valueOf("23:59:00").getTime();
+        long lastSecond = Time.valueOf("23:59:59").getTime();
+        long[] expected = {midnight, midnight, midnight, midnight,
+                lastMinute, lastSecond, lastSecond + 999, lastSecond + 999};
+        for (int i = 0; i < values.length; i++) {
+            SupportedTypes bean = CommandLine.populateCommand(new SupportedTypes(), "-Time", values[i]);
+            assertEquals(values[i], expected[i], bean.aTimeField.getTime());
+        }
+    }
+
+    @Test
+    public void testInvalidTimeDoesNotExecuteCommand() {
+        class App implements Runnable {
+            @Option(names = "--run-at") Time runAt;
+            boolean executed;
+
+            public void run() { executed = true; }
+        }
+        for (String value : new String[] {"25:00", "23:60", "12:34:99", "12:99:00.000", "12:34:99,000"}) {
+            App app = new App();
+            StringWriter errors = new StringWriter();
+            int exitCode = new CommandLine(app).setErr(new PrintWriter(errors)).execute("--run-at", value);
+            assertEquals(value, 2, exitCode);
+            assertFalse(value, app.executed);
+            assertNull(value, app.runAt);
+            assertTrue(errors.toString(), errors.toString().contains("is not a HH:mm[:ss[.SSS]] time"));
+        }
+    }
+
     @Test
     public void testTimeFormatHHmmssSSSInvalidError() throws ParseException {
         try {
