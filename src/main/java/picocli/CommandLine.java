@@ -15262,20 +15262,26 @@ public class CommandLine {
             public Object convert(String value) {
                 try {
                     if (value.length() <= 5) {
-                        return createTime(new SimpleDateFormat("HH:mm").parse(value).getTime());
+                        return createTime(parseTime(value, "HH:mm"));
                     } else if (value.length() <= 8) {
-                        return createTime(new SimpleDateFormat("HH:mm:ss").parse(value).getTime());
+                        return createTime(parseTime(value, "HH:mm:ss"));
                     } else if (value.length() <= 12) {
                         try {
-                            return createTime(new SimpleDateFormat("HH:mm:ss.SSS").parse(value).getTime());
+                            return createTime(parseTime(value, "HH:mm:ss.SSS"));
                         } catch (ParseException e2) {
-                            return createTime(new SimpleDateFormat("HH:mm:ss,SSS").parse(value).getTime());
+                            return createTime(parseTime(value, "HH:mm:ss,SSS"));
                         }
                     }
                 } catch (ParseException ignored) {
                     // ignored because we throw a ParameterException below
                 }
                 throw new TypeConversionException("'" + value + "' is not a HH:mm[:ss[.SSS]] time");
+            }
+
+            private long parseTime(String value, String pattern) throws ParseException {
+                SimpleDateFormat format = new SimpleDateFormat(pattern);
+                format.setLenient(false);
+                return format.parse(value).getTime();
             }
 
             private Object createTime(long epochMillis) {
