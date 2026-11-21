@@ -2187,6 +2187,25 @@ public class CommandLine {
             }
         } catch (Exception ex) {
             return handleUnhandled(ex, this, getCommandSpec().exitCodeOnExecutionException());
+        } finally {
+            // #2514 print() does not auto-flush; ensure out/err buffers are flushed after execute
+            flush(this);
+            if (parseResult[0] != null) {
+                for (CommandLine parsed : parseResult[0].asCommandLineList()) {
+                    flush(parsed);
+                }
+            }
+        }
+    }
+    private static void flush(CommandLine cmd) {
+        if (cmd == null) {
+            return;
+        }
+        if (cmd.out != null) {
+            cmd.out.flush();
+        }
+        if (cmd.err != null) {
+            cmd.err.flush();
         }
     }
     private static int handleUnhandled(Exception ex, CommandLine cmd, int defaultExitCode) {

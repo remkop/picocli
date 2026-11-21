@@ -37,6 +37,7 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.Method;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -1625,6 +1626,49 @@ public class ExecuteTest {
             expected.set(i, replaced);
         }
         assertEquals(expected, lines);
+    }
+
+    @Command(name = "demo")
+    static class Issue2514Command implements Callable<Integer> {
+        @Spec CommandSpec spec;
+        private final boolean writeErr;
+
+        Issue2514Command(boolean writeErr) {
+            this.writeErr = writeErr;
+        }
+
+        public Integer call() {
+            if (writeErr) {
+                spec.commandLine().getErr().print("err-hello");
+            } else {
+                spec.commandLine().getOut().print("hello");
+            }
+            return 0;
+        }
+    }
+
+    @Test
+    public void testExecuteFlushesOutAfterPrintWithoutNewline() throws Exception {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        Charset charset = Charset.forName("UTF-16LE");
+        PrintWriter out = CommandLine.newPrintWriter(baos, charset);
+
+        int exit = new CommandLine(new Issue2514Command(false)).setOut(out).execute();
+
+        assertEquals(ExitCode.OK, exit);
+        assertEquals("hello", baos.toString(charset.name()));
+    }
+
+    @Test
+    public void testExecuteFlushesErrAfterPrintWithoutNewline() throws Exception {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        Charset charset = Charset.forName("UTF-16BE");
+        PrintWriter err = CommandLine.newPrintWriter(baos, charset);
+
+        int exit = new CommandLine(new Issue2514Command(true)).setErr(err).execute();
+
+        assertEquals(ExitCode.OK, exit);
+        assertEquals("err-hello", baos.toString(charset.name()));
     }
 }
 
