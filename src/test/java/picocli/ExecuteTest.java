@@ -37,6 +37,7 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.Method;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -1647,25 +1648,27 @@ public class ExecuteTest {
     }
 
     @Test
-    public void testExecuteFlushesOutAfterPrintWithoutNewline() {
+    public void testExecuteFlushesOutAfterPrintWithoutNewline() throws Exception {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        PrintWriter out = CommandLine.newPrintWriter(baos, getStdoutEncoding());
+        Charset charset = Charset.forName("UTF-16LE");
+        PrintWriter out = CommandLine.newPrintWriter(baos, charset);
 
         int exit = new CommandLine(new Issue2514Command(false)).setOut(out).execute();
 
         assertEquals(ExitCode.OK, exit);
-        assertEquals("hello", baos.toString());
+        assertEquals("hello", baos.toString(charset.name()));
     }
 
     @Test
-    public void testExecuteFlushesErrAfterPrintWithoutNewline() {
+    public void testExecuteFlushesErrAfterPrintWithoutNewline() throws Exception {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        PrintWriter err = CommandLine.newPrintWriter(baos, getStdoutEncoding());
+        Charset charset = Charset.forName("UTF-16BE");
+        PrintWriter err = CommandLine.newPrintWriter(baos, charset);
 
         int exit = new CommandLine(new Issue2514Command(true)).setErr(err).execute();
 
         assertEquals(ExitCode.OK, exit);
-        assertEquals("err-hello", baos.toString());
+        assertEquals("err-hello", baos.toString(charset.name()));
     }
 }
 
