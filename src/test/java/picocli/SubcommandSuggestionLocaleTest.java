@@ -26,8 +26,20 @@ import static org.junit.Assert.fail;
 
 public class SubcommandSuggestionLocaleTest {
     @Test
-    public void testSuggestionsIgnoreDefaultLocale() {
+    public void testSuggestionsIgnoreDefaultLocale() throws Exception {
         Locale original = Locale.getDefault();
+        // Use reflection so this test also runs on Java 5 and 6, before locale categories existed.
+        Class<?> categoryClass = null;
+        try {
+            categoryClass = Class.forName("java.util.Locale$Category");
+        } catch (ClassNotFoundException ignored) {
+            // Java 5 and 6 only have the general default locale.
+        }
+        Object[] categories = categoryClass == null ? new Object[0] : categoryClass.getEnumConstants();
+        Locale[] categoryDefaults = new Locale[categories.length];
+        for (int i = 0; i < categories.length; i++) {
+            categoryDefaults[i] = (Locale) Locale.class.getMethod("getDefault", categoryClass).invoke(null, categories[i]);
+        }
         try {
             for (Locale locale : new Locale[] {Locale.ENGLISH, new Locale("tr", "TR")}) {
                 Locale.setDefault(locale);
@@ -42,6 +54,9 @@ public class SubcommandSuggestionLocaleTest {
             }
         } finally {
             Locale.setDefault(original);
+            for (int i = 0; i < categories.length; i++) {
+                Locale.class.getMethod("setDefault", categoryClass, Locale.class).invoke(null, categories[i], categoryDefaults[i]);
+            }
         }
     }
 }
