@@ -18582,10 +18582,10 @@ public class CommandLine {
     private static class CosineSimilarity {
         static List<String> mostSimilar(String pattern, Iterable<String> candidates) { return mostSimilar(pattern, candidates, 0); }
         static List<String> mostSimilar(String pattern, Iterable<String> candidates, double threshold) {
-            pattern = pattern.toLowerCase();
+            pattern = pattern.toLowerCase(ENGLISH);
             SortedMap<Double, String> sorted = new TreeMap<Double, String>();
             for (String candidate : candidates) {
-                double score = similarity(pattern, candidate.toLowerCase(), 2);
+                double score = similarity(pattern, candidate.toLowerCase(ENGLISH), 2);
                 if (score > threshold) { sorted.put(score, candidate); }
             }
             return reverseList(new ArrayList<String>(sorted.values()));
