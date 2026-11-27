@@ -220,7 +220,7 @@ public class AbstractCommandSpecProcessorTest {
         List<String> expected = new ArrayList<String>(Arrays.asList(
                 "singleOption has a split regex but is a single-value type",
                 "singlePositional has a split regex but is a single-value type",
-                "FATAL ERROR: picocli.CommandLine$InitializationException: Only multi-value options and positional parameters should have a split regex (this check can be disabled by setting system property 'picocli.ignore.invalid.split')"
+                "Only multi-value options and positional parameters should have a split regex (this check can be disabled by setting system property 'picocli.ignore.invalid.split')"
         ));
         List<String> optional = new ArrayList<>(Arrays.asList(
         ));

@@ -3,6 +3,7 @@ package picocli.codegen.annotation.processing;
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.IFactory;
+import picocli.CommandLine.InitializationException;
 import picocli.CommandLine.Mixin;
 import picocli.CommandLine.Model;
 import picocli.CommandLine.Model.ArgGroupSpec;
@@ -166,6 +167,9 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
 
         try {
             return tryProcess(annotations, roundEnv);
+        } catch (LocatedInitializationException e) {
+            error(e.element, "%s", e.getCause().getMessage());
+            return false;
         } catch (Exception e) {
             // Generators are supposed to do their own error handling, but let's be paranoid.
             // We don't allow exceptions of any kind to propagate to the compiler
@@ -862,6 +866,15 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
         processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "FATAL ERROR: " + msg);
     }
 
+    private static class LocatedInitializationException extends RuntimeException {
+        final Element element;
+
+        LocatedInitializationException(Element element, InitializationException cause) {
+            super(cause);
+            this.element = element;
+        }
+    }
+
     static class Context {
         IFactory factory = null; //new NullFactory();
         Map<Element, CommandSpec> commands = new LinkedHashMap<Element, CommandSpec>();
@@ -875,6 +888,22 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
         Map<Element, IAnnotatedElement> specElements = new LinkedHashMap<Element, IAnnotatedElement>();
         Map<Element, IAnnotatedElement> unmatchedElements = new LinkedHashMap<Element, IAnnotatedElement>();
         Set<CommandSpec> commandsRequestingStandardHelpOptions = new LinkedHashSet<CommandSpec>();
+
+        private OptionSpec buildOptionSpec(Map.Entry<Element, OptionSpec.Builder> option) {
+            try {
+                return option.getValue().build();
+            } catch (InitializationException ex) {
+                throw new LocatedInitializationException(option.getKey(), ex);
+            }
+        }
+
+        private PositionalParamSpec buildPositionalParamSpec(Map.Entry<Element, PositionalParamSpec.Builder> parameter) {
+            try {
+                return parameter.getValue().build();
+            } catch (InitializationException ex) {
+                throw new LocatedInitializationException(parameter.getKey(), ex);
+            }
+        }
 
         private void connectModel(AbstractCommandSpecProcessor proc) {
             logger.fine("---------------------------");
@@ -896,12 +925,12 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
                 if (groups != null && !groups.isEmpty()) {
                     for (ArgGroupSpec.Builder group : groups) {
                         logger.fine("Building OptionSpec for " + option + " in arg group " + group);
-                        group.addArg(option.getValue().build());
+                        group.addArg(buildOptionSpec(option));
                     }
                 } else {
                     CommandSpec commandSpec = getOrCreateCommandSpecForArg(option.getKey(), commands);
                     logger.fine("Building OptionSpec for " + option + " in spec " + commandSpec);
-                    commandSpec.addOption(option.getValue().build());
+                    commandSpec.addOption(buildOptionSpec(option));
                 }
             }
             for (Map.Entry<Element, PositionalParamSpec.Builder> parameter : parameters.entrySet()) {
@@ -910,12 +939,12 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
                 if (groups != null && !groups.isEmpty()) {
                     for (ArgGroupSpec.Builder group : groups) {
                         logger.fine("Building PositionalParamSpec for " + parameter + " in arg group " + group);
-                        group.addArg(parameter.getValue().build());
+                        group.addArg(buildPositionalParamSpec(parameter));
                     }
                 } else {
                     CommandSpec commandSpec = getOrCreateCommandSpecForArg(parameter.getKey(), commands);
                     logger.fine("Building PositionalParamSpec for " + parameter);
-                    commandSpec.addPositional(parameter.getValue().build());
+                    commandSpec.addPositional(buildPositionalParamSpec(parameter));
                 }
             }
             if (connectArgGroups(proc)) {
